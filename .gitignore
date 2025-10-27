@@ -1,0 +1,6 @@
+# Folders to ignore
+venv/
+__pycache__/
+
+# Specific files to ignore
+*.json
