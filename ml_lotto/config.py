@@ -1,26 +1,28 @@
 """
 Configuration settings for lottery analysis
+
+OPTIMIZED: Reduced feature redundancy and clearer model specialization
+Each model focuses on different aspects to maximize diversity
 """
 
-# =============== ANALYSIS CONFIGURATION (for the Analysis Generation System, drawpick.py) ===============
-TOTAL_DRAWS = 600          # Total number of draws to analyze
-TRAINING_DATA = 100        # Initial training window size for HMC analysis
-NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA  # Draws used for pattern analysis
+# =============== ANALYSIS CONFIGURATION ===============
+TOTAL_DRAWS = 600
+TRAINING_DATA = 100
+NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA
 TRAINING_START_DRAW = TRAINING_DATA
 
 # =============== FILE PATHS ===============
-# CSV_FILE = 'data/irish500.csv'  # Path to CSV file (DEPRECATED FOR ML SYSTEM)
-DRAW_HISTORY_JSON = 'data/lotto_draw_history.json' # Comprehensive Draw History (New ML Source)
-HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'  # Per-number stats
-ODDS_JSON_INPUT = 'data/lotto_odds_results.json'    # HMC patterns
+DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
+HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'
+ODDS_JSON_INPUT = 'data/lotto_odds_results.json'
+FRESHNESS_JSON_INPUT = 'data/lotto_7_number_freshness_results.json'
 
 # =============== LOTTERY PARAMETERS ===============
-MAX_NUMBER = 47            # Maximum lottery number
-HOT_COUNT = 15             # Number of hot numbers
-COLD_COUNT = 15           # Number of cold numbers
+MAX_NUMBER = 47
+HOT_COUNT = 15
+COLD_COUNT = 15
 
-# =============== ANALYSIS SCENARIOS (Master definition for analysis windows) ===============
-# Window sizes and target repetition counts to detect
+# =============== ANALYSIS SCENARIOS ===============
 SCENARIOS = [
     {"window": 5,  "targets": [3]},
     {"window": 7,  "targets": [4]},
@@ -28,13 +30,9 @@ SCENARIOS = [
     {"window": 15, "targets": [5]}
 ]
 
-# Window sizes for per-draw historical 'recent_counts'
-# Derived from SCENARIOS, ensuring consistency: [5, 7, 10, 15]
-# Note: The key name uses window-1 (e.g., last_4 for window 5), which is handled in hmc_analyzer.py
-ACTUAL_HISTORY_WINDOWS = [s["window"] for s in SCENARIOS] 
+ACTUAL_HISTORY_WINDOWS = [s["window"] for s in SCENARIOS]
 
 # =============== RANGE BINS ===============
-# Define the Range Bins for draw range analysis
 RANGE_BINS = {
     "20-25": (20, 25),
     "25-30": (25, 30),
@@ -43,86 +41,107 @@ RANGE_BINS = {
     "40-45": (40, 45)
 }
 
-# ==================== ML MODEL CONFIGURATIONS (Duplicated from ML system config) ====================
-# This is a placeholder for the ML config if it were in this file, but we include 
-# the necessary constants to ensure the ML system runs.
-
-# ==================== AVAILABLE FEATURES (Placeholder documentation for ML) ====================
+# ==================== FEATURE ANALYSIS ====================
 """
-...
-NEW CUSTOM FEATURE (calculated in feature_extractor.py from Draw History):
-    - 'days_since_bonus': Days since the number was last drawn as the bonus ball.
+FEATURE GROUPS:
 
-SPECIAL VALUES:
-    ...
-    - 'BONUS_AWARE': Expands to the 'days_since_bonus' feature
+1. FRESHNESS FEATURES (Recent Pattern - Last 4 Draws):
+   - current_freshness_bin: Categorical 0-3 (C0/C1/C2/C>=3)
+   - freshness_c0_weight: Pattern weight for C0 numbers (0.0-0.6)
+   - freshness_c1_weight: Pattern weight for C1 numbers (0.0-0.6)
+   - freshness_c2_weight: Pattern weight for C2 numbers (0.0-0.6)
+   - freshness_c3_weight: Pattern weight for C>=3 numbers (0.0-0.6)
+   → HIGH CORRELATION: All derive from recent_4
+   → BEST USE: Pick 1-2 of these, not all 5
+
+2. RECENT ACTIVITY FEATURES:
+   - recent_4: Count in last 4 draws (0-4)
+   - recent_6: Count in last 6 draws (0-6)
+   - recent_9: Count in last 9 draws (0-9)
+   - recent_14: Count in last 14 draws (0-14)
+   → MODERATE CORRELATION: Progressive windows
+   → BEST USE: Use recent_4 OR recent_14, not all
+
+3. HISTORICAL FEATURES:
+   - total_count: All-time frequency (60-95)
+   - days_since_last: Days since last hit (0-999)
+   → LOW CORRELATION with freshness
+   → BEST USE: Good for long-term patterns
+
+4. SPECIAL FEATURES:
+   - days_since_bonus: Days since bonus hit (0-999)
+   - series_total: Total streak occurrences (0-20)
+   - series_recent: Recent streaks (0-10)
+   → LOW CORRELATION with others
+   → BEST USE: Niche patterns, may add noise
+
+RECOMMENDATION: Use 3-5 features per model, avoiding redundancy
 """
 
-# ==================== EXAMPLE ML MODEL CONFIGURATIONS ====================
+# ==================== ML MODEL CONFIGURATIONS ====================
 
 MODEL_1_CONFIG = {
-    'name': 'Standard Model',
-    'description': 'Comprehensive Linear Model - Focus on Recent Activity',
+    'name': 'Short-Term Momentum Model',
+    'description': 'Focus on immediate patterns (last 4 draws only)',
     'algorithm': 'logistic_regression',
     
-    # HMC Selection (Hot-Medium-Cold-Generic)
-    'hot_count': 0,
-    'medium_count': 3,
+    # HMC Selection - Balanced
+    'hot_count': 1,
+    'medium_count': 2,
     'cold_count': 2,
-    'generic_count': 1,  # Auto-fill from top probabilities
+    'generic_count': 1,
     
-    # Feature Selection
-    # Options: List of features, 'ALL', 'RECENT_ALL', 'RECENT_SHORT', 'RECENT_LONG', 'BONUS_AWARE'
-    'features': 'ALL',  # Use all available features
+    # Feature Selection - MINIMAL, SHORT-TERM FOCUSED
+    # Only use recent_4 + one freshness weight (avoid redundancy)
+    'features': ['recent_4', 'freshness_c0_weight', 'days_since_last'],
     
-    # Diversity Penalty
-    'diversity_penalty': 0.0,  # No penalty (baseline model)
+    # Low diversity penalty (first model sets baseline)
+    'diversity_penalty': 0.0,
     
-    # Algorithm-specific parameters
+    # Algorithm parameters - Simple model
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
         'random_state': 42,
-        'C': 0.3
+        'C': 1.0  # Moderate regularization
     },
     
-    # Calibration settings
     'calibration': {
         'method': 'sigmoid',
-        'cv': 3
+        'cv': 5
     }
 }
 
 MODEL_2_CONFIG = {
-    'name': 'Historical Model',
-    'description': 'Conservative Model - Focus on Long-term Patterns + Bonus Avoidance',
+    'name': 'Long-Term Value Model',
+    'description': 'Historical patterns + avoiding recent bonus hits',
     'algorithm': 'logistic_regression',
     
-    # HMC Selection
-    'hot_count': 1,
-    'medium_count': 2,
-    'cold_count': 1,
-    'generic_count': 2,
+    # HMC Selection - Conservative (more cold/medium)
+    'hot_count': 0,
+    'medium_count': 3,
+    'cold_count': 2,
+    'generic_count': 1,
     
-    # Feature Selection - Focus on historical patterns, adding new feature
-    'features': ['total_count', 'days_since_last', 'series_total', 'RECENT_LONG', 'BONUS_AWARE'],
+    # Feature Selection - HISTORICAL FOCUSED (no freshness features)
+    # Completely different signal from Model 1
+    'features': ['total_count', 'days_since_last', 'days_since_bonus', 'recent_14'],
     
-    # Diversity Penalty
-    'diversity_penalty': 0.15,  # 15% base penalty (rank-adjusted)
+    # Medium diversity penalty
+    'diversity_penalty': 0.15,
     
-    # Algorithm-specific parameters
+    # Algorithm parameters
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
         'random_state': 42,
-        'C': 1.0
+        'C': 0.5  # Stronger regularization for stable patterns
     },
     
-    # Calibration settings
     'calibration': {
         'method': 'sigmoid',
         'cv': 3
@@ -130,34 +149,110 @@ MODEL_2_CONFIG = {
 }
 
 MODEL_3_CONFIG = {
-    'name': 'Contrarian Model',
-    'description': 'XGBoost Model - Tree-based Pattern Discovery',
+    'name': 'Complex Pattern Discovery',
+    'description': 'XGBoost with full feature set for non-linear patterns',
     'algorithm': 'xgboost',
     
-    # HMC Selection
+    # HMC Selection - Aggressive (more hot)
     'hot_count': 2,
     'medium_count': 2,
-    'cold_count': 2,
-    'generic_count': 0,
+    'cold_count': 1,
+    'generic_count': 1,
     
-    # Feature Selection
-    'features': 'ALL',  # Uses all available features, implicitly including 'days_since_bonus'
+    # Feature Selection - COMPREHENSIVE
+    # XGBoost can handle correlations better via tree splits
+    'features': [
+        'total_count',
+        'days_since_last', 
+        'recent_4',
+        'recent_14',
+        'freshness_c0_weight',
+        'freshness_c1_weight',
+        'days_since_bonus',
+        'series_recent'
+    ],
     
-    # Diversity Penalty
-    'diversity_penalty': 0.25,  # 25% base penalty (rank-adjusted)
+    # High diversity penalty (maximize difference from other models)
+    'diversity_penalty': 0.25,
     
-    # Algorithm-specific parameters
+    # Algorithm parameters - More complex model
     'algorithm_params': {
         'n_estimators': 150,
-        'max_depth': 6,
+        'max_depth': 4,  # Shallow trees to prevent overfitting
         'learning_rate': 0.1,
         'use_label_encoder': False,
         'eval_metric': 'logloss',
         'random_state': 123,
-        'n_jobs': -1
+        'n_jobs': -1,
+        'subsample': 0.8,
+        'colsample_bytree': 0.7,  # Feature sampling to reduce correlation impact
+        'min_child_weight': 3  # Regularization
     },
     
-    # Calibration settings
+    'calibration': {
+        'method': 'sigmoid',
+        'cv': 3
+    }
+}
+
+# ==================== ALTERNATIVE: SPECIALIZED MODELS ====================
+# Uncomment these if you want more specialized approaches
+
+MODEL_4_CONFIG_ALTERNATIVE = {
+    'name': 'Anti-Pattern Model',
+    'description': 'Contrarian - picks numbers AVOIDING top patterns',
+    'algorithm': 'logistic_regression',
+    
+    'hot_count': 1,
+    'medium_count': 1,
+    'cold_count': 3,
+    'generic_count': 1,
+    
+    # Feature Selection - INVERSE FRESHNESS
+    # Higher weights on C2/C3 (warm/hot recent) instead of C0/C1
+    'features': ['recent_6', 'freshness_c2_weight', 'freshness_c3_weight', 'total_count'],
+    
+    'diversity_penalty': 0.30,  # Very high to force difference
+    
+    'algorithm_params': {
+        'penalty': 'l2',
+        'solver': 'liblinear',
+        'max_iter': 1000,
+        'class_weight': 'balanced',
+        'random_state': 99,
+        'C': 0.3
+    },
+    
+    'calibration': {
+        'method': 'sigmoid',
+        'cv': 3
+    }
+}
+
+MODEL_5_CONFIG_ALTERNATIVE = {
+    'name': 'Streak Hunter',
+    'description': 'Focus on numbers in active series/streaks',
+    'algorithm': 'logistic_regression',
+    
+    'hot_count': 2,
+    'medium_count': 1,
+    'cold_count': 1,
+    'generic_count': 2,
+    
+    # Feature Selection - SERIES FOCUSED
+    'features': ['series_recent', 'series_total', 'recent_9', 'days_since_last'],
+    
+    'diversity_penalty': 0.20,
+    
+    'algorithm_params': {
+        'penalty': 'l1',  # L1 for feature selection
+        'solver': 'liblinear',
+        'max_iter': 1000,
+        'class_weight': 'balanced',
+        'random_state': 77,
+        'C': 0.8
+    },
+    
     'calibration': {
         'method': 'sigmoid',
         'cv': 3
@@ -165,13 +260,24 @@ MODEL_3_CONFIG = {
 }
 
 # ==================== ML MODEL REGISTRY ====================
+# Choose which models to activate
+
 ACTIVE_MODELS = [
-    MODEL_1_CONFIG,
-    MODEL_2_CONFIG,
-    MODEL_3_CONFIG
+    MODEL_1_CONFIG,  # Short-term momentum
+    MODEL_2_CONFIG,  # Long-term value
+    MODEL_3_CONFIG,  # Complex patterns
 ]
 
-# ==================== DISPLAY SETTINGS (Placeholder for ML) ====================
+# For maximum diversity, use all 5:
+# ACTIVE_MODELS = [
+#     MODEL_1_CONFIG,
+#     MODEL_2_CONFIG,
+#     MODEL_3_CONFIG,
+#     MODEL_4_CONFIG_ALTERNATIVE,
+#     MODEL_5_CONFIG_ALTERNATIVE
+# ]
+
+# ==================== DISPLAY SETTINGS ====================
 SHOW_DETAILED_PENALTIES = True  
 SHOW_OVERLAP_ANALYSIS = True    
-SHOW_DATA_SOURCE_SUMMARY = True
+SHOW_DATA_SOURCE_SUMMARY = False  # Reduced verbosity

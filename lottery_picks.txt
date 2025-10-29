@@ -1,0 +1,16 @@
+======================================================================
+LOTTERY PICKS - GENERATED 2025-10-29 00:29:48
+======================================================================
+
+Line 1: Short-Term Momentum Model [1H-2M-2C+1G | C0=3, C1=2, C2=1, C>=3=0]
+Numbers: [8, 12, 18, 24, 41, 43]
+Description: Focus on immediate patterns (last 4 draws only)
+
+Line 2: Long-Term Value Model [0H-3M-2C+1G | C0=3, C1=3, C2=0, C>=3=0]
+Numbers: [3, 20, 30, 32, 34, 45]
+Description: Historical patterns + avoiding recent bonus hits
+
+Line 3: Complex Pattern Discovery [2H-2M-1C+1G | C0=3, C1=2, C2=1, C>=3=0]
+Numbers: [4, 5, 13, 14, 22, 47]
+Description: XGBoost with full feature set for non-linear patterns
+
