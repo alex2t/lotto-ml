@@ -12,6 +12,7 @@ CSV_FILE = 'data/irish500.csv'  # Path to CSV file
 OUTPUT_FILE_MAIN = "data/lotto_odds_results.json"
 OUTPUT_FILE_PERIODS = "data/lotto_trigger_periods.json"
 OUTPUT_FILE_HISTORY = "data/lotto_draw_history.json"
+OUTPUT_FILE_7_NUMBERS = "data/lotto_7_number_freshness_results.json"
 
 # =============== LOTTERY PARAMETERS ===============
 MAX_NUMBER = 47            # Maximum lottery number

@@ -8,18 +8,22 @@ from collections import defaultdict
 from lotto_analysis.config import (
     CSV_FILE, TOTAL_DRAWS, TRAINING_DATA, NUM_DRAWS, 
     OUTPUT_FILE_MAIN, OUTPUT_FILE_PERIODS, OUTPUT_FILE_HISTORY,
+    OUTPUT_FILE_7_NUMBERS,
     SCENARIOS, MAX_NUMBER
 )
 from lotto_analysis.core.data_loader import load_lotto_data
 from lotto_analysis.analyzers.pattern_analyzer import process_pattern_analysis
 from lotto_analysis.analyzers.consecutive_analyzer import analyze_consecutive_patterns
 from lotto_analysis.analyzers.hmc_analyzer import process_hmc_analysis
+from lotto_analysis.analyzers.freshness_analyzer_7_numbers import (
+    analyze_7_number_freshness, format_freshness_output # 
+)
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis, 
     write_json_file, format_date_iso
 )
 
-
+TARGET_FRESHNESS_WINDOW = SCENARIOS[0]["window"]
 def main():
     """Main execution function"""
     print("=" * 70)
@@ -80,6 +84,18 @@ def main():
         print(f"  {{run_length}}-consecutive: {{hit_count}} draws "
               f"({{percentage:.2f}}%), odds: {{odds:.4f}}".format(run_length=run_length, hit_count=hit_count, percentage=percentage, odds=odds))
     
+
+    # ===== NEW: 7-NUMBER FRESHNESS ANALYSIS (Window 5) =====
+    print("\n" + "=" * 70)
+    print(f"Phase 5: 7-Number Freshness Distribution Analysis (Window {TARGET_FRESHNESS_WINDOW})") # <--- START ADDING HERE
+    print("=" * 70)
+    
+    # The analysis function runs on the comprehensive draw history log
+    freshness_counts, total_draws_freshness = analyze_7_number_freshness(
+        draw_history_log, TARGET_FRESHNESS_WINDOW
+    )
+
+
     # ===== BUILD SUPPORTING DATA (for lotto_trigger_periods.json) =====
     total_counts_by_number = defaultdict(int)
     last_seen_by_number = {}
@@ -198,6 +214,12 @@ def main():
                    "Per-number data with category, recent, and series")
     write_json_file(OUTPUT_FILE_HISTORY, draw_history_log,
                    "Per-draw history for HMC state and winning numbers details")
+    # 4. Write the new lotto_7_number_freshness_results.json file # <--- START ADDING HERE
+    final_freshness_data = format_freshness_output(
+        freshness_counts, total_draws_freshness, TARGET_FRESHNESS_WINDOW
+    )
+    write_json_file(OUTPUT_FILE_7_NUMBERS, final_freshness_data,
+                   "Comprehensive freshness distribution for all 7 winning numbers")
 
     print("\n" + "=" * 70)
     print("Analysis Complete!")
