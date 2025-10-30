@@ -93,7 +93,14 @@ MODEL_1_CONFIG = {
     
     # Feature Selection - MINIMAL, SHORT-TERM FOCUSED
     # Only use recent_4 + one freshness weight (avoid redundancy)
-    'features': ['recent_4', 'freshness_c0_weight', 'days_since_last'],
+     'features': [
+        'freshness_c0_weight',    # Prefers C0 (cold) numbers
+        'freshness_c1_weight',    # Prefers C1 (lukewarm) numbers  
+        'freshness_c2_weight',    # Neutral on C2 (warm) numbers
+        'freshness_c3_weight',    # Avoids C≥3 (hot) numbers
+        'days_since_last',        # Independent timing signal
+        'total_count'             # Independent historical signal (optional)
+    ],
     
     # Low diversity penalty (first model sets baseline)
     'diversity_penalty': 0.0,
@@ -161,15 +168,15 @@ MODEL_3_CONFIG = {
     
     # Feature Selection - COMPREHENSIVE
     # XGBoost can handle correlations better via tree splits
-    'features': [
-        'total_count',
-        'days_since_last', 
-        'recent_4',
-        'recent_14',
-        'freshness_c0_weight',
-        'freshness_c1_weight',
-        'days_since_bonus',
-        'series_recent'
+   'features': [
+        'recent_4',              # Short-term raw count
+        'freshness_c0_weight',   # Pattern weight for C0
+        'freshness_c1_weight',   # Pattern weight for C1
+        'total_count',           # Historical frequency
+        'days_since_last',       # Timing
+        'recent_14',             # Long-term trend
+        'days_since_bonus',      # Bonus patterns
+        'series_recent'          # Streak activity
     ],
     
     # High diversity penalty (maximize difference from other models)
