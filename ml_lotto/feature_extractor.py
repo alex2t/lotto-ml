@@ -5,10 +5,8 @@ Extracts and processes features from HMC JSON data for ML training.
 Handles dynamic feature detection and feature selection.
 
 NEW APPROACH FOR FRESHNESS PATTERNS:
-Instead of scoring individual numbers, we create features that indicate
-which freshness category (C0/C1/C2/C>=3) each number belongs to RIGHT NOW.
-The ML model learns that certain distributions (e.g., 3xC0 + 3xC1 + 1xC2)
-have historically higher success rates.
+- Uses dynamic C_max threshold read from lotto_7_number_freshness_results.json.
+- Dynamically creates 'freshness_c0_weight', 'freshness_c1_weight', ..., 'freshness_c{C_max}_weight' features.
 """
 
 import re
@@ -17,7 +15,7 @@ import pandas as pd
 from datetime import datetime
 from typing import Dict, Any, List, Tuple
 from collections import defaultdict, Counter
-from ml_lotto.config import MAX_NUMBER, FRESHNESS_JSON_INPUT
+from ml_lotto.config import MAX_NUMBER, FRESHNESS_JSON_INPUT, FRESHNESS_PATTERN_WEIGHTS, TRAINING_START_DRAW
 
 
 def get_dynamic_recent_keys(hmc_data: Dict[str, Any]) -> List[Tuple[str, str]]:
@@ -26,7 +24,6 @@ def get_dynamic_recent_keys(hmc_data: Dict[str, Any]) -> List[Tuple[str, str]]:
     
     Returns:
         List of tuples: (json_key, ml_feature_name)
-        Example: [('last_4', 'recent_4'), ('last_6', 'recent_6')]
     """
     all_recent_keys = set()
     for num_key, num_data in hmc_data.items():
@@ -71,84 +68,108 @@ def calculate_days_since_bonus(all_draws: List[Dict[str, Any]]) -> Dict[int, int
     print(f"✓ Custom feature 'days_since_bonus' calculated.")
     return days_since_bonus
 
-
-def calculate_freshness_category_features(
-    all_draws: List[Dict[str, Any]],
-    freshness_data: dict,
-    hmc_data: Dict[str, Any],
-    target_window: int = 5
-) -> Dict[int, Dict[str, float]]:
+def calculate_win_bias_ratio(all_draws: List[Dict[str, Any]], final_categories: Dict[str, List[int]]) -> Dict[int, float]:
     """
-    Calculate freshness category features for each number.
+    Calculates the Bias-Adjusted Win Rate (BAWR) for each number based on its HMC category.
     
-    NEW APPROACH: Instead of a single score, create multiple features:
-    - freshness_c0_weight: How much this pattern favors C0 numbers (0.0-1.0)
-    - freshness_c1_weight: How much this pattern favors C1 numbers (0.0-1.0)
-    - freshness_c2_weight: How much this pattern favors C2 numbers (0.0-1.0)
-    - freshness_c3_weight: How much this pattern favors C>=3 numbers (0.0-1.0)
-    - current_freshness_category: Which category (0-3) this number is in NOW
-    
-    The ML model learns: "Pick 3 numbers from C0, 3 from C1, 1 from C2" = winning pattern
+    BAWR = (Number's Win Rate) / (HMC Category's Average Win Rate)
     
     Args:
-        all_draws: Historical draws
-        freshness_data: Pattern distribution data
-        hmc_data: Current number statistics
-        target_window: Window size for counting (5 = last 4 draws)
-    
+        all_draws: All historical draw records (used to define the training set).
+        final_categories: Final HMC categorization of all 47 numbers.
+        
     Returns:
-        Dict mapping number -> {freshness_c0_weight, freshness_c1_weight, ...}
+        Dictionary mapping number -> win_bias_ratio (float)
     """
     
-    if not freshness_data or 'distribution_analysis_7_numbers' not in freshness_data:
-        print("⚠️  Warning: Freshness data not available.")
-        return {num: {
-            'freshness_c0_weight': 0.0,
-            'freshness_c1_weight': 0.0,
-            'freshness_c2_weight': 0.0,
-            'freshness_c3_weight': 0.0,
-            'current_freshness_bin': 0
-        } for num in range(1, MAX_NUMBER + 1)}
+    training_draws = all_draws[:TRAINING_START_DRAW]
+    num_training_draws = len(training_draws)
+    
+    if num_training_draws == 0:
+        print("Warning: No training draws available. Win bias ratio set to 1.0.")
+        return {num: 1.0 for num in range(1, MAX_NUMBER + 1)}
+        
+    # 1. Calculate individual number wins in the training set
+    individual_wins = defaultdict(int)
+    for draw in training_draws:
+        # NOTE: Only count main numbers (first 6) for true win rate
+        for number in draw['numbers'][:6]:
+            individual_wins[number] += 1
+            
+    # 2. Map numbers to their current category
+    num_to_category = {}
+    for cat_name, num_list in final_categories.items():
+        # Clean the category name (e.g., 'hot_numbers' -> 'hot')
+        category = cat_name.replace('_numbers', '')
+        for num in num_list:
+            num_to_category[num] = category
+            
+    # 3. Calculate category average win rates
+    category_win_totals = defaultdict(int)
+    category_number_counts = defaultdict(int)
+    
+    for num in range(1, MAX_NUMBER + 1):
+        category = num_to_category.get(num, 'cold')
+        category_win_totals[category] += individual_wins[num]
+        category_number_counts[category] += 1
+        
+    category_avg_win_rates = {}
+    for category in category_win_totals:
+        if category_number_counts[category] > 0:
+            # Average wins per number in that category
+            category_avg_win_rates[category] = category_win_totals[category] / category_number_counts[category]
+        else:
+            category_avg_win_rates[category] = 0.0
 
-    # 1. Calculate weights for each category based on top patterns
-    analysis_list = freshness_data['distribution_analysis_7_numbers']
+    # 4. Calculate Bias-Adjusted Win Ratio (BAWR)
+    win_bias_ratios = {}
     
-    # Weight each category by how often it appears in top patterns
-    category_weights = defaultdict(float)
-    total_weight = 0.0
+    # Calculate overall average win rate for normalization purposes if needed
+    overall_avg_win_rate = sum(individual_wins.values()) / (MAX_NUMBER * num_training_draws)
     
-    # Use top 5 patterns weighted by their percentage
-    for item in analysis_list[:5]:
-        weight = item['percentage']
-        category_weights['C0'] += item['C0'] * weight
-        category_weights['C1'] += item['C1'] * weight
-        category_weights['C2'] += item['C2'] * weight
-        category_weights['C3'] += item['C_ge_3'] * weight
-        total_weight += weight
+    for num in range(1, MAX_NUMBER + 1):
+        category = num_to_category.get(num, 'cold')
+        num_wins = individual_wins[num]
+        
+        # Win Rate of this number
+        num_win_rate = num_wins / num_training_draws
+        
+        # Average Win Rate for its group
+        avg_group_rate = category_avg_win_rates.get(category, overall_avg_win_rate)
+        
+        if avg_group_rate > 0:
+            # Ratio: >1.0 means overperforming its group
+            win_bias_ratios[num] = round(num_win_rate / avg_group_rate, 4)
+        else:
+            # If the entire group has zero wins (highly unlikely), treat as 1.0 (neutral)
+            win_bias_ratios[num] = 1.0
+
+    print(f"✓ Custom feature 'win_bias_ratio' calculated based on {num_training_draws} draws.")
+    print(f"  Example: Hot avg={category_avg_win_rates.get('hot', 0):.2f}, Cold avg={category_avg_win_rates.get('cold', 0):.2f}")
+
+    return win_bias_ratios
+
+def calculate_freshness_category_features(
+    hmc_data: Dict[str, Any],
+    c_max_threshold: int,
+    recent_key: str,
+    top_pattern_dist: Dict[int, float]
+) -> Dict[int, Dict[str, float]]:
+    """
+    Calculate freshness category features for each number dynamically.
     
-    # Normalize to get average distribution
-    if total_weight > 0:
-        for key in category_weights:
-            category_weights[key] /= total_weight
+    Args:
+        hmc_data: Current number statistics
+        c_max_threshold: The dynamic threshold for the final bin (e.g., 2)
+        recent_key: The dynamic recent count key (e.g., 'last_4')
+        top_pattern_dist: {bin_index (0 to C_max): normalized_weight (0.0-1.0)}
+        
+    Returns:
+        Dict mapping number -> {freshness_c0_weight, ..., current_freshness_bin}
+    """
     
-    # Normalize to 0-1 scale (7 numbers total)
-    c0_weight = category_weights['C0'] / 7.0
-    c1_weight = category_weights['C1'] / 7.0
-    c2_weight = category_weights['C2'] / 7.0
-    c3_weight = category_weights['C3'] / 7.0
-    
-    print(f"\n✓ Freshness Pattern Analysis:")
-    print(f"  Top pattern ideal distribution (out of 7 numbers):")
-    print(f"    C0 (Very Cold):    {category_weights['C0']:.2f} numbers ({c0_weight*100:.1f}%)")
-    print(f"    C1 (Lukewarm):     {category_weights['C1']:.2f} numbers ({c1_weight*100:.1f}%)")
-    print(f"    C2 (Warm):         {category_weights['C2']:.2f} numbers ({c2_weight*100:.1f}%)")
-    print(f"    C>=3 (Very Hot):   {category_weights['C3']:.2f} numbers ({c3_weight*100:.1f}%)")
-    
-    # 2. Determine current freshness category for each number
-    # Use the 'recent' data from HMC JSON
+    # 1. Determine current freshness bin for each number
     number_categories = {}
-    recent_key = f"last_{target_window - 1}"
-    
     category_counts = Counter()
     
     for num in range(1, MAX_NUMBER + 1):
@@ -158,46 +179,51 @@ def calculate_freshness_category_features(
         if num_key in hmc_data and 'recent' in hmc_data[num_key]:
             recent_count = hmc_data[num_key]['recent'].get(recent_key, 0)
         
-        # Categorize based on recent count
-        if recent_count == 0:
-            category = 0  # C0
-        elif recent_count == 1:
-            category = 1  # C1
-        elif recent_count == 2:
-            category = 2  # C2
-        else:  # >= 3
-            category = 3  # C>=3
+        # Categorize based on C_max threshold
+        if recent_count >= c_max_threshold:
+            category = c_max_threshold # Final bin index
+        else:
+            category = recent_count # Exact count (0, 1, ..., C_max-1)
         
         number_categories[num] = category
         category_counts[category] += 1
     
-    print(f"\n  Current number distribution across freshness bins:")
-    print(f"    C0 (count=0): {category_counts[0]} numbers")
-    print(f"    C1 (count=1): {category_counts[1]} numbers")
-    print(f"    C2 (count=2): {category_counts[2]} numbers")
-    print(f"    C>=3 (≥3):    {category_counts[3]} numbers")
-    
-    # 3. Create features for each number
+    # 2. Create features based on dynamic weights
     features = {}
+    
+    print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
+    
+    # Dynamically generate the list of feature names for printing
+    bin_names = [f'C{i}' for i in range(c_max_threshold)] + [f'C>={c_max_threshold}']
+    print(f"  Target bins: {bin_names}")
+    
+    # Print weights for documentation
+    for i in range(c_max_threshold + 1):
+        name = bin_names[i]
+        weight = top_pattern_dist.get(i, 0.0)
+        print(f"    {name} weight: {weight*100:.1f}% (Ideal draw composition)")
+    
+    print(f"\n  Current number distribution across freshness bins:")
+    for i in range(c_max_threshold + 1):
+        print(f"    {bin_names[i]}: {category_counts[i]} numbers")
+        
     for num in range(1, MAX_NUMBER + 1):
         current_cat = number_categories[num]
         
+        # Initialize features dynamically
+        fresh_features = {
+            f'freshness_c{i}_weight': 0.0 for i in range(c_max_threshold + 1)
+        }
+        
         # Assign weight based on which category this number is in
-        # Higher weight = this category is preferred in winning patterns
+        # The feature name uses the bin index (0, 1, ..., C_max)
+        feature_name = f'freshness_c{current_cat}_weight'
+        fresh_features[feature_name] = top_pattern_dist.get(current_cat, 0.0)
+        
         features[num] = {
-            'freshness_c0_weight': c0_weight if current_cat == 0 else 0.0,
-            'freshness_c1_weight': c1_weight if current_cat == 1 else 0.0,
-            'freshness_c2_weight': c2_weight if current_cat == 2 else 0.0,
-            'freshness_c3_weight': c3_weight if current_cat == 3 else 0.0,
+            **fresh_features,
             'current_freshness_bin': current_cat
         }
-    
-    # Show examples
-    print(f"\n  Example number classifications:")
-    for cat in range(4):
-        examples = [n for n in range(1, MAX_NUMBER + 1) if number_categories[n] == cat][:5]
-        cat_name = ['C0 (Very Cold)', 'C1 (Lukewarm)', 'C2 (Warm)', 'C>=3 (Very Hot)'][cat]
-        print(f"    {cat_name}: {examples}")
     
     return features
 
@@ -213,7 +239,7 @@ def calculate_recency_weighted_pattern_score(
     Kept for backward compatibility - returns zero scores.
     """
     print(f"⚠️  Note: pattern_score_recency is deprecated.")
-    print(f"    Use freshness_c0/c1/c2/c3_weight features instead.")
+    print(f"    Use freshness_cX_weight features instead.")
     return {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
 
 
@@ -222,7 +248,9 @@ def extract_features_from_hmc_json(
     dynamic_recent_keys: List[Tuple[str, str]],
     days_since_bonus_data: Dict[int, int],
     pattern_score_data: Dict[int, float],
-    freshness_features: Dict[int, Dict[str, float]] = None
+    freshness_features: Dict[int, Dict[str, float]] = None,
+    # ADDED NEW FEATURE DATA
+    win_bias_ratio_data: Dict[int, float] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating all custom features.
@@ -235,10 +263,11 @@ def extract_features_from_hmc_json(
         freshness_features = {}
     
     print(f"\n✓ Extracting features from HMC data:")
-    base_features = ['total_count', 'days_since_last', 'series_total', 'series_recent', 'days_since_bonus']
-    fresh_features = ['freshness_c0_weight', 'freshness_c1_weight', 'freshness_c2_weight', 'freshness_c3_weight', 'current_freshness_bin']
+    base_features = ['total_count', 'days_since_last', 'series_total', 'series_recent', 'days_since_bonus', 'win_bias_ratio']
+    fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
+    
     print(f"  Static features: {base_features}")
-    print(f"  Freshness features: {fresh_features}")
+    print(f"  Freshness features: {fresh_features_names + ['current_freshness_bin']}")
     print(f"  Dynamic features: {ml_feature_names}")
     
     for num_str in range(1, MAX_NUMBER + 1):
@@ -247,13 +276,7 @@ def extract_features_from_hmc_json(
         recent_fields = {f: 0 for f in ml_feature_names}
         
         # Get freshness features for this number
-        fresh_feat = freshness_features.get(num, {
-            'freshness_c0_weight': 0.0,
-            'freshness_c1_weight': 0.0,
-            'freshness_c2_weight': 0.0,
-            'freshness_c3_weight': 0.0,
-            'current_freshness_bin': 0
-        })
+        fresh_feat = freshness_features.get(num, {})
         
         # Default features
         default_features = {
@@ -263,6 +286,8 @@ def extract_features_from_hmc_json(
             'series_total': 0,
             'series_recent': 0,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
+            # ADDED WIN BIAS RATIO DEFAULT
+            'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
             **fresh_feat,
             **recent_fields,
         }
@@ -317,6 +342,8 @@ def extract_features_from_hmc_json(
             'series_total': series_total,
             'series_recent': series_recent,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
+            # ADDED WIN BIAS RATIO
+            'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
             **fresh_feat,
             **recent_fields,
         }
@@ -338,11 +365,13 @@ def get_all_feature_names(features_dict: Dict[int, Dict[str, Any]]) -> List[str]
 def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List[str]:
     """
     Expand feature specification into actual feature list.
+    Handles the dynamic FRESHNESS_PATTERN_WEIGHTS keyword.
     """
+    
     recent_features = sorted([f for f in all_features if f.startswith('recent_')],
                              key=lambda x: int(x.split('_')[1]))
     
-    freshness_features = [f for f in all_features if f.startswith('freshness_')]
+    freshness_weights_features = sorted([f for f in all_features if f.startswith('freshness_c') and f.endswith('_weight')])
                              
     custom_keywords = {
         'ALL': all_features,
@@ -350,7 +379,8 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'RECENT_SHORT': recent_features[:1] if recent_features else [],
         'RECENT_LONG': recent_features[-1:] if recent_features else [],
         'BONUS_AWARE': ['days_since_bonus'], 
-        'FRESHNESS_PATTERN': freshness_features  # Now expands to all freshness features
+        'FRESHNESS_PATTERN': freshness_weights_features, # Use new dynamic list
+        FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features # Use dynamic list for keyword
     }
 
     if isinstance(feature_spec, str):

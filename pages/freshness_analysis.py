@@ -27,12 +27,26 @@ def show():
     # Load data
     freshness_data = load_freshness_data()
     
-    # Extract metadata
+    # --- Dynamic Metadata Extraction ---
     window_size = freshness_data.get("window_size_W", 5)
     recent_count_key = freshness_data.get("recent_count_key", "last_4")
     total_draws = freshness_data.get("total_draws_analyzed", 0)
+    # Get dynamic threshold C_max
+    C_max = freshness_data.get("c_max_threshold", 3)
     
-    # Dynamic page title based on recent_count_key
+    # Generate bin labels dynamically
+    bin_labels = {
+        i: f"C{i}" for i in range(C_max)
+    }
+    bin_labels[C_max] = f"C≥{C_max}"
+    
+    # Generate JSON keys dynamically
+    json_keys = {
+        i: f"C{i}" for i in range(C_max)
+    }
+    json_keys[C_max] = f"C_GE_{C_max}"
+    
+    
     page_title = f"🔥 {recent_count_key.replace('_', ' ').title()} Freshness Analysis"
     st.title(page_title)
     
@@ -43,54 +57,97 @@ def show():
     This analysis examines **{total_draws} historical draws** to identify the most common winning combinations 
     based on how recently numbers appeared in the previous **{window_size} draws**.
     
-    #### Freshness Categories:
-    
-    Each winning number is classified into one of four "freshness" categories based on its appearance count (C) 
-    in the preceding {window_size} draws:
-    
-    - **C0 (Very Cold)**: The number did **NOT** appear at all in the last {window_size} draws
-    - **C1 (Lukewarm)**: The number appeared **exactly once** in the last {window_size} draws
-    - **C2 (Warm)**: The number appeared **exactly twice** in the last {window_size} draws
-    - **C≥3 (Very Hot)**: The number appeared **3 or more times** in the last {window_size} draws, showing high activity
-    
-    The table below shows all observed patterns and their historical frequency.
+    #### Freshness Categories (C = Count in Last {window_size} Draws):
     """)
+    
+    # Dynamic Category List Generation
+    category_list_md = []
+    for i in range(C_max + 1):
+        label = bin_labels[i]
+        
+        if i == 0:
+            desc = "The number did **NOT** appear at all."
+        elif i < C_max:
+            desc = f"The number appeared **exactly {i} time{'s' if i > 1 else ''}**."
+        else:
+            desc = f"The number appeared **{i} or more times** ($\text{{C}}\ge {i}$), showing high activity."
+        
+        category_list_md.append(f"- **{label}**: {desc}")
+    
+    st.markdown("\n".join(category_list_md))
     
     st.markdown("---")
     
     # --- Pattern Lookup Tool ---
     st.subheader("🔍 Pattern Lookup Tool")
-    st.markdown("Enter the count of numbers for each freshness category to find the historical percentage:")
+    st.markdown(f"Enter the count of numbers for each freshness category (C0 to C≥{C_max}) to find the historical percentage:")
     
-    col1, col2, col3, col4 = st.columns(4)
+    # Dynamic Input Fields
     
-    with col1:
-        c0_input = st.number_input("C0 (Very Cold)", min_value=0, max_value=7, value=3, step=1)
-    with col2:
-        c1_input = st.number_input("C1 (Lukewarm)", min_value=0, max_value=7, value=3, step=1)
-    with col3:
-        c2_input = st.number_input("C2 (Warm)", min_value=0, max_value=7, value=1, step=1)
-    with col4:
-        c3_input = st.number_input("C≥3 (Very Hot)", min_value=0, max_value=7, value=0, step=1)
+    # Create columns dynamically (C_max + 1 bins)
+    input_cols = st.columns(C_max + 1)
+    input_values = {}
+    default_input_values = {0: 3, 1: 3, 2: 1, 3: 0, 4: 0, 5: 0} # Extended defaults
+    
+    for i in range(C_max + 1):
+        with input_cols[i]:
+            label = bin_labels[i]
+            # Use default values corresponding to the original C0=3, C1=3, C>=2=1 pattern
+            default_value = 0
+            if C_max >= 2:
+                if i == 0 or i == 1:
+                    default_value = 3
+                elif i == C_max:
+                    default_value = 1
+                else:
+                    default_value = 0
+            
+            # Use a slightly safer, generic default if C_max is small (e.g., C_max=1)
+            if i == C_max and C_max <= 2:
+                 default_value = 1
+
+            # Use a pre-defined default if available
+            default_value = default_input_values.get(i, 0)
+
+
+            input_values[i] = st.number_input(
+                label, 
+                min_value=0, 
+                max_value=7, 
+                value=default_value, # Use dynamic default
+                step=1, 
+                key=f"input_c{i}"
+            )
     
     # Validate total
-    total_numbers = c0_input + c1_input + c2_input + c3_input
+    total_numbers = sum(input_values.values())
     
     if st.button("🔎 Search Pattern", type="primary"):
         if total_numbers != 7:
             st.error(f"⚠️ Total must equal 7 numbers. Current total: {total_numbers}")
         else:
-            # Search for pattern
-            pattern_str = f"C0={c0_input}, C1={c1_input}, C2={c2_input}, C>=3={c3_input}"
+            # Dynamically construct the pattern string and search criteria
+            
+            # Construct pattern_str (e.g., C0=3, C1=3, C_GE_2=1)
+            search_pattern_str_parts = []
+            for i in range(C_max + 1):
+                label = bin_labels[i]
+                search_pattern_str_parts.append(f"{label}={input_values[i]}")
+            search_pattern_str = ", ".join(search_pattern_str_parts)
             
             distributions = freshness_data.get("distribution_analysis_7_numbers", [])
             found_pattern = None
             
             for pattern in distributions:
-                if (pattern.get("C0") == c0_input and 
-                    pattern.get("C1") == c1_input and 
-                    pattern.get("C2") == c2_input and 
-                    pattern.get("C_ge_3") == c3_input):
+                is_match = True
+                for i in range(C_max + 1):
+                    # Check the input value against the corresponding dynamic JSON key
+                    key = json_keys[i]
+                    if pattern.get(key) != input_values[i]:
+                        is_match = False
+                        break
+                
+                if is_match:
                     found_pattern = pattern
                     break
             
@@ -104,12 +161,12 @@ def show():
                 
                 st.info(f"""
                 **Pattern Details:**
-                - **Pattern**: {pattern_str}
+                - **Pattern**: {found_pattern.get('pattern', 'N/A')}
                 - **Draws Matched**: {found_pattern.get('draws_matched', 0)} out of {total_draws} draws
                 - **Percentage**: {found_pattern.get('percentage', 0):.2f}%
                 """)
             else:
-                st.warning(f"❌ Pattern `{pattern_str}` not found in historical data. This combination has never occurred in the analyzed {total_draws} draws.")
+                st.warning(f"❌ Pattern `{search_pattern_str}` not found in historical data. This combination has never occurred in the analyzed {total_draws} draws.")
     
     st.markdown("---")
     
@@ -122,35 +179,44 @@ def show():
     
     if distributions:
         df_data = []
+        
+        # Dynamically create column map for display
+        column_map = {}
+        for i in range(C_max + 1):
+            column_map[json_keys[i]] = bin_labels[i]
+        
         for pattern in distributions:
-            df_data.append({
+            row_data = {
                 "Pattern": pattern.get("pattern", "N/A"),
-                "C0 (Very Cold)": pattern.get("C0", 0),
-                "C1 (Lukewarm)": pattern.get("C1", 0),
-                "C2 (Warm)": pattern.get("C2", 0),
-                "C≥3 (Very Hot)": pattern.get("C_ge_3", 0),
                 "Draws Matched": pattern.get("draws_matched", 0),
                 "Percentage (%)": f"{pattern.get('percentage', 0):.2f}"
-            })
+            }
+            
+            # Map dynamic JSON keys to dynamic column labels
+            for json_key, label in column_map.items():
+                row_data[label] = pattern.get(json_key, 0)
+                
+            df_data.append(row_data)
         
         df = pd.DataFrame(df_data)
+        
+        # Determine final column order for display
+        display_columns = ["Pattern"] + list(column_map.values()) + ["Draws Matched", "Percentage (%)"]
+        df = df[display_columns]
         
         # Sort by percentage (descending)
         df = df.sort_values(by="Draws Matched", ascending=False)
         
-        # Display with formatting
+        # Display with dynamic column configuration
         st.dataframe(
             df,
             use_container_width=True,
             hide_index=True,
             column_config={
                 "Pattern": st.column_config.TextColumn("Pattern", width="medium"),
-                "C0 (Very Cold)": st.column_config.NumberColumn("C0", width="small"),
-                "C1 (Lukewarm)": st.column_config.NumberColumn("C1", width="small"),
-                "C2 (Warm)": st.column_config.NumberColumn("C2", width="small"),
-                "C≥3 (Very Hot)": st.column_config.NumberColumn("C≥3", width="small"),
                 "Draws Matched": st.column_config.NumberColumn("Draws", width="small"),
                 "Percentage (%)": st.column_config.TextColumn("Percentage", width="small")
+                # Dynamic C-columns will default to NumberColumn, which is fine
             }
         )
         
