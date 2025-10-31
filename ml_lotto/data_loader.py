@@ -11,6 +11,7 @@ import json
 import pandas as pd
 from typing import Dict, Any, List, Tuple
 from ml_lotto.config import MAX_NUMBER
+from collections import defaultdict
 
 
 def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
@@ -98,6 +99,64 @@ def load_odds_json(filename: str) -> Dict[str, Any]:
     except json.JSONDecodeError:
         print(f"Error: Invalid JSON in {filename}")
         return {}
+
+
+def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float]]:
+    """
+    Load and extract dynamic freshness parameters and the top pattern distribution.
+    
+    Returns:
+        Tuple of (W, C_max, recent_key, top_pattern_dist)
+        top_pattern_dist: {bin_index: normalized_weight}
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+        
+        # 1. Extract dynamic configuration
+        W = data.get('window_size_W', 5)
+        C_max = data.get('c_max_threshold', 3)
+        recent_key = data.get('recent_count_key', 'last_4')
+        
+        # 2. Extract top pattern and calculate normalized distribution weights
+        analysis_list = data.get('distribution_analysis_7_numbers', [])
+        if not analysis_list:
+            raise ValueError("Freshness distribution analysis is empty.")
+            
+        top_pattern = analysis_list[0]
+        
+        # Calculate total count of numbers in the top pattern (should be 7)
+        total_numbers = sum(top_pattern.get(f'C{i}', 0) for i in range(C_max)) + top_pattern.get(f'C_GE_{C_max}', 0)
+        
+        if total_numbers != 7:
+            print(f"Warning: Top pattern total is {total_numbers}, expected 7.")
+            total_numbers = 7.0 # Use 7 for normalization even if error is found
+            
+        # Create dynamic distribution map: {bin_index: normalized_weight}
+        top_pattern_dist = {}
+        for i in range(C_max + 1):
+            if i < C_max:
+                # C0, C1, ..., C_max-1 bins
+                count_key = f'C{i}'
+            else:
+                # C_max bin (C>=C_max)
+                count_key = f'C_GE_{C_max}'
+                
+            count = top_pattern.get(count_key, 0)
+            # Normalize to 0-1 scale (count / 7)
+            top_pattern_dist[i] = count / total_numbers
+            
+        print(f"✓ Loaded Freshness Config: W={W}, C_max={C_max}")
+        return W, C_max, recent_key, top_pattern_dist
+        
+    except FileNotFoundError:
+        print(f"Error: {filename} not found. Using default freshness config.")
+        # Default to W=5, C_max=3, recent_key='last_4', and a balanced distribution
+        return 5, 3, 'last_4', {0: 0.4, 1: 0.4, 2: 0.1, 3: 0.1} # Default weights
+
+    except Exception as e:
+        print(f"Error loading freshness config: {e}. Using default config.")
+        return 5, 3, 'last_4', {0: 0.4, 1: 0.4, 2: 0.1, 3: 0.1}
 
 
 def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, int, float]:

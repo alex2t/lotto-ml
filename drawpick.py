@@ -9,7 +9,8 @@ from lotto_analysis.config import (
     CSV_FILE, TOTAL_DRAWS, TRAINING_DATA, NUM_DRAWS, 
     OUTPUT_FILE_MAIN, OUTPUT_FILE_PERIODS, OUTPUT_FILE_HISTORY,
     OUTPUT_FILE_7_NUMBERS,
-    SCENARIOS, MAX_NUMBER
+    SCENARIOS, MAX_NUMBER,
+    FRESHNESS_WINDOW_INDEX # IMPORT NEW CONFIG VARIABLE
 )
 from lotto_analysis.core.data_loader import load_lotto_data
 from lotto_analysis.analyzers.pattern_analyzer import process_pattern_analysis
@@ -23,16 +24,29 @@ from lotto_analysis.utils.output_generator import (
     write_json_file, format_date_iso
 )
 
-TARGET_FRESHNESS_WINDOW = SCENARIOS[0]["window"]
 def main():
     """Main execution function"""
     print("=" * 70)
     print("Lottery Analysis Program (Pattern + HMC Range + Consecutive)")
     print("=" * 70)
     
+    # **DYNAMIC CONFIGURATION SETUP**
+    # 1. Get the target scenario from config
+    try:
+        target_scenario = SCENARIOS[FRESHNESS_WINDOW_INDEX]
+    except IndexError:
+        print(f"\nERROR: FRESHNESS_WINDOW_INDEX {FRESHNESS_WINDOW_INDEX} is out of bounds for SCENARIOS list.")
+        return
+        
+    # 2. Extract W and C_max
+    TARGET_FRESHNESS_WINDOW = target_scenario["window"]
+    # C_max is the highest target repetition count defined for this window
+    C_MAX_THRESHOLD = max(target_scenario["targets"])
+
+    print(f"\nFreshness Analysis Settings: W={TARGET_FRESHNESS_WINDOW}, C_max={C_MAX_THRESHOLD}")
+    
     # ===== LOAD DATA =====
     try:
-        # NOTE: load_lotto_data still expects CSV_FILE for generating the JSON files.
         all_draws, available_draws, skipped_rows = load_lotto_data(CSV_FILE, TOTAL_DRAWS)
     except FileNotFoundError:
         print(f"\nERROR: CSV file '{CSV_FILE}' not found. Please place it in the 'data/' folder.")
@@ -85,14 +99,14 @@ def main():
               f"({{percentage:.2f}}%), odds: {{odds:.4f}}".format(run_length=run_length, hit_count=hit_count, percentage=percentage, odds=odds))
     
 
-    # ===== NEW: 7-NUMBER FRESHNESS ANALYSIS (Window 5) =====
+    # ===== NEW: 7-NUMBER FRESHNESS ANALYSIS (Dynamic Window) =====
     print("\n" + "=" * 70)
-    print(f"Phase 5: 7-Number Freshness Distribution Analysis (Window {TARGET_FRESHNESS_WINDOW})") # <--- START ADDING HERE
+    print(f"Phase 5: 7-Number Freshness Distribution Analysis (W={TARGET_FRESHNESS_WINDOW}, C>= {C_MAX_THRESHOLD})")
     print("=" * 70)
     
-    # The analysis function runs on the comprehensive draw history log
+    # Pass C_MAX_THRESHOLD dynamically to the analyzer function
     freshness_counts, total_draws_freshness = analyze_7_number_freshness(
-        draw_history_log, TARGET_FRESHNESS_WINDOW
+        draw_history_log, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
     )
 
 
@@ -214,9 +228,10 @@ def main():
                    "Per-number data with category, recent, and series")
     write_json_file(OUTPUT_FILE_HISTORY, draw_history_log,
                    "Per-draw history for HMC state and winning numbers details")
-    # 4. Write the new lotto_7_number_freshness_results.json file # <--- START ADDING HERE
+    
+    # 4. Write the new lotto_7_number_freshness_results.json file
     final_freshness_data = format_freshness_output(
-        freshness_counts, total_draws_freshness, TARGET_FRESHNESS_WINDOW
+        freshness_counts, total_draws_freshness, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
     )
     write_json_file(OUTPUT_FILE_7_NUMBERS, final_freshness_data,
                    "Comprehensive freshness distribution for all 7 winning numbers")

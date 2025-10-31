@@ -22,14 +22,14 @@ COLD_COUNT = 15           # Number of cold numbers
 # =============== ANALYSIS SCENARIOS ===============
 # Window sizes and target repetition counts to detect
 SCENARIOS = [
-    {"window": 5,  "targets": [3]},
-    {"window": 7,  "targets": [4]},
+    {"window": 5,  "targets": [2]},
+    {"window": 6,  "targets": [3]},
     {"window": 10, "targets": [4]},
     {"window": 15, "targets": [5]}
 ]
 
-# Window sizes for per-draw historical 'recent_counts'
-#HISTORY_WINDOWS = [4, 10, 15]
+# **NEW CONFIGURATION:** Index of the SCENARIOS list to use for 7-number freshness analysis.
+FRESHNESS_WINDOW_INDEX = 0
 
 # =============== RANGE BINS ===============
 # Define the Range Bins for draw range analysis
