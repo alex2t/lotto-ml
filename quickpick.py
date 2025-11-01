@@ -33,7 +33,8 @@ from ml_lotto.config import (
     HMC_JSON_INPUT,
     ODDS_JSON_INPUT,
     FRESHNESS_JSON_INPUT,
-    ACTIVE_MODELS
+    ACTIVE_MODELS,
+    MAX_NUMBER 
 )
 
 # --- Data Loader Imports ---
@@ -42,6 +43,7 @@ from ml_lotto.data_loader import (
     load_hmc_json,
     load_odds_json,
     get_most_likely_hmc_pattern,
+    load_draw_history_with_bias_ratios
     # REMOVED load_freshness_config here to clean up
 )
 
@@ -51,7 +53,7 @@ from ml_lotto.feature_extractor import (
     extract_features_from_hmc_json,
     calculate_days_since_bonus,
     calculate_freshness_category_features,
-    calculate_win_bias_ratio # ADDED NEW FUNCTION IMPORT
+    extract_win_bias_ratio_from_history
 )
 # Note: Re-adding the missing load_freshness_config from the correct source
 from ml_lotto.data_loader import load_freshness_config # Re-importing from data_loader as it's the source
@@ -122,6 +124,7 @@ def main():
     """Main execution function with improved error handling."""
     start_time = time.time()
     
+    
     print("=" * 70)
     print("INTELLIGENT LOTTO SYSTEM V3.1: Rank-Aware Diversity Penalties")
     print("=" * 70)
@@ -134,11 +137,11 @@ def main():
             sys.exit(1)
         print("✓ All required files present")
         
-        # ==================== STEP 1: LOAD DATA ====================
+        # ==================== STEP 1: LOAD DATA (CORRECTED) ====================
         print("\nStep 1: Loading data files...")
         
-        # Load draw history
-        all_draws = load_draw_history_json(DRAW_HISTORY_JSON)
+        # Load draw history WITH full log
+        all_draws, draw_history_log_raw = load_draw_history_with_bias_ratios(DRAW_HISTORY_JSON)
         
         # Load HMC data
         hmc_data = load_hmc_json(HMC_JSON_INPUT)
@@ -146,7 +149,7 @@ def main():
         # Load odds data
         odds_data = load_odds_json(ODDS_JSON_INPUT)
         
-        # Load freshness data (raw JSON for validation/passing to predictor)
+        # Load freshness data
         freshness_data = {}
         try:
             with open(FRESHNESS_JSON_INPUT, 'r') as f:
@@ -154,32 +157,16 @@ def main():
             print(f"✓ Loaded freshness data from {FRESHNESS_JSON_INPUT}")
             print(f"  Contains {len(freshness_data.get('distribution_analysis_7_numbers', []))} pattern distributions")
         except FileNotFoundError:
-            print(f"❌ Error: {FRESHNESS_JSON_INPUT} not found. Pattern score feature will be 0.")
+            print(f"✗ Error: {FRESHNESS_JSON_INPUT} not found.")
         except json.JSONDecodeError as e:
-            print(f"❌ Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
+            print(f"✗ Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
         
         # Validate loaded data
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data):
             sys.exit(1)
     
-
         # Load dynamic freshness configuration
         W, C_max, recent_key, top_pattern_dist = load_freshness_config(FRESHNESS_JSON_INPUT)
-        
-        # Get final HMC categories (needed for win bias ratio calculation)
-        # NOTE: We can extract this from the last draw's data in the history log,
-        # but for simplicity, we assume the categories in lotto_trigger_periods are FINAL.
-        
-        # A safer approach for the final HMC is needed.
-        # ASSUMPTION: The category in lotto_trigger_periods.json is the FINAL CATEGORY.
-        final_categories = {}
-        for num, data in hmc_data.items():
-            if 'category' in data:
-                # Map back to standard structure {'hot_numbers': [1, 2, ...]}
-                cat_name = f"{data['category']}_numbers"
-                if cat_name not in final_categories:
-                    final_categories[cat_name] = []
-                final_categories[cat_name].append(int(num))
         
         print(f"\n✓ Data Loading Summary:")
         print(f"  - Historical draws: {len(all_draws)}")
@@ -187,7 +174,7 @@ def main():
         print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
         
-# ==================== STEP 2: EXTRACT FEATURES ====================
+        # ==================== STEP 2: EXTRACT FEATURES (CORRECTED) ====================
         print("\nStep 2: Extracting features from HMC data...")
         feature_start = time.time()
         
@@ -195,10 +182,14 @@ def main():
         print("  Calculating 'days_since_bonus' feature...")
         days_since_bonus_data = calculate_days_since_bonus(all_draws)
         
-        # NEW: Calculate Win Bias Ratio (Requires final categories)
-        print("  Calculating 'win_bias_ratio' feature...")
-        win_bias_ratio_data = calculate_win_bias_ratio(all_draws, final_categories)
+        # Extract win_bias_ratio from history
+        print("  Extracting 'win_bias_ratio' from draw history...")
+        win_bias_ratio_data = extract_win_bias_ratio_from_history(
+            draw_history_log_raw,
+            MAX_NUMBER  # ← NOW DEFINED!
+        )
         
+        # Calculate freshness features (static pattern)
         print("  Calculating 'freshness_category' features...")
         freshness_category_features = calculate_freshness_category_features(
             hmc_data=hmc_data,
@@ -206,14 +197,15 @@ def main():
             recent_key=recent_key,
             top_pattern_dist=top_pattern_dist
         )
-        pattern_score_data = {num: 0.0 for num in range(1, 47 + 1)}  # Deprecated
         
-        # Extract static and dynamic features
+        pattern_score_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
+        
+        # Extract dynamic features
         print("  Extracting dynamic recent count keys...")
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
         
-        # Extract all features
+        # Combine all features
         print("  Combining all features...")
         try:
             features_dict = extract_features_from_hmc_json(
@@ -222,18 +214,18 @@ def main():
                 days_since_bonus_data,
                 pattern_score_data,
                 freshness_category_features,
-                win_bias_ratio_data # ADDED NEW DATA
+                win_bias_ratio_data
             )
             print(f"  ✓ Features extracted for {len(features_dict)} numbers")
         except Exception as e:
-            print(f"  ❌ Error extracting features: {e}")
+            print(f"  ✗ Error extracting features: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
         
         feature_time = time.time() - feature_start
         print(f"✓ Feature extraction completed in {feature_time:.2f} seconds")
-        
+            
         # ==================== STEP 3: ANALYZE HMC PATTERNS ====================
         print("\nStep 3: Analyzing HMC distribution patterns...")
         hot_count, medium_count, cold_count, pattern_percentage = get_most_likely_hmc_pattern(odds_data)

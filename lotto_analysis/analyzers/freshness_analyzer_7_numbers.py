@@ -5,6 +5,84 @@ Comprehensive freshness distribution analysis for 7 winning numbers.
 from collections import defaultdict
 from typing import Dict, Tuple
 
+def get_top_pattern_from_draws(
+    draw_history_log: dict,
+    end_draw_index: int,
+    target_window: int,
+    c_max_threshold: int,
+    min_draws_required: int = 50
+) -> Dict[int, float]:
+    """
+    Calculate the top freshness pattern using only draws up to end_draw_index.
+    
+    Args:
+        draw_history_log: Complete draw history
+        end_draw_index: Only use draws up to this index (exclusive)
+        target_window: Window size (e.g., 5)
+        c_max_threshold: Max category threshold (e.g., 2)
+        min_draws_required: Minimum draws needed for reliable pattern
+        
+    Returns:
+        Dictionary mapping bin_index -> normalized_weight
+    """
+    recent_key = f"last_{target_window - 1}"
+    
+    # Filter draws up to end_draw_index
+    analysis_draws = [
+        draw for date, draw in draw_history_log.items()
+        if draw.get('draw_index', 999999) < end_draw_index
+    ]
+    
+    if len(analysis_draws) < min_draws_required:
+        # Not enough data - return balanced default
+        num_bins = c_max_threshold + 1
+        return {i: 1.0 / num_bins for i in range(num_bins)}
+    
+    # Run the analysis (reuse existing logic)
+    distribution_counts, total_draws = analyze_7_number_freshness(
+        {date: draw for date, draw in draw_history_log.items() 
+         if draw.get('draw_index', 999999) < end_draw_index},
+        target_window,
+        c_max_threshold
+    )
+    
+    if not distribution_counts:
+        # No patterns found - return balanced default
+        num_bins = c_max_threshold + 1
+        return {i: 1.0 / num_bins for i in range(num_bins)}
+    
+    # Get top pattern
+    top_pattern_key = max(distribution_counts.items(), key=lambda x: x[1])[0]
+    
+    # Parse the pattern string to extract counts
+    # Example: "C0=3, C1=3, C2=1" or "C0=3, C1=2, C_GE_2=2"
+    pattern_dist = {}
+    parts = top_pattern_key.split(', ')
+    
+    for part in parts:
+        label, _, value = part.partition('=')
+        
+        # Determine bin index from label
+        if label.startswith('C_GE_'):
+            bin_idx = c_max_threshold
+        else:
+            bin_idx = int(label[1:])  # Extract number from "C0", "C1", etc.
+        
+        pattern_dist[bin_idx] = int(value)
+    
+    # Normalize to weights (divide by 7)
+    total_numbers = sum(pattern_dist.values())
+    if total_numbers == 0:
+        total_numbers = 7
+        
+    normalized_weights = {
+        i: pattern_dist.get(i, 0) / total_numbers
+        for i in range(c_max_threshold + 1)
+    }
+    
+    return normalized_weights
+
+
 def analyze_7_number_freshness(draw_history_log: dict, target_window: int, c_max_threshold: int) -> Tuple[Dict[str, int], int]:
     """
     Analyzes the full distribution of recent hit counts (0, 1, ..., C_max) 

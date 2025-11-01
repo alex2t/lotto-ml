@@ -68,86 +68,44 @@ def calculate_days_since_bonus(all_draws: List[Dict[str, Any]]) -> Dict[int, int
     print(f"✓ Custom feature 'days_since_bonus' calculated.")
     return days_since_bonus
 
-def calculate_win_bias_ratio(all_draws: List[Dict[str, Any]], final_categories: Dict[str, List[int]]) -> Dict[int, float]:
+def extract_win_bias_ratio_from_history(
+    draw_history_log: Dict[str, Any],
+    max_number: int
+) -> Dict[int, float]:
     """
-    Calculates the Bias-Adjusted Win Rate (BAWR) for each number based on its HMC category.
-    
-    BAWR = (Number's Win Rate) / (HMC Category's Average Win Rate)
+    Extract the MOST RECENT win_bias_ratio for each number from draw history.
     
     Args:
-        all_draws: All historical draw records (used to define the training set).
-        final_categories: Final HMC categorization of all 47 numbers.
+        draw_history_log: The complete draw history log
+        max_number: Maximum lottery number (e.g., 47)
         
     Returns:
-        Dictionary mapping number -> win_bias_ratio (float)
+        Dictionary mapping number -> most recent win_bias_ratio
     """
+    # Get the most recent draw (last entry in chronological order)
+    if not draw_history_log:
+        return {num: 1.0 for num in range(1, max_number + 1)}
     
-    training_draws = all_draws[:TRAINING_START_DRAW]
-    num_training_draws = len(training_draws)
+    # Sort by draw_index to get the latest draw
+    sorted_dates = sorted(
+        draw_history_log.items(),
+        key=lambda x: x[1]['draw_index']
+    )
     
-    if num_training_draws == 0:
-        print("Warning: No training draws available. Win bias ratio set to 1.0.")
-        return {num: 1.0 for num in range(1, MAX_NUMBER + 1)}
-        
-    # 1. Calculate individual number wins in the training set
-    individual_wins = defaultdict(int)
-    for draw in training_draws:
-        # NOTE: Only count main numbers (first 6) for true win rate
-        for number in draw['numbers'][:6]:
-            individual_wins[number] += 1
-            
-    # 2. Map numbers to their current category
-    num_to_category = {}
-    for cat_name, num_list in final_categories.items():
-        # Clean the category name (e.g., 'hot_numbers' -> 'hot')
-        category = cat_name.replace('_numbers', '')
-        for num in num_list:
-            num_to_category[num] = category
-            
-    # 3. Calculate category average win rates
-    category_win_totals = defaultdict(int)
-    category_number_counts = defaultdict(int)
+    latest_date, latest_data = sorted_dates[-1]
     
-    for num in range(1, MAX_NUMBER + 1):
-        category = num_to_category.get(num, 'cold')
-        category_win_totals[category] += individual_wins[num]
-        category_number_counts[category] += 1
-        
-    category_avg_win_rates = {}
-    for category in category_win_totals:
-        if category_number_counts[category] > 0:
-            # Average wins per number in that category
-            category_avg_win_rates[category] = category_win_totals[category] / category_number_counts[category]
-        else:
-            category_avg_win_rates[category] = 0.0
-
-    # 4. Calculate Bias-Adjusted Win Ratio (BAWR)
-    win_bias_ratios = {}
+    # Extract the stored bias ratios
+    bias_ratios = latest_data.get('all_numbers_bias_ratios', {})
     
-    # Calculate overall average win rate for normalization purposes if needed
-    overall_avg_win_rate = sum(individual_wins.values()) / (MAX_NUMBER * num_training_draws)
+    # Ensure all numbers have a value
+    result = {}
+    for num in range(1, max_number + 1):
+        result[num] = bias_ratios.get(num, 1.0)
     
-    for num in range(1, MAX_NUMBER + 1):
-        category = num_to_category.get(num, 'cold')
-        num_wins = individual_wins[num]
-        
-        # Win Rate of this number
-        num_win_rate = num_wins / num_training_draws
-        
-        # Average Win Rate for its group
-        avg_group_rate = category_avg_win_rates.get(category, overall_avg_win_rate)
-        
-        if avg_group_rate > 0:
-            # Ratio: >1.0 means overperforming its group
-            win_bias_ratios[num] = round(num_win_rate / avg_group_rate, 4)
-        else:
-            # If the entire group has zero wins (highly unlikely), treat as 1.0 (neutral)
-            win_bias_ratios[num] = 1.0
-
-    print(f"✓ Custom feature 'win_bias_ratio' calculated based on {num_training_draws} draws.")
-    print(f"  Example: Hot avg={category_avg_win_rates.get('hot', 0):.2f}, Cold avg={category_avg_win_rates.get('cold', 0):.2f}")
-
-    return win_bias_ratios
+    print(f"✓ Extracted 'win_bias_ratio' from latest draw ({latest_date})")
+    print(f"  Example values: Hot={result.get(1, 1.0):.2f}, Cold={result.get(47, 1.0):.2f}")
+    
+    return result
 
 def calculate_freshness_category_features(
     hmc_data: Dict[str, Any],
@@ -181,9 +139,9 @@ def calculate_freshness_category_features(
         
         # Categorize based on C_max threshold
         if recent_count >= c_max_threshold:
-            category = c_max_threshold # Final bin index
+            category = c_max_threshold
         else:
-            category = recent_count # Exact count (0, 1, ..., C_max-1)
+            category = recent_count
         
         number_categories[num] = category
         category_counts[category] += 1
@@ -193,11 +151,9 @@ def calculate_freshness_category_features(
     
     print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
     
-    # Dynamically generate the list of feature names for printing
     bin_names = [f'C{i}' for i in range(c_max_threshold)] + [f'C>={c_max_threshold}']
     print(f"  Target bins: {bin_names}")
     
-    # Print weights for documentation
     for i in range(c_max_threshold + 1):
         name = bin_names[i]
         weight = top_pattern_dist.get(i, 0.0)
@@ -216,7 +172,6 @@ def calculate_freshness_category_features(
         }
         
         # Assign weight based on which category this number is in
-        # The feature name uses the bin index (0, 1, ..., C_max)
         feature_name = f'freshness_c{current_cat}_weight'
         fresh_features[feature_name] = top_pattern_dist.get(current_cat, 0.0)
         
