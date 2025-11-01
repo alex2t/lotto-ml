@@ -16,8 +16,8 @@ OUTPUT_FILE_7_NUMBERS = "data/lotto_7_number_freshness_results.json"
 
 # =============== LOTTERY PARAMETERS ===============
 MAX_NUMBER = 47            # Maximum lottery number
-HOT_COUNT = 15             # Number of hot numbers
-COLD_COUNT = 15           # Number of cold numbers
+HOT_COUNT = 12             # Number of hot numbers
+COLD_COUNT = 12           # Number of cold numbers
 
 # =============== ANALYSIS SCENARIOS ===============
 # Window sizes and target repetition counts to detect

@@ -82,6 +82,45 @@ def load_hmc_json(filename: str) -> Dict[str, Any]:
         print(f"Error: Invalid JSON in {filename}")
         return {}
 
+def load_draw_history_with_bias_ratios(filename: str) -> Tuple[List[Dict], Dict[str, Any]]:
+    """
+    Load draw history and return both the draw list and the full history log.
+    
+    Returns:
+        Tuple of (draw_list, full_history_log)
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+        
+        # Convert dictionary to list (for compatibility)
+        draw_list = []
+        for draw_date, draw_data in data.items():
+            winning_numbers = []
+            bonus_number = None
+            
+            for detail in draw_data.get('winning_numbers_details', []):
+                number = detail['number']
+                winning_numbers.append(number)
+                if detail['is_bonus']:
+                    bonus_number = number
+            
+            draw_list.append({
+                'date': draw_date,
+                'draw_index': draw_data['draw_index'],
+                'numbers': winning_numbers,
+                'bonus_number': bonus_number
+            })
+        
+        draw_list.sort(key=lambda x: x['draw_index'])
+        
+        print(f"✓ Loaded {len(draw_list)} historical draws from {filename}")
+        return draw_list, data  # Return BOTH
+    
+    except FileNotFoundError:
+        print(f"Error: {filename} not found.")
+        return [], {}
+
 
 def load_odds_json(filename: str) -> Dict[str, Any]:
     """

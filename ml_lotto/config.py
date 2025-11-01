@@ -63,7 +63,7 @@ MODEL_1_CONFIG = {
     # Feature Selection - DYNAMICALLY RESOLVED
      'features': [
         FRESHNESS_PATTERN_WEIGHTS, # Dynamic weights (C0, C1, C_GE_2, etc.)
-        'days_since_last',         # Independent timing signal
+        'recent_14',         # Independent timing signal
         'total_count'              # Independent historical signal
     ],
     
@@ -104,7 +104,7 @@ MODEL_2_CONFIG = {
         'win_bias_ratio' # ADDED NEW FEATURE
     ],
     
-    'diversity_penalty': 0.15,
+    'diversity_penalty': 0.0,
     
     'algorithm_params': {
         'penalty': 'l2',
@@ -140,10 +140,11 @@ MODEL_3_CONFIG = {
         'days_since_last',       # Timing
         'recent_14',             # Long-term trend
         'days_since_bonus',      # Bonus patterns
-        'series_recent'          # Streak activity
+        'series_recent',          # Streak activity
+        'win_bias_ratio' # ADDED NEW FEATURE
     ],
     
-    'diversity_penalty': 0.25,
+    'diversity_penalty': 0.0,
     
     'algorithm_params': {
         'n_estimators': 150,

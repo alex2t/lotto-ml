@@ -1,22 +1,13 @@
-"""
-Hot-Medium-Cold (HMC) analysis for lottery draws
-"""
-
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Tuple
-from ..config import TRAINING_DATA, MAX_NUMBER, SCENARIOS # Import SCENARIOS
+from ..config import TRAINING_DATA, MAX_NUMBER, SCENARIOS
 from .frequency_analyzer import calculate_frequency, get_hot_cold, get_draw_metrics
 
-
-# Derive the actual window sizes from SCENARIOS
-HISTORY_WINDOWS_DATA = [s["window"] for s in SCENARIOS] # [5, 7, 10, 15]
-
+HISTORY_WINDOWS_DATA = [s["window"] for s in SCENARIOS]
 
 def get_days_difference(date_str_latest: str, date_str_oldest: str) -> int:
-    """
-    Calculate the number of days between two 'YYYY-MM-DD' date strings.
-    """
+    """Calculate the number of days between two 'YYYY-MM-DD' date strings."""
     try:
         d1 = datetime.strptime(date_str_latest, "%Y-%m-%d")
         d2 = datetime.strptime(date_str_oldest, "%Y-%m-%d")
@@ -24,6 +15,64 @@ def get_days_difference(date_str_latest: str, date_str_oldest: str) -> int:
     except ValueError:
         return None
 
+def calculate_win_bias_ratio_for_draw(
+    preceding_draws: List[Dict],
+    current_categories: Dict[str, List[int]],
+    max_number: int
+) -> Dict[int, float]:
+    """Calculate win bias ratio for each number based on recent history."""
+    if not preceding_draws:
+        return {num: 1.0 for num in range(1, max_number + 1)}
+    
+    # 1. Count wins per number (only main numbers, exclude bonus)
+    individual_wins = defaultdict(int)
+    for draw in preceding_draws:
+        for number in draw['numbers'][:6]:
+            individual_wins[number] += 1
+    
+    # 2. Map numbers to their current categories
+    num_to_category = {}
+    for cat_name, num_list in current_categories.items():
+        category = cat_name.replace('_numbers', '')
+        for num in num_list:
+            num_to_category[num] = category
+    
+    # 3. Calculate category average win rates
+    category_win_totals = defaultdict(int)
+    category_counts = defaultdict(int)
+    
+    for num in range(1, max_number + 1):
+        category = num_to_category.get(num, 'cold')
+        category_win_totals[category] += individual_wins[num]
+        category_counts[category] += 1
+    
+    category_avg_win_rates = {}
+    for category in category_win_totals:
+        if category_counts[category] > 0:
+            category_avg_win_rates[category] = (
+                category_win_totals[category] / category_counts[category]
+            )
+        else:
+            category_avg_win_rates[category] = 0.0
+    
+    # 4. Calculate bias ratio for each number
+    num_training_draws = len(preceding_draws)
+    overall_avg = sum(individual_wins.values()) / (max_number * num_training_draws)
+    
+    win_bias_ratios = {}
+    for num in range(1, max_number + 1):
+        category = num_to_category.get(num, 'cold')
+        num_wins = individual_wins[num]
+        num_win_rate = num_wins / num_training_draws
+        
+        avg_group_rate = category_avg_win_rates.get(category, overall_avg)
+        
+        if avg_group_rate > 0:
+            win_bias_ratios[num] = round(num_win_rate / avg_group_rate, 4)
+        else:
+            win_bias_ratios[num] = 1.0
+    
+    return win_bias_ratios
 
 def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict, Dict]:
     """
@@ -53,6 +102,14 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     
     max_history_window = max(HISTORY_WINDOWS_DATA)
     
+    # Import freshness analyzer
+    from ..analyzers.freshness_analyzer_7_numbers import get_top_pattern_from_draws
+    from ..config import FRESHNESS_WINDOW_INDEX
+    
+    target_scenario = SCENARIOS[FRESHNESS_WINDOW_INDEX]
+    TARGET_FRESHNESS_WINDOW = target_scenario["window"]
+    C_MAX_THRESHOLD = max(target_scenario["targets"])
+    
     for i in range(TRAINING_DATA, len(all_draws)):
         current_draw = all_draws[i]
         draw_date = current_draw["date"]
@@ -61,13 +118,24 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         # Categorize based on current frequency counts (PRIOR to this draw)
         categories = get_hot_cold(frequency_count)
         
+        # ============ Calculate per-draw freshness pattern ============
+        temp_history = {}
+        for j in range(TRAINING_DATA, i):
+            temp_date = all_draws[j]["date"]
+            if temp_date in draw_history_log:
+                temp_history[temp_date] = draw_history_log[temp_date]
+        
+        top_pattern_dist_current = get_top_pattern_from_draws(
+            temp_history,
+            end_draw_index=i,
+            target_window=TARGET_FRESHNESS_WINDOW,
+            c_max_threshold=C_MAX_THRESHOLD
+        )
+        
         # Calculate Draw Metrics
         draw_range, rating_counts, hmc_dist = get_draw_metrics(winning_numbers, categories)
-        
-        # Record the HMC distribution
         hmc_distribution_counts[hmc_dist] += 1
         
-        # Store result
         categorization_history[draw_date] = {
             "draw_range": draw_range,
             "frequency_rating": rating_counts,
@@ -75,18 +143,27 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             **categories
         }
 
+        # ============ Calculate win_bias_ratio per-draw ============
+        bias_analysis_window = 100
+        preceding_for_bias = all_draws[max(0, i - bias_analysis_window): i]
+        win_bias_ratios = calculate_win_bias_ratio_for_draw(
+            preceding_for_bias,
+            categories,
+            MAX_NUMBER
+        )
+
         # Build winning_numbers_details for draw history
         winning_numbers_details = []
         hot_set = set(categories['hot_numbers'])
         medium_set = set(categories['medium_numbers'])
         
         # Draws preceding the current one (for recent counts)
-        # Use the actual window size derived from SCENARIOS
         preceding_draws = all_draws[max(0, i - max_history_window): i]
         
-        # Determine the bonus number (it is the last number in the list from data_loader)
+        # Determine the bonus number
         bonus_number = winning_numbers[-1] if winning_numbers else None
         
+        # ============ FIXED: Build winning_numbers_details ONCE ============
         for number in winning_numbers:
             # 1. Determine Category
             category = 'cold'
@@ -99,27 +176,47 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             last_hit_date = last_seen_date.get(number, first_draw_date)
             days_since_last_hit = get_days_difference(draw_date, last_hit_date)
             
-            # 3. Recent Counts (FIXED LOGIC: Key name is window_size - 1)
+            # 3. Recent Counts
             recent_counts = {}
             for w in HISTORY_WINDOWS_DATA:
                 window_draws = preceding_draws[-w:]
                 count = sum(1 for draw in window_draws if number in draw["numbers"])
-                
-                # The feature name uses the window size minus 1, e.g., 'last_4' for window 5
                 recent_counts[f"last_{w - 1}"] = count 
             
-            # 4. Determine if Bonus (only True if the number is the last one AND we expect a bonus)
+            # 4. Determine if Bonus
             is_bonus = (number == bonus_number)
             
+            # 5. Calculate freshness for THIS number
+            recent_count_key = f"last_{TARGET_FRESHNESS_WINDOW - 1}"
+            recent_count = recent_counts.get(recent_count_key, 0)
+            
+            if recent_count >= C_MAX_THRESHOLD:
+                current_freshness_bin = C_MAX_THRESHOLD
+            else:
+                current_freshness_bin = recent_count
+            
+            # Create per-number freshness weights
+            freshness_weights = {}
+            for bin_idx in range(C_MAX_THRESHOLD + 1):
+                feature_name = f'freshness_c{bin_idx}_weight'
+                if bin_idx == current_freshness_bin:
+                    freshness_weights[feature_name] = top_pattern_dist_current.get(bin_idx, 0.0)
+                else:
+                    freshness_weights[feature_name] = 0.0
+            
+            # ============ APPEND ONCE with ALL data ============
             winning_numbers_details.append({
                 "number": number,
                 "is_bonus": is_bonus,
                 "category": category,
                 "days_since_last_hit": days_since_last_hit,
-                "recent_counts": recent_counts
+                "recent_counts": recent_counts,
+                "win_bias_ratio": win_bias_ratios.get(number, 1.0),
+                "freshness_weights": freshness_weights,
+                "current_freshness_bin": current_freshness_bin
             })
         
-        # Store Draw History Log Entry
+        # ============ Store Draw History Log ONCE (outside winning numbers loop) ============
         draw_history_log[draw_date] = {
             "draw_index": i,
             "draw_date": draw_date,
@@ -135,7 +232,9 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 'medium_numbers': list(categories['medium_numbers']),
                 'cold_numbers': list(categories['cold_numbers'])
             },
-            "winning_numbers_details": winning_numbers_details
+            "winning_numbers_details": winning_numbers_details,
+            "all_numbers_bias_ratios": win_bias_ratios,
+            "freshness_pattern_weights": top_pattern_dist_current
         }
         
         # Update Frequency and Last Seen Date (POST-DRAW)
@@ -148,3 +247,4 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     
     return (categorization_history, frequency_count, dict(hmc_distribution_counts), 
             final_categories, draw_history_log)
+
