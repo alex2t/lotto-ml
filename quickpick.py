@@ -160,26 +160,30 @@ def main():
         print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
         
-        # ==================== STEP 2: EXTRACT FEATURES (UPDATED) ====================
+        # ==================== STEP 2: EXTRACT FEATURES (COMPLETE) ====================
         print("\nStep 2: Extracting features from HMC data...")
         feature_start = time.time()
-        
+
+        # Load consecutive patterns from odds_data
+        consecutive_patterns = odds_data.get('patterns', {})
+        if consecutive_patterns:
+            print(f"  ✓ Loaded consecutive patterns data")
+        else:
+            print(f"  ⚠️  No consecutive patterns found in odds_data")
+
         # Calculate custom features
         print("  Calculating 'days_since_bonus' feature...")
         days_since_bonus_data = calculate_days_since_bonus(all_draws)
-        
-        # NEW: Calculate was_recent_bonus
-        print("  Calculating 'was_recent_bonus' feature (3.42x lift!)...")
+
+        print("  Calculating 'was_recent_bonus' feature...")
         was_recent_bonus_data = calculate_was_recent_bonus(all_draws, lookback_draws=10)
-        
-        # Extract win_bias_ratio from history
+
         print("  Extracting 'win_bias_ratio' from draw history...")
         win_bias_ratio_data = extract_win_bias_ratio_from_history(
             draw_history_log_raw,
             MAX_NUMBER
         )
-        
-        # Calculate freshness features
+
         print("  Calculating 'freshness_category' features...")
         freshness_category_features = calculate_freshness_category_features(
             hmc_data=hmc_data,
@@ -187,16 +191,14 @@ def main():
             recent_key=recent_key,
             top_pattern_dist=top_pattern_dist
         )
-        
+
         pattern_score_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
-        
-        # Extract dynamic features
+
         print("  Extracting dynamic recent count keys...")
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
-        
-        # Combine all features
-        print("  Combining all features...")
+
+        print("  Combining all features (including Priority 2)...")
         try:
             features_dict = extract_features_from_hmc_json(
                 hmc_data, 
@@ -205,7 +207,8 @@ def main():
                 pattern_score_data,
                 freshness_category_features,
                 win_bias_ratio_data,
-                was_recent_bonus_data  # NEW PARAMETER
+                was_recent_bonus_data,
+                consecutive_patterns  # ← NEW PARAMETER
             )
             print(f"  ✓ Features extracted for {len(features_dict)} numbers")
         except Exception as e:
@@ -213,7 +216,7 @@ def main():
             import traceback
             traceback.print_exc()
             sys.exit(1)
-        
+
         feature_time = time.time() - feature_start
         print(f"✓ Feature extraction completed in {feature_time:.2f} seconds")
         
