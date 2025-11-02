@@ -1,16 +1,18 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-01 16:05:21
+LOTTERY PICKS - GENERATED 2025-11-02 15:17:54
+======================================================================
+NEW FEATURE: was_recent_bonus (3.42x lift)
 ======================================================================
 
 Line 1: Short-Term Momentum Model [1H-2M-2C+1G | C0=3, C1=2, C_GE_2=1]
-Numbers: [6, 9, 12, 13, 18, 35]
-Description: Focus on immediate patterns (last 4 draws only)
+Numbers: [7, 9, 12, 35, 41, 47]
+Description: Focus on immediate patterns with bonus boost
 
 Line 2: Long-Term Value Model [0H-3M-2C+1G | C0=3, C1=2, C_GE_2=1]
-Numbers: [3, 22, 29, 32, 35, 36]
-Description: Historical patterns + avoiding recent bonus hits
+Numbers: [25, 28, 30, 32, 34, 45]
+Description: Historical patterns + bonus indicators + value discovery
 
 Line 3: Complex Pattern Discovery [2H-2M-1C+1G | C0=3, C1=2, C_GE_2=1]
-Numbers: [12, 13, 19, 24, 38, 42]
-Description: XGBoost with full feature set for non-linear patterns
+Numbers: [5, 13, 19, 24, 40, 42]
+Description: XGBoost with bonus interactions
 

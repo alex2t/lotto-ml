@@ -1,12 +1,12 @@
-
 """
 feature_extractor.py
 ====================
 Extracts and processes features from HMC JSON data for ML training.
 Handles dynamic feature detection and feature selection.
 
-NEW FEATURES:
-- was_recent_bonus: Binary indicator for recent bonus ball appearances (3.42x lift)
+NEW APPROACH FOR FRESHNESS PATTERNS:
+- Uses dynamic C_max threshold read from lotto_7_number_freshness_results.json.
+- Dynamically creates 'freshness_c0_weight', 'freshness_c1_weight', ..., 'freshness_c{C_max}_weight' features.
 """
 
 import re
@@ -21,6 +21,9 @@ from ml_lotto.config import MAX_NUMBER, FRESHNESS_JSON_INPUT, FRESHNESS_PATTERN_
 def get_dynamic_recent_keys(hmc_data: Dict[str, Any]) -> List[Tuple[str, str]]:
     """
     Dynamically identify all unique 'last_N' keys used for recent counts.
+    
+    Returns:
+        List of tuples: (json_key, ml_feature_name)
     """
     all_recent_keys = set()
     for num_key, num_data in hmc_data.items():
@@ -65,52 +68,21 @@ def calculate_days_since_bonus(all_draws: List[Dict[str, Any]]) -> Dict[int, int
     print(f"✓ Custom feature 'days_since_bonus' calculated.")
     return days_since_bonus
 
-
-def calculate_was_recent_bonus(
-    all_draws: List[Dict[str, Any]],
-    lookback_draws: int = 10
-) -> Dict[int, int]:
-    """
-    Binary indicator: Was this number a bonus ball in the last N draws?
-    
-    CRITICAL FEATURE: 3.42x lift discovered by trend analyzer!
-    Numbers that were bonus in last 10 draws have 50.9% win rate vs 14.9% baseline.
-    
-    Args:
-        all_draws: List of all draw dictionaries
-        lookback_draws: How many recent draws to check (default: 10)
-    
-    Returns:
-        Dict mapping number -> 1 (was recent bonus) or 0 (was not)
-    """
-    # Get last N draws
-    recent_draws = all_draws[-lookback_draws:] if len(all_draws) >= lookback_draws else all_draws
-    
-    # Collect bonus numbers
-    recent_bonus_numbers = set()
-    for draw in recent_draws:
-        bonus_num = draw.get('bonus_number')
-        if bonus_num is not None and 1 <= bonus_num <= MAX_NUMBER:
-            recent_bonus_numbers.add(bonus_num)
-    
-    # Create feature dict
-    was_recent_bonus = {}
-    for num in range(1, MAX_NUMBER + 1):
-        was_recent_bonus[num] = 1 if num in recent_bonus_numbers else 0
-    
-    print(f"✓ Custom feature 'was_recent_bonus' calculated (last {lookback_draws} draws).")
-    print(f"  {len(recent_bonus_numbers)} numbers were recent bonus balls: {sorted(recent_bonus_numbers)}")
-    
-    return was_recent_bonus
-
-
 def extract_win_bias_ratio_from_history(
     draw_history_log: Dict[str, Any],
     max_number: int
 ) -> Dict[int, float]:
     """
     Extract the MOST RECENT win_bias_ratio for each number from draw history.
+    
+    Args:
+        draw_history_log: The complete draw history log
+        max_number: Maximum lottery number (e.g., 47)
+        
+    Returns:
+        Dictionary mapping number -> most recent win_bias_ratio
     """
+    # Get the most recent draw (last entry in chronological order)
     if not draw_history_log:
         return {num: 1.0 for num in range(1, max_number + 1)}
     
@@ -135,7 +107,6 @@ def extract_win_bias_ratio_from_history(
     
     return result
 
-
 def calculate_freshness_category_features(
     hmc_data: Dict[str, Any],
     c_max_threshold: int,
@@ -144,7 +115,17 @@ def calculate_freshness_category_features(
 ) -> Dict[int, Dict[str, float]]:
     """
     Calculate freshness category features for each number dynamically.
+    
+    Args:
+        hmc_data: Current number statistics
+        c_max_threshold: The dynamic threshold for the final bin (e.g., 2)
+        recent_key: The dynamic recent count key (e.g., 'last_4')
+        top_pattern_dist: {bin_index (0 to C_max): normalized_weight (0.0-1.0)}
+        
+    Returns:
+        Dict mapping number -> {freshness_c0_weight, ..., current_freshness_bin}
     """
+    
     # 1. Determine current freshness bin for each number
     number_categories = {}
     category_counts = Counter()
@@ -210,6 +191,7 @@ def calculate_recency_weighted_pattern_score(
 ) -> Dict[int, float]:
     """
     DEPRECATED: Replaced by calculate_freshness_category_features.
+    Kept for backward compatibility - returns zero scores.
     """
     print(f"⚠️  Note: pattern_score_recency is deprecated.")
     print(f"    Use freshness_cX_weight features instead.")
@@ -222,8 +204,8 @@ def extract_features_from_hmc_json(
     days_since_bonus_data: Dict[int, int],
     pattern_score_data: Dict[int, float],
     freshness_features: Dict[int, Dict[str, float]] = None,
-    win_bias_ratio_data: Dict[int, float] = None,
-    was_recent_bonus_data: Dict[int, int] = None
+    # ADDED NEW FEATURE DATA
+    win_bias_ratio_data: Dict[int, float] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating all custom features.
@@ -236,10 +218,8 @@ def extract_features_from_hmc_json(
         freshness_features = {}
     
     print(f"\n✓ Extracting features from HMC data:")
-    base_features = ['total_count', 'days_since_last', 'series_total', 'series_recent', 
-                     'days_since_bonus', 'win_bias_ratio', 'was_recent_bonus']
-    fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() 
-                                   if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
+    base_features = ['total_count', 'days_since_last', 'series_total', 'series_recent', 'days_since_bonus', 'win_bias_ratio']
+    fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
     
     print(f"  Static features: {base_features}")
     print(f"  Freshness features: {fresh_features_names + ['current_freshness_bin']}")
@@ -261,8 +241,8 @@ def extract_features_from_hmc_json(
             'series_total': 0,
             'series_recent': 0,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
+            # ADDED WIN BIAS RATIO DEFAULT
             'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
-            'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
             **fresh_feat,
             **recent_fields,
         }
@@ -317,8 +297,8 @@ def extract_features_from_hmc_json(
             'series_total': series_total,
             'series_recent': series_recent,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
+            # ADDED WIN BIAS RATIO
             'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
-            'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
             **fresh_feat,
             **recent_fields,
         }
@@ -354,8 +334,8 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'RECENT_SHORT': recent_features[:1] if recent_features else [],
         'RECENT_LONG': recent_features[-1:] if recent_features else [],
         'BONUS_AWARE': ['days_since_bonus'], 
-        'FRESHNESS_PATTERN': freshness_weights_features,
-        FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features
+        'FRESHNESS_PATTERN': freshness_weights_features, # Use new dynamic list
+        FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features # Use dynamic list for keyword
     }
 
     if isinstance(feature_spec, str):
@@ -372,5 +352,3 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         return list(set(expanded))
 
     return []
-
-
