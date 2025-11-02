@@ -1,20 +1,22 @@
 # app.py
 import streamlit as st
 
+# Import page modules from the new 'view' directory
+from view.pages import trigger_analysis, draw_history, statistics, freshness_analysis
+
 # Page configuration must be first
 st.set_page_config(
+    # FIX: Replaced Chinese sign with standard emoji
     page_title="Lotto Analysis Dashboard",
-    page_icon="🎰",
+    page_icon="🍀",
     layout="wide"
 )
 
-# Import page modules
-from pages import trigger_analysis, draw_history, statistics, freshness_analysis
-
 # Navigation
 PAGES = {
-    "📊 Trigger Periods Analysis": trigger_analysis,
-    "📅 Draw History": draw_history,
+    # FIX: Replaced Chinese signs with standard emojis
+    "🎯 Trigger Periods Analysis": trigger_analysis,
+    "📜 Draw History": draw_history,
     "📈 Statistics": statistics,
     "🔥 Freshness Analysis": freshness_analysis
 }
@@ -77,10 +79,10 @@ st.markdown("""
 
 # Initialize session state for navigation
 if 'current_page' not in st.session_state:
-    st.session_state.current_page = "📊 Trigger Periods Analysis"
+    st.session_state.current_page = "🎯 Trigger Periods Analysis"
 
 # Create navigation at the top
-st.markdown("### 🎰 Navigation")
+st.markdown("### 🍀 Navigation") # FIX: Replaced Chinese sign with standard emoji
 nav_cols = st.columns(len(PAGES))
 
 for idx, (page_name, page_module) in enumerate(PAGES.items()):
@@ -96,4 +98,3 @@ st.markdown("---")
 # Display selected page
 page = PAGES[st.session_state.current_page]
 page.show()
-

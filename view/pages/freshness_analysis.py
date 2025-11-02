@@ -1,13 +1,12 @@
-# pages/freshness_analysis.py
+# view/pages/freshness_analysis.py
 import streamlit as st
 import pandas as pd
 import json
 from pathlib import Path
 from typing import Dict, Any
 
-
 def load_freshness_data() -> Dict[str, Any]:
-    """Load freshness analysis data from JSON file."""
+ 
     file_path = Path('data/lotto_7_number_freshness_results.json')
     
     try:
@@ -210,7 +209,7 @@ def show():
         # Display with dynamic column configuration
         st.dataframe(
             df,
-            use_container_width=True,
+            width='stretch', # FIX: use_container_width -> width='stretch'
             hide_index=True,
             column_config={
                 "Pattern": st.column_config.TextColumn("Pattern", width="medium"),

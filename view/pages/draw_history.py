@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from typing import Dict, Any
-from utils.data_loader import load_draw_history, get_sorted_draw_dates
-from utils.formatting import get_category_color
+from view.utils.data_loader import load_draw_history, get_sorted_draw_dates
+from view.utils.formatting import get_category_color
 
 
 def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
@@ -10,6 +10,7 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
     draw_info = draw_data[draw_date]
     hmc_summary = draw_info.get('hmc_summary', {})
     winning_numbers = draw_info.get('winning_numbers_details', [])
+    recent_bonus_numbers = draw_info.get('recent_bonus_numbers', []) # NEW
     
     # Extract dynamic recent_counts keys from first number
     recent_keys = []
@@ -31,6 +32,11 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
                     <strong>Draw Range:</strong> {hmc_summary.get('draw_range', 'N/A')}
                 </span>
             </div>
+            
+            <div style="margin-top: 10px; background-color: #ffe6f2; padding: 5px 10px; border-radius: 4px;">
+                <strong>Last 10 Bonus Numbers:</strong> {', '.join(map(str, recent_bonus_numbers))}
+            </div>
+            
         </div>
         
         <div style="overflow-x: auto; max-width: 100%;">
@@ -147,7 +153,7 @@ def show():
         st.warning("No draws match the selected filters.")
         return
     
-    # 🌟 FIX 1: Reverse the list to display MOST RECENT draw first
+    # Reverse the list to display MOST RECENT draw first
     filtered_dates.reverse() 
     
     st.markdown(f"**Displaying {len(filtered_dates)} draws**")

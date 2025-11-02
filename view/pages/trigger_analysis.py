@@ -1,9 +1,9 @@
-# pages/trigger_analysis.py
+# view/pages/trigger_analysis.py
 import streamlit as st
 import pandas as pd
 from typing import Dict, Any, List
-from utils.data_loader import load_trigger_data
-from utils.formatting import (
+from view.utils.data_loader import load_trigger_data # PATH CHANGE
+from view.utils.formatting import ( # PATH CHANGE
     abbreviate_series_name, expand_series_data, sort_series_names,
     THRESHOLD_RED, THRESHOLD_PURPLE, THRESHOLD_YELLOW
 )
@@ -11,6 +11,7 @@ from utils.formatting import (
 
 def create_html_table(display_df: pd.DataFrame, all_series_names: List[str]) -> str:
     """Create an HTML table with color-coded dates and horizontal scrolling."""
+    # ... (Keep this function as is) ...
     html = """
     <div style="overflow-x: auto; max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">
     <table style="border-collapse: collapse; width: 100%;">
@@ -129,7 +130,7 @@ def show():
     
     scenarios_df = pd.DataFrame(scenarios_list)
     if not scenarios_df.empty:
-        st.dataframe(scenarios_df.set_index(["Window Size", "Appearance"]), use_container_width=True)
+        st.dataframe(scenarios_df.set_index(["Window Size", "Appearance"]), width='stretch') # FIX: use_container_width -> width='stretch'
     else:
         st.warning("No scenario data found in lotto_odds_results.json.")
     
@@ -174,7 +175,7 @@ def show():
             series_df = pd.DataFrame(series_details)
             if not series_df.empty:
                 series_df = series_df.sort_values(by="End Date", ascending=False)
-                st.dataframe(series_df.set_index("Number"), use_container_width=True)
+                st.dataframe(series_df.set_index("Number"), width='stretch') # FIX: use_container_width -> width='stretch'
             else:
                 st.info(f"No numbers matching the current filters belong to this series.")
     
