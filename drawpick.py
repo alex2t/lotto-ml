@@ -70,7 +70,7 @@ def main():
     
     # process_hmc_analysis uses SCENARIOS indirectly via imported helper functions
     (categorization_history, final_frequency, hmc_counts, 
-     final_categories, draw_history_log) = process_hmc_analysis(all_draws)
+     final_categories, draw_history_log, recent_bonus_hits) = process_hmc_analysis(all_draws)
     total_hmc_draws = len(categorization_history)
     
     # ===== PATTERN ANALYSIS =====
@@ -138,6 +138,16 @@ def main():
     draw_range_analysis = generate_draw_range_analysis(categorization_history, 
                                                        total_hmc_draws)
     
+    # NEW: Calculate Recent Bonus Hit Odds
+    recent_bonus_analysis = {}
+    for key in ['1_hit', '2_hits', '3_or_more']:
+        count = recent_bonus_hits.get(key, 0)
+        odds = (count / total_hmc_draws) if total_hmc_draws > 0 else 0.0
+        recent_bonus_analysis[key] = {
+            "count": count,
+            "odds": round(odds, 4)
+        }
+        
     # Build lotto_odds_results
     final_main = {
         "requested_draws": NUM_DRAWS,
@@ -169,6 +179,8 @@ def main():
     final_main["hmc"] = hmc_analysis
     final_main["draw_range"] = draw_range_analysis
     final_main["patterns"] = consecutive_patterns
+    # NEW: Add the recent bonus hit analysis
+    final_main["recent_bonus_analysis"] = recent_bonus_analysis 
     
     # Build lotto_trigger_periods (FIXED LOGIC)
     final_periods = {}

@@ -74,7 +74,7 @@ def calculate_win_bias_ratio_for_draw(
     
     return win_bias_ratios
 
-def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict, Dict]:
+def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict, Dict, Dict]:
     """
     Performs HMC and draw range analysis on all draws, 
     and collects per-draw history data.
@@ -99,6 +99,9 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     categorization_history = {}
     hmc_distribution_counts = defaultdict(int)
     draw_history_log = {}
+    
+    # NEW: Tracking counts for 1, 2, or 3 hits in the Last 10 Bonus
+    recent_bonus_hit_counts = defaultdict(int)
     
     max_history_window = max(HISTORY_WINDOWS_DATA)
     
@@ -162,6 +165,29 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             categories,
             MAX_NUMBER
         )
+        
+        # Determine the set of last 10 bonus numbers for checking
+        recent_bonus_set = set(recent_bonus_numbers)
+        
+        # Determine the bonus number
+        bonus_number = winning_numbers[-1] if winning_numbers else None
+        
+        # NEW: Count how many *main* winning numbers hit the recent bonus set
+        current_draw_bonus_hits = 0
+        main_winning_numbers = winning_numbers[:6]
+        
+        for number in main_winning_numbers:
+            if number in recent_bonus_set:
+                current_draw_bonus_hits += 1
+        
+        # NEW: Record the draw hit count (1, 2, or 3+)
+        if current_draw_bonus_hits >= 1:
+            if current_draw_bonus_hits >= 3:
+                recent_bonus_hit_counts['3_or_more'] += 1
+            elif current_draw_bonus_hits == 2:
+                recent_bonus_hit_counts['2_hits'] += 1
+            elif current_draw_bonus_hits == 1:
+                recent_bonus_hit_counts['1_hit'] += 1
 
         # Build winning_numbers_details for draw history
         winning_numbers_details = []
@@ -171,8 +197,6 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         # Draws preceding the current one (for recent counts)
         preceding_draws = all_draws[max(0, i - max_history_window): i]
         
-        # Determine the bonus number
-        bonus_number = winning_numbers[-1] if winning_numbers else None
         
         # ============ Build winning_numbers_details ONCE ============
         for number in winning_numbers:
@@ -215,8 +239,8 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 else:
                     freshness_weights[feature_name] = 0.0
             
-            # 6. NEW: Check if the number was one of the last 10 bonus numbers
-            is_recent_bonus_hit = number in recent_bonus_numbers
+            # 6. Check if the number was one of the last 10 bonus numbers
+            is_recent_bonus_hit = number in recent_bonus_set
             
             # ============ APPEND ONCE with ALL data ============
             winning_numbers_details.append({
@@ -228,7 +252,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 "win_bias_ratio": win_bias_ratios.get(number, 1.0),
                 "freshness_weights": freshness_weights,
                 "current_freshness_bin": current_freshness_bin,
-                "is_recent_bonus_hit": is_recent_bonus_hit # NEW FIELD
+                "is_recent_bonus_hit": is_recent_bonus_hit
             })
         
         # ============ Store Draw History Log ONCE (outside winning numbers loop) ============
@@ -268,4 +292,4 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     final_categories = get_hot_cold(frequency_count)
     
     return (categorization_history, frequency_count, dict(hmc_distribution_counts), 
-            final_categories, draw_history_log)
+            final_categories, draw_history_log, dict(recent_bonus_hit_counts))

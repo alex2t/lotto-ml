@@ -1,12 +1,9 @@
-
 """
 feature_extractor.py
 ====================
 Extracts and processes features from HMC JSON data for ML training.
-Handles dynamic feature detection and feature selection.
 
-NEW FEATURES:
-- was_recent_bonus: Binary indicator for recent bonus ball appearances (3.42x lift)
+UPDATED: Added Priority 2 features based on trend analysis
 """
 
 import re
@@ -19,9 +16,7 @@ from ml_lotto.config import MAX_NUMBER, FRESHNESS_JSON_INPUT, FRESHNESS_PATTERN_
 
 
 def get_dynamic_recent_keys(hmc_data: Dict[str, Any]) -> List[Tuple[str, str]]:
-    """
-    Dynamically identify all unique 'last_N' keys used for recent counts.
-    """
+    """Dynamically identify all unique 'last_N' keys used for recent counts."""
     all_recent_keys = set()
     for num_key, num_data in hmc_data.items():
         if num_key.isdigit() and 'recent' in num_data:
@@ -42,9 +37,7 @@ def get_dynamic_recent_keys(hmc_data: Dict[str, Any]) -> List[Tuple[str, str]]:
 
 
 def calculate_days_since_bonus(all_draws: List[Dict[str, Any]]) -> Dict[int, int]:
-    """
-    Calculate the days since each number was last drawn as a bonus ball.
-    """
+    """Calculate the days since each number was last drawn as a bonus ball."""
     now = datetime.now()
     days_since_bonus = {num: 999 for num in range(1, MAX_NUMBER + 1)}
     last_seen_date = {num: None for num in range(1, MAX_NUMBER + 1)}
@@ -73,27 +66,16 @@ def calculate_was_recent_bonus(
     """
     Binary indicator: Was this number a bonus ball in the last N draws?
     
-    CRITICAL FEATURE: 3.42x lift discovered by trend analyzer!
-    Numbers that were bonus in last 10 draws have 50.9% win rate vs 14.9% baseline.
-    
-    Args:
-        all_draws: List of all draw dictionaries
-        lookback_draws: How many recent draws to check (default: 10)
-    
-    Returns:
-        Dict mapping number -> 1 (was recent bonus) or 0 (was not)
+    CRITICAL FEATURE: 71.28% of draws have ≥1 recent bonus hit!
     """
-    # Get last N draws
     recent_draws = all_draws[-lookback_draws:] if len(all_draws) >= lookback_draws else all_draws
     
-    # Collect bonus numbers
     recent_bonus_numbers = set()
     for draw in recent_draws:
         bonus_num = draw.get('bonus_number')
         if bonus_num is not None and 1 <= bonus_num <= MAX_NUMBER:
             recent_bonus_numbers.add(bonus_num)
     
-    # Create feature dict
     was_recent_bonus = {}
     for num in range(1, MAX_NUMBER + 1):
         was_recent_bonus[num] = 1 if num in recent_bonus_numbers else 0
@@ -104,35 +86,188 @@ def calculate_was_recent_bonus(
     return was_recent_bonus
 
 
+def calculate_recency_zone_score(days_since_last: int) -> float:
+    """
+    Score based on optimal recency windows from trend analysis.
+    
+    DATA-DRIVEN ZONES:
+    - 0-14 days:   40.0% of winners → score 1.0
+    - 14-30 days:  31.0% of winners → score 0.78
+    - 30-60 days:  21.7% of winners → score 0.54
+    - 60-120 days: 7.0% of winners  → score 0.18
+    - 120+ days:   0.3% of winners  → score 0.01
+    
+    Returns:
+        Score from 0.0 to 1.0 (higher = better timing)
+    """
+    if 0 <= days_since_last <= 14:
+        return 1.0
+    elif 14 < days_since_last <= 30:
+        return 0.78
+    elif 30 < days_since_last <= 60:
+        return 0.54
+    elif 60 < days_since_last <= 120:
+        return 0.18
+    else:
+        return 0.01
+
+
+def calculate_has_consecutive_partner(
+    hmc_data: Dict[str, Any],
+    dynamic_recent_keys: List[Tuple[str, str]]
+) -> Dict[int, int]:
+    """
+    Binary feature: Does this number have a hot consecutive neighbor?
+    
+    LOGIC:
+    - Number 35 has neighbors 34 and 36
+    - If either appeared in last 4 draws → has_consecutive_partner = 1
+    - Why: 57% of draws contain consecutive pairs
+    
+    Returns:
+        Dict mapping number -> 1 (has hot neighbor) or 0 (no hot neighbor)
+    """
+    # Extract recent_4 counts
+    recent_4_counts = {}
+    recent_4_key = None
+    
+    for data_key, ml_key in dynamic_recent_keys:
+        if ml_key == 'recent_4':
+            recent_4_key = data_key
+            break
+    
+    if not recent_4_key:
+        return {num: 0 for num in range(1, MAX_NUMBER + 1)}
+    
+    # Get recent_4 counts for all numbers
+    for num in range(1, MAX_NUMBER + 1):
+        num_key = str(num)
+        if num_key in hmc_data and 'recent' in hmc_data[num_key]:
+            recent_4_counts[num] = hmc_data[num_key]['recent'].get(recent_4_key, 0)
+        else:
+            recent_4_counts[num] = 0
+    
+    # Calculate has_consecutive_partner
+    has_partner = {}
+    
+    for num in range(1, MAX_NUMBER + 1):
+        left_neighbor = num - 1
+        right_neighbor = num + 1
+        
+        # Check if neighbors are hot (appeared in last 4 draws)
+        left_hot = (1 <= left_neighbor <= 47) and (recent_4_counts.get(left_neighbor, 0) >= 1)
+        right_hot = (1 <= right_neighbor <= 47) and (recent_4_counts.get(right_neighbor, 0) >= 1)
+        
+        has_partner[num] = 1 if (left_hot or right_hot) else 0
+    
+    hot_neighbors = sum(has_partner.values())
+    print(f"✓ Custom feature 'has_consecutive_partner' calculated.")
+    print(f"  {hot_neighbors}/47 numbers have hot consecutive neighbors")
+    
+    return has_partner
+
+
+def calculate_consecutive_pair_affinity(
+    consecutive_patterns: Dict[str, Any]
+) -> Dict[int, float]:
+    """
+    Calculate affinity score: How often does this number appear in consecutive pairs?
+    
+    Uses "all_pairs" data showing historical pair frequencies.
+    
+    EXAMPLE FROM YOUR DATA:
+    - Pair 45-46: 18 occurrences → 45 and 46 get high scores
+    - Pair 15-16: 1 occurrence → 15 and 16 get low scores
+    
+    Returns:
+        Dict mapping number -> affinity_score (0.0 to 1.0)
+    """
+    all_pairs = consecutive_patterns.get('2_consecutive', {}).get('all_pairs', {})
+    
+    if not all_pairs:
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    # Count how many times each number appears in pairs
+    pair_counts = defaultdict(int)
+    
+    for pair_str, count in all_pairs.items():
+        parts = pair_str.split('-')
+        if len(parts) == 2:
+            try:
+                num1 = int(parts[0])
+                num2 = int(parts[1])
+                pair_counts[num1] += count
+                pair_counts[num2] += count
+            except ValueError:
+                continue
+    
+    # Find max count for normalization
+    max_count = max(pair_counts.values()) if pair_counts else 1
+    
+    # Calculate affinity (normalized to 0-1 scale)
+    affinity = {}
+    for num in range(1, MAX_NUMBER + 1):
+        count = pair_counts.get(num, 0)
+        affinity[num] = round(count / max_count, 3) if max_count > 0 else 0.0
+    
+    high_affinity = sum(1 for v in affinity.values() if v > 0.7)
+    print(f"✓ Custom feature 'consecutive_pair_affinity' calculated.")
+    print(f"  {high_affinity}/47 numbers have high pair affinity (>0.7)")
+    
+    return affinity
+
+
+def calculate_bonus_hit_target_alignment(
+    was_recent_bonus_data: Dict[int, int]
+) -> Dict[int, float]:
+    """
+    Score based on helping achieve optimal bonus hit count.
+    
+    YOUR DATA SHOWS:
+    - 36.88% of draws have exactly 1 bonus hit
+    - 24.50% of draws have exactly 2 bonus hits
+    - 61.38% have 1-2 hits (OPTIMAL RANGE)
+    
+    Strategy: Favor recent bonus numbers but not too heavily
+    (predictor will optimize for 1-2 total bonus hits per line)
+    
+    Returns:
+        Dict mapping number -> alignment_score (0.0 to 1.0)
+    """
+    alignment = {}
+    
+    for num in range(1, MAX_NUMBER + 1):
+        if was_recent_bonus_data.get(num, 0) == 1:
+            # Recent bonus number - moderate boost
+            alignment[num] = 0.65
+        else:
+            # Not a bonus number - lower score
+            alignment[num] = 0.35
+    
+    return alignment
+
+
 def extract_win_bias_ratio_from_history(
     draw_history_log: Dict[str, Any],
     max_number: int
 ) -> Dict[int, float]:
-    """
-    Extract the MOST RECENT win_bias_ratio for each number from draw history.
-    """
+    """Extract the MOST RECENT win_bias_ratio from draw history."""
     if not draw_history_log:
         return {num: 1.0 for num in range(1, max_number + 1)}
     
-    # Sort by draw_index to get the latest draw
     sorted_dates = sorted(
         draw_history_log.items(),
         key=lambda x: x[1]['draw_index']
     )
     
     latest_date, latest_data = sorted_dates[-1]
-    
-    # Extract the stored bias ratios
     bias_ratios = latest_data.get('all_numbers_bias_ratios', {})
     
-    # Ensure all numbers have a value
     result = {}
     for num in range(1, max_number + 1):
         result[num] = bias_ratios.get(num, 1.0)
     
     print(f"✓ Extracted 'win_bias_ratio' from latest draw ({latest_date})")
-    print(f"  Example values: Hot={result.get(1, 1.0):.2f}, Cold={result.get(47, 1.0):.2f}")
-    
     return result
 
 
@@ -142,10 +277,7 @@ def calculate_freshness_category_features(
     recent_key: str,
     top_pattern_dist: Dict[int, float]
 ) -> Dict[int, Dict[str, float]]:
-    """
-    Calculate freshness category features for each number dynamically.
-    """
-    # 1. Determine current freshness bin for each number
+    """Calculate freshness category features for each number dynamically."""
     number_categories = {}
     category_counts = Counter()
     
@@ -156,7 +288,6 @@ def calculate_freshness_category_features(
         if num_key in hmc_data and 'recent' in hmc_data[num_key]:
             recent_count = hmc_data[num_key]['recent'].get(recent_key, 0)
         
-        # Categorize based on C_max threshold
         if recent_count >= c_max_threshold:
             category = c_max_threshold
         else:
@@ -165,7 +296,6 @@ def calculate_freshness_category_features(
         number_categories[num] = category
         category_counts[category] += 1
     
-    # 2. Create features based on dynamic weights
     features = {}
     
     print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
@@ -176,21 +306,19 @@ def calculate_freshness_category_features(
     for i in range(c_max_threshold + 1):
         name = bin_names[i]
         weight = top_pattern_dist.get(i, 0.0)
-        print(f"    {name} weight: {weight*100:.1f}% (Ideal draw composition)")
+        print(f"    {name} weight: {weight*100:.1f}%")
     
-    print(f"\n  Current number distribution across freshness bins:")
+    print(f"\n  Current number distribution:")
     for i in range(c_max_threshold + 1):
         print(f"    {bin_names[i]}: {category_counts[i]} numbers")
         
     for num in range(1, MAX_NUMBER + 1):
         current_cat = number_categories[num]
         
-        # Initialize features dynamically
         fresh_features = {
             f'freshness_c{i}_weight': 0.0 for i in range(c_max_threshold + 1)
         }
         
-        # Assign weight based on which category this number is in
         feature_name = f'freshness_c{current_cat}_weight'
         fresh_features[feature_name] = top_pattern_dist.get(current_cat, 0.0)
         
@@ -208,11 +336,7 @@ def calculate_recency_weighted_pattern_score(
     target_window: int = 5, 
     recency_days: int = 60
 ) -> Dict[int, float]:
-    """
-    DEPRECATED: Replaced by calculate_freshness_category_features.
-    """
-    print(f"⚠️  Note: pattern_score_recency is deprecated.")
-    print(f"    Use freshness_cX_weight features instead.")
+    """DEPRECATED: Returns zero scores."""
     return {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
 
 
@@ -223,10 +347,13 @@ def extract_features_from_hmc_json(
     pattern_score_data: Dict[int, float],
     freshness_features: Dict[int, Dict[str, float]] = None,
     win_bias_ratio_data: Dict[int, float] = None,
-    was_recent_bonus_data: Dict[int, int] = None
+    was_recent_bonus_data: Dict[int, int] = None,
+    consecutive_patterns: Dict[str, Any] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
-    Extract ML features for each number, incorporating all custom features.
+    Extract ML features for each number, incorporating ALL custom features.
+    
+    NEW: Added Priority 2 features for improved prediction
     """
     features = {}
     current_timestamp = pd.Timestamp.now()
@@ -235,9 +362,34 @@ def extract_features_from_hmc_json(
     if freshness_features is None:
         freshness_features = {}
     
+    # Calculate Priority 2 features
+    print("  Calculating Priority 2 features...")
+    has_consecutive_partner_data = calculate_has_consecutive_partner(
+        hmc_data,
+        dynamic_recent_keys
+    )
+    
+    consecutive_pair_affinity_data = {}
+    if consecutive_patterns:
+        consecutive_pair_affinity_data = calculate_consecutive_pair_affinity(
+            consecutive_patterns
+        )
+    else:
+        consecutive_pair_affinity_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    bonus_alignment_data = {}
+    if was_recent_bonus_data:
+        bonus_alignment_data = calculate_bonus_hit_target_alignment(
+            was_recent_bonus_data
+        )
+    else:
+        bonus_alignment_data = {num: 0.35 for num in range(1, MAX_NUMBER + 1)}
+    
     print(f"\n✓ Extracting features from HMC data:")
-    base_features = ['total_count', 'days_since_last', 'series_total', 'series_recent', 
-                     'days_since_bonus', 'win_bias_ratio', 'was_recent_bonus']
+    base_features = ['total_count', 'days_since_last', 'recency_zone_score',
+                     'series_total', 'series_recent', 'days_since_bonus', 
+                     'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner',
+                     'consecutive_pair_affinity', 'bonus_hit_target_alignment']
     fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() 
                                    if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
     
@@ -250,19 +402,22 @@ def extract_features_from_hmc_json(
         num_key = str(num)
         recent_fields = {f: 0 for f in ml_feature_names}
         
-        # Get freshness features for this number
         fresh_feat = freshness_features.get(num, {})
         
-        # Default features
+        # Default features with Priority 2 additions
         default_features = {
             'total_count': 0,
             'category': 'cold',
             'days_since_last': 999,
+            'recency_zone_score': calculate_recency_zone_score(999),
             'series_total': 0,
             'series_recent': 0,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
             'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
             'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
+            'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
+            'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
+            'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
             **fresh_feat,
             **recent_fields,
         }
@@ -276,7 +431,6 @@ def extract_features_from_hmc_json(
         total_count = num_data.get('total_count', 0)
         days_since = 999
         
-        # Calculate days since last hit
         if 'last_seen' in num_data:
             try:
                 last_date_str = num_data['last_seen'].replace('/', '-')
@@ -285,12 +439,10 @@ def extract_features_from_hmc_json(
             except Exception:
                 pass
         
-        # Populate dynamic recent counts
         recent_data = num_data.get('recent', {})
         for data_key, ml_feature_key in dynamic_recent_keys:
             recent_fields[ml_feature_key] = recent_data.get(data_key, 0)
         
-        # Extract series pattern features
         series_total = 0
         series_recent = 0
         
@@ -314,11 +466,15 @@ def extract_features_from_hmc_json(
             'total_count': total_count,
             'category': category,
             'days_since_last': days_since,
+            'recency_zone_score': calculate_recency_zone_score(days_since),
             'series_total': series_total,
             'series_recent': series_recent,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
             'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
             'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
+            'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
+            'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
+            'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
             **fresh_feat,
             **recent_fields,
         }
@@ -327,9 +483,7 @@ def extract_features_from_hmc_json(
 
 
 def get_all_feature_names(features_dict: Dict[int, Dict[str, Any]]) -> List[str]:
-    """
-    Get list of all available feature names (excluding 'category').
-    """
+    """Get list of all available feature names (excluding 'category')."""
     if not features_dict:
         return []
     
@@ -338,10 +492,7 @@ def get_all_feature_names(features_dict: Dict[int, Dict[str, Any]]) -> List[str]
 
 
 def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List[str]:
-    """
-    Expand feature specification into actual feature list.
-    Handles the dynamic FRESHNESS_PATTERN_WEIGHTS keyword.
-    """
+    """Expand feature specification into actual feature list."""
     
     recent_features = sorted([f for f in all_features if f.startswith('recent_')],
                              key=lambda x: int(x.split('_')[1]))
@@ -372,5 +523,3 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         return list(set(expanded))
 
     return []
-
-

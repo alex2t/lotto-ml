@@ -2,8 +2,7 @@
 """
 Configuration settings for lottery analysis
 
-OPTIMIZED: Reduced feature redundancy and clearer model specialization
-Each model focuses on different aspects to maximize diversity
+UPDATED: Added Priority 2 features to model configs
 """
 
 # =============== ANALYSIS CONFIGURATION ===============
@@ -43,29 +42,27 @@ RANGE_BINS = {
 }
 
 # ==================== FEATURE GROUPS & KEYWORDS ====================
-
-# DYNAMIC KEYWORD: Replaced hardcoded list of freshness weights
 FRESHNESS_PATTERN_WEIGHTS = 'FRESHNESS_PATTERN_WEIGHTS' 
 
 # ==================== ML MODEL CONFIGURATIONS ====================
 
 MODEL_1_CONFIG = {
-    'name': 'Short-Term Momentum Model',
-    'description': 'Focus on immediate patterns with bonus boost',
+    'name': 'Short-Term Momentum + Patterns',
+    'description': 'Immediate patterns with timing and consecutive boosts',
     'algorithm': 'logistic_regression',
     
-    # HMC Selection - Balanced
     'hot_count': 1,
     'medium_count': 2,
     'cold_count': 2,
     'generic_count': 1,
     
-    # Feature Selection
     'features': [
-        FRESHNESS_PATTERN_WEIGHTS,
-        'days_since_last',
-        'total_count',
-        'was_recent_bonus'  # NEW: 3.42x lift feature
+        FRESHNESS_PATTERN_WEIGHTS,      # Recent activity pattern
+        'days_since_last',                # Raw timing
+        'recency_zone_score',            # NEW: Optimal timing zones
+        'total_count',                    # Historical frequency
+        'was_recent_bonus',              # Bonus indicator
+        'has_consecutive_partner'         # NEW: Hot neighbor detection
     ],
     
     'diversity_penalty': 0.0,
@@ -86,24 +83,25 @@ MODEL_1_CONFIG = {
 }
 
 MODEL_2_CONFIG = {
-    'name': 'Long-Term Value Model',
-    'description': 'Historical patterns + bonus indicators + value discovery',
+    'name': 'Long-Term Value + Pattern Optimization',
+    'description': 'Historical patterns with timing and bonus optimization',
     'algorithm': 'logistic_regression',
     
-    # HMC Selection - Conservative
     'hot_count': 0,
     'medium_count': 3,
     'cold_count': 2,
     'generic_count': 1,
     
-    # Feature Selection
     'features': [
-        'total_count', 
-        'days_since_last', 
-        'days_since_bonus',
-        'was_recent_bonus',  # NEW: Binary bonus indicator
-        'recent_14',
-        'win_bias_ratio'
+        'total_count',                    # Historical frequency
+        'days_since_last',                # Raw timing
+        'recency_zone_score',            # NEW: Optimal zones
+        'days_since_bonus',               # Bonus timing
+        'was_recent_bonus',              # Bonus indicator
+        'bonus_hit_target_alignment',     # NEW: Optimize for 1-2 hits
+        'recent_14',                      # Long-term trend
+        'win_bias_ratio',                 # Category performance
+        'consecutive_pair_affinity'       # NEW: Historical pairs
     ],
     
     'diversity_penalty': 0.15,
@@ -125,26 +123,28 @@ MODEL_2_CONFIG = {
 
 MODEL_3_CONFIG = {
     'name': 'Complex Pattern Discovery',
-    'description': 'XGBoost with bonus interactions',
+    'description': 'XGBoost with full feature set + pattern interactions',
     'algorithm': 'xgboost',
     
-    # HMC Selection - Aggressive
     'hot_count': 2,
     'medium_count': 2,
     'cold_count': 1,
     'generic_count': 1,
     
-    # Feature Selection
     'features': [
-        'recent_4',
-        FRESHNESS_PATTERN_WEIGHTS,
-        'total_count',
-        'days_since_last',
-        'recent_14',
-        'days_since_bonus',
-        'was_recent_bonus',  # NEW: XGBoost finds interactions
-        'series_recent',
-        'win_bias_ratio'
+        'recent_4',                       # Short-term activity
+        FRESHNESS_PATTERN_WEIGHTS,       # Recent pattern
+        'total_count',                    # Historical frequency
+        'days_since_last',                # Raw timing
+        'recency_zone_score',            # NEW: Optimal zones
+        'recent_14',                      # Long-term trend
+        'days_since_bonus',               # Bonus timing
+        'was_recent_bonus',              # Bonus indicator
+        'bonus_hit_target_alignment',     # NEW: Bonus optimization
+        'has_consecutive_partner',        # NEW: Hot neighbors
+        'consecutive_pair_affinity',      # NEW: Historical pairs
+        'series_recent',                  # Streak patterns
+        'win_bias_ratio'                  # Category performance
     ],
     
     'diversity_penalty': 0.25,
@@ -180,4 +180,5 @@ ACTIVE_MODELS = [
 SHOW_DETAILED_PENALTIES = True
 SHOW_OVERLAP_ANALYSIS = True
 SHOW_DATA_SOURCE_SUMMARY = False
+
 
