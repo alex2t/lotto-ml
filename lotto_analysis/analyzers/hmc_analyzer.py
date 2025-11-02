@@ -110,7 +110,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     TARGET_FRESHNESS_WINDOW = target_scenario["window"]
     C_MAX_THRESHOLD = max(target_scenario["targets"])
     
-    # NEW: Keep a rolling list of the last 10 bonus numbers
+    # Keep a rolling list of the last 10 bonus numbers
     recent_bonus_numbers = [] 
     
     # Update recent_bonus_numbers with bonus numbers from training data (if any)
@@ -215,6 +215,9 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 else:
                     freshness_weights[feature_name] = 0.0
             
+            # 6. NEW: Check if the number was one of the last 10 bonus numbers
+            is_recent_bonus_hit = number in recent_bonus_numbers
+            
             # ============ APPEND ONCE with ALL data ============
             winning_numbers_details.append({
                 "number": number,
@@ -224,7 +227,8 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 "recent_counts": recent_counts,
                 "win_bias_ratio": win_bias_ratios.get(number, 1.0),
                 "freshness_weights": freshness_weights,
-                "current_freshness_bin": current_freshness_bin
+                "current_freshness_bin": current_freshness_bin,
+                "is_recent_bonus_hit": is_recent_bonus_hit # NEW FIELD
             })
         
         # ============ Store Draw History Log ONCE (outside winning numbers loop) ============
@@ -246,7 +250,6 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             "winning_numbers_details": winning_numbers_details,
             "all_numbers_bias_ratios": win_bias_ratios,
             "freshness_pattern_weights": top_pattern_dist_current,
-            # NEW: Add recent bonus numbers to the log entry
             "recent_bonus_numbers": recent_bonus_numbers[:] 
         }
         
@@ -255,7 +258,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             frequency_count[number] += 1
             last_seen_date[number] = draw_date
             
-        # NEW: Update the recent bonus number list (POST-DRAW)
+        # Update the recent bonus number list (POST-DRAW)
         if bonus_number is not None:
             recent_bonus_numbers.append(bonus_number)
             if len(recent_bonus_numbers) > 10:

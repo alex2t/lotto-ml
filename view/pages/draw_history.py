@@ -10,7 +10,30 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
     draw_info = draw_data[draw_date]
     hmc_summary = draw_info.get('hmc_summary', {})
     winning_numbers = draw_info.get('winning_numbers_details', [])
-    recent_bonus_numbers = draw_info.get('recent_bonus_numbers', []) # NEW
+    recent_bonus_numbers = draw_info.get('recent_bonus_numbers', [])
+    
+    # 1. Determine the set of winning numbers (excluding bonus in this context, just the numbers drawn)
+    # Note: winning_numbers_details contains all 7, including bonus. We'll use the 'number' field.
+    winning_number_set = {d['number'] for d in winning_numbers}
+    
+    # 2. Format the list of recent bonus numbers with highlights
+    formatted_bonus_numbers = []
+    for number in recent_bonus_numbers:
+        if number in winning_number_set:
+            # Highlight if the number was one of the last 10 bonus numbers AND hit in this draw
+            formatted_number = f"""
+                <span style='background-color: #ffcccc; color: #cc0000; font-weight: bold; border-radius: 3px; padding: 2px 5px; margin: 0 1px; white-space: nowrap;'>
+                    {number}
+                </span>
+            """
+        else:
+            # Standard formatting
+            formatted_number = f"<span style='padding: 2px 5px;'>{number}</span>"
+            
+        formatted_bonus_numbers.append(formatted_number)
+        
+    formatted_list_html = " ".join(formatted_bonus_numbers) # Use space separator for better HTML rendering
+    
     
     # Extract dynamic recent_counts keys from first number
     recent_keys = []
@@ -33,8 +56,8 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
                 </span>
             </div>
             
-            <div style="margin-top: 10px; background-color: #ffe6f2; padding: 5px 10px; border-radius: 4px;">
-                <strong>Last 10 Bonus Numbers:</strong> {', '.join(map(str, recent_bonus_numbers))}
+            <div style="margin-top: 10px; background-color: #ffe6f2; padding: 5px 10px; border-radius: 4px; display: flex; align-items: center; flex-wrap: wrap;">
+                <strong style="margin-right: 10px;">Last 10 Bonus Numbers:</strong> {formatted_list_html}
             </div>
             
         </div>
