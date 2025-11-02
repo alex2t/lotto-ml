@@ -1,11 +1,23 @@
-
 """
 quickpick.py (main.py)
 ======================
 Main entry point for the Lottery Prediction System V3.1
+Orchestrates the entire prediction workflow.
 
-UPDATES:
-- Added was_recent_bonus feature (3.42x lift from trend analysis)
+IMPROVEMENTS:
+- Added comprehensive error handling
+- Added data validation
+- Added performance timing
+- Improved logging and progress indicators
+
+USAGE:
+    python quickpick.py
+
+CONFIGURATION:
+    Edit config.py to customize:
+    - Model configurations (features, HMC ratios, penalties)
+    - File paths
+    - Display settings
 """
 
 import warnings
@@ -22,27 +34,29 @@ from ml_lotto.config import (
     ODDS_JSON_INPUT,
     FRESHNESS_JSON_INPUT,
     ACTIVE_MODELS,
-    MAX_NUMBER  # IMPORTANT: Added MAX_NUMBER
+    MAX_NUMBER 
 )
 
 # --- Data Loader Imports ---
 from ml_lotto.data_loader import (
+    load_draw_history_json,
     load_hmc_json,
     load_odds_json,
     get_most_likely_hmc_pattern,
-    load_draw_history_with_bias_ratios,
-    load_freshness_config
+    load_draw_history_with_bias_ratios
+    # REMOVED load_freshness_config here to clean up
 )
 
-# --- Feature Extractor Imports ---
+# --- Feature Extractor Imports (FIXED) ---
 from ml_lotto.feature_extractor import (
     get_dynamic_recent_keys,
     extract_features_from_hmc_json,
     calculate_days_since_bonus,
     calculate_freshness_category_features,
-    extract_win_bias_ratio_from_history,
-    calculate_was_recent_bonus  # NEW IMPORT
+    extract_win_bias_ratio_from_history
 )
+# Note: Re-adding the missing load_freshness_config from the correct source
+from ml_lotto.data_loader import load_freshness_config # Re-importing from data_loader as it's the source
 
 # --- Model Imports ---
 from ml_lotto.model_trainer import train_all_models
@@ -72,7 +86,7 @@ def validate_data_files() -> bool:
             missing_files.append(file_path)
     
     if missing_files:
-        print("\n✗ ERROR: Missing required data files:")
+        print("\n❌ ERROR: Missing required data files:")
         for file in missing_files:
             print(f"   - {file}")
         print("\nPlease ensure all data files are present before running.")
@@ -98,7 +112,7 @@ def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data) -> bool
         issues.append("Freshness data is missing or invalid")
     
     if issues:
-        print("\n✗ DATA VALIDATION ERRORS:")
+        print("\n❌ DATA VALIDATION ERRORS:")
         for issue in issues:
             print(f"   - {issue}")
         return False
@@ -110,11 +124,11 @@ def main():
     """Main execution function with improved error handling."""
     start_time = time.time()
     
+    
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.2: Bonus Ball Predictor")
+    print("INTELLIGENT LOTTO SYSTEM V3.1: Rank-Aware Diversity Penalties")
     print("=" * 70)
     print(f"Active Models: {len(ACTIVE_MODELS)}")
-    print("NEW FEATURE: was_recent_bonus (3.42x lift discovered!)")
     
     try:
         # ==================== STEP 0: VALIDATE FILES ====================
@@ -123,7 +137,7 @@ def main():
             sys.exit(1)
         print("✓ All required files present")
         
-        # ==================== STEP 1: LOAD DATA ====================
+        # ==================== STEP 1: LOAD DATA (CORRECTED) ====================
         print("\nStep 1: Loading data files...")
         
         # Load draw history WITH full log
@@ -160,7 +174,7 @@ def main():
         print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
         
-        # ==================== STEP 2: EXTRACT FEATURES (UPDATED) ====================
+        # ==================== STEP 2: EXTRACT FEATURES (CORRECTED) ====================
         print("\nStep 2: Extracting features from HMC data...")
         feature_start = time.time()
         
@@ -168,18 +182,14 @@ def main():
         print("  Calculating 'days_since_bonus' feature...")
         days_since_bonus_data = calculate_days_since_bonus(all_draws)
         
-        # NEW: Calculate was_recent_bonus
-        print("  Calculating 'was_recent_bonus' feature (3.42x lift!)...")
-        was_recent_bonus_data = calculate_was_recent_bonus(all_draws, lookback_draws=10)
-        
         # Extract win_bias_ratio from history
         print("  Extracting 'win_bias_ratio' from draw history...")
         win_bias_ratio_data = extract_win_bias_ratio_from_history(
             draw_history_log_raw,
-            MAX_NUMBER
+            MAX_NUMBER  # ← NOW DEFINED!
         )
         
-        # Calculate freshness features
+        # Calculate freshness features (static pattern)
         print("  Calculating 'freshness_category' features...")
         freshness_category_features = calculate_freshness_category_features(
             hmc_data=hmc_data,
@@ -204,8 +214,7 @@ def main():
                 days_since_bonus_data,
                 pattern_score_data,
                 freshness_category_features,
-                win_bias_ratio_data,
-                was_recent_bonus_data  # NEW PARAMETER
+                win_bias_ratio_data
             )
             print(f"  ✓ Features extracted for {len(features_dict)} numbers")
         except Exception as e:
@@ -216,7 +225,7 @@ def main():
         
         feature_time = time.time() - feature_start
         print(f"✓ Feature extraction completed in {feature_time:.2f} seconds")
-        
+            
         # ==================== STEP 3: ANALYZE HMC PATTERNS ====================
         print("\nStep 3: Analyzing HMC distribution patterns...")
         hot_count, medium_count, cold_count, pattern_percentage = get_most_likely_hmc_pattern(odds_data)
@@ -229,7 +238,7 @@ def main():
             models, model_features = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
             print(f"\n✓ Model training completed in {time.time() - training_start:.2f} seconds")
         except Exception as e:
-            print(f"\n✗ Error during model training: {e}")
+            print(f"\n❌ Error during model training: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -240,7 +249,7 @@ def main():
             all_probabilities = generate_predictions(models, model_features, features_dict)
             print(f"✓ Predictions generated for {len(all_probabilities)} models")
         except Exception as e:
-            print(f"✗ Error generating predictions: {e}")
+            print(f"❌ Error generating predictions: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -251,7 +260,7 @@ def main():
             lines = generate_all_picks(models, all_probabilities, features_dict, freshness_data)
             print(f"✓ Generated {len(lines)} lines of picks")
         except Exception as e:
-            print(f"✗ Error generating picks: {e}")
+            print(f"❌ Error generating picks: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -270,8 +279,6 @@ def main():
                 with open('lottery_picks.txt', 'w') as f:
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
-                    f.write("=" * 70 + "\n")
-                    f.write("NEW FEATURE: was_recent_bonus (3.42x lift)\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
@@ -292,7 +299,7 @@ def main():
             
             display_completion_message()
         except Exception as e:
-            print(f"✗ Error displaying results: {e}")
+            print(f"❌ Error displaying results: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -302,7 +309,7 @@ def main():
         sys.exit(0)
         
     except Exception as e:
-        print(f"\n✗ FATAL ERROR: {str(e)}")
+        print(f"\n❌ FATAL ERROR: {str(e)}")
         print("\nStack trace:")
         import traceback
         traceback.print_exc()
@@ -311,4 +318,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
