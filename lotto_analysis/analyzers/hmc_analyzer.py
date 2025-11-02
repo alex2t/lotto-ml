@@ -110,6 +110,17 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     TARGET_FRESHNESS_WINDOW = target_scenario["window"]
     C_MAX_THRESHOLD = max(target_scenario["targets"])
     
+    # NEW: Keep a rolling list of the last 10 bonus numbers
+    recent_bonus_numbers = [] 
+    
+    # Update recent_bonus_numbers with bonus numbers from training data (if any)
+    for draw in training_draws:
+        bonus_number = draw["numbers"][-1] if draw["numbers"] else None
+        if bonus_number is not None:
+            recent_bonus_numbers.append(bonus_number)
+            if len(recent_bonus_numbers) > 10:
+                recent_bonus_numbers.pop(0)
+
     for i in range(TRAINING_DATA, len(all_draws)):
         current_draw = all_draws[i]
         draw_date = current_draw["date"]
@@ -163,7 +174,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         # Determine the bonus number
         bonus_number = winning_numbers[-1] if winning_numbers else None
         
-        # ============ FIXED: Build winning_numbers_details ONCE ============
+        # ============ Build winning_numbers_details ONCE ============
         for number in winning_numbers:
             # 1. Determine Category
             category = 'cold'
@@ -234,17 +245,24 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             },
             "winning_numbers_details": winning_numbers_details,
             "all_numbers_bias_ratios": win_bias_ratios,
-            "freshness_pattern_weights": top_pattern_dist_current
+            "freshness_pattern_weights": top_pattern_dist_current,
+            # NEW: Add recent bonus numbers to the log entry
+            "recent_bonus_numbers": recent_bonus_numbers[:] 
         }
         
         # Update Frequency and Last Seen Date (POST-DRAW)
         for number in winning_numbers:
             frequency_count[number] += 1
             last_seen_date[number] = draw_date
+            
+        # NEW: Update the recent bonus number list (POST-DRAW)
+        if bonus_number is not None:
+            recent_bonus_numbers.append(bonus_number)
+            if len(recent_bonus_numbers) > 10:
+                recent_bonus_numbers.pop(0) # Keep only the last 10
 
     # Final categories
     final_categories = get_hot_cold(frequency_count)
     
     return (categorization_history, frequency_count, dict(hmc_distribution_counts), 
             final_categories, draw_history_log)
-

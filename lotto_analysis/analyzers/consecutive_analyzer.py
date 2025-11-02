@@ -60,6 +60,9 @@ def analyze_consecutive_patterns(all_draws: List[Dict]) -> Dict:
     # Track which draws have which run lengths (for counting unique draws)
     draws_with_run_length = defaultdict(set)
     
+    # NEW: Track all unique 2-consecutive pairs
+    all_pairs_counts = defaultdict(int) 
+    
     for draw_idx, draw in enumerate(all_draws):
         draw_date = draw["date"]
         all_seven = sorted(draw["numbers"])  # All 7 numbers sorted
@@ -73,6 +76,16 @@ def analyze_consecutive_patterns(all_draws: List[Dict]) -> Dict:
         # Record each run
         for run in runs:
             run_length = len(run)
+            
+            # NEW: Count all 2-consecutive pairs (even if part of a longer run)
+            if run_length >= 2:
+                # Iterate over all consecutive pairs within the run
+                for i in range(len(run) - 1):
+                    pair = (run[i], run[i+1])
+                    if pair[1] == pair[0] + 1: # Sanity check for consecutive pair
+                        pair_key = f"{pair[0]}-{pair[1]}"
+                        all_pairs_counts[pair_key] += 1
+
             occurrences_by_length[run_length].append({
                 "draw_index": draw_idx,
                 "date": draw_date,
@@ -111,5 +124,9 @@ def analyze_consecutive_patterns(all_draws: List[Dict]) -> Dict:
                 for occ in last_20
             ]
         }
+        
+        # NEW: Add all_pairs object only for 2-consecutive
+        if run_length == 2:
+            patterns[key]["all_pairs"] = dict(all_pairs_counts)
     
     return patterns

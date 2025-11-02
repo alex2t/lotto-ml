@@ -1,8 +1,8 @@
-# pages/statistics.py
+# view/pages/statistics.py
 import streamlit as st
 import pandas as pd
 from typing import Dict, Any
-from utils.data_loader import load_trigger_data
+from view.utils.data_loader import load_trigger_data
 
 
 def extract_patterns_data(odds_data: Dict[str, Any]) -> pd.DataFrame:
@@ -88,6 +88,21 @@ def show():
     st.header("🔢 Consecutive Number Patterns Analysis")
     st.markdown("Historical occurrences of consecutive number patterns, sorted by date (most recent first).")
     
+    # NEW FEATURE: Display all_pairs for 2_consecutive
+    consecutive_2 = odds_data.get("patterns", {}).get("2_consecutive", {})
+    all_pairs = consecutive_2.get("all_pairs", {})
+    
+    if all_pairs:
+        st.subheader("Detailed 2-Consecutive Pair Counts")
+        
+        pairs_list = [{"Pair": pair, "Count": count} for pair, count in all_pairs.items()]
+        pairs_df = pd.DataFrame(pairs_list)
+        pairs_df = pairs_df.sort_values(by="Count", ascending=False).set_index("Pair")
+        
+        st.dataframe(pairs_df, width='stretch') # FIX: use_container_width -> width='stretch'
+        
+        st.markdown("---")
+    
     try:
         patterns_df = extract_patterns_data(odds_data)
         if not patterns_df.empty:
@@ -96,4 +111,3 @@ def show():
             st.warning("No pattern data available.")
     except Exception as e:
         st.error(f"Error extracting pattern data: {str(e)}")
-
