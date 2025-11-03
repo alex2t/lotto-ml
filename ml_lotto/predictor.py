@@ -4,14 +4,39 @@ predictor.py
 Generates predictions from trained models with DUAL constraints:
 1. HMC (Hot/Medium/Cold) - Based on total historical frequency
 2. Freshness Pattern (C0/C1/C2/C>=X) - Based on recent activity
+3. Phase 1 Filters - Odd/Even, Sum, Range validation
 
-HYBRID SELECTION: Respects BOTH HMC ratios AND freshness patterns
+UPDATED: v3.3 - Added Phase 1 post-generation filters
 """
 
 import numpy as np
 from typing import Dict, Any, List, Set, Tuple
 from collections import defaultdict
 from ml_lotto.config import MAX_NUMBER, SHOW_DETAILED_PENALTIES
+
+
+# ==================== PHASE 1 FILTER IMPORTS ====================
+# Import filter functions from predictor_filters module
+try:
+    from ml_lotto.predictor_filters import (
+        validate_line,
+        rebalance_line,
+        get_filter_statistics
+    )
+    FILTERS_AVAILABLE = True
+except ImportError:
+    print("⚠️  Warning: predictor_filters module not found. Phase 1 filters disabled.")
+    FILTERS_AVAILABLE = False
+    
+    # Dummy functions if filters not available
+    def validate_line(numbers):
+        return (True, [])
+    
+    def rebalance_line(numbers, probabilities, features_dict, max_iterations=3):
+        return numbers
+    
+    def get_filter_statistics():
+        return {}
 
 
 def get_optimal_pattern_distribution(freshness_data: Dict[str, Any], c_max_threshold: int) -> Dict[int, int]:
@@ -149,6 +174,8 @@ def pick_line_hybrid(
 ) -> Tuple[List[int], List[Dict[str, Any]], str]:
     """
     HYBRID PICKER: Respects BOTH HMC ratios AND freshness patterns dynamically.
+    
+    UPDATED v3.3: Now includes Phase 1 filter validation and auto-correction
     """
     h = model_config['hot_count']
     m = model_config['medium_count']
@@ -215,10 +242,6 @@ def pick_line_hybrid(
             for prob, num in available:
                 # Only pick if number hasn't been picked yet
                 if num not in line and len(picked) < count_needed:
-                    
-                    # Check if we still need this freshness category (optional strictness)
-                    # if freshness_counts[fresh_cat] < freshness_needed[fresh_cat]:
-                    
                     picked.append(num)
                     freshness_counts[fresh_cat] += 1
                     
@@ -266,7 +289,42 @@ def pick_line_hybrid(
             
     pattern_str = ", ".join(pattern_parts)
     
-    return sorted(line), penalty_details, pattern_str
+    # ==================== PHASE 1 FILTER VALIDATION (NEW v3.3) ====================
+    sorted_line = sorted(line)
+    
+    if FILTERS_AVAILABLE:
+        # Check if line passes all filters
+        is_valid, failures = validate_line(sorted_line)
+        
+        if not is_valid:
+            # Line failed validation, attempt to fix it
+            print(f"  ⚠️  Line failed filters: {', '.join(failures)}")
+            print(f"     Original: {sorted_line}")
+            
+            # Attempt rebalancing
+            rebalanced_line = rebalance_line(
+                sorted_line,
+                probabilities,
+                features_dict,
+                max_iterations=3
+            )
+            
+            # Check if rebalancing worked
+            is_valid_after, failures_after = validate_line(rebalanced_line)
+            
+            if is_valid_after:
+                print(f"     ✓ Fixed: {rebalanced_line}")
+                sorted_line = rebalanced_line
+            else:
+                print(f"     ⚠️  Partial fix: {rebalanced_line} (still fails: {', '.join(failures_after)})")
+                # Use rebalanced version even if not perfect (it's better than original)
+                sorted_line = rebalanced_line
+        else:
+            print(f"  ✓ Line passed all filters")
+    
+    # ==================== END PHASE 1 FILTER VALIDATION ====================
+    
+    return sorted_line, penalty_details, pattern_str
 
 
 def generate_all_picks(
@@ -277,10 +335,33 @@ def generate_all_picks(
 ) -> List[Dict[str, Any]]:
     """
     Generate picks from all models with HYBRID HMC + Freshness selection.
+    
+    UPDATED v3.3: Now displays Phase 1 filter statistics
     """
     print("\n" + "="*70)
     print("GENERATING HYBRID PICKS (HMC + Freshness Pattern)")
     print("="*70)
+    
+    # ==================== PHASE 1 FILTER STATISTICS (NEW v3.3) ====================
+    if FILTERS_AVAILABLE:
+        filter_stats = get_filter_statistics()
+        print("\n📋 PHASE 1 FILTERS ACTIVE:")
+        print("  1️⃣  Odd/Even Balance Filter")
+        print(f"     - {filter_stats['odd_even_filter']['description']}")
+        print(f"     - Expected elimination: {filter_stats['odd_even_filter']['expected_elimination']}")
+        
+        print("  2️⃣  Sum Constraint Filter")
+        print(f"     - {filter_stats['sum_constraint']['description']}")
+        print(f"     - Expected elimination: {filter_stats['sum_constraint']['expected_elimination']}")
+        
+        print("  3️⃣  Range Distribution Filter")
+        print(f"     - {filter_stats['range_distribution']['description']}")
+        print(f"     - Expected elimination: {filter_stats['range_distribution']['expected_elimination']}")
+        
+        print(f"\n  📊 Combined Impact: {filter_stats['combined_impact']['total_elimination']}")
+    else:
+        print("\n⚠️  Phase 1 filters not available (predictor_filters.py not found)")
+    # ==================== END PHASE 1 STATISTICS ====================
     
     # Determine the C_max threshold from the loaded data
     c_max_threshold = freshness_data.get('c_max_threshold', 3)

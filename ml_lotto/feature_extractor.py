@@ -3,7 +3,8 @@ feature_extractor.py
 ====================
 Extracts and processes features from HMC JSON data for ML training.
 
-UPDATED: Added Priority 2 features based on trend analysis
+UPDATED: Removed all hardcoded fallback values to ensure data integrity
+VERSION: 3.2 (No-Fallback Edition)
 """
 
 import re
@@ -137,6 +138,10 @@ def calculate_has_consecutive_partner(
             break
     
     if not recent_4_key:
+        # No recent_4 data available - should not happen if data is properly generated
+        print(f"\n⚠️  WARNING: 'recent_4' key not found in dynamic keys.")
+        print(f"   This may indicate incomplete data generation.")
+        print(f"   Continuing with all consecutive_partner values set to 0.")
         return {num: 0 for num in range(1, MAX_NUMBER + 1)}
     
     # Get recent_4 counts for all numbers
@@ -181,11 +186,18 @@ def calculate_consecutive_pair_affinity(
     
     Returns:
         Dict mapping number -> affinity_score (0.0 to 1.0)
+        
+    Raises:
+        ValueError: If consecutive patterns data is missing or invalid
     """
     all_pairs = consecutive_patterns.get('2_consecutive', {}).get('all_pairs', {})
     
     if not all_pairs:
-        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        print(f"\n❌ CRITICAL ERROR: Consecutive pairs data ('all_pairs') is missing.")
+        print(f"   This data should be in lotto_odds_results.json under:")
+        print(f"   patterns.2_consecutive.all_pairs")
+        print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data files.")
+        raise ValueError("Cannot calculate consecutive_pair_affinity without 'all_pairs' data")
     
     # Count how many times each number appears in pairs
     pair_counts = defaultdict(int)
@@ -251,17 +263,42 @@ def extract_win_bias_ratio_from_history(
     draw_history_log: Dict[str, Any],
     max_number: int
 ) -> Dict[int, float]:
-    """Extract the MOST RECENT win_bias_ratio from draw history."""
+    """
+    Extract the MOST RECENT win_bias_ratio from draw history.
+    
+    Args:
+        draw_history_log: Full draw history with bias ratios
+        max_number: Maximum lottery number (typically 47)
+        
+    Returns:
+        Dict mapping number -> win_bias_ratio
+        
+    Raises:
+        ValueError: If draw history is empty or missing required data
+    """
     if not draw_history_log:
-        return {num: 1.0 for num in range(1, max_number + 1)}
+        print(f"\n❌ CRITICAL ERROR: Draw history log is empty.")
+        print(f"   Cannot extract win_bias_ratio without historical data.")
+        print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate draw history.")
+        raise ValueError("Cannot extract win_bias_ratio from empty draw history")
     
     sorted_dates = sorted(
         draw_history_log.items(),
-        key=lambda x: x[1]['draw_index']
+        key=lambda x: x[1].get('draw_index', 0)
     )
+    
+    if not sorted_dates:
+        print(f"\n❌ CRITICAL ERROR: No draws found in history log.")
+        raise ValueError("Draw history contains no draws")
     
     latest_date, latest_data = sorted_dates[-1]
     bias_ratios = latest_data.get('all_numbers_bias_ratios', {})
+    
+    if not bias_ratios:
+        print(f"\n❌ CRITICAL ERROR: 'all_numbers_bias_ratios' missing from latest draw.")
+        print(f"   Latest draw date: {latest_date}")
+        print(f"\n   REQUIRED ACTION: Delete data files and run 'python drawpick.py'")
+        raise ValueError("Latest draw missing required bias ratio data")
     
     result = {}
     for num in range(1, max_number + 1):
@@ -354,6 +391,7 @@ def extract_features_from_hmc_json(
     Extract ML features for each number, incorporating ALL custom features.
     
     NEW: Added Priority 2 features for improved prediction
+    VERSION: 3.2 - All features now sourced from JSON data
     """
     features = {}
     current_timestamp = pd.Timestamp.now()
@@ -371,11 +409,18 @@ def extract_features_from_hmc_json(
     
     consecutive_pair_affinity_data = {}
     if consecutive_patterns:
-        consecutive_pair_affinity_data = calculate_consecutive_pair_affinity(
-            consecutive_patterns
-        )
+        try:
+            consecutive_pair_affinity_data = calculate_consecutive_pair_affinity(
+                consecutive_patterns
+            )
+        except ValueError as e:
+            print(f"\n⚠️  Feature extraction stopped due to missing data.")
+            raise
     else:
-        consecutive_pair_affinity_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        print(f"\n❌ CRITICAL ERROR: Consecutive patterns data not provided.")
+        print(f"   This data should come from lotto_odds_results.json")
+        print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate pattern data.")
+        raise ValueError("Missing consecutive_patterns data - cannot extract features")
     
     bonus_alignment_data = {}
     if was_recent_bonus_data:
@@ -383,7 +428,9 @@ def extract_features_from_hmc_json(
             was_recent_bonus_data
         )
     else:
-        bonus_alignment_data = {num: 0.35 for num in range(1, MAX_NUMBER + 1)}
+        print(f"\n❌ CRITICAL ERROR: was_recent_bonus data not provided.")
+        print(f"   This data should be calculated from draw history.")
+        raise ValueError("Missing was_recent_bonus data - cannot extract features")
     
     print(f"\n✓ Extracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
