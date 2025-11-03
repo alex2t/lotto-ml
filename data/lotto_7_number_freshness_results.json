@@ -1,0 +1,232 @@
+{
+    "window_size_W": 5,
+    "c_max_threshold": 2,
+    "recent_count_key": "last_4",
+    "total_draws_analyzed": 404,
+    "distribution_analysis_7_numbers": [
+        {
+            "pattern": "C0=3, C1=3, C_GE_2=1",
+            "draws_matched": 53,
+            "percentage": 13.12,
+            "C0": 3,
+            "C1": 3,
+            "C_GE_2": 1
+        },
+        {
+            "pattern": "C0=4, C1=2, C_GE_2=1",
+            "draws_matched": 44,
+            "percentage": 10.89,
+            "C0": 4,
+            "C1": 2,
+            "C_GE_2": 1
+        },
+        {
+            "pattern": "C0=3, C1=2, C_GE_2=2",
+            "draws_matched": 37,
+            "percentage": 9.16,
+            "C0": 3,
+            "C1": 2,
+            "C_GE_2": 2
+        },
+        {
+            "pattern": "C0=2, C1=4, C_GE_2=1",
+            "draws_matched": 34,
+            "percentage": 8.42,
+            "C0": 2,
+            "C1": 4,
+            "C_GE_2": 1
+        },
+        {
+            "pattern": "C0=3, C1=4, C_GE_2=0",
+            "draws_matched": 29,
+            "percentage": 7.18,
+            "C0": 3,
+            "C1": 4,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=5, C1=1, C_GE_2=1",
+            "draws_matched": 28,
+            "percentage": 6.93,
+            "C0": 5,
+            "C1": 1,
+            "C_GE_2": 1
+        },
+        {
+            "pattern": "C0=2, C1=3, C_GE_2=2",
+            "draws_matched": 25,
+            "percentage": 6.19,
+            "C0": 2,
+            "C1": 3,
+            "C_GE_2": 2
+        },
+        {
+            "pattern": "C0=5, C1=2, C_GE_2=0",
+            "draws_matched": 24,
+            "percentage": 5.94,
+            "C0": 5,
+            "C1": 2,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=4, C1=3, C_GE_2=0",
+            "draws_matched": 24,
+            "percentage": 5.94,
+            "C0": 4,
+            "C1": 3,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=3, C1=1, C_GE_2=3",
+            "draws_matched": 14,
+            "percentage": 3.47,
+            "C0": 3,
+            "C1": 1,
+            "C_GE_2": 3
+        },
+        {
+            "pattern": "C0=2, C1=5, C_GE_2=0",
+            "draws_matched": 13,
+            "percentage": 3.22,
+            "C0": 2,
+            "C1": 5,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=2, C1=2, C_GE_2=3",
+            "draws_matched": 12,
+            "percentage": 2.97,
+            "C0": 2,
+            "C1": 2,
+            "C_GE_2": 3
+        },
+        {
+            "pattern": "C0=4, C1=1, C_GE_2=2",
+            "draws_matched": 12,
+            "percentage": 2.97,
+            "C0": 4,
+            "C1": 1,
+            "C_GE_2": 2
+        },
+        {
+            "pattern": "C0=1, C1=4, C_GE_2=2",
+            "draws_matched": 12,
+            "percentage": 2.97,
+            "C0": 1,
+            "C1": 4,
+            "C_GE_2": 2
+        },
+        {
+            "pattern": "C0=1, C1=5, C_GE_2=1",
+            "draws_matched": 7,
+            "percentage": 1.73,
+            "C0": 1,
+            "C1": 5,
+            "C_GE_2": 1
+        },
+        {
+            "pattern": "C0=5, C1=0, C_GE_2=2",
+            "draws_matched": 6,
+            "percentage": 1.49,
+            "C0": 5,
+            "C1": 0,
+            "C_GE_2": 2
+        },
+        {
+            "pattern": "C0=1, C1=3, C_GE_2=3",
+            "draws_matched": 5,
+            "percentage": 1.24,
+            "C0": 1,
+            "C1": 3,
+            "C_GE_2": 3
+        },
+        {
+            "pattern": "C0=1, C1=6, C_GE_2=0",
+            "draws_matched": 4,
+            "percentage": 0.99,
+            "C0": 1,
+            "C1": 6,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=6, C1=1, C_GE_2=0",
+            "draws_matched": 4,
+            "percentage": 0.99,
+            "C0": 6,
+            "C1": 1,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=0, C1=5, C_GE_2=2",
+            "draws_matched": 3,
+            "percentage": 0.74,
+            "C0": 0,
+            "C1": 5,
+            "C_GE_2": 2
+        },
+        {
+            "pattern": "C0=3, C1=0, C_GE_2=4",
+            "draws_matched": 3,
+            "percentage": 0.74,
+            "C0": 3,
+            "C1": 0,
+            "C_GE_2": 4
+        },
+        {
+            "pattern": "C0=2, C1=1, C_GE_2=4",
+            "draws_matched": 3,
+            "percentage": 0.74,
+            "C0": 2,
+            "C1": 1,
+            "C_GE_2": 4
+        },
+        {
+            "pattern": "C0=1, C1=2, C_GE_2=4",
+            "draws_matched": 2,
+            "percentage": 0.5,
+            "C0": 1,
+            "C1": 2,
+            "C_GE_2": 4
+        },
+        {
+            "pattern": "C0=6, C1=0, C_GE_2=1",
+            "draws_matched": 2,
+            "percentage": 0.5,
+            "C0": 6,
+            "C1": 0,
+            "C_GE_2": 1
+        },
+        {
+            "pattern": "C0=2, C1=0, C_GE_2=5",
+            "draws_matched": 1,
+            "percentage": 0.25,
+            "C0": 2,
+            "C1": 0,
+            "C_GE_2": 5
+        },
+        {
+            "pattern": "C0=0, C1=7, C_GE_2=0",
+            "draws_matched": 1,
+            "percentage": 0.25,
+            "C0": 0,
+            "C1": 7,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=7, C1=0, C_GE_2=0",
+            "draws_matched": 1,
+            "percentage": 0.25,
+            "C0": 7,
+            "C1": 0,
+            "C_GE_2": 0
+        },
+        {
+            "pattern": "C0=0, C1=4, C_GE_2=3",
+            "draws_matched": 1,
+            "percentage": 0.25,
+            "C0": 0,
+            "C1": 4,
+            "C_GE_2": 3
+        }
+    ]
+}
