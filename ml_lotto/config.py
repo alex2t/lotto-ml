@@ -1,8 +1,8 @@
-
 """
 Configuration settings for lottery analysis
 
-UPDATED: Added Priority 2 features to model configs
+UPDATED: Added Priority 3 features to model configs
+VERSION: 3.3 (Priority 3 Edition)
 """
 
 # =============== ANALYSIS CONFIGURATION ===============
@@ -47,8 +47,8 @@ FRESHNESS_PATTERN_WEIGHTS = 'FRESHNESS_PATTERN_WEIGHTS'
 # ==================== ML MODEL CONFIGURATIONS ====================
 
 MODEL_1_CONFIG = {
-    'name': 'Short-Term Momentum + Patterns',
-    'description': 'Immediate patterns with timing and consecutive boosts',
+    'name': 'Short-Term Momentum + Pattern Balance',
+    'description': 'Immediate patterns with timing, consecutive boosts, and odd/even balance',
     'algorithm': 'logistic_regression',
     
     'hot_count': 1,
@@ -59,10 +59,11 @@ MODEL_1_CONFIG = {
     'features': [
         FRESHNESS_PATTERN_WEIGHTS,      # Recent activity pattern
         'days_since_last',                # Raw timing
-        'recency_zone_score',            # NEW: Optimal timing zones
+        'recency_zone_score',            # Optimal timing zones
         'total_count',                    # Historical frequency
         'was_recent_bonus',              # Bonus indicator
-        'has_consecutive_partner'         # NEW: Hot neighbor detection
+        'has_consecutive_partner',        # Hot neighbor detection
+        'odd_even_affinity'               # NEW: Balance preference (78.71% coverage)
     ],
     
     'diversity_penalty': 0.0,
@@ -83,8 +84,8 @@ MODEL_1_CONFIG = {
 }
 
 MODEL_2_CONFIG = {
-    'name': 'Long-Term Value + Pattern Optimization',
-    'description': 'Historical patterns with timing and bonus optimization',
+    'name': 'Long-Term Value + Sum/Range Optimization',
+    'description': 'Historical patterns with timing, bonus optimization, and realistic sums/ranges',
     'algorithm': 'logistic_regression',
     
     'hot_count': 0,
@@ -95,13 +96,15 @@ MODEL_2_CONFIG = {
     'features': [
         'total_count',                    # Historical frequency
         'days_since_last',                # Raw timing
-        'recency_zone_score',            # NEW: Optimal zones
+        'recency_zone_score',            # Optimal zones
         'days_since_bonus',               # Bonus timing
         'was_recent_bonus',              # Bonus indicator
-        'bonus_hit_target_alignment',     # NEW: Optimize for 1-2 hits
+        'bonus_hit_target_alignment',     # Optimize for 1-2 hits
         'recent_14',                      # Long-term trend
         'win_bias_ratio',                 # Category performance
-        'consecutive_pair_affinity'       # NEW: Historical pairs
+        'consecutive_pair_affinity',      # Historical pairs
+        'sum_contribution_score',         # NEW: Typical sum (68% coverage)
+        'range_spread_affinity'           # NEW: Good distribution (85% coverage)
     ],
     
     'diversity_penalty': 0.15,
@@ -122,8 +125,8 @@ MODEL_2_CONFIG = {
 }
 
 MODEL_3_CONFIG = {
-    'name': 'Complex Pattern Discovery',
-    'description': 'XGBoost with full feature set + pattern interactions',
+    'name': 'Complex Pattern Discovery + Full Realism',
+    'description': 'XGBoost with full feature set including all realism constraints',
     'algorithm': 'xgboost',
     
     'hot_count': 2,
@@ -136,15 +139,18 @@ MODEL_3_CONFIG = {
         FRESHNESS_PATTERN_WEIGHTS,       # Recent pattern
         'total_count',                    # Historical frequency
         'days_since_last',                # Raw timing
-        'recency_zone_score',            # NEW: Optimal zones
+        'recency_zone_score',            # Optimal zones
         'recent_14',                      # Long-term trend
         'days_since_bonus',               # Bonus timing
         'was_recent_bonus',              # Bonus indicator
-        'bonus_hit_target_alignment',     # NEW: Bonus optimization
-        'has_consecutive_partner',        # NEW: Hot neighbors
-        'consecutive_pair_affinity',      # NEW: Historical pairs
+        'bonus_hit_target_alignment',     # Bonus optimization
+        'has_consecutive_partner',        # Hot neighbors
+        'consecutive_pair_affinity',      # Historical pairs
         'series_recent',                  # Streak patterns
-        'win_bias_ratio'                  # Category performance
+        'win_bias_ratio',                 # Category performance
+        'odd_even_affinity',              # NEW: Balance preference
+        'sum_contribution_score',         # NEW: Sum realism
+        'range_spread_affinity'           # NEW: Range distribution
     ],
     
     'diversity_penalty': 0.25,
@@ -180,5 +186,3 @@ ACTIVE_MODELS = [
 SHOW_DETAILED_PENALTIES = True
 SHOW_OVERLAP_ANALYSIS = True
 SHOW_DATA_SOURCE_SUMMARY = False
-
-
