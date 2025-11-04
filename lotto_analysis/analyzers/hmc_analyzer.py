@@ -105,8 +105,9 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     
     max_history_window = max(HISTORY_WINDOWS_DATA)
     
-    # Import freshness analyzer
+    # Import freshness analyzer and distribution analyzer
     from ..analyzers.freshness_analyzer_7_numbers import get_top_pattern_from_draws
+    from ..analyzers.distribution_analyzer import calculate_draw_distribution_features
     from ..config import FRESHNESS_WINDOW_INDEX
     
     target_scenario = SCENARIOS[FRESHNESS_WINDOW_INDEX]
@@ -255,7 +256,10 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 "is_recent_bonus_hit": is_recent_bonus_hit
             })
         
-        # ============ Store Draw History Log ONCE (outside winning numbers loop) ============
+        # ============ NEW: Calculate distribution features for the draw ============
+        distribution_features = calculate_draw_distribution_features(winning_numbers_details)
+        
+        # ============ Store Draw History Log ONCE (with distribution features) ============
         draw_history_log[draw_date] = {
             "draw_index": i,
             "draw_date": draw_date,
@@ -274,7 +278,8 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             "winning_numbers_details": winning_numbers_details,
             "all_numbers_bias_ratios": win_bias_ratios,
             "freshness_pattern_weights": top_pattern_dist_current,
-            "recent_bonus_numbers": recent_bonus_numbers[:] 
+            "recent_bonus_numbers": recent_bonus_numbers[:],
+            "distribution_features": distribution_features
         }
         
         # Update Frequency and Last Seen Date (POST-DRAW)
@@ -286,7 +291,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         if bonus_number is not None:
             recent_bonus_numbers.append(bonus_number)
             if len(recent_bonus_numbers) > 10:
-                recent_bonus_numbers.pop(0) # Keep only the last 10
+                recent_bonus_numbers.pop(0)
 
     # Final categories
     final_categories = get_hot_cold(frequency_count)

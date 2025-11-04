@@ -18,11 +18,7 @@ from ml_lotto.config import MAX_NUMBER, SHOW_DETAILED_PENALTIES
 # ==================== PHASE 1 FILTER IMPORTS ====================
 # Import filter functions from predictor_filters module
 try:
-    from ml_lotto.predictor_filters import (
-        validate_line,
-        rebalance_line,
-        get_filter_statistics
-    )
+   
     FILTERS_AVAILABLE = True
 except ImportError:
     print("⚠️  Warning: predictor_filters module not found. Phase 1 filters disabled.")

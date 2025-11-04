@@ -8,17 +8,18 @@ from collections import defaultdict
 from lotto_analysis.config import (
     CSV_FILE, TOTAL_DRAWS, TRAINING_DATA, NUM_DRAWS, 
     OUTPUT_FILE_MAIN, OUTPUT_FILE_PERIODS, OUTPUT_FILE_HISTORY,
-    OUTPUT_FILE_7_NUMBERS,
+    OUTPUT_FILE_7_NUMBERS, OUTPUT_FILE_DISTRIBUTIONS,
     SCENARIOS, MAX_NUMBER,
-    FRESHNESS_WINDOW_INDEX # IMPORT NEW CONFIG VARIABLE
+    FRESHNESS_WINDOW_INDEX
 )
 from lotto_analysis.core.data_loader import load_lotto_data
 from lotto_analysis.analyzers.pattern_analyzer import process_pattern_analysis
 from lotto_analysis.analyzers.consecutive_analyzer import analyze_consecutive_patterns
 from lotto_analysis.analyzers.hmc_analyzer import process_hmc_analysis
 from lotto_analysis.analyzers.freshness_analyzer_7_numbers import (
-    analyze_7_number_freshness, format_freshness_output # 
+    analyze_7_number_freshness, format_freshness_output
 )
+from lotto_analysis.analyzers.distribution_analyzer import analyze_distribution_patterns
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis, 
     write_json_file, format_date_iso
@@ -27,20 +28,17 @@ from lotto_analysis.utils.output_generator import (
 def main():
     """Main execution function"""
     print("=" * 70)
-    print("Lottery Analysis Program (Pattern + HMC Range + Consecutive)")
+    print("Lottery Analysis Program (Pattern + HMC Range + Consecutive + Distributions)")
     print("=" * 70)
     
     # **DYNAMIC CONFIGURATION SETUP**
-    # 1. Get the target scenario from config
     try:
         target_scenario = SCENARIOS[FRESHNESS_WINDOW_INDEX]
     except IndexError:
         print(f"\nERROR: FRESHNESS_WINDOW_INDEX {FRESHNESS_WINDOW_INDEX} is out of bounds for SCENARIOS list.")
         return
         
-    # 2. Extract W and C_max
     TARGET_FRESHNESS_WINDOW = target_scenario["window"]
-    # C_max is the highest target repetition count defined for this window
     C_MAX_THRESHOLD = max(target_scenario["targets"])
 
     print(f"\nFreshness Analysis Settings: W={TARGET_FRESHNESS_WINDOW}, C_max={C_MAX_THRESHOLD}")
@@ -64,18 +62,17 @@ def main():
     
     # ===== HMC ANALYSIS (Phase 1 & 2) =====
     print("\n" + "=" * 70)
-    print(f"Phase 1: HMC Training ({{TRAINING_DATA}} draws)".format(TRAINING_DATA=TRAINING_DATA))
+    print(f"Phase 1: HMC Training ({TRAINING_DATA} draws)")
     print("Phase 2: HMC Analysis and History Logging")
     print("=" * 70)
     
-    # process_hmc_analysis uses SCENARIOS indirectly via imported helper functions
     (categorization_history, final_frequency, hmc_counts, 
      final_categories, draw_history_log, recent_bonus_hits) = process_hmc_analysis(all_draws)
     total_hmc_draws = len(categorization_history)
     
     # ===== PATTERN ANALYSIS =====
     print("\n" + "=" * 70)
-    print(f"Phase 3: Pattern Analysis ({{NUM_DRAWS}} draws)".format(NUM_DRAWS=NUM_DRAWS))
+    print(f"Phase 3: Pattern Analysis ({NUM_DRAWS} draws)")
     print("=" * 70)
     
     pattern_draws = all_draws[TRAINING_DATA:]
@@ -90,38 +87,63 @@ def main():
     consecutive_patterns = analyze_consecutive_patterns(all_draws)
     
     for run_length in range(2, 8):
-        key = f"{{run_length}}_consecutive".format(run_length=run_length)
+        key = f"{run_length}_consecutive"
         data = consecutive_patterns[key]
         hit_count = data["hit_count"]
         odds = data["odds"]
         percentage = odds * 100
-        print(f"  {{run_length}}-consecutive: {{hit_count}} draws "
-              f"({{percentage:.2f}}%), odds: {{odds:.4f}}".format(run_length=run_length, hit_count=hit_count, percentage=percentage, odds=odds))
+        print(f"  {run_length}-consecutive: {hit_count} draws "
+              f"({percentage:.2f}%), odds: {odds:.4f}")
     
 
-    # ===== NEW: 7-NUMBER FRESHNESS ANALYSIS (Dynamic Window) =====
+    # ===== 7-NUMBER FRESHNESS ANALYSIS =====
     print("\n" + "=" * 70)
     print(f"Phase 5: 7-Number Freshness Distribution Analysis (W={TARGET_FRESHNESS_WINDOW}, C>= {C_MAX_THRESHOLD})")
     print("=" * 70)
     
-    # Pass C_MAX_THRESHOLD dynamically to the analyzer function
     freshness_counts, total_draws_freshness = analyze_7_number_freshness(
         draw_history_log, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
     )
 
+    # ===== ODD/EVEN AND SUM DISTRIBUTION ANALYSIS (BOTH 6 & 7 NUMBERS) =====
+    print("\n" + "=" * 70)
+    print("Phase 6: Odd/Even and Sum Distribution Analysis")
+    print("=" * 70)
+    
+    odd_even_6_stats, odd_even_7_stats, sum_6_stats, sum_7_stats = analyze_distribution_patterns(draw_history_log)
+    
+    print(f"\n--- 6 MAIN NUMBERS (excluding bonus) ---")
+    print(f"\nOdd/Even Pattern Distribution (6 numbers):")
+    for pattern, stats in odd_even_6_stats.items():
+        if stats['count'] > 0:
+            print(f"  {pattern}: {stats['count']} draws ({stats['percentage']:.2f}%)")
+    
+    print(f"\nSum Distribution (6 numbers):")
+    for bin_name, stats in sum_6_stats.items():
+        if stats['count'] > 0:
+            print(f"  {bin_name}: {stats['count']} draws ({stats['percentage']:.2f}%)")
+    
+    print(f"\n--- ALL 7 NUMBERS (6 main + bonus) ---")
+    print(f"\nOdd/Even Pattern Distribution (7 numbers):")
+    for pattern, stats in odd_even_7_stats.items():
+        if stats['count'] > 0:
+            print(f"  {pattern}: {stats['count']} draws ({stats['percentage']:.2f}%)")
+    
+    print(f"\nSum Distribution (7 numbers):")
+    for bin_name, stats in sum_7_stats.items():
+        if stats['count'] > 0:
+            print(f"  {bin_name}: {stats['count']} draws ({stats['percentage']:.2f}%)")
 
     # ===== BUILD SUPPORTING DATA (for lotto_trigger_periods.json) =====
     total_counts_by_number = defaultdict(int)
     last_seen_by_number = {}
     
-    # Loop to fill last_seen_date and total_counts_by_number
     for num in range(1, MAX_NUMBER + 1):
         for draw in all_draws:
             if num in draw["numbers"]:
                 total_counts_by_number[num] += 1
                 last_seen_by_number[num] = draw["date"]
     
-    # Create number-to-category mapping
     num_to_category = {}
     for cat_name, num_list in final_categories.items():
         for num in num_list:
@@ -133,12 +155,10 @@ def main():
     print("Building Output Files")
     print("=" * 70)
     
-    # Generate analysis data
     hmc_analysis = generate_hmc_analysis(hmc_counts, total_hmc_draws)
     draw_range_analysis = generate_draw_range_analysis(categorization_history, 
                                                        total_hmc_draws)
     
-    # NEW: Calculate Recent Bonus Hit Odds
     recent_bonus_analysis = {}
     for key in ['1_hit', '2_hits', '3_or_more']:
         count = recent_bonus_hits.get(key, 0)
@@ -165,11 +185,11 @@ def main():
         results = {}
         total_wins = total_windows_by_size.get(w, 0)
         for t in s["targets"]:
-            cat = f"{{w}}_consecutives_{{t}}_times".format(w=w, t=t)
+            cat = f"{w}_consecutives_{t}_times"
             unique_windows_for_cat = assigned_windows_by_category.get(cat, set())
             hit_count = len(unique_windows_for_cat)
             odds = (hit_count / total_wins) if total_wins > 0 else 0.0
-            results[f"{{t}}_times".format(t=t)] = {
+            results[f"{t}_times"] = {
                 "hit_count": hit_count,
                 "total_windows": total_wins,
                 "odds": round(odds, 4)
@@ -179,20 +199,16 @@ def main():
     final_main["hmc"] = hmc_analysis
     final_main["draw_range"] = draw_range_analysis
     final_main["patterns"] = consecutive_patterns
-    # NEW: Add the recent bonus hit analysis
     final_main["recent_bonus_analysis"] = recent_bonus_analysis 
     
-    # Build lotto_trigger_periods (FIXED LOGIC)
+    # Build lotto_trigger_periods
     final_periods = {}
     for num in range(1, MAX_NUMBER + 1):
         assigned = assigned_matches_by_number.get(num, [])
         
-        # Calculate recent counts
         recent_data = {}
         for scenario in SCENARIOS:
-            window_size = scenario["window"] # e.g., 5
-            
-            # FIX: Use the window size minus 1 for the key name (e.g., last_4)
+            window_size = scenario["window"]
             param_suffix = window_size - 1
             param_name = f"last_{param_suffix}"
             
@@ -200,7 +216,7 @@ def main():
                           else pattern_draws)
                           
             count = sum(1 for draw in recent_draws if num in draw["numbers"])
-            recent_data[param_name] = count # Key is now 'last_4', 'last_6', etc.
+            recent_data[param_name] = count
             
         series_data = {}
 
@@ -219,7 +235,6 @@ def main():
                     "count": count
                 }]
 
-        # Build output for this number
         output = {}
         if total_counts_by_number[num] > 0:
             output["total_count"] = total_counts_by_number[num]
@@ -233,6 +248,21 @@ def main():
         
         final_periods[str(num)] = output
     
+    # ===== BUILD DISTRIBUTION STATISTICS OUTPUT (BOTH 6 & 7) =====
+    final_distribution_stats = {
+        "total_draws_analyzed": total_hmc_draws,
+        "analysis_6_main_numbers": {
+            "description": "Analysis of 6 main numbers (excluding bonus)",
+            "odd_even_patterns": odd_even_6_stats,
+            "sum_distributions": sum_6_stats
+        },
+        "analysis_all_7_numbers": {
+            "description": "Analysis of all 7 numbers (6 main + bonus)",
+            "odd_even_patterns": odd_even_7_stats,
+            "sum_distributions": sum_7_stats
+        }
+    }
+    
     # ===== WRITE OUTPUT FILES =====
     write_json_file(OUTPUT_FILE_MAIN, final_main, 
                    "Includes scenarios, HMC, draw_range, and consecutive patterns")
@@ -241,12 +271,14 @@ def main():
     write_json_file(OUTPUT_FILE_HISTORY, draw_history_log,
                    "Per-draw history for HMC state and winning numbers details")
     
-    # 4. Write the new lotto_7_number_freshness_results.json file
     final_freshness_data = format_freshness_output(
         freshness_counts, total_draws_freshness, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
     )
     write_json_file(OUTPUT_FILE_7_NUMBERS, final_freshness_data,
                    "Comprehensive freshness distribution for all 7 winning numbers")
+    
+    write_json_file(OUTPUT_FILE_DISTRIBUTIONS, final_distribution_stats,
+                   "Odd/Even patterns and Sum distributions (both 6 and 7 numbers) for ML")
 
     print("\n" + "=" * 70)
     print("Analysis Complete!")
