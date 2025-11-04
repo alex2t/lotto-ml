@@ -1,10 +1,11 @@
 """
 quickpick.py (main.py)
 ======================
-Main entry point for the Lottery Prediction System V3.3
+Main entry point for the Lottery Prediction System V3.5
 
 UPDATES:
-- Added Priority 3 ML features (odd/even, sum, range)
+- Priority 3 ML features now use JSON data sources
+- Added loading of lotto_distribution_stats.json
 """
 
 import warnings
@@ -56,6 +57,9 @@ from ml_lotto.display import (
     display_completion_message
 )
 
+# NEW: Path to distribution stats JSON
+DISTRIBUTION_STATS_JSON = 'data/lotto_distribution_stats.json'
+
 
 def validate_data_files() -> bool:
     """Validate that all required data files exist."""
@@ -63,7 +67,8 @@ def validate_data_files() -> bool:
         DRAW_HISTORY_JSON,
         HMC_JSON_INPUT,
         ODDS_JSON_INPUT,
-        FRESHNESS_JSON_INPUT
+        FRESHNESS_JSON_INPUT,
+        DISTRIBUTION_STATS_JSON  # NEW
     ]
     
     missing_files = []
@@ -75,13 +80,13 @@ def validate_data_files() -> bool:
         print("\n✗ ERROR: Missing required data files:")
         for file in missing_files:
             print(f"   - {file}")
-        print("\nPlease ensure all data files are present before running.")
+        print("\nPlease run 'python drawpick.py' to generate all data files.")
         return False
     
     return True
 
 
-def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data) -> bool:
+def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats) -> bool:
     """Validate that loaded data is valid and sufficient."""
     issues = []
     
@@ -97,6 +102,9 @@ def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data) -> bool
     if not freshness_data or 'distribution_analysis_7_numbers' not in freshness_data:
         issues.append("Freshness data is missing or invalid")
     
+    if not distribution_stats:
+        issues.append("Distribution stats data is missing or invalid")
+    
     if issues:
         print("\n✗ DATA VALIDATION ERRORS:")
         for issue in issues:
@@ -111,10 +119,10 @@ def main():
     start_time = time.time()
     
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.3: Priority 3 Features")
+    print("INTELLIGENT LOTTO SYSTEM V3.5: JSON-Based Priority 3 Features")
     print("=" * 70)
     print(f"Active Models: {len(ACTIVE_MODELS)}")
-    print("NEW: Odd/Even, Sum, Range ML Features")
+    print("NEW: Odd/Even, Sum, Range features from JSON data")
     
     try:
         # ==================== STEP 0: VALIDATE FILES ====================
@@ -147,8 +155,32 @@ def main():
         except json.JSONDecodeError as e:
             print(f"✗ Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
         
+        # NEW: Load distribution stats data
+        distribution_stats = {}
+        try:
+            with open(DISTRIBUTION_STATS_JSON, 'r') as f:
+                distribution_stats = json.load(f)
+            print(f"✓ Loaded distribution stats from {DISTRIBUTION_STATS_JSON}")
+            print(f"  Total draws analyzed: {distribution_stats.get('total_draws_analyzed', 0)}")
+            
+            # Display coverage stats
+            six_num_data = distribution_stats.get('analysis_6_main_numbers', {})
+            odd_even_patterns = six_num_data.get('odd_even_patterns', {})
+            balanced_patterns = ['2_4', '3_3', '4_2']
+            total_balanced = sum(odd_even_patterns.get(p, {}).get('count', 0) for p in balanced_patterns)
+            total = distribution_stats.get('total_draws_analyzed', 1)
+            balanced_pct = (total_balanced / total * 100) if total > 0 else 0
+            
+            print(f"  Odd/Even balanced patterns: {balanced_pct:.2f}% coverage")
+            
+        except FileNotFoundError:
+            print(f"✗ Error: {DISTRIBUTION_STATS_JSON} not found.")
+            print(f"  Run 'python drawpick.py' to generate this file.")
+        except json.JSONDecodeError as e:
+            print(f"✗ Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
+        
         # Validate loaded data
-        if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data):
+        if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats):
             sys.exit(1)
     
         # Load dynamic freshness configuration
@@ -159,6 +191,7 @@ def main():
         print(f"  - HMC numbers tracked: {len(hmc_data)}")
         print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
+        print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
         
         # ==================== STEP 2: EXTRACT FEATURES (COMPLETE) ====================
         print("\nStep 2: Extracting features from HMC data...")
@@ -198,7 +231,7 @@ def main():
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
 
-        print("  Combining all features (Priority 2 + Priority 3)...")
+        print("  Combining all features (Priority 2 + Priority 3 from JSON)...")
         try:
             features_dict = extract_features_from_hmc_json(
                 hmc_data, 
@@ -209,8 +242,9 @@ def main():
                 win_bias_ratio_data,
                 was_recent_bonus_data,
                 consecutive_patterns,
-                draw_history_log_raw,  # NEW PARAMETER
-                TRAINING_START_DRAW  # NEW PARAMETER
+                distribution_stats,  # NEW PARAMETER for odd_even and sum
+                odds_data,  # NEW PARAMETER for range_spread
+                TRAINING_START_DRAW
             )
             print(f"  ✓ Features extracted for {len(features_dict)} numbers")
         except Exception as e:
@@ -276,7 +310,7 @@ def main():
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
-                    f.write("NEW FEATURES: Odd/Even, Sum, Range ML Features\n")
+                    f.write("NEW: Odd/Even, Sum, Range features from JSON data\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")

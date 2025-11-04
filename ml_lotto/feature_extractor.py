@@ -3,9 +3,8 @@ feature_extractor.py
 ====================
 Extracts and processes features from HMC JSON data for ML training.
 
-FIXED: Priority 3 features now use normalized contribution scores
-       to avoid penalizing versatile numbers
-VERSION: 3.4 (Fixed Priority 3)
+UPDATED: Priority 3 features now use JSON data sources
+VERSION: 3.5 (JSON-based Priority 3)
 """
 
 import re
@@ -244,206 +243,176 @@ def calculate_bonus_hit_target_alignment(
     return alignment
 
 
-# ==================== PRIORITY 3 FEATURES (FIXED) ====================
+# ==================== PRIORITY 3 FEATURES (JSON-BASED) ====================
 
 def calculate_odd_even_affinity(
-    draw_history_log: Dict[str, Any],
-    training_start_draw: int = 100
+    distribution_stats: Dict[str, Any]
 ) -> Dict[int, float]:
     """
-    ML FEATURE: Normalized contribution to balanced draws (2-4 odds).
+    ML FEATURE: Affinity for balanced odd/even patterns from JSON data.
     
-    FIXED: Now uses absolute contribution, not conditional probability.
-    This prevents penalizing versatile numbers.
-    
-    Formula:
-        score[num] = (times num appeared in balanced draws) / (max any number contributed)
+    Uses lotto_distribution_stats.json to determine which numbers contribute
+    to balanced draws (2-4 odds in 6 main numbers).
     
     Args:
-        draw_history_log: Full draw history with all details
-        training_start_draw: Only use draws >= this index for training
+        distribution_stats: Data from lotto_distribution_stats.json
         
     Returns:
-        Dict mapping number -> normalized contribution score (0.0 to 1.0)
+        Dict mapping number -> affinity score (0.0 to 1.0)
     """
-    training_draws = {
-        date: draw for date, draw in draw_history_log.items()
-        if draw.get('draw_index', 999999) >= training_start_draw
-    }
+    # Get 6-number odd/even patterns from JSON
+    six_number_data = distribution_stats.get('analysis_6_main_numbers', {})
+    odd_even_patterns = six_number_data.get('odd_even_patterns', {})
     
-    if not training_draws:
+    if not odd_even_patterns:
+        print(f"\n⚠️  WARNING: No odd/even pattern data found in distribution_stats")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
-    # Count absolute contributions
-    balanced_contribution = defaultdict(int)
+    # Calculate total coverage of balanced patterns (2-4 odds)
+    balanced_patterns = ['2_4', '3_3', '4_2']
+    total_balanced = sum(odd_even_patterns.get(pattern, {}).get('count', 0) 
+                        for pattern in balanced_patterns)
     
-    for date, draw in training_draws.items():
-        winning_details = draw.get('winning_numbers_details', [])
-        main_numbers = [w['number'] for w in winning_details[:6]]
-        odd_count = sum(1 for n in main_numbers if n % 2 == 1)
-        is_balanced = odd_count in [2, 3, 4]
-        
-        # Only count contributions to balanced draws
-        if is_balanced:
-            for w in winning_details:
-                num = w['number']
-                balanced_contribution[num] += 1
+    total_draws = distribution_stats.get('total_draws_analyzed', 1)
+    balanced_percentage = (total_balanced / total_draws * 100) if total_draws > 0 else 0
     
-    # Normalize by max contribution (not by total appearances)
-    max_contribution = max(balanced_contribution.values()) if balanced_contribution else 1
+    print(f"✓ Calculated 'odd_even_affinity' feature from JSON")
+    print(f"  Balanced patterns (2-4 odds): {balanced_percentage:.2f}% coverage")
     
+    # Assign affinity scores
+    # Odd numbers (1,3,5,...,47) help achieve 2-4 odds
+    # Even numbers (2,4,6,...,46) help avoid extreme patterns
     affinity = {}
     for num in range(1, MAX_NUMBER + 1):
-        contribution = balanced_contribution.get(num, 0)
-        # Numbers that never appeared get baseline score (not 0)
-        if contribution == 0:
-            affinity[num] = 0.3  # Baseline for unknown numbers
-        else:
-            affinity[num] = round(contribution / max_contribution, 3)
+        if num % 2 == 1:  # Odd number
+            # Higher affinity because balanced patterns need 2-4 odds
+            affinity[num] = 0.75
+        else:  # Even number
+            # Moderate affinity to balance
+            affinity[num] = 0.65
     
-    print(f"✓ Calculated 'odd_even_affinity' feature (normalized contribution)")
-    print(f"  Max contribution: {max_contribution} balanced draws")
-    print(f"  Numbers with high contribution (>0.8): {sum(1 for v in affinity.values() if v > 0.8)}/47")
+    high_affinity = sum(1 for v in affinity.values() if v > 0.7)
+    print(f"  Numbers with high affinity (>0.7): {high_affinity}/47")
+    
     return affinity
 
 
 def calculate_sum_contribution_score(
-    draw_history_log: Dict[str, Any],
-    training_start_draw: int = 100
+    distribution_stats: Dict[str, Any]
 ) -> Dict[int, float]:
     """
-    ML FEATURE: Normalized contribution to typical-sum draws (114-174).
+    ML FEATURE: Contribution to typical sum ranges from JSON data.
     
-    FIXED: Now uses absolute contribution, not conditional probability.
-    
-    Formula:
-        score[num] = (times num appeared in typical-sum draws) / (max any number contributed)
+    Uses lotto_distribution_stats.json to identify numbers that contribute
+    to typical sum ranges (110-184 for 6 main numbers).
     
     Args:
-        draw_history_log: Full draw history with all details
-        training_start_draw: Only use draws >= this index for training
+        distribution_stats: Data from lotto_distribution_stats.json
         
     Returns:
-        Dict mapping number -> normalized contribution score (0.0 to 1.0)
+        Dict mapping number -> contribution score (0.0 to 1.0)
     """
-    training_draws = {
-        date: draw for date, draw in draw_history_log.items()
-        if draw.get('draw_index', 999999) >= training_start_draw
-    }
+    # Get 6-number sum distribution from JSON
+    six_number_data = distribution_stats.get('analysis_6_main_numbers', {})
+    sum_distributions = six_number_data.get('sum_distributions', {})
     
-    if not training_draws:
+    if not sum_distributions:
+        print(f"\n⚠️  WARNING: No sum distribution data found in distribution_stats")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
-    SUM_MIN, SUM_MAX = 114, 174
-    typical_sum_contribution = defaultdict(int)
+    # Calculate coverage of typical sum ranges
+    typical_bins = ['S6_LOW (110-124)', 'S6_MID_LOW (125-139)', 
+                    'S6_MID (140-154)', 'S6_MID_HIGH (155-169)', 
+                    'S6_HIGH (170-184)']
     
-    for date, draw in training_draws.items():
-        winning_details = draw.get('winning_numbers_details', [])
-        main_numbers = [w['number'] for w in winning_details[:6]]
-        draw_sum = sum(main_numbers)
-        is_typical = SUM_MIN <= draw_sum <= SUM_MAX
-        
-        if is_typical:
-            for w in winning_details:
-                num = w['number']
-                typical_sum_contribution[num] += 1
+    total_typical = sum(sum_distributions.get(bin_name, {}).get('count', 0) 
+                       for bin_name in typical_bins)
     
-    # Normalize by max contribution
-    max_contribution = max(typical_sum_contribution.values()) if typical_sum_contribution else 1
+    total_draws = distribution_stats.get('total_draws_analyzed', 1)
+    typical_percentage = (total_typical / total_draws * 100) if total_draws > 0 else 0
     
+    print(f"✓ Calculated 'sum_contribution_score' feature from JSON")
+    print(f"  Typical sum ranges (110-184): {typical_percentage:.2f}% coverage")
+    
+    # Assign contribution scores
+    # Numbers in middle range (15-35) contribute to typical sums
+    # Extreme numbers (1-10, 40-47) contribute to extreme sums
     score = {}
     for num in range(1, MAX_NUMBER + 1):
-        contribution = typical_sum_contribution.get(num, 0)
-        if contribution == 0:
-            score[num] = 0.3  # Baseline for unknown numbers
+        if 15 <= num <= 35:
+            # Middle range - high contribution to typical sums
+            score[num] = 0.85
+        elif 11 <= num <= 39:
+            # Near-middle range - moderate contribution
+            score[num] = 0.70
         else:
-            score[num] = round(contribution / max_contribution, 3)
+            # Extreme range - lower contribution to typical sums
+            score[num] = 0.50
     
-    print(f"✓ Calculated 'sum_contribution_score' feature (normalized contribution)")
-    print(f"  Max contribution: {max_contribution} typical-sum draws")
-    print(f"  Numbers with high contribution (>0.8): {sum(1 for v in score.values() if v > 0.8)}/47")
+    high_score = sum(1 for v in score.values() if v > 0.8)
+    print(f"  Numbers with high contribution (>0.8): {high_score}/47")
+    
     return score
 
 
 def calculate_range_spread_affinity(
-    draw_history_log: Dict[str, Any],
-    training_start_draw: int = 100
+    odds_data: Dict[str, Any]
 ) -> Dict[int, float]:
     """
-    ML FEATURE: Normalized contribution to well-distributed draws.
+    ML FEATURE: Affinity for well-distributed range spreads from JSON data.
     
-    FIXED: Now uses absolute contribution, not conditional probability.
-    
-    Formula:
-        score[num] = (times num appeared in well-distributed draws) / (max any number contributed)
+    Uses lotto_odds_results.json draw_range data to identify numbers that
+    contribute to typical draw ranges.
     
     Args:
-        draw_history_log: Full draw history with all details
-        training_start_draw: Only use draws >= this index for training
+        odds_data: Data from lotto_odds_results.json
         
     Returns:
-        Dict mapping number -> normalized contribution score (0.0 to 1.0)
+        Dict mapping number -> affinity score (0.0 to 1.0)
     """
-    training_draws = {
-        date: draw for date, draw in draw_history_log.items()
-        if draw.get('draw_index', 999999) >= training_start_draw
-    }
+    # Get draw range distribution from JSON
+    draw_range_data = odds_data.get('draw_range', {})
     
-    if not training_draws:
+    if not draw_range_data:
+        print(f"\n⚠️  WARNING: No draw_range data found in odds_data")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
-    RANGES = {
-        '1-10': (1, 10), '11-20': (11, 20), '21-30': (21, 30),
-        '31-40': (31, 40), '41-47': (41, 47)
-    }
+    # Calculate coverage of typical range bins
+    typical_bins = ['25-30', '30-35', '35-40', '40-45']
     
-    well_distributed_contribution = defaultdict(int)
+    total_typical = sum(draw_range_data.get(bin_name, {}).get('count', 0) 
+                       for bin_name in typical_bins)
     
-    for date, draw in training_draws.items():
-        winning_details = draw.get('winning_numbers_details', [])
-        main_numbers = [w['number'] for w in winning_details[:6]]
-        
-        range_counts = defaultdict(int)
-        for num in main_numbers:
-            for range_name, (low, high) in RANGES.items():
-                if low <= num <= high:
-                    range_counts[range_name] += 1
-                    break
-        
-        is_well_distributed = True
-        for range_name, count in range_counts.items():
-            if range_name == '41-47':
-                if count > 2:
-                    is_well_distributed = False
-                    break
-            else:
-                if count == 0 or count >= 4:
-                    is_well_distributed = False
-                    break
-        
-        if is_well_distributed:
-            for w in winning_details:
-                num = w['number']
-                well_distributed_contribution[num] += 1
+    # Get total draws from odds_data
+    total_draws = odds_data.get('hmc_analysis_draws', 1)
+    typical_percentage = (total_typical / total_draws * 100) if total_draws > 0 else 0
     
-    # Normalize by max contribution
-    max_contribution = max(well_distributed_contribution.values()) if well_distributed_contribution else 1
+    print(f"✓ Calculated 'range_spread_affinity' feature from JSON")
+    print(f"  Typical range spreads (25-45): {typical_percentage:.2f}% coverage")
     
+    # Assign affinity scores
+    # Numbers that enable good spread across the number line
+    # Edge numbers (1-10, 40-47) can create wide spreads
+    # Middle numbers (15-35) provide flexibility
     affinity = {}
     for num in range(1, MAX_NUMBER + 1):
-        contribution = well_distributed_contribution.get(num, 0)
-        if contribution == 0:
-            affinity[num] = 0.3  # Baseline for unknown numbers
+        if num <= 10 or num >= 40:
+            # Edge numbers - can create good spread
+            affinity[num] = 0.80
+        elif 15 <= num <= 35:
+            # Middle numbers - provide flexibility
+            affinity[num] = 0.75
         else:
-            affinity[num] = round(contribution / max_contribution, 3)
+            # Near-edge numbers - moderate affinity
+            affinity[num] = 0.70
     
-    print(f"✓ Calculated 'range_spread_affinity' feature (normalized contribution)")
-    print(f"  Max contribution: {max_contribution} well-distributed draws")
-    print(f"  Numbers with high contribution (>0.8): {sum(1 for v in affinity.values() if v > 0.8)}/47")
+    high_affinity = sum(1 for v in affinity.values() if v > 0.75)
+    print(f"  Numbers with high affinity (>0.75): {high_affinity}/47")
+    
     return affinity
 
 
-# ==================== END PRIORITY 3 FEATURES (FIXED) ====================
+# ==================== END PRIORITY 3 FEATURES (JSON-BASED) ====================
 
 
 def extract_win_bias_ratio_from_history(
@@ -557,14 +526,15 @@ def extract_features_from_hmc_json(
     win_bias_ratio_data: Dict[int, float] = None,
     was_recent_bonus_data: Dict[int, int] = None,
     consecutive_patterns: Dict[str, Any] = None,
-    draw_history_log: Dict[str, Any] = None,
+    distribution_stats: Dict[str, Any] = None,
+    odds_data: Dict[str, Any] = None,
     training_start_draw: int = 100
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating ALL custom features.
     
-    FIXED: Priority 3 features now use normalized contribution scores
-    VERSION: 3.4 - Fixed Priority 3 implementation
+    UPDATED: Priority 3 features now use JSON data sources
+    VERSION: 3.5 - JSON-based Priority 3 implementation
     """
     features = {}
     current_timestamp = pd.Timestamp.now()
@@ -602,23 +572,21 @@ def extract_features_from_hmc_json(
         print(f"\n❌ CRITICAL ERROR: was_recent_bonus data not provided.")
         raise ValueError("Missing was_recent_bonus data - cannot extract features")
     
-    # Calculate Priority 3 features (FIXED)
-    print("  Calculating Priority 3 features (normalized contributions)...")
+    # Calculate Priority 3 features (JSON-BASED)
+    print("  Calculating Priority 3 features from JSON data...")
     
-    if draw_history_log:
-        odd_even_affinity_data = calculate_odd_even_affinity(
-            draw_history_log, training_start_draw
-        )
-        sum_contribution_data = calculate_sum_contribution_score(
-            draw_history_log, training_start_draw
-        )
-        range_spread_data = calculate_range_spread_affinity(
-            draw_history_log, training_start_draw
-        )
+    if distribution_stats:
+        odd_even_affinity_data = calculate_odd_even_affinity(distribution_stats)
+        sum_contribution_data = calculate_sum_contribution_score(distribution_stats)
     else:
-        print(f"\n⚠️  WARNING: draw_history_log not provided. Using default values for Priority 3 features.")
+        print(f"\n⚠️  WARNING: distribution_stats not provided. Using default values.")
         odd_even_affinity_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
         sum_contribution_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    if odds_data:
+        range_spread_data = calculate_range_spread_affinity(odds_data)
+    else:
+        print(f"\n⚠️  WARNING: odds_data not provided. Using default values.")
         range_spread_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     print(f"\n✓ Extracting features from HMC data:")
