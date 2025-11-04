@@ -1,18 +1,18 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-04 05:47:43
+LOTTERY PICKS - GENERATED 2025-11-04 22:55:51
 ======================================================================
-NEW FEATURES: Odd/Even, Sum, Range ML Features
+NEW: Odd/Even, Sum, Range features from JSON data
 ======================================================================
 
 Line 1: Short-Term Momentum + Pattern Balance [1H-2M-2C+1G | C0=3, C1=2, C_GE_2=1]
-Numbers: [7, 12, 13, 24, 35, 41]
+Numbers: [6, 7, 24, 35, 38, 39]
 Description: Immediate patterns with timing, consecutive boosts, and odd/even balance
 
-Line 2: Long-Term Value + Sum/Range Optimization [0H-3M-2C+1G | C0=3, C1=2, C_GE_2=1]
-Numbers: [3, 4, 20, 25, 32, 45]
+Line 2: Long-Term Value + Sum/Range Optimization [0H-3M-2C+1G | C0=3, C1=3, C_GE_2=0]
+Numbers: [4, 12, 20, 25, 36, 37]
 Description: Historical patterns with timing, bonus optimization, and realistic sums/ranges
 
-Line 3: Complex Pattern Discovery + Full Realism [2H-2M-1C+1G | C0=3, C1=3, C_GE_2=0]
-Numbers: [5, 14, 19, 28, 31, 40]
+Line 3: Complex Pattern Discovery + Full Realism [2H-2M-1C+1G | C0=3, C1=2, C_GE_2=1]
+Numbers: [5, 14, 19, 33, 40, 42]
 Description: XGBoost with full feature set including all realism constraints
 
