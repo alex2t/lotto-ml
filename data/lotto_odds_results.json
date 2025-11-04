@@ -1,19 +1,19 @@
 {
     "requested_draws": 500,
-    "pattern_analysis_draws": 404,
-    "hmc_analysis_draws": 404,
+    "pattern_analysis_draws": 405,
+    "hmc_analysis_draws": 405,
     "hmc_training_draws": 100,
-    "available_draws": 504,
-    "used_draws": 504,
+    "available_draws": 505,
+    "used_draws": 505,
     "skipped_rows": 0,
     "scenarios": [
         {
             "window_size": 5,
             "results": {
                 "2_times": {
-                    "hit_count": 263,
-                    "total_windows": 400,
-                    "odds": 0.6575
+                    "hit_count": 264,
+                    "total_windows": 401,
+                    "odds": 0.6584
                 }
             }
         },
@@ -21,9 +21,9 @@
             "window_size": 6,
             "results": {
                 "3_times": {
-                    "hit_count": 83,
-                    "total_windows": 399,
-                    "odds": 0.208
+                    "hit_count": 84,
+                    "total_windows": 400,
+                    "odds": 0.21
                 }
             }
         },
@@ -31,9 +31,9 @@
             "window_size": 10,
             "results": {
                 "4_times": {
-                    "hit_count": 141,
-                    "total_windows": 395,
-                    "odds": 0.357
+                    "hit_count": 140,
+                    "total_windows": 396,
+                    "odds": 0.3535
                 }
             }
         },
@@ -42,8 +42,8 @@
             "results": {
                 "25_times": {
                     "hit_count": 9,
-                    "total_windows": 301,
-                    "odds": 0.0299
+                    "total_windows": 302,
+                    "odds": 0.0298
                 }
             }
         }
@@ -51,47 +51,47 @@
     "hmc": {
         "2-3-2": {
             "count": 52,
-            "percentage": 12.87
+            "percentage": 12.84
         },
         "2-2-3": {
             "count": 45,
-            "percentage": 11.14
+            "percentage": 11.11
         },
         "3-2-2": {
             "count": 38,
-            "percentage": 9.41
+            "percentage": 9.38
         },
         "3-3-1": {
             "count": 32,
-            "percentage": 7.92
+            "percentage": 7.9
         },
         "1-3-3": {
             "count": 32,
-            "percentage": 7.92
+            "percentage": 7.9
         },
         "3-1-3": {
             "count": 26,
-            "percentage": 6.44
+            "percentage": 6.42
         },
         "1-2-4": {
             "count": 21,
-            "percentage": 5.2
+            "percentage": 5.19
         },
         "4-1-2": {
             "count": 21,
-            "percentage": 5.2
+            "percentage": 5.19
         },
         "1-4-2": {
             "count": 21,
-            "percentage": 5.2
+            "percentage": 5.19
         },
         "2-4-1": {
             "count": 17,
-            "percentage": 4.21
+            "percentage": 4.2
         },
         "4-2-1": {
             "count": 13,
-            "percentage": 3.22
+            "percentage": 3.21
         },
         "2-1-4": {
             "count": 11,
@@ -101,13 +101,13 @@
             "count": 11,
             "percentage": 2.72
         },
-        "0-4-3": {
+        "3-4-0": {
             "count": 8,
             "percentage": 1.98
         },
-        "3-4-0": {
-            "count": 7,
-            "percentage": 1.73
+        "0-4-3": {
+            "count": 8,
+            "percentage": 1.98
         },
         "0-2-5": {
             "count": 7,
@@ -143,23 +143,23 @@
         },
         "5-0-2": {
             "count": 2,
-            "percentage": 0.5
+            "percentage": 0.49
         },
         "2-0-5": {
             "count": 2,
-            "percentage": 0.5
+            "percentage": 0.49
         },
         "5-2-0": {
             "count": 2,
-            "percentage": 0.5
+            "percentage": 0.49
         },
         "1-6-0": {
             "count": 2,
-            "percentage": 0.5
+            "percentage": 0.49
         },
         "0-6-1": {
             "count": 2,
-            "percentage": 0.5
+            "percentage": 0.49
         },
         "6-0-1": {
             "count": 1,
@@ -177,38 +177,38 @@
     "draw_range": {
         "<20": {
             "count": 6,
-            "percentage": 1.49
+            "percentage": 1.48
         },
         "20-25": {
-            "count": 13,
-            "percentage": 3.22
+            "count": 14,
+            "percentage": 3.46
         },
         "25-30": {
             "count": 47,
-            "percentage": 11.63
+            "percentage": 11.6
         },
         "30-35": {
             "count": 87,
-            "percentage": 21.53
+            "percentage": 21.48
         },
         "35-40": {
             "count": 109,
-            "percentage": 26.98
+            "percentage": 26.91
         },
         "40-45": {
             "count": 133,
-            "percentage": 32.92
+            "percentage": 32.84
         },
         ">45": {
             "count": 9,
-            "percentage": 2.23
+            "percentage": 2.22
         }
     },
     "patterns": {
         "2_consecutive": {
             "hit_count": 288,
-            "total_draws": 504,
-            "odds": 0.5714,
+            "total_draws": 505,
+            "odds": 0.5703,
             "last20": [
                 {
                     "date": "2025-10-29",
@@ -360,12 +360,12 @@
                 "41-42": 12,
                 "31-32": 8,
                 "32-33": 9,
-                "11-12": 14,
+                "11-12": 15,
                 "35-36": 17,
                 "6-7": 9,
                 "27-28": 10,
                 "34-35": 16,
-                "12-13": 13,
+                "12-13": 14,
                 "14-15": 5,
                 "17-18": 10,
                 "46-47": 15,
@@ -401,10 +401,18 @@
             }
         },
         "3_consecutive": {
-            "hit_count": 34,
-            "total_draws": 504,
-            "odds": 0.0675,
+            "hit_count": 35,
+            "total_draws": 505,
+            "odds": 0.0693,
             "last20": [
+                {
+                    "date": "2025-11-01",
+                    "numbers": [
+                        11,
+                        12,
+                        13
+                    ]
+                },
                 {
                     "date": "2025-10-01",
                     "numbers": [
@@ -556,20 +564,12 @@
                         26,
                         27
                     ]
-                },
-                {
-                    "date": "2023-04-22",
-                    "numbers": [
-                        6,
-                        7,
-                        8
-                    ]
                 }
             ]
         },
         "4_consecutive": {
             "hit_count": 5,
-            "total_draws": 504,
+            "total_draws": 505,
             "odds": 0.0099,
             "last20": [
                 {
@@ -621,19 +621,19 @@
         },
         "5_consecutive": {
             "hit_count": 0,
-            "total_draws": 504,
+            "total_draws": 505,
             "odds": 0.0,
             "last20": []
         },
         "6_consecutive": {
             "hit_count": 0,
-            "total_draws": 504,
+            "total_draws": 505,
             "odds": 0.0,
             "last20": []
         },
         "7_consecutive": {
             "hit_count": 0,
-            "total_draws": 504,
+            "total_draws": 505,
             "odds": 0.0,
             "last20": []
         }
@@ -641,15 +641,15 @@
     "recent_bonus_analysis": {
         "1_hit": {
             "count": 149,
-            "odds": 0.3688
+            "odds": 0.3679
         },
         "2_hits": {
             "count": 99,
-            "odds": 0.245
+            "odds": 0.2444
         },
         "3_or_more": {
-            "count": 40,
-            "odds": 0.099
+            "count": 41,
+            "odds": 0.1012
         }
     }
 }
