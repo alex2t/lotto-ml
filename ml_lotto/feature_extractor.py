@@ -3,8 +3,9 @@ feature_extractor.py
 ====================
 Extracts and processes features from HMC JSON data for ML training.
 
-UPDATED: Removed all hardcoded fallback values to ensure data integrity
-VERSION: 3.2 (No-Fallback Edition)
+FIXED: Priority 3 features now use normalized contribution scores
+       to avoid penalizing versatile numbers
+VERSION: 3.4 (Fixed Priority 3)
 """
 
 import re
@@ -138,9 +139,7 @@ def calculate_has_consecutive_partner(
             break
     
     if not recent_4_key:
-        # No recent_4 data available - should not happen if data is properly generated
         print(f"\n⚠️  WARNING: 'recent_4' key not found in dynamic keys.")
-        print(f"   This may indicate incomplete data generation.")
         print(f"   Continuing with all consecutive_partner values set to 0.")
         return {num: 0 for num in range(1, MAX_NUMBER + 1)}
     
@@ -179,10 +178,6 @@ def calculate_consecutive_pair_affinity(
     Calculate affinity score: How often does this number appear in consecutive pairs?
     
     Uses "all_pairs" data showing historical pair frequencies.
-    
-    EXAMPLE FROM YOUR DATA:
-    - Pair 45-46: 18 occurrences → 45 and 46 get high scores
-    - Pair 15-16: 1 occurrence → 15 and 16 get low scores
     
     Returns:
         Dict mapping number -> affinity_score (0.0 to 1.0)
@@ -235,14 +230,6 @@ def calculate_bonus_hit_target_alignment(
     """
     Score based on helping achieve optimal bonus hit count.
     
-    YOUR DATA SHOWS:
-    - 36.88% of draws have exactly 1 bonus hit
-    - 24.50% of draws have exactly 2 bonus hits
-    - 61.38% have 1-2 hits (OPTIMAL RANGE)
-    
-    Strategy: Favor recent bonus numbers but not too heavily
-    (predictor will optimize for 1-2 total bonus hits per line)
-    
     Returns:
         Dict mapping number -> alignment_score (0.0 to 1.0)
     """
@@ -250,36 +237,222 @@ def calculate_bonus_hit_target_alignment(
     
     for num in range(1, MAX_NUMBER + 1):
         if was_recent_bonus_data.get(num, 0) == 1:
-            # Recent bonus number - moderate boost
             alignment[num] = 0.65
         else:
-            # Not a bonus number - lower score
             alignment[num] = 0.35
     
     return alignment
+
+
+# ==================== PRIORITY 3 FEATURES (FIXED) ====================
+
+def calculate_odd_even_affinity(
+    draw_history_log: Dict[str, Any],
+    training_start_draw: int = 100
+) -> Dict[int, float]:
+    """
+    ML FEATURE: Normalized contribution to balanced draws (2-4 odds).
+    
+    FIXED: Now uses absolute contribution, not conditional probability.
+    This prevents penalizing versatile numbers.
+    
+    Formula:
+        score[num] = (times num appeared in balanced draws) / (max any number contributed)
+    
+    Args:
+        draw_history_log: Full draw history with all details
+        training_start_draw: Only use draws >= this index for training
+        
+    Returns:
+        Dict mapping number -> normalized contribution score (0.0 to 1.0)
+    """
+    training_draws = {
+        date: draw for date, draw in draw_history_log.items()
+        if draw.get('draw_index', 999999) >= training_start_draw
+    }
+    
+    if not training_draws:
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    # Count absolute contributions
+    balanced_contribution = defaultdict(int)
+    
+    for date, draw in training_draws.items():
+        winning_details = draw.get('winning_numbers_details', [])
+        main_numbers = [w['number'] for w in winning_details[:6]]
+        odd_count = sum(1 for n in main_numbers if n % 2 == 1)
+        is_balanced = odd_count in [2, 3, 4]
+        
+        # Only count contributions to balanced draws
+        if is_balanced:
+            for w in winning_details:
+                num = w['number']
+                balanced_contribution[num] += 1
+    
+    # Normalize by max contribution (not by total appearances)
+    max_contribution = max(balanced_contribution.values()) if balanced_contribution else 1
+    
+    affinity = {}
+    for num in range(1, MAX_NUMBER + 1):
+        contribution = balanced_contribution.get(num, 0)
+        # Numbers that never appeared get baseline score (not 0)
+        if contribution == 0:
+            affinity[num] = 0.3  # Baseline for unknown numbers
+        else:
+            affinity[num] = round(contribution / max_contribution, 3)
+    
+    print(f"✓ Calculated 'odd_even_affinity' feature (normalized contribution)")
+    print(f"  Max contribution: {max_contribution} balanced draws")
+    print(f"  Numbers with high contribution (>0.8): {sum(1 for v in affinity.values() if v > 0.8)}/47")
+    return affinity
+
+
+def calculate_sum_contribution_score(
+    draw_history_log: Dict[str, Any],
+    training_start_draw: int = 100
+) -> Dict[int, float]:
+    """
+    ML FEATURE: Normalized contribution to typical-sum draws (114-174).
+    
+    FIXED: Now uses absolute contribution, not conditional probability.
+    
+    Formula:
+        score[num] = (times num appeared in typical-sum draws) / (max any number contributed)
+    
+    Args:
+        draw_history_log: Full draw history with all details
+        training_start_draw: Only use draws >= this index for training
+        
+    Returns:
+        Dict mapping number -> normalized contribution score (0.0 to 1.0)
+    """
+    training_draws = {
+        date: draw for date, draw in draw_history_log.items()
+        if draw.get('draw_index', 999999) >= training_start_draw
+    }
+    
+    if not training_draws:
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    SUM_MIN, SUM_MAX = 114, 174
+    typical_sum_contribution = defaultdict(int)
+    
+    for date, draw in training_draws.items():
+        winning_details = draw.get('winning_numbers_details', [])
+        main_numbers = [w['number'] for w in winning_details[:6]]
+        draw_sum = sum(main_numbers)
+        is_typical = SUM_MIN <= draw_sum <= SUM_MAX
+        
+        if is_typical:
+            for w in winning_details:
+                num = w['number']
+                typical_sum_contribution[num] += 1
+    
+    # Normalize by max contribution
+    max_contribution = max(typical_sum_contribution.values()) if typical_sum_contribution else 1
+    
+    score = {}
+    for num in range(1, MAX_NUMBER + 1):
+        contribution = typical_sum_contribution.get(num, 0)
+        if contribution == 0:
+            score[num] = 0.3  # Baseline for unknown numbers
+        else:
+            score[num] = round(contribution / max_contribution, 3)
+    
+    print(f"✓ Calculated 'sum_contribution_score' feature (normalized contribution)")
+    print(f"  Max contribution: {max_contribution} typical-sum draws")
+    print(f"  Numbers with high contribution (>0.8): {sum(1 for v in score.values() if v > 0.8)}/47")
+    return score
+
+
+def calculate_range_spread_affinity(
+    draw_history_log: Dict[str, Any],
+    training_start_draw: int = 100
+) -> Dict[int, float]:
+    """
+    ML FEATURE: Normalized contribution to well-distributed draws.
+    
+    FIXED: Now uses absolute contribution, not conditional probability.
+    
+    Formula:
+        score[num] = (times num appeared in well-distributed draws) / (max any number contributed)
+    
+    Args:
+        draw_history_log: Full draw history with all details
+        training_start_draw: Only use draws >= this index for training
+        
+    Returns:
+        Dict mapping number -> normalized contribution score (0.0 to 1.0)
+    """
+    training_draws = {
+        date: draw for date, draw in draw_history_log.items()
+        if draw.get('draw_index', 999999) >= training_start_draw
+    }
+    
+    if not training_draws:
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    RANGES = {
+        '1-10': (1, 10), '11-20': (11, 20), '21-30': (21, 30),
+        '31-40': (31, 40), '41-47': (41, 47)
+    }
+    
+    well_distributed_contribution = defaultdict(int)
+    
+    for date, draw in training_draws.items():
+        winning_details = draw.get('winning_numbers_details', [])
+        main_numbers = [w['number'] for w in winning_details[:6]]
+        
+        range_counts = defaultdict(int)
+        for num in main_numbers:
+            for range_name, (low, high) in RANGES.items():
+                if low <= num <= high:
+                    range_counts[range_name] += 1
+                    break
+        
+        is_well_distributed = True
+        for range_name, count in range_counts.items():
+            if range_name == '41-47':
+                if count > 2:
+                    is_well_distributed = False
+                    break
+            else:
+                if count == 0 or count >= 4:
+                    is_well_distributed = False
+                    break
+        
+        if is_well_distributed:
+            for w in winning_details:
+                num = w['number']
+                well_distributed_contribution[num] += 1
+    
+    # Normalize by max contribution
+    max_contribution = max(well_distributed_contribution.values()) if well_distributed_contribution else 1
+    
+    affinity = {}
+    for num in range(1, MAX_NUMBER + 1):
+        contribution = well_distributed_contribution.get(num, 0)
+        if contribution == 0:
+            affinity[num] = 0.3  # Baseline for unknown numbers
+        else:
+            affinity[num] = round(contribution / max_contribution, 3)
+    
+    print(f"✓ Calculated 'range_spread_affinity' feature (normalized contribution)")
+    print(f"  Max contribution: {max_contribution} well-distributed draws")
+    print(f"  Numbers with high contribution (>0.8): {sum(1 for v in affinity.values() if v > 0.8)}/47")
+    return affinity
+
+
+# ==================== END PRIORITY 3 FEATURES (FIXED) ====================
 
 
 def extract_win_bias_ratio_from_history(
     draw_history_log: Dict[str, Any],
     max_number: int
 ) -> Dict[int, float]:
-    """
-    Extract the MOST RECENT win_bias_ratio from draw history.
-    
-    Args:
-        draw_history_log: Full draw history with bias ratios
-        max_number: Maximum lottery number (typically 47)
-        
-    Returns:
-        Dict mapping number -> win_bias_ratio
-        
-    Raises:
-        ValueError: If draw history is empty or missing required data
-    """
+    """Extract the MOST RECENT win_bias_ratio from draw history."""
     if not draw_history_log:
         print(f"\n❌ CRITICAL ERROR: Draw history log is empty.")
-        print(f"   Cannot extract win_bias_ratio without historical data.")
-        print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate draw history.")
         raise ValueError("Cannot extract win_bias_ratio from empty draw history")
     
     sorted_dates = sorted(
@@ -296,8 +469,6 @@ def extract_win_bias_ratio_from_history(
     
     if not bias_ratios:
         print(f"\n❌ CRITICAL ERROR: 'all_numbers_bias_ratios' missing from latest draw.")
-        print(f"   Latest draw date: {latest_date}")
-        print(f"\n   REQUIRED ACTION: Delete data files and run 'python drawpick.py'")
         raise ValueError("Latest draw missing required bias ratio data")
     
     result = {}
@@ -385,13 +556,15 @@ def extract_features_from_hmc_json(
     freshness_features: Dict[int, Dict[str, float]] = None,
     win_bias_ratio_data: Dict[int, float] = None,
     was_recent_bonus_data: Dict[int, int] = None,
-    consecutive_patterns: Dict[str, Any] = None
+    consecutive_patterns: Dict[str, Any] = None,
+    draw_history_log: Dict[str, Any] = None,
+    training_start_draw: int = 100
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating ALL custom features.
     
-    NEW: Added Priority 2 features for improved prediction
-    VERSION: 3.2 - All features now sourced from JSON data
+    FIXED: Priority 3 features now use normalized contribution scores
+    VERSION: 3.4 - Fixed Priority 3 implementation
     """
     features = {}
     current_timestamp = pd.Timestamp.now()
@@ -418,8 +591,6 @@ def extract_features_from_hmc_json(
             raise
     else:
         print(f"\n❌ CRITICAL ERROR: Consecutive patterns data not provided.")
-        print(f"   This data should come from lotto_odds_results.json")
-        print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate pattern data.")
         raise ValueError("Missing consecutive_patterns data - cannot extract features")
     
     bonus_alignment_data = {}
@@ -429,14 +600,33 @@ def extract_features_from_hmc_json(
         )
     else:
         print(f"\n❌ CRITICAL ERROR: was_recent_bonus data not provided.")
-        print(f"   This data should be calculated from draw history.")
         raise ValueError("Missing was_recent_bonus data - cannot extract features")
+    
+    # Calculate Priority 3 features (FIXED)
+    print("  Calculating Priority 3 features (normalized contributions)...")
+    
+    if draw_history_log:
+        odd_even_affinity_data = calculate_odd_even_affinity(
+            draw_history_log, training_start_draw
+        )
+        sum_contribution_data = calculate_sum_contribution_score(
+            draw_history_log, training_start_draw
+        )
+        range_spread_data = calculate_range_spread_affinity(
+            draw_history_log, training_start_draw
+        )
+    else:
+        print(f"\n⚠️  WARNING: draw_history_log not provided. Using default values for Priority 3 features.")
+        odd_even_affinity_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        sum_contribution_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        range_spread_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     print(f"\n✓ Extracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
                      'series_total', 'series_recent', 'days_since_bonus', 
                      'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner',
-                     'consecutive_pair_affinity', 'bonus_hit_target_alignment']
+                     'consecutive_pair_affinity', 'bonus_hit_target_alignment',
+                     'odd_even_affinity', 'sum_contribution_score', 'range_spread_affinity']
     fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() 
                                    if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
     
@@ -451,7 +641,7 @@ def extract_features_from_hmc_json(
         
         fresh_feat = freshness_features.get(num, {})
         
-        # Default features with Priority 2 additions
+        # Default features with all priorities
         default_features = {
             'total_count': 0,
             'category': 'cold',
@@ -465,6 +655,9 @@ def extract_features_from_hmc_json(
             'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
             'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
             'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
+            'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
+            'sum_contribution_score': sum_contribution_data.get(num, 0.5),
+            'range_spread_affinity': range_spread_data.get(num, 0.5),
             **fresh_feat,
             **recent_fields,
         }
@@ -522,6 +715,9 @@ def extract_features_from_hmc_json(
             'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
             'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
             'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
+            'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
+            'sum_contribution_score': sum_contribution_data.get(num, 0.5),
+            'range_spread_affinity': range_spread_data.get(num, 0.5),
             **fresh_feat,
             **recent_fields,
         }

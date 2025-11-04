@@ -1,11 +1,10 @@
-
 """
 quickpick.py (main.py)
 ======================
-Main entry point for the Lottery Prediction System V3.1
+Main entry point for the Lottery Prediction System V3.3
 
 UPDATES:
-- Added was_recent_bonus feature (3.42x lift from trend analysis)
+- Added Priority 3 ML features (odd/even, sum, range)
 """
 
 import warnings
@@ -22,7 +21,8 @@ from ml_lotto.config import (
     ODDS_JSON_INPUT,
     FRESHNESS_JSON_INPUT,
     ACTIVE_MODELS,
-    MAX_NUMBER  # IMPORTANT: Added MAX_NUMBER
+    MAX_NUMBER,
+    TRAINING_START_DRAW
 )
 
 # --- Data Loader Imports ---
@@ -41,7 +41,7 @@ from ml_lotto.feature_extractor import (
     calculate_days_since_bonus,
     calculate_freshness_category_features,
     extract_win_bias_ratio_from_history,
-    calculate_was_recent_bonus  # NEW IMPORT
+    calculate_was_recent_bonus
 )
 
 # --- Model Imports ---
@@ -111,10 +111,10 @@ def main():
     start_time = time.time()
     
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.2: Bonus Ball Predictor")
+    print("INTELLIGENT LOTTO SYSTEM V3.3: Priority 3 Features")
     print("=" * 70)
     print(f"Active Models: {len(ACTIVE_MODELS)}")
-    print("NEW FEATURE: was_recent_bonus (3.42x lift discovered!)")
+    print("NEW: Odd/Even, Sum, Range ML Features")
     
     try:
         # ==================== STEP 0: VALIDATE FILES ====================
@@ -198,7 +198,7 @@ def main():
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
 
-        print("  Combining all features (including Priority 2)...")
+        print("  Combining all features (Priority 2 + Priority 3)...")
         try:
             features_dict = extract_features_from_hmc_json(
                 hmc_data, 
@@ -208,7 +208,9 @@ def main():
                 freshness_category_features,
                 win_bias_ratio_data,
                 was_recent_bonus_data,
-                consecutive_patterns  # ← NEW PARAMETER
+                consecutive_patterns,
+                draw_history_log_raw,  # NEW PARAMETER
+                TRAINING_START_DRAW  # NEW PARAMETER
             )
             print(f"  ✓ Features extracted for {len(features_dict)} numbers")
         except Exception as e:
@@ -274,7 +276,7 @@ def main():
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
-                    f.write("NEW FEATURE: was_recent_bonus (3.42x lift)\n")
+                    f.write("NEW FEATURES: Odd/Even, Sum, Range ML Features\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
@@ -314,4 +316,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
