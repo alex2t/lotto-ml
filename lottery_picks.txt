@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-04 22:55:51
+LOTTERY PICKS - GENERATED 2025-11-05 21:10:49
 ======================================================================
 NEW: Odd/Even, Sum, Range features from JSON data
 ======================================================================
@@ -13,6 +13,7 @@ Numbers: [4, 12, 20, 25, 36, 37]
 Description: Historical patterns with timing, bonus optimization, and realistic sums/ranges
 
 Line 3: Complex Pattern Discovery + Full Realism [2H-2M-1C+1G | C0=3, C1=2, C_GE_2=1]
-Numbers: [5, 14, 19, 33, 40, 42]
+Numbers: [5, 13, 14, 17, 19, 40]
 Description: XGBoost with full feature set including all realism constraints
 
+01,12,17,28,32,45,46

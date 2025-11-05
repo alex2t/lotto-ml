@@ -1,26 +1,21 @@
 """
-model_trainer.py
-================
+trainer.py
+==========
 Handles ML model training with configurable algorithms and features.
-Supports Logistic Regression and XGBoost with calibration.
 """
 
-import numpy as np
 import pandas as pd
-import xgboost as xgb
 from typing import Dict, Any, List, Tuple
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.calibration import CalibratedClassifierCV
-from sklearn.pipeline import Pipeline
-
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW
+from ml_lotto.models.pipelines import create_model_pipeline
 from ml_lotto.feature_extractor import expand_feature_selection, get_all_feature_names
 
 
-def build_training_dataset(all_draws: List[Dict[str, Any]], 
-                           features_dict: Dict[int, Dict[str, Any]],
-                           all_feature_names: List[str]) -> pd.DataFrame:
+def build_training_dataset(
+    all_draws: List[Dict[str, Any]],
+    features_dict: Dict[int, Dict[str, Any]],
+    all_feature_names: List[str]
+) -> pd.DataFrame:
     """
     Build training dataset by combining features and labels.
     
@@ -34,6 +29,11 @@ def build_training_dataset(all_draws: List[Dict[str, Any]],
                 X (features) ← [total_count, days_since_last, ..., days_since_bonus]
                 y (label)    ← 1 if number won that draw, 0 if not
     
+    Args:
+        all_draws: Historical draw data with winning numbers
+        features_dict: Feature values for each number
+        all_feature_names: List of all available feature names
+        
     Returns:
         DataFrame with all features + 'hit' column (label)
     """
@@ -42,8 +42,8 @@ def build_training_dataset(all_draws: List[Dict[str, Any]],
     
     # Build training data by combining FEATURES + LABELS
     for draw_idx in range(TRAINING_START_DRAW, len(all_draws)):
-        # LABELS: Get winning numbers from Draw History JSON (stored under 'numbers')
-        # Note: 'numbers' contains both main and bonus balls.
+        # LABELS: Get winning numbers from Draw History JSON
+        # Note: 'numbers' contains both main and bonus balls
         target_numbers = set(all_draws[draw_idx]['numbers'])
         
         for num in range(1, MAX_NUMBER + 1):
@@ -66,48 +66,23 @@ def build_training_dataset(all_draws: List[Dict[str, Any]],
     return train_df
 
 
-def create_model_pipeline(model_config: Dict[str, Any], 
-                          scale_pos_weight: float = None) -> Pipeline:
-    """
-    Create a model pipeline based on configuration.
-    """
-    algorithm = model_config['algorithm']
-    algo_params = model_config['algorithm_params'].copy()
-    cal_params = model_config['calibration']
-    
-    if algorithm == 'logistic_regression':
-        base_clf = LogisticRegression(**algo_params)
-    
-    elif algorithm == 'xgboost':
-        if scale_pos_weight is not None:
-            algo_params['scale_pos_weight'] = scale_pos_weight
-        base_clf = xgb.XGBClassifier(**algo_params)
-    
-    else:
-        raise ValueError(f"Unknown algorithm: {algorithm}")
-    
-    # Calibrate the classifier
-    calibrated_clf = CalibratedClassifierCV(
-        estimator=base_clf,
-        method=cal_params['method'],
-        cv=cal_params['cv']
-    )
-    
-    # Create pipeline with scaling
-    pipeline = Pipeline([
-        ('scaler', StandardScaler()),
-        ('clf', calibrated_clf)
-    ])
-    
-    return pipeline
-
-
-def train_model(model_config: Dict[str, Any],
-                train_df: pd.DataFrame,
-                all_feature_names: List[str],
-                model_index: int) -> Tuple[Pipeline, List[str]]:
+def train_model(
+    model_config: Dict[str, Any],
+    train_df: pd.DataFrame,
+    all_feature_names: List[str],
+    model_index: int
+) -> Tuple[Any, List[str]]:
     """
     Train a single model based on its configuration.
+    
+    Args:
+        model_config: Model configuration dictionary
+        train_df: Training DataFrame with features and labels
+        all_feature_names: All available feature names
+        model_index: Model number (for display)
+        
+    Returns:
+        Tuple of (trained_pipeline, selected_features)
     """
     print(f"\n→ Model {model_index}: {model_config['name']}")
     print(f"  Description: {model_config['description']}")
@@ -145,11 +120,23 @@ def train_model(model_config: Dict[str, Any],
     return pipeline, selected_features
 
 
-def train_all_models(model_configs: List[Dict[str, Any]],
-                     all_draws: List[Dict[str, Any]],
-                     features_dict: Dict[int, Dict[str, Any]]) -> Tuple[Dict[str, Any], Dict[str, List[str]]]:
+def train_all_models(
+    model_configs: List[Dict[str, Any]],
+    all_draws: List[Dict[str, Any]],
+    features_dict: Dict[int, Dict[str, Any]]
+) -> Tuple[Dict[str, Any], Dict[str, List[str]]]:
     """
     Train all configured models.
+    
+    Args:
+        model_configs: List of model configuration dictionaries
+        all_draws: Historical draw data
+        features_dict: Feature values for all numbers
+        
+    Returns:
+        Tuple of (models_dict, model_features_dict)
+        - models_dict: {model_name: {'pipeline': pipeline, 'config': config}}
+        - model_features_dict: {model_name: [feature_names]}
     """
     print("\n" + "="*70)
     print("TRAINING MULTIPLE ML MODELS WITH DIFFERENT STRATEGIES")
