@@ -27,13 +27,14 @@ from ml_lotto.config import (
 )
 
 # --- Data Loader Imports ---
-from ml_lotto.data_loader import (
+from ml_lotto.data import (
     load_hmc_json,
     load_odds_json,
     get_most_likely_hmc_pattern,
     load_draw_history_with_bias_ratios,
     load_freshness_config
 )
+
 
 # --- Feature Extractor Imports ---
 from ml_lotto.feature_extractor import (
@@ -46,8 +47,8 @@ from ml_lotto.feature_extractor import (
 )
 
 # --- Model Imports ---
-from ml_lotto.model_trainer import train_all_models
-from ml_lotto.predictor import generate_predictions, generate_all_picks
+from ml_lotto.models import train_all_models
+from ml_lotto.prediction import generate_predictions, generate_all_picks
 from ml_lotto.display import (
     display_final_picks,
     display_overlap_analysis,
