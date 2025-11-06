@@ -1,0 +1,266 @@
+"""
+extractor.py
+============
+Main orchestrator for feature extraction from HMC JSON data.
+
+This module coordinates all feature calculations and combines them into
+a unified feature dictionary for ML training.
+
+UPDATED: Priority 3 features now use JSON data sources
+VERSION: 3.6 (Modular Package Structure)
+"""
+
+import pandas as pd
+from typing import Dict, Any, List, Tuple
+from ml_lotto.config import MAX_NUMBER, FRESHNESS_PATTERN_WEIGHTS
+
+from ml_lotto.features.timing import calculate_recency_zone_score
+from ml_lotto.features.patterns import (
+    calculate_has_consecutive_partner,
+    calculate_consecutive_pair_affinity
+)
+from ml_lotto.features.bonus import calculate_bonus_hit_target_alignment
+from ml_lotto.features.realism import (
+    calculate_odd_even_affinity,
+    calculate_sum_contribution_score,
+    calculate_range_spread_affinity
+)
+
+
+def extract_features_from_hmc_json(
+    hmc_data: Dict[str, Any], 
+    dynamic_recent_keys: List[Tuple[str, str]],
+    days_since_bonus_data: Dict[int, int],
+    pattern_score_data: Dict[int, float],
+    freshness_features: Dict[int, Dict[str, float]] = None,
+    win_bias_ratio_data: Dict[int, float] = None,
+    was_recent_bonus_data: Dict[int, int] = None,
+    consecutive_patterns: Dict[str, Any] = None,
+    distribution_stats: Dict[str, Any] = None,
+    odds_data: Dict[str, Any] = None,
+    training_start_draw: int = 100
+) -> Dict[int, Dict[str, Any]]:
+    """
+    Extract ML features for each number, incorporating ALL custom features.
+    
+    This is the main orchestrator that coordinates all feature calculations
+    from various specialized modules and combines them into a unified
+    feature dictionary.
+    
+    Args:
+        hmc_data: HMC statistics from lotto_trigger_periods.json
+        dynamic_recent_keys: List of (data_key, ml_key) tuples for recent counts
+        days_since_bonus_data: Days since each number was a bonus
+        pattern_score_data: Pattern scoring data (deprecated, pass empty dict)
+        freshness_features: Pre-calculated freshness category features
+        win_bias_ratio_data: Category performance ratios
+        was_recent_bonus_data: Recent bonus indicators
+        consecutive_patterns: Consecutive pair data from odds JSON
+        distribution_stats: Distribution statistics from distribution_stats.json
+        odds_data: Odds and pattern data from odds_results.json
+        training_start_draw: Starting draw index for training
+        
+    Returns:
+        Dictionary mapping number (1-47) -> feature dictionary
+        
+    UPDATED: Priority 3 features now use JSON data sources
+    VERSION: 3.6 - Modular package structure
+    """
+    features = {}
+    current_timestamp = pd.Timestamp.now()
+    ml_feature_names = [ml_key for data_key, ml_key in dynamic_recent_keys]
+    
+    if freshness_features is None:
+        freshness_features = {}
+    
+    # Calculate Priority 2 features
+    print("  Calculating Priority 2 features...")
+    has_consecutive_partner_data = calculate_has_consecutive_partner(
+        hmc_data,
+        dynamic_recent_keys
+    )
+    
+    consecutive_pair_affinity_data = {}
+    if consecutive_patterns:
+        try:
+            consecutive_pair_affinity_data = calculate_consecutive_pair_affinity(
+                consecutive_patterns
+            )
+        except ValueError as e:
+            print(f"\n⚠️  Feature extraction stopped due to missing data.")
+            raise
+    else:
+        print(f"\n❌ CRITICAL ERROR: Consecutive patterns data not provided.")
+        raise ValueError("Missing consecutive_patterns data - cannot extract features")
+    
+    bonus_alignment_data = {}
+    if was_recent_bonus_data:
+        bonus_alignment_data = calculate_bonus_hit_target_alignment(
+            was_recent_bonus_data
+        )
+    else:
+        print(f"\n❌ CRITICAL ERROR: was_recent_bonus data not provided.")
+        raise ValueError("Missing was_recent_bonus data - cannot extract features")
+    
+    # Calculate Priority 3 features (JSON-BASED)
+    print("  Calculating Priority 3 features from JSON data...")
+    
+    if distribution_stats:
+        odd_even_affinity_data = calculate_odd_even_affinity(distribution_stats)
+        sum_contribution_data = calculate_sum_contribution_score(distribution_stats)
+    else:
+        print(f"\n⚠️  WARNING: distribution_stats not provided. Using default values.")
+        odd_even_affinity_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        sum_contribution_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    if odds_data:
+        range_spread_data = calculate_range_spread_affinity(odds_data)
+    else:
+        print(f"\n⚠️  WARNING: odds_data not provided. Using default values.")
+        range_spread_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    print(f"\n✓ Extracting features from HMC data:")
+    base_features = ['total_count', 'days_since_last', 'recency_zone_score',
+                     'series_total', 'series_recent', 'days_since_bonus', 
+                     'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner',
+                     'consecutive_pair_affinity', 'bonus_hit_target_alignment',
+                     'odd_even_affinity', 'sum_contribution_score', 'range_spread_affinity']
+    fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() 
+                                   if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
+    
+    print(f"  Static features: {base_features}")
+    print(f"  Freshness features: {fresh_features_names + ['current_freshness_bin']}")
+    print(f"  Dynamic features: {ml_feature_names}")
+    
+    for num_str in range(1, MAX_NUMBER + 1):
+        num = num_str
+        num_key = str(num)
+        recent_fields = {f: 0 for f in ml_feature_names}
+        
+        fresh_feat = freshness_features.get(num, {})
+        
+        # Default features with all priorities
+        default_features = {
+            'total_count': 0,
+            'category': 'cold',
+            'days_since_last': 999,
+            'recency_zone_score': calculate_recency_zone_score(999),
+            'series_total': 0,
+            'series_recent': 0,
+            'days_since_bonus': days_since_bonus_data.get(num, 999),
+            'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
+            'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
+            'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
+            'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
+            'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
+            'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
+            'sum_contribution_score': sum_contribution_data.get(num, 0.5),
+            'range_spread_affinity': range_spread_data.get(num, 0.5),
+            **fresh_feat,
+            **recent_fields,
+        }
+        
+        if num_key not in hmc_data:
+            features[num] = default_features
+            continue
+        
+        num_data = hmc_data[num_key]
+        category = num_data.get('category', 'unknown')
+        total_count = num_data.get('total_count', 0)
+        days_since = 999
+        
+        if 'last_seen' in num_data:
+            try:
+                last_date_str = num_data['last_seen'].replace('/', '-')
+                last_date = pd.to_datetime(last_date_str)
+                days_since = (current_timestamp - last_date).days
+            except Exception:
+                pass
+        
+        recent_data = num_data.get('recent', {})
+        for data_key, ml_feature_key in dynamic_recent_keys:
+            recent_fields[ml_feature_key] = recent_data.get(data_key, 0)
+        
+        series_total = 0
+        series_recent = 0
+        
+        if 'series' in num_data and 'series' in num_data['series']:
+            series_patterns = num_data['series']['series']
+            
+            for pattern_name, occurrences in series_patterns.items():
+                for occurrence in occurrences:
+                    series_total += occurrence.get('count', 0)
+                    
+                    try:
+                        end_date_str = occurrence.get('end_date', '').replace('/', '-')
+                        end_date = pd.to_datetime(end_date_str)
+                        days_ago = (current_timestamp - end_date).days
+                        if days_ago <= 60:
+                            series_recent += occurrence.get('count', 0)
+                    except:
+                        pass
+        
+        features[num] = {
+            'total_count': total_count,
+            'category': category,
+            'days_since_last': days_since,
+            'recency_zone_score': calculate_recency_zone_score(days_since),
+            'series_total': series_total,
+            'series_recent': series_recent,
+            'days_since_bonus': days_since_bonus_data.get(num, 999),
+            'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
+            'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
+            'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
+            'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
+            'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
+            'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
+            'sum_contribution_score': sum_contribution_data.get(num, 0.5),
+            'range_spread_affinity': range_spread_data.get(num, 0.5),
+            **fresh_feat,
+            **recent_fields,
+        }
+    
+    return features
+
+
+def get_all_feature_names(features_dict: Dict[int, Dict[str, Any]]) -> List[str]:
+    """Get list of all available feature names (excluding 'category')."""
+    if not features_dict:
+        return []
+    
+    sample_features = next(iter(features_dict.values()))
+    return [key for key in sample_features.keys() if key != 'category']
+
+
+def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List[str]:
+    """Expand feature specification into actual feature list."""
+    
+    recent_features = sorted([f for f in all_features if f.startswith('recent_')],
+                             key=lambda x: int(x.split('_')[1]))
+    
+    freshness_weights_features = sorted([f for f in all_features if f.startswith('freshness_c') and f.endswith('_weight')])
+                             
+    custom_keywords = {
+        'ALL': all_features,
+        'RECENT_ALL': recent_features,
+        'RECENT_SHORT': recent_features[:1] if recent_features else [],
+        'RECENT_LONG': recent_features[-1:] if recent_features else [],
+        'BONUS_AWARE': ['days_since_bonus'], 
+        'FRESHNESS_PATTERN': freshness_weights_features,
+        FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features
+    }
+
+    if isinstance(feature_spec, str):
+        return custom_keywords.get(feature_spec, [])
+
+    if isinstance(feature_spec, list):
+        expanded = []
+        for item in feature_spec:
+            if item in custom_keywords:
+                expanded.extend(custom_keywords[item])
+            else:
+                if item in all_features:
+                    expanded.append(item)
+        return list(set(expanded))
+
+    return []
