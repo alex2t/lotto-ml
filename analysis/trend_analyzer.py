@@ -21,7 +21,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 
 # Configuration
-DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
+DRAW_HISTORY_JSON = '../data/lotto_draw_history.json'
 ANALYSIS_WINDOWS = [50, 100, 150, 200]  # Different lookback windows
 TOTAL_COUNT_BINS = [(60, 70), (70, 80), (80, 90), (90, 100)]
 DAYS_SINCE_BINS = [(0, 14), (14, 30), (30, 60), (60, 120), (120, 999)]
@@ -579,14 +579,14 @@ def main():
     
     # Save HMC imbalance time series
     for window in ANALYSIS_WINDOWS:
-        filename = f'./trend_analysis/trend_analysis_hmc_imbalance_{window}draws.csv'
+        filename = f'trend_analysis_hmc_imbalance_{window}draws.csv'
         analyses['hmc_imbalance'][window].to_csv(filename, index=False)
         print(f"✓ Saved: {filename}")
     
     # Save recommendations
     if recommendations:
         rec_df = pd.DataFrame(recommendations)
-        rec_df.to_csv('./trend_analysis/feature_recommendations.csv', index=False)
+        rec_df.to_csv('feature_recommendations.csv', index=False)
         print("✓ Saved: feature_recommendations.csv")
     
     print("\n" + "=" * 80)

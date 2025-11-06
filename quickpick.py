@@ -37,13 +37,45 @@ from ml_lotto.data import (
 
 
 # --- Feature Extractor Imports ---
-from ml_lotto.feature_extractor import (
-    get_dynamic_recent_keys,
+
+from ml_lotto.features.extractor import (
     extract_features_from_hmc_json,
+    get_all_feature_names,
+    expand_feature_selection
+)
+
+from ml_lotto.features.base import (
+    get_dynamic_recent_keys
+)
+
+from ml_lotto.features.timing import (
     calculate_days_since_bonus,
+    calculate_recency_zone_score
+)
+
+from ml_lotto.features.patterns import (
+    calculate_has_consecutive_partner,
+    calculate_consecutive_pair_affinity
+)
+
+from ml_lotto.features.bonus import (
+    calculate_was_recent_bonus,
+    calculate_bonus_hit_target_alignment
+)
+
+from ml_lotto.features.freshness import (
     calculate_freshness_category_features,
-    extract_win_bias_ratio_from_history,
-    calculate_was_recent_bonus
+    calculate_recency_weighted_pattern_score
+)
+
+from ml_lotto.features.realism import (
+    calculate_odd_even_affinity,
+    calculate_sum_contribution_score,
+    calculate_range_spread_affinity
+)
+
+from ml_lotto.features.history import (
+    extract_win_bias_ratio_from_history
 )
 
 # --- Model Imports ---

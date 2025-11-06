@@ -13,7 +13,7 @@ This script will:
 
 import json
 import pandas as pd
-from ml_lotto.data_loader import load_draw_history_with_bias_ratios
+from ml_lotto.data import load_draw_history_with_bias_ratios  # ✓ Correct
 from ml_lotto.feature_extractor import calculate_was_recent_bonus
 from ml_lotto.config import DRAW_HISTORY_JSON, MAX_NUMBER
 

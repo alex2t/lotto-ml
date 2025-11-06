@@ -8,7 +8,7 @@ import pandas as pd
 from typing import Dict, Any, List, Tuple
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW
 from ml_lotto.models.pipelines import create_model_pipeline
-from ml_lotto.feature_extractor import expand_feature_selection, get_all_feature_names
+from ml_lotto.features.extractor import expand_feature_selection, get_all_feature_names
 
 
 def build_training_dataset(
