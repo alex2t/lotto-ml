@@ -100,7 +100,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     hmc_distribution_counts = defaultdict(int)
     draw_history_log = {}
     
-    # NEW: Tracking counts for 1, 2, or 3 hits in the Last 10 Bonus
+    # Tracking counts for 1, 2, or 3 hits in the Last 10 Bonus
     recent_bonus_hit_counts = defaultdict(int)
     
     max_history_window = max(HISTORY_WINDOWS_DATA)
@@ -173,7 +173,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         # Determine the bonus number
         bonus_number = winning_numbers[-1] if winning_numbers else None
         
-        # NEW: Count how many *main* winning numbers hit the recent bonus set
+        # Count how many *main* winning numbers hit the recent bonus set
         current_draw_bonus_hits = 0
         main_winning_numbers = winning_numbers[:6]
         
@@ -181,7 +181,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             if number in recent_bonus_set:
                 current_draw_bonus_hits += 1
         
-        # NEW: Record the draw hit count (1, 2, or 3+)
+        # Record the draw hit count (1, 2, or 3+)
         if current_draw_bonus_hits >= 1:
             if current_draw_bonus_hits >= 3:
                 recent_bonus_hit_counts['3_or_more'] += 1
@@ -189,6 +189,23 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 recent_bonus_hit_counts['2_hits'] += 1
             elif current_draw_bonus_hits == 1:
                 recent_bonus_hit_counts['1_hit'] += 1
+
+        # ============ Calculate Bonus Hit Analysis ============
+        bonus_hit_analysis = {
+            "total_bonus_hits": current_draw_bonus_hits,
+            "alignment_score": 0.0,
+            "target_range": "1-2 hits",
+            "is_optimal": False
+        }
+        
+        # Alignment scoring: optimal is 1-2 hits
+        if current_draw_bonus_hits == 1 or current_draw_bonus_hits == 2:
+            bonus_hit_analysis["alignment_score"] = 1.0
+            bonus_hit_analysis["is_optimal"] = True
+        elif current_draw_bonus_hits == 0:
+            bonus_hit_analysis["alignment_score"] = 0.5
+        else:  # 3+ hits
+            bonus_hit_analysis["alignment_score"] = 0.3
 
         # Build winning_numbers_details for draw history
         winning_numbers_details = []
@@ -243,6 +260,9 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             # 6. Check if the number was one of the last 10 bonus numbers
             is_recent_bonus_hit = number in recent_bonus_set
             
+            # 7. Calculate bonus hit contribution for this number
+            bonus_hit_contribution = 1.0 if is_recent_bonus_hit else 0.0
+            
             # ============ APPEND ONCE with ALL data ============
             winning_numbers_details.append({
                 "number": number,
@@ -253,13 +273,14 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 "win_bias_ratio": win_bias_ratios.get(number, 1.0),
                 "freshness_weights": freshness_weights,
                 "current_freshness_bin": current_freshness_bin,
-                "is_recent_bonus_hit": is_recent_bonus_hit
+                "is_recent_bonus_hit": is_recent_bonus_hit,
+                "bonus_hit_contribution": bonus_hit_contribution
             })
         
-        # ============ NEW: Calculate distribution features for the draw ============
+        # ============ Calculate distribution features for the draw ============
         distribution_features = calculate_draw_distribution_features(winning_numbers_details)
         
-        # ============ Store Draw History Log ONCE (with distribution features) ============
+        # ============ Store Draw History Log ONCE (with all features) ============
         draw_history_log[draw_date] = {
             "draw_index": i,
             "draw_date": draw_date,
@@ -279,7 +300,8 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             "all_numbers_bias_ratios": win_bias_ratios,
             "freshness_pattern_weights": top_pattern_dist_current,
             "recent_bonus_numbers": recent_bonus_numbers[:],
-            "distribution_features": distribution_features
+            "distribution_features": distribution_features,
+            "bonus_hit_analysis": bonus_hit_analysis
         }
         
         # Update Frequency and Last Seen Date (POST-DRAW)

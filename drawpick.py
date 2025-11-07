@@ -19,10 +19,14 @@ from lotto_analysis.analyzers.hmc_analyzer import process_hmc_analysis
 from lotto_analysis.analyzers.freshness_analyzer_7_numbers import (
     analyze_7_number_freshness, format_freshness_output
 )
-from lotto_analysis.analyzers.distribution_analyzer import analyze_distribution_patterns
+from lotto_analysis.analyzers.distribution_analyzer import (
+    analyze_distribution_patterns,
+    calculate_per_number_distribution_stats
+)
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis, 
-    write_json_file, format_date_iso
+    write_json_file, format_date_iso,
+    generate_range_spread_analysis
 )
 
 def main():
@@ -134,6 +138,18 @@ def main():
         if stats['count'] > 0:
             print(f"  {bin_name}: {stats['count']} draws ({stats['percentage']:.2f}%)")
 
+    # ===== CALCULATE PER-NUMBER DISTRIBUTION STATS =====
+    print("\n" + "=" * 70)
+    print("Phase 7: Per-Number Distribution Statistics")
+    print("=" * 70)
+    
+    odd_even_analysis, sum_contribution_analysis = calculate_per_number_distribution_stats(
+        draw_history_log, MAX_NUMBER
+    )
+    
+    print(f"✓ Calculated odd/even analysis for {len(odd_even_analysis)} numbers")
+    print(f"✓ Calculated sum contribution analysis for {len(sum_contribution_analysis)} numbers")
+
     # ===== BUILD SUPPORTING DATA (for lotto_trigger_periods.json) =====
     total_counts_by_number = defaultdict(int)
     last_seen_by_number = {}
@@ -167,6 +183,9 @@ def main():
             "count": count,
             "odds": round(odds, 4)
         }
+    
+    # ===== BUILD RANGE SPREAD ANALYSIS =====
+    range_spread_analysis = generate_range_spread_analysis(draw_history_log, MAX_NUMBER)
         
     # Build lotto_odds_results
     final_main = {
@@ -199,7 +218,8 @@ def main():
     final_main["hmc"] = hmc_analysis
     final_main["draw_range"] = draw_range_analysis
     final_main["patterns"] = consecutive_patterns
-    final_main["recent_bonus_analysis"] = recent_bonus_analysis 
+    final_main["recent_bonus_analysis"] = recent_bonus_analysis
+    final_main["range_spread_analysis"] = range_spread_analysis
     
     # Build lotto_trigger_periods
     final_periods = {}
@@ -260,25 +280,27 @@ def main():
             "description": "Analysis of all 7 numbers (6 main + bonus)",
             "odd_even_patterns": odd_even_7_stats,
             "sum_distributions": sum_7_stats
-        }
+        },
+        "odd_even_analysis": odd_even_analysis,
+        "sum_contribution_analysis": sum_contribution_analysis
     }
     
     # ===== WRITE OUTPUT FILES =====
     write_json_file(OUTPUT_FILE_MAIN, final_main, 
-                   "Includes scenarios, HMC, draw_range, and consecutive patterns")
+                   "Includes scenarios, HMC, draw_range, consecutive patterns, and range_spread_analysis")
     write_json_file(OUTPUT_FILE_PERIODS, final_periods,
                    "Per-number data with category, recent, and series")
     write_json_file(OUTPUT_FILE_HISTORY, draw_history_log,
-                   "Per-draw history for HMC state and winning numbers details")
+                   "Per-draw history for HMC state and winning numbers details with bonus_hit_analysis")
     
     final_freshness_data = format_freshness_output(
         freshness_counts, total_draws_freshness, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
     )
     write_json_file(OUTPUT_FILE_7_NUMBERS, final_freshness_data,
-                   "Comprehensive freshness distribution for all 7 winning numbers")
+                   "Comprehensive freshness distribution for all 7 winning numbers with weight calculation")
     
     write_json_file(OUTPUT_FILE_DISTRIBUTIONS, final_distribution_stats,
-                   "Odd/Even patterns and Sum distributions (both 6 and 7 numbers) for ML")
+                   "Odd/Even patterns and Sum distributions (both 6 and 7 numbers) with per-number analysis")
 
     print("\n" + "=" * 70)
     print("Analysis Complete!")
