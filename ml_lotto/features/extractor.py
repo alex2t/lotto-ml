@@ -1,13 +1,15 @@
+# ml_lotto/features/extractor.py
 """
 extractor.py
 ============
 Main orchestrator for feature extraction from HMC JSON data.
 
-This module coordinates all feature calculations and combines them into
-a unified feature dictionary for ML training.
-
-UPDATED: Priority 3 features now use JSON data sources
-VERSION: 3.6 (Modular Package Structure)
+VERSION: 3.7 (New JSON Features Edition)
+- Added bonus_hit_contribution feature
+- Added freshness_weight_score feature
+- Added pair_frequency_score feature
+- Added range_spread_json feature
+- Added odd_even_json and sum_contribution_json features
 """
 
 import pandas as pd
@@ -38,14 +40,16 @@ def extract_features_from_hmc_json(
     consecutive_patterns: Dict[str, Any] = None,
     distribution_stats: Dict[str, Any] = None,
     odds_data: Dict[str, Any] = None,
-    training_start_draw: int = 100
+    training_start_draw: int = 100,
+    bonus_hit_contribution_data: Dict[int, float] = None,
+    freshness_weight_data: Dict[int, float] = None,
+    pair_frequency_data: Dict[int, float] = None,
+    range_spread_json_data: Dict[int, float] = None,
+    odd_even_json_data: Dict[int, float] = None,
+    sum_contribution_json_data: Dict[int, float] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
-    Extract ML features for each number, incorporating ALL custom features.
-    
-    This is the main orchestrator that coordinates all feature calculations
-    from various specialized modules and combines them into a unified
-    feature dictionary.
+    Extract ML features for each number, incorporating ALL custom features including new JSON features.
     
     Args:
         hmc_data: HMC statistics from lotto_trigger_periods.json
@@ -59,12 +63,15 @@ def extract_features_from_hmc_json(
         distribution_stats: Distribution statistics from distribution_stats.json
         odds_data: Odds and pattern data from odds_results.json
         training_start_draw: Starting draw index for training
+        bonus_hit_contribution_data: NEW - Bonus hit contribution scores
+        freshness_weight_data: NEW - Freshness weight scores
+        pair_frequency_data: NEW - Pair frequency scores
+        range_spread_json_data: NEW - Range spread from JSON
+        odd_even_json_data: NEW - Odd/even affinity from JSON
+        sum_contribution_json_data: NEW - Sum contribution from JSON
         
     Returns:
         Dictionary mapping number (1-47) -> feature dictionary
-        
-    UPDATED: Priority 3 features now use JSON data sources
-    VERSION: 3.6 - Modular package structure
     """
     features = {}
     current_timestamp = pd.Timestamp.now()
@@ -73,7 +80,6 @@ def extract_features_from_hmc_json(
     if freshness_features is None:
         freshness_features = {}
     
-    # Calculate Priority 2 features
     print("  Calculating Priority 2 features...")
     has_consecutive_partner_data = calculate_has_consecutive_partner(
         hmc_data,
@@ -102,7 +108,6 @@ def extract_features_from_hmc_json(
         print(f"\n❌ CRITICAL ERROR: was_recent_bonus data not provided.")
         raise ValueError("Missing was_recent_bonus data - cannot extract features")
     
-    # Calculate Priority 3 features (JSON-BASED)
     print("  Calculating Priority 3 features from JSON data...")
     
     if distribution_stats:
@@ -119,12 +124,52 @@ def extract_features_from_hmc_json(
         print(f"\n⚠️  WARNING: odds_data not provided. Using default values.")
         range_spread_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
+    print("  Loading NEW JSON features...")
+    
+    if bonus_hit_contribution_data is None:
+        bonus_hit_contribution_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        print(f"  ⚠️  Using default bonus_hit_contribution values")
+    else:
+        print(f"  ✓ Loaded bonus_hit_contribution data")
+    
+    if freshness_weight_data is None:
+        freshness_weight_data = {0: 0.33, 1: 0.33, 2: 0.34}
+        print(f"  ⚠️  Using default freshness_weight values")
+    else:
+        print(f"  ✓ Loaded freshness_weight data")
+    
+    if pair_frequency_data is None:
+        pair_frequency_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        print(f"  ⚠️  Using default pair_frequency values")
+    else:
+        print(f"  ✓ Loaded pair_frequency data")
+    
+    if range_spread_json_data is None:
+        range_spread_json_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        print(f"  ⚠️  Using default range_spread_json values")
+    else:
+        print(f"  ✓ Loaded range_spread_json data")
+    
+    if odd_even_json_data is None:
+        odd_even_json_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        print(f"  ⚠️  Using default odd_even_json values")
+    else:
+        print(f"  ✓ Loaded odd_even_json data")
+    
+    if sum_contribution_json_data is None:
+        sum_contribution_json_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+        print(f"  ⚠️  Using default sum_contribution_json values")
+    else:
+        print(f"  ✓ Loaded sum_contribution_json data")
+    
     print(f"\n✓ Extracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
                      'series_total', 'series_recent', 'days_since_bonus', 
                      'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner',
                      'consecutive_pair_affinity', 'bonus_hit_target_alignment',
-                     'odd_even_affinity', 'sum_contribution_score', 'range_spread_affinity']
+                     'odd_even_affinity', 'sum_contribution_score', 'range_spread_affinity',
+                     'bonus_hit_contribution', 'freshness_weight_score', 'pair_frequency_score',
+                     'range_spread_json', 'odd_even_json', 'sum_contribution_json']
     fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() 
                                    if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
     
@@ -139,7 +184,9 @@ def extract_features_from_hmc_json(
         
         fresh_feat = freshness_features.get(num, {})
         
-        # Default features with all priorities
+        current_freshness_bin = fresh_feat.get('current_freshness_bin', 0)
+        freshness_weight_score = freshness_weight_data.get(current_freshness_bin, 0.33)
+        
         default_features = {
             'total_count': 0,
             'category': 'cold',
@@ -156,6 +203,12 @@ def extract_features_from_hmc_json(
             'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
             'sum_contribution_score': sum_contribution_data.get(num, 0.5),
             'range_spread_affinity': range_spread_data.get(num, 0.5),
+            'bonus_hit_contribution': bonus_hit_contribution_data.get(num, 0.5),
+            'freshness_weight_score': freshness_weight_score,
+            'pair_frequency_score': pair_frequency_data.get(num, 0.5),
+            'range_spread_json': range_spread_json_data.get(num, 0.5),
+            'odd_even_json': odd_even_json_data.get(num, 0.5),
+            'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
             **fresh_feat,
             **recent_fields,
         }
@@ -216,6 +269,12 @@ def extract_features_from_hmc_json(
             'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
             'sum_contribution_score': sum_contribution_data.get(num, 0.5),
             'range_spread_affinity': range_spread_data.get(num, 0.5),
+            'bonus_hit_contribution': bonus_hit_contribution_data.get(num, 0.5),
+            'freshness_weight_score': freshness_weight_score,
+            'pair_frequency_score': pair_frequency_data.get(num, 0.5),
+            'range_spread_json': range_spread_json_data.get(num, 0.5),
+            'odd_even_json': odd_even_json_data.get(num, 0.5),
+            'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
             **fresh_feat,
             **recent_fields,
         }
@@ -239,6 +298,10 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
                              key=lambda x: int(x.split('_')[1]))
     
     freshness_weights_features = sorted([f for f in all_features if f.startswith('freshness_c') and f.endswith('_weight')])
+    
+    new_json_features = ['bonus_hit_contribution', 'freshness_weight_score', 
+                         'pair_frequency_score', 'range_spread_json', 
+                         'odd_even_json', 'sum_contribution_json']
                              
     custom_keywords = {
         'ALL': all_features,
@@ -247,7 +310,8 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'RECENT_LONG': recent_features[-1:] if recent_features else [],
         'BONUS_AWARE': ['days_since_bonus'], 
         'FRESHNESS_PATTERN': freshness_weights_features,
-        FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features
+        FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features,
+        'NEW_JSON_FEATURES': new_json_features
     }
 
     if isinstance(feature_spec, str):
