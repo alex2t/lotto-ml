@@ -1,11 +1,12 @@
+# quickpick.py
 """
 quickpick.py (main.py)
 ======================
-Main entry point for the Lottery Prediction System V3.5
+Main entry point for the Lottery Prediction System V3.7
 
-UPDATES:
-- Priority 3 ML features now use JSON data sources
-- Added loading of lotto_distribution_stats.json
+VERSION: 3.7 (New JSON Features Edition)
+- Added loading of 5 new JSON features
+- Integrated new features into ML pipeline
 """
 
 import warnings
@@ -15,28 +16,30 @@ import time
 import sys
 from pathlib import Path
 
-# --- Configuration Imports ---
 from ml_lotto.config import (
     DRAW_HISTORY_JSON,
     HMC_JSON_INPUT,
     ODDS_JSON_INPUT,
     FRESHNESS_JSON_INPUT,
+    DISTRIBUTION_STATS_JSON,
     ACTIVE_MODELS,
     MAX_NUMBER,
     TRAINING_START_DRAW
 )
 
-# --- Data Loader Imports ---
 from ml_lotto.data import (
     load_hmc_json,
     load_odds_json,
     get_most_likely_hmc_pattern,
     load_draw_history_with_bias_ratios,
-    load_freshness_config
+    load_freshness_config,
+    load_bonus_hit_analysis,
+    load_freshness_weights,
+    load_number_pair_frequency,
+    load_range_spread_analysis,
+    load_odd_even_analysis,
+    load_sum_contribution_analysis
 )
-
-
-# --- Feature Extractor Imports ---
 
 from ml_lotto.features.extractor import (
     extract_features_from_hmc_json,
@@ -78,7 +81,6 @@ from ml_lotto.features.history import (
     extract_win_bias_ratio_from_history
 )
 
-# --- Model Imports ---
 from ml_lotto.models import train_all_models
 from ml_lotto.prediction import generate_predictions, generate_all_picks
 from ml_lotto.display import (
@@ -90,9 +92,6 @@ from ml_lotto.display import (
     display_completion_message
 )
 
-# NEW: Path to distribution stats JSON
-DISTRIBUTION_STATS_JSON = 'data/lotto_distribution_stats.json'
-
 
 def validate_data_files() -> bool:
     """Validate that all required data files exist."""
@@ -101,7 +100,7 @@ def validate_data_files() -> bool:
         HMC_JSON_INPUT,
         ODDS_JSON_INPUT,
         FRESHNESS_JSON_INPUT,
-        DISTRIBUTION_STATS_JSON  # NEW
+        DISTRIBUTION_STATS_JSON
     ]
     
     missing_files = []
@@ -152,31 +151,23 @@ def main():
     start_time = time.time()
     
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.5: JSON-Based Priority 3 Features")
+    print("INTELLIGENT LOTTO SYSTEM V3.7: NEW JSON FEATURES EDITION")
     print("=" * 70)
     print(f"Active Models: {len(ACTIVE_MODELS)}")
-    print("NEW: Odd/Even, Sum, Range features from JSON data")
+    print("NEW: 5 JSON features - bonus_hit, freshness_weight, pair_freq, range_spread, odd_even, sum_contrib")
     
     try:
-        # ==================== STEP 0: VALIDATE FILES ====================
         print("\nStep 0: Validating data files...")
         if not validate_data_files():
             sys.exit(1)
         print("✓ All required files present")
         
-        # ==================== STEP 1: LOAD DATA ====================
         print("\nStep 1: Loading data files...")
         
-        # Load draw history WITH full log
         all_draws, draw_history_log_raw = load_draw_history_with_bias_ratios(DRAW_HISTORY_JSON)
-        
-        # Load HMC data
         hmc_data = load_hmc_json(HMC_JSON_INPUT)
-        
-        # Load odds data
         odds_data = load_odds_json(ODDS_JSON_INPUT)
         
-        # Load freshness data
         freshness_data = {}
         try:
             with open(FRESHNESS_JSON_INPUT, 'r') as f:
@@ -188,36 +179,29 @@ def main():
         except json.JSONDecodeError as e:
             print(f"✗ Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
         
-        # NEW: Load distribution stats data
         distribution_stats = {}
         try:
             with open(DISTRIBUTION_STATS_JSON, 'r') as f:
                 distribution_stats = json.load(f)
             print(f"✓ Loaded distribution stats from {DISTRIBUTION_STATS_JSON}")
             print(f"  Total draws analyzed: {distribution_stats.get('total_draws_analyzed', 0)}")
-            
-            # Display coverage stats
-            six_num_data = distribution_stats.get('analysis_6_main_numbers', {})
-            odd_even_patterns = six_num_data.get('odd_even_patterns', {})
-            balanced_patterns = ['2_4', '3_3', '4_2']
-            total_balanced = sum(odd_even_patterns.get(p, {}).get('count', 0) for p in balanced_patterns)
-            total = distribution_stats.get('total_draws_analyzed', 1)
-            balanced_pct = (total_balanced / total * 100) if total > 0 else 0
-            
-            print(f"  Odd/Even balanced patterns: {balanced_pct:.2f}% coverage")
-            
         except FileNotFoundError:
             print(f"✗ Error: {DISTRIBUTION_STATS_JSON} not found.")
-            print(f"  Run 'python drawpick.py' to generate this file.")
         except json.JSONDecodeError as e:
             print(f"✗ Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
         
-        # Validate loaded data
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats):
             sys.exit(1)
     
-        # Load dynamic freshness configuration
         W, C_max, recent_key, top_pattern_dist = load_freshness_config(FRESHNESS_JSON_INPUT)
+        
+        print("\nStep 1b: Loading NEW JSON features...")
+        bonus_hit_contribution_data = load_bonus_hit_analysis(draw_history_log_raw)
+        freshness_weight_data = load_freshness_weights(FRESHNESS_JSON_INPUT)
+        pair_frequency_data = load_number_pair_frequency(ODDS_JSON_INPUT)
+        range_spread_json_data = load_range_spread_analysis(ODDS_JSON_INPUT)
+        odd_even_json_data = load_odd_even_analysis(DISTRIBUTION_STATS_JSON)
+        sum_contribution_json_data = load_sum_contribution_analysis(DISTRIBUTION_STATS_JSON)
         
         print(f"\n✓ Data Loading Summary:")
         print(f"  - Historical draws: {len(all_draws)}")
@@ -225,19 +209,17 @@ def main():
         print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
         print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
+        print(f"  - NEW JSON features loaded: 6 feature sets")
         
-        # ==================== STEP 2: EXTRACT FEATURES (COMPLETE) ====================
         print("\nStep 2: Extracting features from HMC data...")
         feature_start = time.time()
 
-        # Load consecutive patterns from odds_data
         consecutive_patterns = odds_data.get('patterns', {})
         if consecutive_patterns:
             print(f"  ✓ Loaded consecutive patterns data")
         else:
             print(f"  ⚠️  No consecutive patterns found in odds_data")
 
-        # Calculate custom features
         print("  Calculating 'days_since_bonus' feature...")
         days_since_bonus_data = calculate_days_since_bonus(all_draws)
 
@@ -264,7 +246,7 @@ def main():
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
 
-        print("  Combining all features (Priority 2 + Priority 3 from JSON)...")
+        print("  Combining all features (Priority 2 + Priority 3 + NEW JSON)...")
         try:
             features_dict = extract_features_from_hmc_json(
                 hmc_data, 
@@ -275,9 +257,15 @@ def main():
                 win_bias_ratio_data,
                 was_recent_bonus_data,
                 consecutive_patterns,
-                distribution_stats,  # NEW PARAMETER for odd_even and sum
-                odds_data,  # NEW PARAMETER for range_spread
-                TRAINING_START_DRAW
+                distribution_stats,
+                odds_data,
+                TRAINING_START_DRAW,
+                bonus_hit_contribution_data,
+                freshness_weight_data,
+                pair_frequency_data,
+                range_spread_json_data,
+                odd_even_json_data,
+                sum_contribution_json_data
             )
             print(f"  ✓ Features extracted for {len(features_dict)} numbers")
         except Exception as e:
@@ -289,11 +277,9 @@ def main():
         feature_time = time.time() - feature_start
         print(f"✓ Feature extraction completed in {feature_time:.2f} seconds")
         
-        # ==================== STEP 3: ANALYZE HMC PATTERNS ====================
         print("\nStep 3: Analyzing HMC distribution patterns...")
         hot_count, medium_count, cold_count, pattern_percentage = get_most_likely_hmc_pattern(odds_data)
         
-        # ==================== STEP 4: TRAIN MODELS ====================
         print("\nStep 4: Training ML models...")
         training_start = time.time()
         
@@ -306,7 +292,6 @@ def main():
             traceback.print_exc()
             sys.exit(1)
         
-        # ==================== STEP 5: GENERATE PREDICTIONS ====================
         print("\nStep 5: Generating predictions...")
         try:
             all_probabilities = generate_predictions(models, model_features, features_dict)
@@ -317,7 +302,6 @@ def main():
             traceback.print_exc()
             sys.exit(1)
         
-        # ==================== STEP 6: GENERATE PICKS ====================
         print("\nStep 6: Selecting optimal numbers...")
         try:
             lines = generate_all_picks(models, all_probabilities, features_dict, freshness_data)
@@ -328,7 +312,6 @@ def main():
             traceback.print_exc()
             sys.exit(1)
         
-        # ==================== STEP 7: DISPLAY RESULTS ====================
         print("\nStep 7: Displaying results...")
         try:
             display_final_picks(lines)
@@ -337,13 +320,12 @@ def main():
             display_feature_configuration(ACTIVE_MODELS)
             display_data_source_summary()
             
-            # Save results to file
             try:
                 with open('lottery_picks.txt', 'w') as f:
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
-                    f.write("NEW: Odd/Even, Sum, Range features from JSON data\n")
+                    f.write("NEW JSON FEATURES: bonus_hit, freshness_weight, pair_freq, range_spread, odd_even, sum\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
@@ -353,7 +335,6 @@ def main():
             except Exception as e:
                 print(f"⚠️  Could not save to file: {e}")
             
-            # Display timing information
             total_time = time.time() - start_time
             print("\n" + "=" * 70)
             print("PERFORMANCE SUMMARY")

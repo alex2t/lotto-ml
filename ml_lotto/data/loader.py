@@ -1,12 +1,15 @@
+# ml_lotto/data/loader.py
 """
 data_loader.py
 ==============
 Handles loading and parsing of all data files with strict validation.
 
-VERSION: 3.2 (Strict Validation Edition)
-- Removed fallback defaults
-- Added comprehensive error handling
-- Clear user instructions on failure
+VERSION: 3.3 (New JSON Features Edition)
+- Added bonus hit analysis loading
+- Added freshness weight calculation loading
+- Added number pair frequency loading
+- Added range spread analysis loading
+- Added odd/even and sum contribution analysis loading
 """
 
 import json
@@ -23,6 +26,7 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
     USED FOR:
         ✓ ML Training Labels (y = 1 if number won, 0 if not)
         ✓ Custom Feature Generation (days since bonus hit)
+        ✓ NEW: Bonus hit analysis features
     
     Returns:
         List of dictionaries with draw details, sorted by draw_index.
@@ -51,14 +55,11 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
-    # Convert dictionary (keyed by date) to a list of draw records
     draw_list = []
     for draw_date, draw_data in data.items():
-        # Combine main and bonus winning numbers into a single list
         winning_numbers = []
         bonus_number = None
         
-        # The structure is in 'winning_numbers_details'
         winning_numbers_details = draw_data.get('winning_numbers_details', [])
         
         if not winning_numbers_details:
@@ -90,7 +91,6 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"No valid draws in data file: {filename}")
     
-    # Sort chronologically by draw index (ensures correct order for lookback calculations)
     draw_list.sort(key=lambda x: x['draw_index'])
     
     print(f"✓ Loaded {len(draw_list)} historical draws from {filename}")
@@ -130,7 +130,6 @@ def load_hmc_json(filename: str) -> Dict[str, Any]:
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
-    # Filter out analysis section if present
     filtered_data = {k: v for k, v in data.items() if k != 'analysis'}
     
     if not filtered_data:
@@ -175,7 +174,6 @@ def load_draw_history_with_bias_ratios(filename: str) -> Tuple[List[Dict], Dict[
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
-    # Convert dictionary to list (for compatibility)
     draw_list = []
     for draw_date, draw_data in data.items():
         winning_numbers = []
@@ -242,7 +240,6 @@ def load_odds_json(filename: str) -> Dict[str, Any]:
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
-    # Validate essential sections
     if 'hmc' not in data:
         print(f"\n⚠️  WARNING: 'hmc' section missing from {filename}")
     if 'patterns' not in data:
@@ -285,7 +282,6 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
-    # 1. Extract dynamic configuration
     W = data.get('window_size_W')
     C_max = data.get('c_max_threshold')
     recent_key = data.get('recent_count_key')
@@ -297,7 +293,6 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"Incomplete configuration in {filename}")
     
-    # 2. Extract top pattern and calculate normalized distribution weights
     analysis_list = data.get('distribution_analysis_7_numbers', [])
     if not analysis_list:
         print(f"\n❌ CRITICAL ERROR: 'distribution_analysis_7_numbers' is empty in {filename}")
@@ -307,7 +302,6 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
     
     top_pattern = analysis_list[0]
     
-    # Calculate total count of numbers in the top pattern (should be 7)
     total_numbers = 0
     for i in range(C_max + 1):
         if i < C_max:
@@ -325,7 +319,6 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
         if total_numbers == 0:
             total_numbers = 7.0
     
-    # Create dynamic distribution map: {bin_index: normalized_weight}
     top_pattern_dist = {}
     for i in range(C_max + 1):
         if i < C_max:
@@ -341,6 +334,222 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
     print(f"  Pattern weights: {top_pattern_dist}")
     
     return W, C_max, recent_key, top_pattern_dist
+
+
+def load_bonus_hit_analysis(draw_history_log: Dict[str, Any]) -> Dict[int, float]:
+    """
+    NEW: Extract bonus hit contribution scores from draw history.
+    
+    Returns:
+        Dictionary mapping number -> bonus_hit_contribution (0.0 or 1.0)
+    """
+    latest_draw = None
+    max_index = -1
+    
+    for draw_date, draw_data in draw_history_log.items():
+        draw_index = draw_data.get('draw_index', -1)
+        if draw_index > max_index:
+            max_index = draw_index
+            latest_draw = draw_data
+    
+    if not latest_draw:
+        print(f"\n⚠️  WARNING: No draws found in history for bonus hit analysis")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    bonus_contribution = {}
+    winning_details = latest_draw.get('winning_numbers_details', [])
+    
+    for detail in winning_details:
+        num = detail.get('number')
+        if num:
+            bonus_contribution[num] = detail.get('bonus_hit_contribution', 0.5)
+    
+    for num in range(1, MAX_NUMBER + 1):
+        if num not in bonus_contribution:
+            bonus_contribution[num] = 0.5
+    
+    print(f"✓ Loaded bonus hit contributions from latest draw")
+    return bonus_contribution
+
+
+def load_freshness_weights(filename: str) -> Dict[int, float]:
+    """
+    NEW: Extract freshness weight calculation from freshness JSON.
+    
+    Returns:
+        Dictionary mapping bin_index -> normalized_weight
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"\n⚠️  WARNING: Could not load freshness weights from {filename}")
+        return {0: 0.33, 1: 0.33, 2: 0.34}
+    
+    weight_calc = data.get('freshness_weight_calculation', {})
+    
+    if not weight_calc:
+        print(f"\n⚠️  WARNING: No freshness_weight_calculation in {filename}")
+        return {0: 0.33, 1: 0.33, 2: 0.34}
+    
+    weights = {}
+    for key, value in weight_calc.items():
+        if key.startswith('C'):
+            try:
+                if key.startswith('C_GE_'):
+                    bin_idx = int(key.split('_')[-1])
+                else:
+                    bin_idx = int(key[1:])
+                weights[bin_idx] = value.get('normalized_weight', 0.0)
+            except (ValueError, AttributeError):
+                continue
+    
+    print(f"✓ Loaded freshness weights: {weights}")
+    return weights
+
+
+def load_number_pair_frequency(filename: str) -> Dict[int, float]:
+    """
+    NEW: Extract number pair frequency scores from odds JSON.
+    
+    Returns:
+        Dictionary mapping number -> normalized_pair_score
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"\n⚠️  WARNING: Could not load pair frequency from {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    pair_freq = data.get('number_pair_frequency', {})
+    
+    if not pair_freq:
+        print(f"\n⚠️  WARNING: No number_pair_frequency in {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    scores = {}
+    for num_str, stats in pair_freq.items():
+        try:
+            num = int(num_str)
+            scores[num] = stats.get('normalized_score', 0.5)
+        except (ValueError, AttributeError):
+            continue
+    
+    for num in range(1, MAX_NUMBER + 1):
+        if num not in scores:
+            scores[num] = 0.5
+    
+    print(f"✓ Loaded number pair frequencies")
+    return scores
+
+
+def load_range_spread_analysis(filename: str) -> Dict[int, float]:
+    """
+    NEW: Extract range spread affinity scores from odds JSON.
+    
+    Returns:
+        Dictionary mapping number -> spread_affinity_score
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"\n⚠️  WARNING: Could not load range spread from {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    range_spread = data.get('range_spread_analysis', {})
+    
+    if not range_spread:
+        print(f"\n⚠️  WARNING: No range_spread_analysis in {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    scores = {}
+    for num_str, stats in range_spread.items():
+        try:
+            num = int(num_str)
+            scores[num] = stats.get('spread_affinity_score', 0.5)
+        except (ValueError, AttributeError):
+            continue
+    
+    for num in range(1, MAX_NUMBER + 1):
+        if num not in scores:
+            scores[num] = 0.5
+    
+    print(f"✓ Loaded range spread analysis")
+    return scores
+
+
+def load_odd_even_analysis(filename: str) -> Dict[int, float]:
+    """
+    NEW: Extract odd/even affinity scores from distribution stats JSON.
+    
+    Returns:
+        Dictionary mapping number -> odd_even_affinity
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"\n⚠️  WARNING: Could not load odd/even analysis from {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    odd_even = data.get('odd_even_analysis', {})
+    
+    if not odd_even:
+        print(f"\n⚠️  WARNING: No odd_even_analysis in {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    scores = {}
+    for num_str, stats in odd_even.items():
+        try:
+            num = int(num_str)
+            scores[num] = stats.get('odd_even_affinity', 0.5)
+        except (ValueError, AttributeError):
+            continue
+    
+    for num in range(1, MAX_NUMBER + 1):
+        if num not in scores:
+            scores[num] = 0.5
+    
+    print(f"✓ Loaded odd/even affinity analysis")
+    return scores
+
+
+def load_sum_contribution_analysis(filename: str) -> Dict[int, float]:
+    """
+    NEW: Extract sum contribution scores from distribution stats JSON.
+    
+    Returns:
+        Dictionary mapping number -> sum_contribution_score
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"\n⚠️  WARNING: Could not load sum contribution from {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    sum_contrib = data.get('sum_contribution_analysis', {})
+    
+    if not sum_contrib:
+        print(f"\n⚠️  WARNING: No sum_contribution_analysis in {filename}")
+        return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+    
+    scores = {}
+    for num_str, stats in sum_contrib.items():
+        try:
+            num = int(num_str)
+            scores[num] = stats.get('sum_contribution_score', 0.5)
+        except (ValueError, AttributeError):
+            continue
+    
+    for num in range(1, MAX_NUMBER + 1):
+        if num not in scores:
+            scores[num] = 0.5
+    
+    print(f"✓ Loaded sum contribution analysis")
+    return scores
 
 
 def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, int, float]:

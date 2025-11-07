@@ -1,28 +1,26 @@
+# ml_lotto/config.py
 """
 Configuration settings for lottery analysis
 
-UPDATED: Added Priority 3 features to model configs
-VERSION: 3.3 (Priority 3 Edition)
+VERSION: 3.4 (New JSON Features Edition)
+- Added new JSON features to model configs
 """
 
-# =============== ANALYSIS CONFIGURATION ===============
 TOTAL_DRAWS = 600
 TRAINING_DATA = 100
 NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA
 TRAINING_START_DRAW = TRAINING_DATA
 
-# =============== FILE PATHS ===============
 DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
 HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'
 ODDS_JSON_INPUT = 'data/lotto_odds_results.json'
 FRESHNESS_JSON_INPUT = 'data/lotto_7_number_freshness_results.json'
+DISTRIBUTION_STATS_JSON = 'data/lotto_distribution_stats.json'
 
-# =============== LOTTERY PARAMETERS ===============
 MAX_NUMBER = 47
 HOT_COUNT = 15
 COLD_COUNT = 15
 
-# =============== ANALYSIS SCENARIOS ===============
 SCENARIOS = [
     {"window": 5,  "targets": [3]},
     {"window": 7,  "targets": [4]},
@@ -32,7 +30,6 @@ SCENARIOS = [
 
 ACTUAL_HISTORY_WINDOWS = [s["window"] for s in SCENARIOS]
 
-# =============== RANGE BINS ===============
 RANGE_BINS = {
     "20-25": (20, 25),
     "25-30": (25, 30),
@@ -41,14 +38,11 @@ RANGE_BINS = {
     "40-45": (40, 45)
 }
 
-# ==================== FEATURE GROUPS & KEYWORDS ====================
 FRESHNESS_PATTERN_WEIGHTS = 'FRESHNESS_PATTERN_WEIGHTS' 
 
-# ==================== ML MODEL CONFIGURATIONS ====================
-
 MODEL_1_CONFIG = {
-    'name': 'Short-Term Momentum + Pattern Balance',
-    'description': 'Immediate patterns with timing, consecutive boosts, and odd/even balance',
+    'name': 'Short-Term Momentum + Patterns + JSON Bonus',
+    'description': 'Immediate patterns with timing, consecutive boosts, and NEW JSON bonus features',
     'algorithm': 'logistic_regression',
     
     'hot_count': 1,
@@ -57,13 +51,15 @@ MODEL_1_CONFIG = {
     'generic_count': 1,
     
     'features': [
-        FRESHNESS_PATTERN_WEIGHTS,      # Recent activity pattern
-        'days_since_last',                # Raw timing
-        'recency_zone_score',            # Optimal timing zones
-        'total_count',                    # Historical frequency
-        'was_recent_bonus',              # Bonus indicator
-        'has_consecutive_partner',        # Hot neighbor detection
-        'odd_even_affinity'               # NEW: Balance preference (78.71% coverage)
+        FRESHNESS_PATTERN_WEIGHTS,
+        'days_since_last',
+        'recency_zone_score',
+        'total_count',
+        'was_recent_bonus',
+        'has_consecutive_partner',
+        'odd_even_affinity',
+        'bonus_hit_contribution',
+        'pair_frequency_score'
     ],
     
     'diversity_penalty': 0.0,
@@ -84,8 +80,8 @@ MODEL_1_CONFIG = {
 }
 
 MODEL_2_CONFIG = {
-    'name': 'Long-Term Value + Sum/Range Optimization',
-    'description': 'Historical patterns with timing, bonus optimization, and realistic sums/ranges',
+    'name': 'Long-Term Value + Sum/Range + JSON Features',
+    'description': 'Historical patterns with timing, bonus optimization, and NEW JSON realism features',
     'algorithm': 'logistic_regression',
     
     'hot_count': 0,
@@ -94,17 +90,20 @@ MODEL_2_CONFIG = {
     'generic_count': 1,
     
     'features': [
-        'total_count',                    # Historical frequency
-        'days_since_last',                # Raw timing
-        'recency_zone_score',            # Optimal zones
-        'days_since_bonus',               # Bonus timing
-        'was_recent_bonus',              # Bonus indicator
-        'bonus_hit_target_alignment',     # Optimize for 1-2 hits
-        'recent_14',                      # Long-term trend
-        'win_bias_ratio',                 # Category performance
-        'consecutive_pair_affinity',      # Historical pairs
-        'sum_contribution_score',         # NEW: Typical sum (68% coverage)
-        'range_spread_affinity'           # NEW: Good distribution (85% coverage)
+        'total_count',
+        'days_since_last',
+        'recency_zone_score',
+        'days_since_bonus',
+        'was_recent_bonus',
+        'bonus_hit_target_alignment',
+        'recent_14',
+        'win_bias_ratio',
+        'consecutive_pair_affinity',
+        'sum_contribution_score',
+        'range_spread_affinity',
+        'freshness_weight_score',
+        'range_spread_json',
+        'sum_contribution_json'
     ],
     
     'diversity_penalty': 0.15,
@@ -125,8 +124,8 @@ MODEL_2_CONFIG = {
 }
 
 MODEL_3_CONFIG = {
-    'name': 'Complex Pattern Discovery + Full Realism',
-    'description': 'XGBoost with full feature set including all realism constraints',
+    'name': 'Complex Pattern Discovery + All JSON Features',
+    'description': 'XGBoost with full feature set including ALL NEW JSON features',
     'algorithm': 'xgboost',
     
     'hot_count': 2,
@@ -135,22 +134,28 @@ MODEL_3_CONFIG = {
     'generic_count': 1,
     
     'features': [
-        'recent_4',                       # Short-term activity
-        FRESHNESS_PATTERN_WEIGHTS,       # Recent pattern
-        'total_count',                    # Historical frequency
-        'days_since_last',                # Raw timing
-        'recency_zone_score',            # Optimal zones
-        'recent_14',                      # Long-term trend
-        'days_since_bonus',               # Bonus timing
-        'was_recent_bonus',              # Bonus indicator
-        'bonus_hit_target_alignment',     # Bonus optimization
-        'has_consecutive_partner',        # Hot neighbors
-        'consecutive_pair_affinity',      # Historical pairs
-        'series_recent',                  # Streak patterns
-        'win_bias_ratio',                 # Category performance
-        'odd_even_affinity',              # NEW: Balance preference
-        'sum_contribution_score',         # NEW: Sum realism
-        'range_spread_affinity'           # NEW: Range distribution
+        'recent_4',
+        FRESHNESS_PATTERN_WEIGHTS,
+        'total_count',
+        'days_since_last',
+        'recency_zone_score',
+        'recent_14',
+        'days_since_bonus',
+        'was_recent_bonus',
+        'bonus_hit_target_alignment',
+        'has_consecutive_partner',
+        'consecutive_pair_affinity',
+        'series_recent',
+        'win_bias_ratio',
+        'odd_even_affinity',
+        'sum_contribution_score',
+        'range_spread_affinity',
+        'bonus_hit_contribution',
+        'freshness_weight_score',
+        'pair_frequency_score',
+        'range_spread_json',
+        'odd_even_json',
+        'sum_contribution_json'
     ],
     
     'diversity_penalty': 0.25,
@@ -174,15 +179,12 @@ MODEL_3_CONFIG = {
     }
 }
 
-# ==================== ML MODEL REGISTRY ====================
-
 ACTIVE_MODELS = [
     MODEL_1_CONFIG,
     MODEL_2_CONFIG,
     MODEL_3_CONFIG,
 ]
 
-# ==================== DISPLAY SETTINGS ====================
 SHOW_DETAILED_PENALTIES = True
 SHOW_OVERLAP_ANALYSIS = True
 SHOW_DATA_SOURCE_SUMMARY = False
