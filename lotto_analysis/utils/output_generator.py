@@ -66,6 +66,88 @@ def generate_draw_range_analysis(categorization_history: Dict,
     return range_analysis
 
 
+def generate_range_spread_analysis(draw_history_log: Dict, max_number: int = 47) -> Dict:
+    """
+    Generate per-number range spread analysis.
+    
+    Args:
+        draw_history_log: Full draw history with range data
+        max_number: Maximum lottery number
+        
+    Returns:
+        Dictionary with per-number range contribution statistics
+    """
+    from collections import defaultdict
+    
+    # Track range stats per number
+    number_ranges = defaultdict(list)
+    
+    # Scan all draws
+    for draw_date, draw_data in draw_history_log.items():
+        winning_details = draw_data.get('winning_numbers_details', [])
+        
+        if len(winning_details) < 6:
+            continue
+        
+        # Get main 6 numbers
+        main_numbers = [w['number'] for w in winning_details[:6]]
+        
+        if not main_numbers:
+            continue
+        
+        draw_range = max(main_numbers) - min(main_numbers)
+        
+        # Record range for each number in this draw
+        for num in main_numbers:
+            number_ranges[num].append(draw_range)
+    
+    # Calculate statistics per number
+    range_spread_analysis = {}
+    
+    for num in range(1, max_number + 1):
+        ranges = number_ranges.get(num, [])
+        
+        if ranges:
+            avg_range = sum(ranges) / len(ranges)
+            min_range = min(ranges)
+            max_range = max(ranges)
+            appearances = len(ranges)
+        else:
+            avg_range = 0
+            min_range = 0
+            max_range = 0
+            appearances = 0
+        
+        range_spread_analysis[str(num)] = {
+            "appearances_in_draws": appearances,
+            "average_range_contribution": round(avg_range, 2),
+            "min_range": min_range,
+            "max_range": max_range,
+            "spread_affinity_score": 0.0
+        }
+    
+    # Calculate spread affinity (normalized to 0-1)
+    # Numbers with avg_range 30-40 get highest scores
+    for num in range(1, max_number + 1):
+        num_key = str(num)
+        avg_range = range_spread_analysis[num_key]["average_range_contribution"]
+        
+        if 30 <= avg_range <= 40:
+            score = 1.0
+        elif 25 <= avg_range < 30:
+            score = 0.8
+        elif 20 <= avg_range < 25:
+            score = 0.6
+        elif 40 < avg_range <= 45:
+            score = 0.8
+        else:
+            score = 0.4
+        
+        range_spread_analysis[num_key]["spread_affinity_score"] = round(score, 2)
+    
+    return range_spread_analysis
+
+
 def write_json_file(filepath: str, data: Dict, description: str = ""):
     """Write data to JSON file with optional description."""
     with open(filepath, "w") as f:

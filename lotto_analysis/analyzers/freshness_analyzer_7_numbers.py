@@ -128,7 +128,6 @@ def analyze_7_number_freshness(draw_history_log: dict, target_window: int, c_max
             for i in range(c_max_threshold):
                 key_parts.append(f"C{i}={counts[i]}")
             
-            # **FIXED LOGIC HERE:** Use a label without the '='
             final_bin_label = f"C_GE_{c_max_threshold}"
             key_parts.append(f"{final_bin_label}={counts[c_max_threshold]}")
             
@@ -156,10 +155,7 @@ def format_freshness_output(counts: Dict[str, int], total_draws: int, target_win
         c_values = {}
         parts = key.split(', ')
         for part in parts:
-            # **FIXED LOGIC HERE:** Use partition to handle split safely
             label, _, value = part.partition('=')
-            
-            # The label should now be clean (e.g., "C0", "C_GE_3")
             c_values[label] = int(value)
         
         output_entry = {
@@ -178,10 +174,46 @@ def format_freshness_output(counts: Dict[str, int], total_draws: int, target_win
         
         distribution_list.append(output_entry)
 
+    # ============ Calculate normalized weights from top pattern ============
+    top_pattern = distribution_list[0] if distribution_list else None
+    
+    freshness_weight_calculation = {}
+    if top_pattern:
+        # Extract counts for each bin
+        total_numbers = 0
+        bin_counts = {}
+        
+        for i in range(c_max_threshold + 1):
+            if i < c_max_threshold:
+                key = f'C{i}'
+            else:
+                key = f'C_GE_{c_max_threshold}'
+            
+            count = top_pattern.get(key, 0)
+            bin_counts[i] = count
+            total_numbers += count
+        
+        # Normalize to weights
+        if total_numbers > 0:
+            for i in range(c_max_threshold + 1):
+                weight = bin_counts[i] / total_numbers
+                
+                if i < c_max_threshold:
+                    bin_name = f'C{i}'
+                else:
+                    bin_name = f'C_GE_{c_max_threshold}'
+                
+                freshness_weight_calculation[bin_name] = {
+                    "count": bin_counts[i],
+                    "normalized_weight": round(weight, 4),
+                    "percentage": round(weight * 100, 2)
+                }
+
     return {
         "window_size_W": target_window,
         "c_max_threshold": c_max_threshold,
         "recent_count_key": recent_key,
         "total_draws_analyzed": total_draws,
-        "distribution_analysis_7_numbers": distribution_list
+        "distribution_analysis_7_numbers": distribution_list,
+        "freshness_weight_calculation": freshness_weight_calculation
     }

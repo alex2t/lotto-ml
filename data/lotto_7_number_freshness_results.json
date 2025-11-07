@@ -228,5 +228,22 @@
             "C1": 4,
             "C_GE_2": 3
         }
-    ]
+    ],
+    "freshness_weight_calculation": {
+        "C0": {
+            "count": 3,
+            "normalized_weight": 0.4286,
+            "percentage": 42.86
+        },
+        "C1": {
+            "count": 3,
+            "normalized_weight": 0.4286,
+            "percentage": 42.86
+        },
+        "C_GE_2": {
+            "count": 1,
+            "normalized_weight": 0.1429,
+            "percentage": 14.29
+        }
+    }
 }

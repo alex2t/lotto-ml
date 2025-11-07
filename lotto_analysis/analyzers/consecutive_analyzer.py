@@ -60,7 +60,7 @@ def analyze_consecutive_patterns(all_draws: List[Dict]) -> Dict:
     # Track which draws have which run lengths (for counting unique draws)
     draws_with_run_length = defaultdict(set)
     
-    # NEW: Track all unique 2-consecutive pairs
+    # Track all unique 2-consecutive pairs
     all_pairs_counts = defaultdict(int) 
     
     for draw_idx, draw in enumerate(all_draws):
@@ -77,7 +77,7 @@ def analyze_consecutive_patterns(all_draws: List[Dict]) -> Dict:
         for run in runs:
             run_length = len(run)
             
-            # NEW: Count all 2-consecutive pairs (even if part of a longer run)
+            # Count all 2-consecutive pairs (even if part of a longer run)
             if run_length >= 2:
                 # Iterate over all consecutive pairs within the run
                 for i in range(len(run) - 1):
@@ -125,8 +125,43 @@ def analyze_consecutive_patterns(all_draws: List[Dict]) -> Dict:
             ]
         }
         
-        # NEW: Add all_pairs object only for 2-consecutive
+        # Add all_pairs object only for 2-consecutive
         if run_length == 2:
             patterns[key]["all_pairs"] = dict(all_pairs_counts)
+    
+    # ============ Calculate Per-Number Pair Frequency ============
+    number_pair_frequency = {}
+    
+    for num in range(1, 48):  # Assuming MAX_NUMBER = 47
+        total_pair_count = 0
+        
+        # Count how many times this number appears in any pair
+        for pair_key, count in all_pairs_counts.items():
+            parts = pair_key.split('-')
+            if len(parts) == 2:
+                try:
+                    num1 = int(parts[0])
+                    num2 = int(parts[1])
+                    
+                    if num == num1 or num == num2:
+                        total_pair_count += count
+                except ValueError:
+                    continue
+        
+        number_pair_frequency[num] = {
+            "total_pair_appearances": total_pair_count,
+            "normalized_score": 0.0
+        }
+    
+    # Normalize scores (0-1 scale)
+    max_appearances = max([v["total_pair_appearances"] for v in number_pair_frequency.values()]) if number_pair_frequency else 1
+    
+    if max_appearances > 0:
+        for num in number_pair_frequency:
+            score = number_pair_frequency[num]["total_pair_appearances"] / max_appearances
+            number_pair_frequency[num]["normalized_score"] = round(score, 4)
+    
+    # Add aggregated pair frequency to output
+    patterns["number_pair_frequency"] = number_pair_frequency
     
     return patterns

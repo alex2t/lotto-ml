@@ -636,6 +636,196 @@
             "total_draws": 506,
             "odds": 0.0,
             "last20": []
+        },
+        "number_pair_frequency": {
+            "1": {
+                "total_pair_appearances": 10,
+                "normalized_score": 0.2941
+            },
+            "2": {
+                "total_pair_appearances": 24,
+                "normalized_score": 0.7059
+            },
+            "3": {
+                "total_pair_appearances": 19,
+                "normalized_score": 0.5588
+            },
+            "4": {
+                "total_pair_appearances": 14,
+                "normalized_score": 0.4118
+            },
+            "5": {
+                "total_pair_appearances": 18,
+                "normalized_score": 0.5294
+            },
+            "6": {
+                "total_pair_appearances": 18,
+                "normalized_score": 0.5294
+            },
+            "7": {
+                "total_pair_appearances": 14,
+                "normalized_score": 0.4118
+            },
+            "8": {
+                "total_pair_appearances": 14,
+                "normalized_score": 0.4118
+            },
+            "9": {
+                "total_pair_appearances": 17,
+                "normalized_score": 0.5
+            },
+            "10": {
+                "total_pair_appearances": 18,
+                "normalized_score": 0.5294
+            },
+            "11": {
+                "total_pair_appearances": 25,
+                "normalized_score": 0.7353
+            },
+            "12": {
+                "total_pair_appearances": 29,
+                "normalized_score": 0.8529
+            },
+            "13": {
+                "total_pair_appearances": 21,
+                "normalized_score": 0.6176
+            },
+            "14": {
+                "total_pair_appearances": 12,
+                "normalized_score": 0.3529
+            },
+            "15": {
+                "total_pair_appearances": 6,
+                "normalized_score": 0.1765
+            },
+            "16": {
+                "total_pair_appearances": 12,
+                "normalized_score": 0.3529
+            },
+            "17": {
+                "total_pair_appearances": 21,
+                "normalized_score": 0.6176
+            },
+            "18": {
+                "total_pair_appearances": 17,
+                "normalized_score": 0.5
+            },
+            "19": {
+                "total_pair_appearances": 11,
+                "normalized_score": 0.3235
+            },
+            "20": {
+                "total_pair_appearances": 12,
+                "normalized_score": 0.3529
+            },
+            "21": {
+                "total_pair_appearances": 16,
+                "normalized_score": 0.4706
+            },
+            "22": {
+                "total_pair_appearances": 13,
+                "normalized_score": 0.3824
+            },
+            "23": {
+                "total_pair_appearances": 11,
+                "normalized_score": 0.3235
+            },
+            "24": {
+                "total_pair_appearances": 14,
+                "normalized_score": 0.4118
+            },
+            "25": {
+                "total_pair_appearances": 17,
+                "normalized_score": 0.5
+            },
+            "26": {
+                "total_pair_appearances": 23,
+                "normalized_score": 0.6765
+            },
+            "27": {
+                "total_pair_appearances": 24,
+                "normalized_score": 0.7059
+            },
+            "28": {
+                "total_pair_appearances": 26,
+                "normalized_score": 0.7647
+            },
+            "29": {
+                "total_pair_appearances": 25,
+                "normalized_score": 0.7353
+            },
+            "30": {
+                "total_pair_appearances": 22,
+                "normalized_score": 0.6471
+            },
+            "31": {
+                "total_pair_appearances": 21,
+                "normalized_score": 0.6176
+            },
+            "32": {
+                "total_pair_appearances": 17,
+                "normalized_score": 0.5
+            },
+            "33": {
+                "total_pair_appearances": 15,
+                "normalized_score": 0.4412
+            },
+            "34": {
+                "total_pair_appearances": 22,
+                "normalized_score": 0.6471
+            },
+            "35": {
+                "total_pair_appearances": 33,
+                "normalized_score": 0.9706
+            },
+            "36": {
+                "total_pair_appearances": 25,
+                "normalized_score": 0.7353
+            },
+            "37": {
+                "total_pair_appearances": 14,
+                "normalized_score": 0.4118
+            },
+            "38": {
+                "total_pair_appearances": 18,
+                "normalized_score": 0.5294
+            },
+            "39": {
+                "total_pair_appearances": 23,
+                "normalized_score": 0.6765
+            },
+            "40": {
+                "total_pair_appearances": 24,
+                "normalized_score": 0.7059
+            },
+            "41": {
+                "total_pair_appearances": 25,
+                "normalized_score": 0.7353
+            },
+            "42": {
+                "total_pair_appearances": 20,
+                "normalized_score": 0.5882
+            },
+            "43": {
+                "total_pair_appearances": 15,
+                "normalized_score": 0.4412
+            },
+            "44": {
+                "total_pair_appearances": 18,
+                "normalized_score": 0.5294
+            },
+            "45": {
+                "total_pair_appearances": 30,
+                "normalized_score": 0.8824
+            },
+            "46": {
+                "total_pair_appearances": 34,
+                "normalized_score": 1.0
+            },
+            "47": {
+                "total_pair_appearances": 15,
+                "normalized_score": 0.4412
+            }
         }
     },
     "recent_bonus_analysis": {
@@ -650,6 +840,337 @@
         "3_or_more": {
             "count": 42,
             "odds": 0.1034
+        }
+    },
+    "range_spread_analysis": {
+        "1": {
+            "appearances_in_draws": 52,
+            "average_range_contribution": 38.79,
+            "min_range": 15,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "2": {
+            "appearances_in_draws": 58,
+            "average_range_contribution": 38.1,
+            "min_range": 11,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "3": {
+            "appearances_in_draws": 49,
+            "average_range_contribution": 37.35,
+            "min_range": 26,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "4": {
+            "appearances_in_draws": 48,
+            "average_range_contribution": 35.1,
+            "min_range": 15,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "5": {
+            "appearances_in_draws": 53,
+            "average_range_contribution": 36.53,
+            "min_range": 11,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "6": {
+            "appearances_in_draws": 55,
+            "average_range_contribution": 36.02,
+            "min_range": 15,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "7": {
+            "appearances_in_draws": 47,
+            "average_range_contribution": 34.91,
+            "min_range": 11,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "8": {
+            "appearances_in_draws": 57,
+            "average_range_contribution": 35.0,
+            "min_range": 15,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "9": {
+            "appearances_in_draws": 43,
+            "average_range_contribution": 35.12,
+            "min_range": 18,
+            "max_range": 43,
+            "spread_affinity_score": 1.0
+        },
+        "10": {
+            "appearances_in_draws": 51,
+            "average_range_contribution": 33.57,
+            "min_range": 11,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "11": {
+            "appearances_in_draws": 51,
+            "average_range_contribution": 33.86,
+            "min_range": 15,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "12": {
+            "appearances_in_draws": 61,
+            "average_range_contribution": 32.39,
+            "min_range": 11,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "13": {
+            "appearances_in_draws": 61,
+            "average_range_contribution": 32.05,
+            "min_range": 11,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "14": {
+            "appearances_in_draws": 49,
+            "average_range_contribution": 33.55,
+            "min_range": 21,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "15": {
+            "appearances_in_draws": 33,
+            "average_range_contribution": 34.24,
+            "min_range": 18,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "16": {
+            "appearances_in_draws": 47,
+            "average_range_contribution": 32.81,
+            "min_range": 15,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "17": {
+            "appearances_in_draws": 46,
+            "average_range_contribution": 31.72,
+            "min_range": 15,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "18": {
+            "appearances_in_draws": 41,
+            "average_range_contribution": 31.8,
+            "min_range": 18,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "19": {
+            "appearances_in_draws": 51,
+            "average_range_contribution": 32.8,
+            "min_range": 13,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "20": {
+            "appearances_in_draws": 56,
+            "average_range_contribution": 32.96,
+            "min_range": 19,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "21": {
+            "appearances_in_draws": 62,
+            "average_range_contribution": 33.1,
+            "min_range": 13,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "22": {
+            "appearances_in_draws": 55,
+            "average_range_contribution": 31.45,
+            "min_range": 18,
+            "max_range": 43,
+            "spread_affinity_score": 1.0
+        },
+        "23": {
+            "appearances_in_draws": 36,
+            "average_range_contribution": 32.53,
+            "min_range": 15,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "24": {
+            "appearances_in_draws": 54,
+            "average_range_contribution": 32.33,
+            "min_range": 13,
+            "max_range": 43,
+            "spread_affinity_score": 1.0
+        },
+        "25": {
+            "appearances_in_draws": 55,
+            "average_range_contribution": 31.93,
+            "min_range": 15,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "26": {
+            "appearances_in_draws": 58,
+            "average_range_contribution": 32.14,
+            "min_range": 13,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "27": {
+            "appearances_in_draws": 57,
+            "average_range_contribution": 34.0,
+            "min_range": 15,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "28": {
+            "appearances_in_draws": 59,
+            "average_range_contribution": 32.46,
+            "min_range": 13,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "29": {
+            "appearances_in_draws": 57,
+            "average_range_contribution": 32.82,
+            "min_range": 18,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "30": {
+            "appearances_in_draws": 55,
+            "average_range_contribution": 34.64,
+            "min_range": 16,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "31": {
+            "appearances_in_draws": 41,
+            "average_range_contribution": 32.56,
+            "min_range": 19,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "32": {
+            "appearances_in_draws": 55,
+            "average_range_contribution": 31.67,
+            "min_range": 13,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "33": {
+            "appearances_in_draws": 40,
+            "average_range_contribution": 34.1,
+            "min_range": 14,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "34": {
+            "appearances_in_draws": 42,
+            "average_range_contribution": 33.07,
+            "min_range": 14,
+            "max_range": 43,
+            "spread_affinity_score": 1.0
+        },
+        "35": {
+            "appearances_in_draws": 69,
+            "average_range_contribution": 33.55,
+            "min_range": 15,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "36": {
+            "appearances_in_draws": 52,
+            "average_range_contribution": 33.12,
+            "min_range": 15,
+            "max_range": 44,
+            "spread_affinity_score": 1.0
+        },
+        "37": {
+            "appearances_in_draws": 53,
+            "average_range_contribution": 34.42,
+            "min_range": 14,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "38": {
+            "appearances_in_draws": 57,
+            "average_range_contribution": 35.12,
+            "min_range": 20,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "39": {
+            "appearances_in_draws": 53,
+            "average_range_contribution": 35.25,
+            "min_range": 19,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "40": {
+            "appearances_in_draws": 57,
+            "average_range_contribution": 35.21,
+            "min_range": 16,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "41": {
+            "appearances_in_draws": 50,
+            "average_range_contribution": 35.8,
+            "min_range": 22,
+            "max_range": 43,
+            "spread_affinity_score": 1.0
+        },
+        "42": {
+            "appearances_in_draws": 61,
+            "average_range_contribution": 35.48,
+            "min_range": 14,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "43": {
+            "appearances_in_draws": 53,
+            "average_range_contribution": 36.58,
+            "min_range": 21,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "44": {
+            "appearances_in_draws": 45,
+            "average_range_contribution": 37.84,
+            "min_range": 21,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
+        },
+        "45": {
+            "appearances_in_draws": 60,
+            "average_range_contribution": 37.28,
+            "min_range": 14,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "46": {
+            "appearances_in_draws": 46,
+            "average_range_contribution": 38.02,
+            "min_range": 23,
+            "max_range": 45,
+            "spread_affinity_score": 1.0
+        },
+        "47": {
+            "appearances_in_draws": 45,
+            "average_range_contribution": 39.18,
+            "min_range": 14,
+            "max_range": 46,
+            "spread_affinity_score": 1.0
         }
     }
 }

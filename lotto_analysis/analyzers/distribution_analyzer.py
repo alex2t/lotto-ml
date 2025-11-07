@@ -238,3 +238,114 @@ def calculate_draw_distribution_features(winning_numbers_details: List[Dict]) ->
         'range_spread_affinity_7': round(range_spread_affinity_7, 4),
         'odd_even_affinity_7': round(odd_even_affinity_7, 4)
     }
+
+
+def calculate_per_number_distribution_stats(
+    draw_history_log: Dict,
+    max_number: int = 47
+) -> Tuple[Dict, Dict]:
+    """
+    Calculate per-number odd/even and sum contribution statistics.
+    
+    Args:
+        draw_history_log: Full draw history
+        max_number: Maximum lottery number
+        
+    Returns:
+        Tuple of (odd_even_analysis, sum_contribution_analysis)
+    """
+    from collections import defaultdict
+    
+    # Track appearances by number
+    number_odd_even_patterns = defaultdict(list)
+    number_sum_bins = defaultdict(list)
+    number_appearances = defaultdict(int)
+    
+    # Scan all draws
+    for draw_date, draw_data in draw_history_log.items():
+        winning_details = draw_data.get('winning_numbers_details', [])
+        
+        if len(winning_details) < 6:
+            continue
+        
+        # Get main 6 numbers
+        main_6 = [w['number'] for w in winning_details[:6]]
+        
+        # Get distribution features
+        dist_features = draw_data.get('distribution_features', {})
+        odd_even_pattern = dist_features.get('odd_even_pattern_6', 'unknown')
+        sum_bin = dist_features.get('sum_bin_6', 'unknown')
+        
+        # Record for each number
+        for num in main_6:
+            number_odd_even_patterns[num].append(odd_even_pattern)
+            number_sum_bins[num].append(sum_bin)
+            number_appearances[num] += 1
+    
+    # ===== Build Odd/Even Analysis =====
+    odd_even_analysis = {}
+    
+    for num in range(1, max_number + 1):
+        patterns = number_odd_even_patterns.get(num, [])
+        appearances = number_appearances.get(num, 0)
+        
+        # Count pattern occurrences
+        pattern_counts = defaultdict(int)
+        for pattern in patterns:
+            pattern_counts[pattern] += 1
+        
+        # Find most common pattern
+        most_common_pattern = "unknown"
+        most_common_count = 0
+        
+        if pattern_counts:
+            most_common_pattern = max(pattern_counts.items(), key=lambda x: x[1])[0]
+            most_common_count = pattern_counts[most_common_pattern]
+        
+        # Calculate affinity (odd numbers contribute to odd counts, even to even counts)
+        is_odd = (num % 2 == 1)
+        affinity_score = 0.75 if is_odd else 0.65  # Odd numbers slightly preferred
+        
+        odd_even_analysis[str(num)] = {
+            "total_appearances": appearances,
+            "most_common_pattern": most_common_pattern,
+            "pattern_frequency": most_common_count,
+            "odd_even_affinity": round(affinity_score, 2)
+        }
+    
+    # ===== Build Sum Contribution Analysis =====
+    sum_contribution_analysis = {}
+    
+    for num in range(1, max_number + 1):
+        sum_bins = number_sum_bins.get(num, [])
+        appearances = number_appearances.get(num, 0)
+        
+        # Count bin occurrences
+        bin_counts = defaultdict(int)
+        for bin_name in sum_bins:
+            bin_counts[bin_name] += 1
+        
+        # Find most common bin
+        most_common_bin = "unknown"
+        most_common_count = 0
+        
+        if bin_counts:
+            most_common_bin = max(bin_counts.items(), key=lambda x: x[1])[0]
+            most_common_count = bin_counts[most_common_bin]
+        
+        # Calculate contribution score (middle numbers 15-35 score higher)
+        if 15 <= num <= 35:
+            contribution_score = 0.85
+        elif 11 <= num <= 39:
+            contribution_score = 0.70
+        else:
+            contribution_score = 0.50
+        
+        sum_contribution_analysis[str(num)] = {
+            "total_appearances": appearances,
+            "most_common_sum_bin": most_common_bin,
+            "bin_frequency": most_common_count,
+            "sum_contribution_score": round(contribution_score, 2)
+        }
+    
+    return odd_even_analysis, sum_contribution_analysis
