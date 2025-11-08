@@ -2,8 +2,9 @@
 """
 Configuration settings for lottery analysis
 
-VERSION: 3.4 (New JSON Features Edition)
-- Added new JSON features to model configs
+VERSION: 3.5 (Bonus Ball Edition)
+- Added BONUS_MODEL_CONFIG for bonus ball prediction
+- Added BONUS_ANALYSIS_JSON file path
 """
 
 TOTAL_DRAWS = 600
@@ -16,6 +17,7 @@ HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'
 ODDS_JSON_INPUT = 'data/lotto_odds_results.json'
 FRESHNESS_JSON_INPUT = 'data/lotto_7_number_freshness_results.json'
 DISTRIBUTION_STATS_JSON = 'data/lotto_distribution_stats.json'
+BONUS_ANALYSIS_JSON = 'data/lotto_bonus_analysis.json'
 
 MAX_NUMBER = 47
 HOT_COUNT = 15
@@ -38,7 +40,34 @@ RANGE_BINS = {
     "40-45": (40, 45)
 }
 
-FRESHNESS_PATTERN_WEIGHTS = 'FRESHNESS_PATTERN_WEIGHTS' 
+FRESHNESS_PATTERN_WEIGHTS = 'FRESHNESS_PATTERN_WEIGHTS'
+
+BONUS_MODEL_CONFIG = {
+    'name': 'Bonus Ball Predictor',
+    'algorithm': 'logistic_regression',
+    'features': [
+        'category_weight',
+        'was_bonus_last_10',
+        'freshness_weight',
+        'timing_zone_weight',
+        'days_since_last_bonus',
+        'bonus_frequency_ratio',
+        'total_bonus_count',
+        'avg_days_between_bonus'
+    ],
+    'algorithm_params': {
+        'penalty': 'l2',
+        'C': 1.0,
+        'class_weight': 'balanced',
+        'solver': 'liblinear',
+        'max_iter': 1000,
+        'random_state': 42
+    },
+    'calibration': {
+        'method': 'sigmoid',
+        'cv': 5
+    }
+}
 
 MODEL_1_CONFIG = {
     'name': 'Short-Term Momentum + Patterns + JSON Bonus',
@@ -48,7 +77,7 @@ MODEL_1_CONFIG = {
     'hot_count': 1,
     'medium_count': 2,
     'cold_count': 2,
-    'generic_count': 1,
+    'generic_count': 0,
     
     'features': [
         FRESHNESS_PATTERN_WEIGHTS,
@@ -87,7 +116,7 @@ MODEL_2_CONFIG = {
     'hot_count': 0,
     'medium_count': 3,
     'cold_count': 2,
-    'generic_count': 1,
+    'generic_count': 0,
     
     'features': [
         'total_count',
@@ -131,7 +160,7 @@ MODEL_3_CONFIG = {
     'hot_count': 2,
     'medium_count': 2,
     'cold_count': 1,
-    'generic_count': 1,
+    'generic_count': 0,
     
     'features': [
         'recent_4',
