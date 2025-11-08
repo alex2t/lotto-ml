@@ -23,6 +23,7 @@ from lotto_analysis.analyzers.distribution_analyzer import (
     analyze_distribution_patterns,
     calculate_per_number_distribution_stats
 )
+from lotto_analysis.analyzers.bonus_analyzer import generate_bonus_analysis
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis, 
     write_json_file, format_date_iso,
@@ -32,7 +33,7 @@ from lotto_analysis.utils.output_generator import (
 def main():
     """Main execution function"""
     print("=" * 70)
-    print("Lottery Analysis Program (Pattern + HMC Range + Consecutive + Distributions)")
+    print("Lottery Analysis Program (Pattern + HMC Range + Consecutive + Distributions + Bonus)")
     print("=" * 70)
     
     # **DYNAMIC CONFIGURATION SETUP**
@@ -149,6 +150,24 @@ def main():
     
     print(f"✓ Calculated odd/even analysis for {len(odd_even_analysis)} numbers")
     print(f"✓ Calculated sum contribution analysis for {len(sum_contribution_analysis)} numbers")
+
+    # ===== BONUS BALL ANALYSIS =====
+    print("\n" + "=" * 70)
+    print("Phase 8: Comprehensive Bonus Ball Analysis")
+    print("=" * 70)
+    
+    bonus_analysis = generate_bonus_analysis(
+        draw_history_log,
+        total_hmc_draws,
+        C_MAX_THRESHOLD,
+        MAX_NUMBER
+    )
+    
+    print(f"✓ Completed bonus validation statistics")
+    print(f"✓ Completed bonus category preference analysis")
+    print(f"✓ Completed recent bonus exclusion patterns")
+    print(f"✓ Completed bonus timing analysis")
+    print(f"✓ Completed per-number bonus profiles for {MAX_NUMBER} numbers")
 
     # ===== BUILD SUPPORTING DATA (for lotto_trigger_periods.json) =====
     total_counts_by_number = defaultdict(int)
@@ -301,6 +320,11 @@ def main():
     
     write_json_file(OUTPUT_FILE_DISTRIBUTIONS, final_distribution_stats,
                    "Odd/Even patterns and Sum distributions (both 6 and 7 numbers) with per-number analysis")
+    
+    # ===== WRITE BONUS ANALYSIS FILE =====
+    OUTPUT_FILE_BONUS = "data/lotto_bonus_analysis.json"
+    write_json_file(OUTPUT_FILE_BONUS, bonus_analysis,
+                   "Comprehensive bonus ball analysis with data-driven weights and statistical validation")
 
     print("\n" + "=" * 70)
     print("Analysis Complete!")
