@@ -4,12 +4,8 @@ data_loader.py
 ==============
 Handles loading and parsing of all data files with strict validation.
 
-VERSION: 3.3 (New JSON Features Edition)
-- Added bonus hit analysis loading
-- Added freshness weight calculation loading
-- Added number pair frequency loading
-- Added range spread analysis loading
-- Added odd/even and sum contribution analysis loading
+VERSION: 3.4 (Bonus Ball Edition)
+- Added load_bonus_analysis function
 """
 
 import json
@@ -336,9 +332,54 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
     return W, C_max, recent_key, top_pattern_dist
 
 
+def load_bonus_analysis(filename: str) -> Dict[str, Any]:
+    """
+    NEW: Load bonus ball analysis JSON.
+    
+    Args:
+        filename: Path to lotto_bonus_analysis.json
+        
+    Returns:
+        Dictionary with bonus ball analysis data
+        
+    Raises:
+        FileNotFoundError: If the data file doesn't exist
+        ValueError: If the data is invalid
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"   This file contains bonus ball analysis required for bonus prediction.")
+        print(f"\n   REQUIRED ACTION: Ensure lotto_bonus_analysis.json is available.")
+        raise FileNotFoundError(f"Missing required file: {filename}")
+    except json.JSONDecodeError as e:
+        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"   Error details: {e}")
+        raise ValueError(f"Corrupted JSON file: {filename}")
+    
+    if not data:
+        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        raise ValueError(f"Empty data file: {filename}")
+    
+    required_keys = ['per_number_bonus_profile', 'bonus_category_preference', 
+                     'bonus_freshness_preference', 'bonus_timing_by_category']
+    
+    missing_keys = [key for key in required_keys if key not in data]
+    if missing_keys:
+        print(f"\n⚠️  WARNING: Missing keys in {filename}: {missing_keys}")
+    
+    print(f"✓ Loaded bonus analysis from {filename}")
+    print(f"  Purpose: Bonus ball prediction features")
+    print(f"  Numbers tracked: {len(data.get('per_number_bonus_profile', {}))}")
+    
+    return data
+
+
 def load_bonus_hit_analysis(draw_history_log: Dict[str, Any]) -> Dict[int, float]:
     """
-    NEW: Extract bonus hit contribution scores from draw history.
+    Extract bonus hit contribution scores from draw history.
     
     Returns:
         Dictionary mapping number -> bonus_hit_contribution (0.0 or 1.0)
@@ -374,7 +415,7 @@ def load_bonus_hit_analysis(draw_history_log: Dict[str, Any]) -> Dict[int, float
 
 def load_freshness_weights(filename: str) -> Dict[int, float]:
     """
-    NEW: Extract freshness weight calculation from freshness JSON.
+    Extract freshness weight calculation from freshness JSON.
     
     Returns:
         Dictionary mapping bin_index -> normalized_weight
@@ -410,7 +451,7 @@ def load_freshness_weights(filename: str) -> Dict[int, float]:
 
 def load_number_pair_frequency(filename: str) -> Dict[int, float]:
     """
-    NEW: Extract number pair frequency scores from odds JSON.
+    Extract number pair frequency scores from odds JSON.
     
     Returns:
         Dictionary mapping number -> normalized_pair_score
@@ -446,7 +487,7 @@ def load_number_pair_frequency(filename: str) -> Dict[int, float]:
 
 def load_range_spread_analysis(filename: str) -> Dict[int, float]:
     """
-    NEW: Extract range spread affinity scores from odds JSON.
+    Extract range spread affinity scores from odds JSON.
     
     Returns:
         Dictionary mapping number -> spread_affinity_score
@@ -482,7 +523,7 @@ def load_range_spread_analysis(filename: str) -> Dict[int, float]:
 
 def load_odd_even_analysis(filename: str) -> Dict[int, float]:
     """
-    NEW: Extract odd/even affinity scores from distribution stats JSON.
+    Extract odd/even affinity scores from distribution stats JSON.
     
     Returns:
         Dictionary mapping number -> odd_even_affinity
@@ -518,7 +559,7 @@ def load_odd_even_analysis(filename: str) -> Dict[int, float]:
 
 def load_sum_contribution_analysis(filename: str) -> Dict[int, float]:
     """
-    NEW: Extract sum contribution scores from distribution stats JSON.
+    Extract sum contribution scores from distribution stats JSON.
     
     Returns:
         Dictionary mapping number -> sum_contribution_score

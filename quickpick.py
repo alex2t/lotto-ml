@@ -2,11 +2,12 @@
 """
 quickpick.py (main.py)
 ======================
-Main entry point for the Lottery Prediction System V3.7
+Main entry point for the Lottery Prediction System V3.8
 
-VERSION: 3.7 (New JSON Features Edition)
-- Added loading of 5 new JSON features
-- Integrated new features into ML pipeline
+VERSION: 3.8 (Bonus Ball Prediction Edition)
+- Added bonus ball prediction model training
+- Integrated 3 bonus predictions assigned to main models
+- Modified main models to pick 5 numbers + 1 assigned bonus
 """
 
 import warnings
@@ -22,12 +23,14 @@ from ml_lotto.config import (
     ODDS_JSON_INPUT,
     FRESHNESS_JSON_INPUT,
     DISTRIBUTION_STATS_JSON,
+    BONUS_ANALYSIS_JSON,
     ACTIVE_MODELS,
+    BONUS_MODEL_CONFIG,
     MAX_NUMBER,
     TRAINING_START_DRAW
 )
 
-from ml_lotto.data import (
+from ml_lotto.data.loader import (
     load_hmc_json,
     load_odds_json,
     get_most_likely_hmc_pattern,
@@ -38,7 +41,8 @@ from ml_lotto.data import (
     load_number_pair_frequency,
     load_range_spread_analysis,
     load_odd_even_analysis,
-    load_sum_contribution_analysis
+    load_sum_contribution_analysis,
+    load_bonus_analysis
 )
 
 from ml_lotto.features.extractor import (
@@ -47,9 +51,7 @@ from ml_lotto.features.extractor import (
     expand_feature_selection
 )
 
-from ml_lotto.features.base import (
-    get_dynamic_recent_keys
-)
+from ml_lotto.features.base import get_dynamic_recent_keys
 
 from ml_lotto.features.timing import (
     calculate_days_since_bonus,
@@ -77,12 +79,16 @@ from ml_lotto.features.realism import (
     calculate_range_spread_affinity
 )
 
-from ml_lotto.features.history import (
-    extract_win_bias_ratio_from_history
-)
+from ml_lotto.features.history import extract_win_bias_ratio_from_history
 
-from ml_lotto.models import train_all_models
-from ml_lotto.prediction import generate_predictions, generate_all_picks
+from ml_lotto.features.bonus_features import extract_bonus_features_from_json
+
+from ml_lotto.models.trainer import train_all_models
+from ml_lotto.models.bonus_trainer import train_bonus_model
+
+from ml_lotto.prediction.predictor import generate_predictions, generate_all_picks
+from ml_lotto.prediction.bonus_predictor import generate_bonus_predictions, assign_bonus_to_models
+
 from ml_lotto.display import (
     display_final_picks,
     display_overlap_analysis,
@@ -100,7 +106,8 @@ def validate_data_files() -> bool:
         HMC_JSON_INPUT,
         ODDS_JSON_INPUT,
         FRESHNESS_JSON_INPUT,
-        DISTRIBUTION_STATS_JSON
+        DISTRIBUTION_STATS_JSON,
+        BONUS_ANALYSIS_JSON
     ]
     
     missing_files = []
@@ -118,7 +125,7 @@ def validate_data_files() -> bool:
     return True
 
 
-def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats) -> bool:
+def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_data) -> bool:
     """Validate that loaded data is valid and sufficient."""
     issues = []
     
@@ -137,6 +144,9 @@ def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distrib
     if not distribution_stats:
         issues.append("Distribution stats data is missing or invalid")
     
+    if not bonus_data or 'per_number_bonus_profile' not in bonus_data:
+        issues.append("Bonus analysis data is missing or invalid")
+    
     if issues:
         print("\n✗ DATA VALIDATION ERRORS:")
         for issue in issues:
@@ -147,14 +157,14 @@ def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distrib
 
 
 def main():
-    """Main execution function with improved error handling."""
+    """Main execution function with bonus ball prediction."""
     start_time = time.time()
     
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.7: NEW JSON FEATURES EDITION")
+    print("INTELLIGENT LOTTO SYSTEM V3.8: BONUS BALL PREDICTION EDITION")
     print("=" * 70)
-    print(f"Active Models: {len(ACTIVE_MODELS)}")
-    print("NEW: 5 JSON features - bonus_hit, freshness_weight, pair_freq, range_spread, odd_even, sum_contrib")
+    print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model")
+    print("NEW: Separate bonus ball prediction system with 3 diverse predictions")
     
     try:
         print("\nStep 0: Validating data files...")
@@ -190,9 +200,11 @@ def main():
         except json.JSONDecodeError as e:
             print(f"✗ Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
         
-        if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats):
+        bonus_analysis_data = load_bonus_analysis(BONUS_ANALYSIS_JSON)
+        
+        if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_analysis_data):
             sys.exit(1)
-    
+        
         W, C_max, recent_key, top_pattern_dist = load_freshness_config(FRESHNESS_JSON_INPUT)
         
         print("\nStep 1b: Loading NEW JSON features...")
@@ -209,9 +221,10 @@ def main():
         print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
         print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
+        print(f"  - Bonus analysis: {len(bonus_analysis_data.get('per_number_bonus_profile', {}))} numbers")
         print(f"  - NEW JSON features loaded: 6 feature sets")
         
-        print("\nStep 2: Extracting features from HMC data...")
+        print("\nStep 2: Extracting MAIN NUMBER features from HMC data...")
         feature_start = time.time()
 
         consecutive_patterns = odds_data.get('patterns', {})
@@ -246,7 +259,7 @@ def main():
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
 
-        print("  Combining all features (Priority 2 + Priority 3 + NEW JSON)...")
+        print("  Combining all MAIN NUMBER features...")
         try:
             features_dict = extract_features_from_hmc_json(
                 hmc_data, 
@@ -267,7 +280,7 @@ def main():
                 odd_even_json_data,
                 sum_contribution_json_data
             )
-            print(f"  ✓ Features extracted for {len(features_dict)} numbers")
+            print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
         except Exception as e:
             print(f"  ✗ Error extracting features: {e}")
             import traceback
@@ -275,46 +288,116 @@ def main():
             sys.exit(1)
 
         feature_time = time.time() - feature_start
-        print(f"✓ Feature extraction completed in {feature_time:.2f} seconds")
+        print(f"✓ Main feature extraction completed in {feature_time:.2f} seconds")
         
-        print("\nStep 3: Analyzing HMC distribution patterns...")
+        print("\nStep 2b: Extracting BONUS BALL features from JSON...")
+        bonus_feature_start = time.time()
+        
+        try:
+            bonus_features_dict = extract_bonus_features_from_json(bonus_analysis_data)
+            print(f"  ✓ Bonus features extracted for {len(bonus_features_dict)} numbers")
+        except Exception as e:
+            print(f"  ✗ Error extracting bonus features: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+        
+        bonus_feature_time = time.time() - bonus_feature_start
+        print(f"✓ Bonus feature extraction completed in {bonus_feature_time:.2f} seconds")
+        
+        print("\nStep 3: Training BONUS BALL prediction model...")
+        bonus_training_start = time.time()
+        
+        try:
+            bonus_pipeline, bonus_features = train_bonus_model(
+                BONUS_MODEL_CONFIG,
+                all_draws,
+                bonus_features_dict,
+                TRAINING_START_DRAW
+            )
+            print(f"✓ Bonus model training completed in {time.time() - bonus_training_start:.2f} seconds")
+        except Exception as e:
+            print(f"✗ Error training bonus model: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+        
+        print("\nStep 4: Generating 3 BONUS BALL predictions...")
+        
+        category_dict = {num: features_dict[num]['category'] for num in range(1, 48) if num in features_dict}
+        
+        try:
+            bonus_predictions = generate_bonus_predictions(
+                bonus_pipeline,
+                bonus_features,
+                bonus_features_dict,
+                category_dict,
+                num_predictions=3
+            )
+            print(f"✓ Generated {len(bonus_predictions)} bonus predictions")
+        except Exception as e:
+            print(f"✗ Error generating bonus predictions: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+        
+        bonus_assignments = assign_bonus_to_models(bonus_predictions, len(ACTIVE_MODELS))
+        
+        print("\nStep 5: Analyzing HMC distribution patterns...")
         hot_count, medium_count, cold_count, pattern_percentage = get_most_likely_hmc_pattern(odds_data)
         
-        print("\nStep 4: Training ML models...")
+        print("\nStep 6: Training MAIN NUMBER prediction models...")
         training_start = time.time()
         
         try:
             models, model_features = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
-            print(f"\n✓ Model training completed in {time.time() - training_start:.2f} seconds")
+            print(f"\n✓ Main model training completed in {time.time() - training_start:.2f} seconds")
         except Exception as e:
             print(f"\n✗ Error during model training: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
         
-        print("\nStep 5: Generating predictions...")
+        print("\nStep 7: Generating MAIN NUMBER predictions...")
         try:
             all_probabilities = generate_predictions(models, model_features, features_dict)
-            print(f"✓ Predictions generated for {len(all_probabilities)} models")
+            print(f"✓ Main number predictions generated for {len(all_probabilities)} models")
         except Exception as e:
             print(f"✗ Error generating predictions: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
         
-        print("\nStep 6: Selecting optimal numbers...")
+        print("\nStep 8: Selecting optimal 5 MAIN NUMBERS per model...")
         try:
             lines = generate_all_picks(models, all_probabilities, features_dict, freshness_data)
-            print(f"✓ Generated {len(lines)} lines of picks")
+            print(f"✓ Generated {len(lines)} lines of main number picks")
         except Exception as e:
             print(f"✗ Error generating picks: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
         
-        print("\nStep 7: Displaying results...")
+        print("\nStep 9: Combining main numbers with assigned bonus balls...")
+        for line in lines:
+            model_idx = line['model_index']
+            assigned_bonus = bonus_assignments.get(model_idx)
+            line['bonus_number'] = assigned_bonus
+            line['numbers_with_bonus'] = line['numbers'] + [assigned_bonus]
+        
+        print("\nStep 10: Displaying complete results (5 main + 1 bonus)...")
         try:
-            display_final_picks(lines)
+            print("\n" + "=" * 70)
+            print("FINAL RECOMMENDED PICKS (5 MAIN + 1 BONUS)")
+            print("=" * 70)
+            
+            for line in lines:
+                print(f"\nLine {line['model_index']}: {line['model_name']} [{line['config_str']}]")
+                print(f"Description: {line['description']}")
+                print(f"Main Numbers (5): {line['numbers']}")
+                print(f"Bonus Number: {line['bonus_number']}")
+                print(f"Complete Line: {sorted(line['numbers'])} + BONUS {line['bonus_number']}")
+            
             display_overlap_analysis(lines)
             display_rank_aware_explanation(ACTIVE_MODELS)
             display_feature_configuration(ACTIVE_MODELS)
@@ -325,11 +408,14 @@ def main():
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
-                    f.write("NEW JSON FEATURES: bonus_hit, freshness_weight, pair_freq, range_spread, odd_even, sum\n")
+                    f.write("BONUS BALL PREDICTION EDITION\n")
+                    f.write("Each line: 5 main numbers + 1 bonus ball\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
-                        f.write(f"Numbers: {line['numbers']}\n")
+                        f.write(f"Main Numbers: {line['numbers']}\n")
+                        f.write(f"Bonus Number: {line['bonus_number']}\n")
+                        f.write(f"Complete: {sorted(line['numbers'])} + BONUS {line['bonus_number']}\n")
                         f.write(f"Description: {line['description']}\n\n")
                 print("\n✓ Results saved to 'lottery_picks.txt'")
             except Exception as e:
@@ -339,8 +425,10 @@ def main():
             print("\n" + "=" * 70)
             print("PERFORMANCE SUMMARY")
             print("=" * 70)
-            print(f"Feature extraction: {feature_time:.2f}s")
-            print(f"Model training: {time.time() - training_start:.2f}s")
+            print(f"Main feature extraction: {feature_time:.2f}s")
+            print(f"Bonus feature extraction: {bonus_feature_time:.2f}s")
+            print(f"Bonus model training: {time.time() - bonus_training_start:.2f}s")
+            print(f"Main model training: {time.time() - training_start:.2f}s")
             print(f"Total execution time: {total_time:.2f}s")
             
             display_completion_message()

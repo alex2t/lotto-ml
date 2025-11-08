@@ -1,9 +1,10 @@
+# ml_lotto/prediction/predictor.py
 """
 predictor.py
 ============
 Main prediction orchestration: generates predictions and picks from trained models.
 
-UPDATED: v3.5 - Refactored into modular prediction package
+UPDATED: v3.6 - Modified for 5 main numbers (bonus assigned separately)
 """
 
 import numpy as np
@@ -40,7 +41,7 @@ def generate_predictions(
         Dictionary mapping model_name -> probability_array
     """
     print("\n" + "="*70)
-    print("GENERATING PREDICTIONS")
+    print("GENERATING MAIN NUMBER PREDICTIONS")
     print("="*70)
     
     all_probabilities = {}
@@ -49,18 +50,15 @@ def generate_predictions(
         pipeline = model_data['pipeline']
         features_for_model = model_features[model_name]
         
-        # Prepare input data
         X_pred_list = []
         for num in range(1, MAX_NUMBER + 1):
             if num in features_dict:
                 feat = features_dict[num]
-                # Ensure we use the exact feature set the model was trained on
                 record = [feat.get(col, 0) for col in features_for_model]
                 X_pred_list.append(record)
         
         X_pred = np.array(X_pred_list)
         
-        # Generate probabilities
         probabilities = pipeline.predict_proba(X_pred)[:, 1]
         all_probabilities[model_name] = probabilities
         print(f"  ✓ {model_name} predictions generated")
@@ -75,7 +73,7 @@ def generate_all_picks(
     freshness_data: Dict[str, Any] = None
 ) -> List[Dict[str, Any]]:
     """
-    Generate picks from all models with HYBRID HMC + Freshness selection.
+    Generate 5 MAIN NUMBER picks from all models (bonus assigned separately).
     
     Args:
         models: Trained model pipelines and configs
@@ -84,15 +82,14 @@ def generate_all_picks(
         freshness_data: Freshness pattern configuration from JSON
         
     Returns:
-        List of pick lines with metadata
+        List of pick lines with metadata (5 main numbers each)
         
-    UPDATED v3.5: Phase 1 filters are optional (disabled if not available)
+    UPDATED v3.6: Picks 5 main numbers instead of 6
     """
     print("\n" + "="*70)
-    print("GENERATING HYBRID PICKS (HMC + Freshness Pattern)")
+    print("GENERATING 5 MAIN NUMBER PICKS (Bonus Assigned Separately)")
     print("="*70)
     
-    # ==================== PHASE 1 FILTER STATISTICS (OPTIONAL) ====================
     if FILTERS_AVAILABLE:
         filter_stats = get_filter_statistics()
         print("\n📋 PHASE 1 FILTERS ACTIVE:")
@@ -112,13 +109,10 @@ def generate_all_picks(
     else:
         print("\n⚠️  Phase 1 filters not available (running without post-generation validation)")
     
-    # Determine the C_max threshold from the loaded data
     c_max_threshold = freshness_data.get('c_max_threshold', 3) if freshness_data else 3
     
-    # Get optimal pattern distribution dynamically
     target_pattern = get_optimal_pattern_distribution(freshness_data, c_max_threshold)
     
-    # Build target pattern display string
     pattern_display_parts = []
     for i in sorted(target_pattern.keys()):
         if i < c_max_threshold:
@@ -126,12 +120,11 @@ def generate_all_picks(
         else:
             pattern_display_parts.append(f"C>= {i}={target_pattern[i]}")
     
-    print(f"\n✓ Target Freshness Pattern: {', '.join(pattern_display_parts)}")
+    print(f"\n✓ Target Freshness Pattern (for 7 numbers): {', '.join(pattern_display_parts)}")
+    print(f"  NOTE: Picking 5 main numbers, so pattern will be adjusted proportionally")
     
-    # Categorize all numbers by current freshness
     number_categories = categorize_numbers_by_freshness(features_dict)
     
-    # Display current distribution
     display_available_numbers(features_dict, number_categories, c_max_threshold)
     
     lines = []
@@ -147,30 +140,49 @@ def generate_all_picks(
         g = model_config['generic_count']
         penalty = model_config['diversity_penalty']
         
+        total_picks = h + m + c + g
+        if total_picks != 5:
+            print(f"\n⚠️  WARNING: Model {model_idx} configured for {total_picks} numbers, adjusting to 5")
+            if total_picks > 5:
+                while h + m + c + g > 5:
+                    if g > 0:
+                        g -= 1
+                    elif c > 0:
+                        c -= 1
+                    elif m > 0:
+                        m -= 1
+                    elif h > 0:
+                        h -= 1
+            else:
+                g += (5 - total_picks)
+        
         print(f"\n→ Model {model_idx}: {model_config['name']}")
         print(f"  HMC Ratio: {h}H + {m}M + {c}C + {g}G = {h+m+c+g} numbers")
         
         if penalty_numbers and penalty > 0:
             print(f"  Diversity Penalty: {penalty*100:.0f}% on {len(penalty_numbers)} numbers")
         
-        # Apply diversity penalties
         adjusted_probs, penalty_details = apply_rank_aware_penalty(
             probabilities,
             penalty_numbers if penalty_numbers else set(),
             penalty
         )
         
-        # Build dual-categorized pools
         pools = build_dual_categorized_pools(
             features_dict,
             number_categories,
             adjusted_probs
         )
         
-        # Pick line with hybrid approach
+        model_config_adjusted = model_config.copy()
+        model_config_adjusted['hot_count'] = h
+        model_config_adjusted['medium_count'] = m
+        model_config_adjusted['cold_count'] = c
+        model_config_adjusted['generic_count'] = g
+        
         selected_numbers, _, achieved_pattern = pick_line_hybrid(
-            model_config,
-            probabilities,  # Pass original probabilities for potential rebalancing
+            model_config_adjusted,
+            probabilities,
             features_dict,
             number_categories,
             target_pattern,
@@ -181,7 +193,6 @@ def generate_all_picks(
         print(f"  Selected: {selected_numbers}")
         print(f"  Achieved Pattern: {achieved_pattern}")
         
-        # Display penalty details if enabled
         if SHOW_DETAILED_PENALTIES and penalty_details:
             print(f"  Rank-aware penalties applied:")
             penalty_details.sort(key=lambda x: x['rank'])
@@ -197,7 +208,6 @@ def generate_all_picks(
             'description': model_config['description']
         })
         
-        # Add current model's numbers to penalty set
         penalty_numbers.update(selected_numbers)
     
     return lines
