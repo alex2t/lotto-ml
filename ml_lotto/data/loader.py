@@ -629,8 +629,74 @@ def load_bonus_to_main_patterns(filename: str) -> Dict[str, Any]:
         return {}
 
 
+def load_long_term_patterns(filename: str) -> Dict[str, Any]:
+    """
+    Load statistically validated long-term pattern analysis (scipy-based).
+
+    This loads the output from lotto_analysis/analyzers/long_term_pattern_analyzer.py
+    which uses scipy for statistical significance testing.
+
+    Args:
+        filename: Path to lotto_long_term_patterns.json
+
+    Returns:
+        Dictionary containing:
+        - metadata: Analysis metadata (statistical methods, significance level)
+        - hmc_pattern_analysis: Chi-square validated HMC patterns
+        - recency_correlation_analysis: Pearson correlation analysis
+        - category_performance_by_recency: Category performance metrics
+
+    Raises:
+        FileNotFoundError: If the data file doesn't exist
+        ValueError: If the data is invalid
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"   This file contains scipy-validated long-term pattern analysis.")
+        print(f"\n   REQUIRED ACTION: Run 'python lotto_analysis/analyzers/long_term_pattern_analyzer.py'")
+        raise FileNotFoundError(f"Missing required file: {filename}")
+    except json.JSONDecodeError as e:
+        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"   Error details: {e}")
+        raise ValueError(f"Corrupted JSON file: {filename}")
+
+    if not data:
+        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        raise ValueError(f"Empty data file: {filename}")
+
+    # Validate scipy-generated structure
+    required_keys = ['hmc_pattern_analysis', 'recency_correlation_analysis', 'metadata']
+    missing_keys = [key for key in required_keys if key not in data]
+    if missing_keys:
+        print(f"\n⚠️  WARNING: Missing keys in {filename}: {missing_keys}")
+        print(f"   Expected scipy-validated analysis structure")
+
+    print(f"✓ Loaded long-term pattern analysis from {filename}")
+    print(f"  Purpose: Scipy-validated long-term pattern features")
+
+    # Display statistical validation info
+    if 'metadata' in data:
+        meta = data['metadata']
+        print(f"  Statistical methods: {', '.join(meta.get('statistical_methods', []))}")
+        print(f"  Total draws analyzed: {meta.get('total_draws', 0)}")
+        print(f"  Significance level: {meta.get('significance_level', 0.05)}")
+
+    if 'hmc_pattern_analysis' in data:
+        hmc_analysis = data['hmc_pattern_analysis']
+        print(f"  HMC patterns analyzed: {hmc_analysis.get('num_patterns', 0)}")
+        print(f"  Chi-square p-value: {hmc_analysis.get('p_value', 1.0):.4f}")
+        print(f"  Statistically significant: {hmc_analysis.get('significant', False)}")
+
+    return data
+
+
 def load_statistics_analysis(filename: str) -> Dict[str, Any]:
     """
+    DEPRECATED: Use load_long_term_patterns() instead.
+
     Load long-term statistical analysis JSON for pattern analysis.
 
     Args:
