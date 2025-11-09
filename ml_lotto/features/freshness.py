@@ -20,27 +20,42 @@ def calculate_freshness_category_features(
     hmc_data: Dict[str, Any],
     c_max_threshold: int,
     recent_key: str,
-    top_pattern_dist: Dict[int, float]
+    top_pattern_dist: Dict[int, float],
+    validated_weights: Dict[str, Any] = None
 ) -> Dict[int, Dict[str, float]]:
     """
     Calculate freshness category features for each number dynamically.
-    
+
     Categorizes each number based on how many times it appeared in recent draws
     (the "freshness" of the number), then assigns pattern weights based on
     historical winning patterns.
-    
+
     Args:
         hmc_data: HMC statistics from lotto_trigger_periods.json
         c_max_threshold: Maximum freshness category (e.g., 3 for C0/C1/C2/C3+)
         recent_key: Key to use for recent counts (e.g., 'last_4')
         top_pattern_dist: Pattern distribution weights from freshness JSON
-        
+        validated_weights: Optional scipy-validated weights from freshness_pattern_analyzer
+
     Returns:
         Dictionary mapping number -> freshness feature dictionary
         Each feature dict contains:
         - freshness_c0_weight, freshness_c1_weight, etc.
         - current_freshness_bin
     """
+    # Use scipy-validated weights if available and statistically significant
+    use_validated = False
+    if validated_weights:
+        # Check if weights are statistically validated
+        all_validated = all(
+            w.get('statistically_validated', False)
+            for w in validated_weights.values()
+        )
+        if all_validated:
+            use_validated = True
+            print(f"\n✓ Using SCIPY-VALIDATED freshness weights (chi-square tested)")
+        else:
+            print(f"\n⚠️  Scipy validation not significant - using standard weights")
     number_categories = {}
     category_counts = Counter()
     
@@ -60,15 +75,32 @@ def calculate_freshness_category_features(
         category_counts[category] += 1
     
     features = {}
-    
-    print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
-    
+
+    # Determine which weights to use
+    if use_validated and validated_weights:
+        print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
+        print(f"  SOURCE: Scipy-validated chi-square tested weights")
+
+        # Extract validated weights
+        weight_dist = {}
+        for i in range(c_max_threshold + 1):
+            if i < c_max_threshold:
+                key = f'C{i}'
+            else:
+                key = f'C_GE_{c_max_threshold}'
+
+            weight_dist[i] = validated_weights.get(key, {}).get('normalized_weight', 0.0)
+    else:
+        print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
+        print(f"  SOURCE: Standard frequency-based weights")
+        weight_dist = top_pattern_dist
+
     bin_names = [f'C{i}' for i in range(c_max_threshold)] + [f'C>={c_max_threshold}']
     print(f"  Target bins: {bin_names}")
-    
+
     for i in range(c_max_threshold + 1):
         name = bin_names[i]
-        weight = top_pattern_dist.get(i, 0.0)
+        weight = weight_dist.get(i, 0.0)
         print(f"    {name} weight: {weight*100:.1f}%")
     
     print(f"\n  Current number distribution:")
@@ -81,9 +113,9 @@ def calculate_freshness_category_features(
         fresh_features = {
             f'freshness_c{i}_weight': 0.0 for i in range(c_max_threshold + 1)
         }
-        
+
         feature_name = f'freshness_c{current_cat}_weight'
-        fresh_features[feature_name] = top_pattern_dist.get(current_cat, 0.0)
+        fresh_features[feature_name] = weight_dist.get(current_cat, 0.0)
         
         features[num] = {
             **fresh_features,

@@ -26,6 +26,9 @@ from ml_lotto.config import (
     BONUS_ANALYSIS_JSON,
     BONUS_TO_MAIN_JSON,
     LONG_TERM_PATTERNS_JSON,
+    FRESHNESS_PATTERNS_VALIDATED_JSON,
+    HMC_CATEGORIZATION_VALIDATED_JSON,
+    CONSECUTIVE_PAIRS_VALIDATED_JSON,
     ACTIVE_MODELS,
     BONUS_MODEL_CONFIG,
     BONUS_TO_MAIN_MODEL_CONFIG,
@@ -47,7 +50,10 @@ from ml_lotto.data.loader import (
     load_sum_contribution_analysis,
     load_bonus_analysis,
     load_bonus_to_main_patterns,
-    load_long_term_patterns
+    load_long_term_patterns,
+    load_freshness_patterns_validated,
+    load_hmc_categorization_validated,
+    load_consecutive_pairs_validated
 )
 
 from ml_lotto.features.extractor import (
@@ -215,6 +221,12 @@ def main():
         # Load long-term pattern analysis (scipy-validated)
         long_term_analysis = load_long_term_patterns(LONG_TERM_PATTERNS_JSON)
 
+        # Load scipy-validated feature analyses
+        print("\nStep 1c: Loading scipy-validated feature analyses...")
+        freshness_validated = load_freshness_patterns_validated(FRESHNESS_PATTERNS_VALIDATED_JSON)
+        hmc_categorization_validated = load_hmc_categorization_validated(HMC_CATEGORIZATION_VALIDATED_JSON)
+        consecutive_pairs_validated = load_consecutive_pairs_validated(CONSECUTIVE_PAIRS_VALIDATED_JSON)
+
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_analysis_data):
             sys.exit(1)
         
@@ -260,11 +272,15 @@ def main():
         )
 
         print("  Calculating 'freshness_category' features...")
+        # Extract validated weights if available
+        validated_freshness_weights = freshness_validated.get('validated_weights') if freshness_validated else None
+
         freshness_category_features = calculate_freshness_category_features(
             hmc_data=hmc_data,
             c_max_threshold=C_max,
             recent_key=recent_key,
-            top_pattern_dist=top_pattern_dist
+            top_pattern_dist=top_pattern_dist,
+            validated_weights=validated_freshness_weights
         )
 
         print("  Calculating 'long_term_pattern' features...")
@@ -301,7 +317,8 @@ def main():
                 range_spread_json_data,
                 odd_even_json_data,
                 sum_contribution_json_data,
-                long_term_pattern_features
+                long_term_pattern_features,
+                consecutive_pairs_validated
             )
             print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
         except Exception as e:
