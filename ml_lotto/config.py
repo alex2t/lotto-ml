@@ -19,6 +19,7 @@ FRESHNESS_JSON_INPUT = 'data/lotto_7_number_freshness_results.json'
 DISTRIBUTION_STATS_JSON = 'data/lotto_distribution_stats.json'
 BONUS_ANALYSIS_JSON = 'data/lotto_bonus_analysis.json'
 BONUS_TO_MAIN_JSON = 'data/lotto_bonus_to_main_patterns.json'
+STATISTICS_ANALYSIS_JSON = 'data/lotto_statistics_analysis.json'
 
 MAX_NUMBER = 47
 HOT_COUNT = 15
@@ -42,6 +43,7 @@ RANGE_BINS = {
 }
 
 FRESHNESS_PATTERN_WEIGHTS = 'FRESHNESS_PATTERN_WEIGHTS'
+LONG_TERM_PATTERN_WEIGHTS = 'LONG_TERM_PATTERN_WEIGHTS'
 
 BONUS_MODEL_CONFIG = {
     'name': 'Bonus Ball Predictor',
@@ -105,12 +107,12 @@ MODEL_1_CONFIG = {
     'name': 'Short-Term Momentum + Patterns + JSON Bonus',
     'description': 'Immediate patterns with timing, consecutive boosts, and NEW JSON bonus features',
     'algorithm': 'logistic_regression',
-    
+
     'hot_count': 1,
     'medium_count': 2,
     'cold_count': 2,
     'generic_count': 0,
-    
+
     'features': [
         FRESHNESS_PATTERN_WEIGHTS,
         'days_since_last',
@@ -118,7 +120,7 @@ MODEL_1_CONFIG = {
         'total_count',
         'was_recent_bonus',
         'has_consecutive_partner',
-        'odd_even_affinity',
+        'odd_even_json',  # Replaced odd_even_affinity with JSON version
         'bonus_hit_contribution',
         'pair_frequency_score'
     ],
@@ -144,27 +146,25 @@ MODEL_2_CONFIG = {
     'name': 'Long-Term Value + Sum/Range + JSON Features',
     'description': 'Historical patterns with timing, bonus optimization, and NEW JSON realism features',
     'algorithm': 'logistic_regression',
-    
+
     'hot_count': 0,
     'medium_count': 3,
     'cold_count': 2,
     'generic_count': 0,
-    
+
     'features': [
         'total_count',
         'days_since_last',
         'recency_zone_score',
         'days_since_bonus',
         'was_recent_bonus',
-        'bonus_hit_target_alignment',
+        'bonus_hit_contribution',  # Replaced bonus_hit_target_alignment with JSON version
         'recent_14',
         'win_bias_ratio',
         'consecutive_pair_affinity',
-        'sum_contribution_score',
-        'range_spread_affinity',
-        'freshness_weight_score',
-        'range_spread_json',
-        'sum_contribution_json'
+        'sum_contribution_json',  # Replaced sum_contribution_score with JSON version
+        'range_spread_json',  # Replaced range_spread_affinity with JSON version
+        'freshness_weight_score'
     ],
     
     'diversity_penalty': 0.15,
@@ -188,12 +188,12 @@ MODEL_3_CONFIG = {
     'name': 'Complex Pattern Discovery + All JSON Features',
     'description': 'XGBoost with full feature set including ALL NEW JSON features',
     'algorithm': 'xgboost',
-    
+
     'hot_count': 2,
     'medium_count': 2,
     'cold_count': 1,
     'generic_count': 0,
-    
+
     'features': [
         'recent_4',
         FRESHNESS_PATTERN_WEIGHTS,
@@ -203,20 +203,16 @@ MODEL_3_CONFIG = {
         'recent_14',
         'days_since_bonus',
         'was_recent_bonus',
-        'bonus_hit_target_alignment',
+        'bonus_hit_contribution',  # Replaced bonus_hit_target_alignment with JSON version
         'has_consecutive_partner',
         'consecutive_pair_affinity',
         'series_recent',
         'win_bias_ratio',
-        'odd_even_affinity',
-        'sum_contribution_score',
-        'range_spread_affinity',
-        'bonus_hit_contribution',
+        'odd_even_json',  # Replaced odd_even_affinity with JSON version
+        'sum_contribution_json',  # Replaced sum_contribution_score with JSON version
+        'range_spread_json',  # Replaced range_spread_affinity with JSON version
         'freshness_weight_score',
-        'pair_frequency_score',
-        'range_spread_json',
-        'odd_even_json',
-        'sum_contribution_json'
+        'pair_frequency_score'
     ],
     
     'diversity_penalty': 0.25,
