@@ -5,4 +5,4 @@ __pycache__/
 # Specific files to ignore
 *.json
 trend_analysis/
-data/
+# data/
