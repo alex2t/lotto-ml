@@ -1,0 +1,113 @@
+{
+  "metadata": {
+    "analysis_type": "hmc_categorization_validation",
+    "statistical_methods": [
+      "one_way_anova",
+      "independent_t_test",
+      "bonferroni_correction",
+      "chi_square_goodness_of_fit"
+    ],
+    "significance_level": 0.05,
+    "total_numbers": 47
+  },
+  "anova_test": {
+    "significant": false,
+    "f_statistic": NaN,
+    "p_value": NaN,
+    "eta_squared": 0.0,
+    "degrees_of_freedom_between": 2,
+    "degrees_of_freedom_within": 44,
+    "category_statistics": {
+      "hot": {
+        "count": 15,
+        "mean_days_since": 0.0,
+        "std_dev": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "medium": {
+        "count": 17,
+        "mean_days_since": 0.0,
+        "std_dev": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "cold": {
+        "count": 15,
+        "mean_days_since": 0.0,
+        "std_dev": 0.0,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      }
+    },
+    "interpretation": "Significant but negligible effect (categories barely distinct)"
+  },
+  "pairwise_comparisons": {
+    "bonferroni_corrected_alpha": 0.016666666666666666,
+    "comparisons": {
+      "hot_vs_medium": {
+        "t_statistic": NaN,
+        "p_value": NaN,
+        "significant": false,
+        "mean_difference": 0.0
+      },
+      "hot_vs_cold": {
+        "t_statistic": NaN,
+        "p_value": NaN,
+        "significant": false,
+        "mean_difference": 0.0
+      },
+      "medium_vs_cold": {
+        "t_statistic": NaN,
+        "p_value": NaN,
+        "significant": false,
+        "mean_difference": 0.0
+      }
+    },
+    "all_significant": false
+  },
+  "category_distribution": {
+    "significant": false,
+    "chi2_stat": 0.17021276595744683,
+    "p_value": 0.9184145755260215,
+    "category_counts": {
+      "hot": 15,
+      "medium": 17,
+      "cold": 15
+    },
+    "category_percentages": {
+      "hot": 31.914893617021278,
+      "medium": 36.17021276595745,
+      "cold": 31.914893617021278
+    },
+    "interpretation": "Category sizes are balanced (approximately equal)"
+  },
+  "threshold_validation": {
+    "hot_medium_overlap": true,
+    "medium_cold_overlap": true,
+    "categories_distinct": false,
+    "suggested_thresholds": {
+      "hot_medium_cutoff": 0.0,
+      "medium_cold_cutoff": 0.0
+    },
+    "current_ranges": {
+      "hot": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "medium": {
+        "min": 0.0,
+        "max": 0.0
+      },
+      "cold": {
+        "min": 0.0,
+        "max": 0.0
+      }
+    }
+  },
+  "categorization_valid": false,
+  "recommendation": "RECOMMENDATION: Redefine category thresholds - current categories not statistically distinct"
+}
