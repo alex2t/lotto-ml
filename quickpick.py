@@ -24,8 +24,10 @@ from ml_lotto.config import (
     FRESHNESS_JSON_INPUT,
     DISTRIBUTION_STATS_JSON,
     BONUS_ANALYSIS_JSON,
+    BONUS_TO_MAIN_JSON,
     ACTIVE_MODELS,
     BONUS_MODEL_CONFIG,
+    BONUS_TO_MAIN_MODEL_CONFIG,
     MAX_NUMBER,
     TRAINING_START_DRAW
 )
@@ -42,7 +44,8 @@ from ml_lotto.data.loader import (
     load_range_spread_analysis,
     load_odd_even_analysis,
     load_sum_contribution_analysis,
-    load_bonus_analysis
+    load_bonus_analysis,
+    load_bonus_to_main_patterns
 )
 
 from ml_lotto.features.extractor import (
@@ -85,9 +88,11 @@ from ml_lotto.features.bonus_features import extract_bonus_features_from_json
 
 from ml_lotto.models.trainer import train_all_models
 from ml_lotto.models.bonus_trainer import train_bonus_model
+from ml_lotto.models.bonus_to_main_trainer import train_bonus_to_main_model
 
 from ml_lotto.prediction.predictor import generate_predictions, generate_all_picks
 from ml_lotto.prediction.bonus_predictor import generate_bonus_predictions, assign_bonus_to_models
+from ml_lotto.prediction.bonus_to_main_predictor import generate_bonus_to_main_predictions, assign_bonus_to_main_to_models
 
 from ml_lotto.display import (
     display_final_picks,
@@ -107,7 +112,8 @@ def validate_data_files() -> bool:
         ODDS_JSON_INPUT,
         FRESHNESS_JSON_INPUT,
         DISTRIBUTION_STATS_JSON,
-        BONUS_ANALYSIS_JSON
+        BONUS_ANALYSIS_JSON,
+        BONUS_TO_MAIN_JSON
     ]
     
     missing_files = []
@@ -161,10 +167,11 @@ def main():
     start_time = time.time()
     
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.8: BONUS BALL PREDICTION EDITION")
+    print("INTELLIGENT LOTTO SYSTEM V3.9: BONUS-TO-MAIN PREDICTION EDITION")
     print("=" * 70)
-    print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model")
-    print("NEW: Separate bonus ball prediction system with 3 diverse predictions")
+    print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model + 1 bonus-to-main model")
+    print("NEW: Pre-assignment system - each model gets 2 numbers (bonus + bonus-to-main)")
+    print("Each model then selects 4 additional numbers for 6 total main numbers")
     
     try:
         print("\nStep 0: Validating data files...")
@@ -201,7 +208,9 @@ def main():
             print(f"✗ Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
         
         bonus_analysis_data = load_bonus_analysis(BONUS_ANALYSIS_JSON)
-        
+
+        bonus_to_main_data = load_bonus_to_main_patterns(BONUS_TO_MAIN_JSON)
+
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_analysis_data):
             sys.exit(1)
         
@@ -342,7 +351,70 @@ def main():
             sys.exit(1)
         
         bonus_assignments = assign_bonus_to_models(bonus_predictions, len(ACTIVE_MODELS))
-        
+
+        print("\nStep 4b: Extracting BONUS-TO-MAIN features from JSON...")
+        bonus_to_main_feature_start = time.time()
+
+        try:
+            # Import feature extractor
+            from ml_lotto.features.bonus_to_main_features import extract_bonus_to_main_features_dict
+
+            bonus_to_main_features_dict = extract_bonus_to_main_features_dict(
+                bonus_to_main_data,
+                features_dict
+            )
+            print(f"  ✓ Bonus-to-main features extracted for {len(bonus_to_main_features_dict)} numbers")
+        except Exception as e:
+            print(f"  ✗ Error extracting bonus-to-main features: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+
+        bonus_to_main_feature_time = time.time() - bonus_to_main_feature_start
+        print(f"✓ Bonus-to-main feature extraction completed in {bonus_to_main_feature_time:.2f} seconds")
+
+        print("\nStep 4c: Training BONUS-TO-MAIN prediction model...")
+        bonus_to_main_training_start = time.time()
+
+        try:
+            bonus_to_main_pipeline, bonus_to_main_features = train_bonus_to_main_model(
+                BONUS_TO_MAIN_MODEL_CONFIG,
+                all_draws,
+                bonus_to_main_features_dict,
+                TRAINING_START_DRAW
+            )
+            print(f"✓ Bonus-to-main model training completed in {time.time() - bonus_to_main_training_start:.2f} seconds")
+        except Exception as e:
+            print(f"✗ Error training bonus-to-main model: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+
+        print("\nStep 4d: Generating 3 BONUS-TO-MAIN predictions...")
+
+        current_bonus_window = bonus_to_main_data['current_bonus_window']['last_10_bonus_numbers']
+        current_bonus_numbers = [b['number'] for b in current_bonus_window]
+
+        print(f"  Current bonus window (last 10 draws): {current_bonus_numbers}")
+
+        try:
+            bonus_to_main_predictions = generate_bonus_to_main_predictions(
+                bonus_to_main_pipeline,
+                bonus_to_main_features,
+                bonus_to_main_features_dict,
+                current_bonus_numbers,
+                category_dict,
+                num_predictions=3
+            )
+            print(f"✓ Generated {len(bonus_to_main_predictions)} bonus-to-main predictions: {bonus_to_main_predictions}")
+        except Exception as e:
+            print(f"✗ Error generating bonus-to-main predictions: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+
+        bonus_to_main_assignments = assign_bonus_to_main_to_models(bonus_to_main_predictions, len(ACTIVE_MODELS))
+
         print("\nStep 5: Analyzing HMC distribution patterns...")
         hot_count, medium_count, cold_count, pattern_percentage = get_most_likely_hmc_pattern(odds_data)
         
@@ -368,35 +440,58 @@ def main():
             traceback.print_exc()
             sys.exit(1)
         
-        print("\nStep 8: Selecting optimal 5 MAIN NUMBERS per model...")
+        print("\nStep 8: Creating pre-assigned number combinations (bonus + bonus-to-main)...")
+        # Combine bonus and bonus-to-main assignments into pre_assigned_numbers
+        pre_assigned_numbers = {}
+        for model_idx in range(1, len(ACTIVE_MODELS) + 1):
+            bonus_num = bonus_assignments.get(model_idx)
+            bonus_to_main_num = bonus_to_main_assignments.get(model_idx)
+            pre_assigned_numbers[model_idx] = [bonus_num, bonus_to_main_num]
+            print(f"  Model {model_idx}: Pre-assigned [Bonus: {bonus_num}, Bonus-to-Main: {bonus_to_main_num}]")
+
+        print("\nStep 9: Selecting optimal 4 MAIN NUMBERS per model (+ 2 pre-assigned = 6 total)...")
         try:
-            lines = generate_all_picks(models, all_probabilities, features_dict, freshness_data)
+            lines = generate_all_picks(
+                models,
+                all_probabilities,
+                features_dict,
+                freshness_data,
+                pre_assigned_numbers=pre_assigned_numbers
+            )
             print(f"✓ Generated {len(lines)} lines of main number picks")
         except Exception as e:
             print(f"✗ Error generating picks: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
-        
-        print("\nStep 9: Combining main numbers with assigned bonus balls...")
+
+        print("\nStep 10: Final assembly - adding separate bonus balls...")
         for line in lines:
             model_idx = line['model_index']
-            assigned_bonus = bonus_assignments.get(model_idx)
-            line['bonus_number'] = assigned_bonus
-            line['numbers_with_bonus'] = line['numbers'] + [assigned_bonus]
-        
-        print("\nStep 10: Displaying complete results (5 main + 1 bonus)...")
+            # Note: bonus is already in the main numbers as one of the pre-assigned
+            # But we still track it separately for display purposes
+            line['bonus_for_draw'] = bonus_assignments.get(model_idx)
+
+        print("\nStep 11: Displaying complete results (6 main + 1 bonus)...")
         try:
             print("\n" + "=" * 70)
-            print("FINAL RECOMMENDED PICKS (5 MAIN + 1 BONUS)")
+            print("FINAL RECOMMENDED PICKS (6 MAIN + 1 BONUS)")
             print("=" * 70)
-            
+            print("NEW ARCHITECTURE: Each line has:")
+            print("  - 2 pre-assigned numbers (exempt from diversity penalties)")
+            print("  - 4 ML-selected numbers")
+            print("  - 1 separate bonus ball for the draw")
+            print("=" * 70)
+
             for line in lines:
                 print(f"\nLine {line['model_index']}: {line['model_name']} [{line['config_str']}]")
                 print(f"Description: {line['description']}")
-                print(f"Main Numbers (5): {line['numbers']}")
-                print(f"Bonus Number: {line['bonus_number']}")
-                print(f"Complete Line: {sorted(line['numbers'])} + BONUS {line['bonus_number']}")
+                if line.get('pre_assigned'):
+                    print(f"Pre-assigned (exempt): {sorted(line['pre_assigned'])}")
+                    print(f"ML-selected: {sorted(line['selected'])}")
+                print(f"Main Numbers (6): {sorted(line['numbers'])}")
+                print(f"Bonus Ball: {line['bonus_for_draw']}")
+                print(f"Complete Line: {sorted(line['numbers'])} + BONUS {line['bonus_for_draw']}")
             
             display_overlap_analysis(lines)
             display_rank_aware_explanation(ACTIVE_MODELS)
@@ -408,14 +503,18 @@ def main():
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
-                    f.write("BONUS BALL PREDICTION EDITION\n")
-                    f.write("Each line: 5 main numbers + 1 bonus ball\n")
+                    f.write("BONUS-TO-MAIN PREDICTION EDITION V3.9\n")
+                    f.write("Each line: 6 main numbers (2 pre-assigned + 4 selected) + 1 bonus ball\n")
+                    f.write("Pre-assigned numbers are EXEMPT from diversity penalties\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
-                        f.write(f"Main Numbers: {line['numbers']}\n")
-                        f.write(f"Bonus Number: {line['bonus_number']}\n")
-                        f.write(f"Complete: {sorted(line['numbers'])} + BONUS {line['bonus_number']}\n")
+                        if line.get('pre_assigned'):
+                            f.write(f"Pre-assigned (exempt): {sorted(line['pre_assigned'])}\n")
+                            f.write(f"ML-selected: {sorted(line['selected'])}\n")
+                        f.write(f"Main Numbers (6): {sorted(line['numbers'])}\n")
+                        f.write(f"Bonus Ball: {line['bonus_for_draw']}\n")
+                        f.write(f"Complete: {sorted(line['numbers'])} + BONUS {line['bonus_for_draw']}\n")
                         f.write(f"Description: {line['description']}\n\n")
                 print("\n✓ Results saved to 'lottery_picks.txt'")
             except Exception as e:

@@ -593,10 +593,46 @@ def load_sum_contribution_analysis(filename: str) -> Dict[int, float]:
     return scores
 
 
+def load_bonus_to_main_patterns(filename: str) -> Dict[str, Any]:
+    """
+    NEW: Load bonus-to-main transition patterns JSON file.
+
+    Args:
+        filename: Path to bonus-to-main patterns JSON
+
+    Returns:
+        Dictionary containing:
+        - per_number_transition_profile: Transition history per number
+        - category_transition_weights: Category-specific weights
+        - freshness_transition_weights: Freshness-specific weights
+        - timing_decay_weights: Time-decay weights for 10-draw window
+        - current_bonus_window: Last 10 bonus numbers
+        - transition_prediction_factors: Calculated prediction factors
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+        print(f"✓ Loaded bonus-to-main transition patterns from {filename}")
+
+        if 'metadata' in data:
+            meta = data['metadata']
+            print(f"  Transition rate: {meta.get('overall_transition_rate', 0)*100:.1f}%")
+            print(f"  Bonus appearances: {meta.get('total_bonus_appearances', 0)}")
+
+        return data
+    except FileNotFoundError:
+        print(f"\n❌ ERROR: {filename} not found")
+        print(f"   REQUIRED ACTION: Run 'python drawpick.py' to generate this file")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"\n❌ ERROR: Invalid JSON in {filename}: {e}")
+        return {}
+
+
 def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, int, float]:
     """
     Extract the most likely HMC distribution pattern.
-    
+
     Returns:
         Tuple of (hot_count, medium_count, cold_count, percentage)
     """
@@ -604,23 +640,23 @@ def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, in
         print(f"\n⚠️  WARNING: HMC distribution not found in odds data.")
         print(f"   Using neutral default pattern: 2-3-2")
         return (2, 3, 2, 0.0)
-    
+
     hmc_dist = odds_data['hmc']
     best_pattern = None
     best_percentage = 0
-    
+
     for pattern_str, data in hmc_dist.items():
         percentage = data.get('percentage', 0)
         if percentage > best_percentage:
             best_percentage = percentage
             best_pattern = pattern_str
-    
+
     if best_pattern:
         parts = best_pattern.split('-')
         if len(parts) != 3:
             print(f"\n⚠️  WARNING: Invalid HMC pattern format: {best_pattern}")
             return (2, 3, 2, 0.0)
-        
+
         try:
             hot_count = int(parts[0])
             medium_count = int(parts[1])
@@ -630,6 +666,6 @@ def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, in
         except ValueError:
             print(f"\n⚠️  WARNING: Could not parse HMC pattern: {best_pattern}")
             return (2, 3, 2, 0.0)
-    
+
     print(f"\n⚠️  WARNING: No HMC patterns found. Using default: 2-3-2")
     return (2, 3, 2, 0.0)

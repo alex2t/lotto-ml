@@ -76,42 +76,51 @@ def categorize_numbers_by_freshness(
 def build_dual_categorized_pools(
     features_dict: Dict[int, Dict[str, Any]],
     number_categories: Dict[int, int],
-    adjusted_probs: Any  # numpy array
+    adjusted_probs: Any,  # numpy array
+    exclude_numbers: set = None
 ) -> Dict[str, Dict[int, List]]:
     """
     Build dual-categorized pools: HMC categories subdivided by freshness bins.
-    
+
     Args:
         features_dict: Number features including HMC category
         number_categories: Freshness bin for each number
         adjusted_probs: Adjusted probability array
-        
+        exclude_numbers: Optional set of numbers to exclude from pools (e.g., pre-assigned)
+
     Returns:
         Nested dict: {HMC: {freshness: [(prob, num), ...]}}
         Example: {'hot': {0: [(0.85, 5), (0.82, 12)], 1: [(0.78, 3)]}, ...}
     """
+    if exclude_numbers is None:
+        exclude_numbers = set()
+
     pools = {
         'hot': defaultdict(list),
         'medium': defaultdict(list),
         'cold': defaultdict(list)
     }
-    
+
     for num in range(1, MAX_NUMBER + 1):
         if num not in features_dict:
             continue
-        
+
+        # Skip excluded numbers
+        if num in exclude_numbers:
+            continue
+
         hmc_cat = features_dict[num].get('category', 'cold')
         fresh_cat = number_categories.get(num, 0)
         prob = adjusted_probs[num - 1]
-        
+
         if hmc_cat in pools:
             pools[hmc_cat][fresh_cat].append((prob, num))
-    
+
     # Sort each pool by probability (highest first)
     for hmc_cat in pools:
         for fresh_cat in pools[hmc_cat]:
             pools[hmc_cat][fresh_cat].sort(reverse=True)
-    
+
     return pools
 
 
