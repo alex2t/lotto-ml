@@ -70,6 +70,37 @@ BONUS_MODEL_CONFIG = {
     }
 }
 
+BONUS_TO_MAIN_MODEL_CONFIG = {
+    'name': 'Bonus-to-Main Transition Predictor',
+    'description': '74% of bonus numbers appear as main within 10 draws',
+    'algorithm': 'logistic_regression',
+    'features': [
+        'is_in_bonus_window',
+        'draws_since_bonus',
+        'historical_transition_rate',
+        'category_multiplier',
+        'freshness_multiplier',
+        'timing_decay_weight',
+        'composite_transition_score',
+        'avg_draws_to_transition',
+        'recent_4',
+        'recent_9',
+        'total_count'
+    ],
+    'algorithm_params': {
+        'penalty': 'l2',
+        'C': 0.8,
+        'class_weight': {0: 1.0, 1: 3.5},  # Reflect 3.5x boost over random
+        'solver': 'liblinear',
+        'max_iter': 1000,
+        'random_state': 42
+    },
+    'calibration': {
+        'method': 'isotonic',  # Better for skewed distributions
+        'cv': 5
+    }
+}
+
 MODEL_1_CONFIG = {
     'name': 'Short-Term Momentum + Patterns + JSON Bonus',
     'description': 'Immediate patterns with timing, consecutive boosts, and NEW JSON bonus features',
