@@ -629,6 +629,55 @@ def load_bonus_to_main_patterns(filename: str) -> Dict[str, Any]:
         return {}
 
 
+def load_statistics_analysis(filename: str) -> Dict[str, Any]:
+    """
+    Load long-term statistical analysis JSON for pattern analysis.
+
+    Args:
+        filename: Path to lotto_statistics_analysis.json
+
+    Returns:
+        Dictionary containing:
+        - hmc_distribution: HMC pattern distributions
+        - days_since_last_hit: Recency pattern analysis by category
+        - category distributions
+
+    Raises:
+        FileNotFoundError: If the data file doesn't exist
+        ValueError: If the data is invalid
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"   This file contains long-term pattern analysis.")
+        print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate data files.")
+        raise FileNotFoundError(f"Missing required file: {filename}")
+    except json.JSONDecodeError as e:
+        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"   Error details: {e}")
+        raise ValueError(f"Corrupted JSON file: {filename}")
+
+    if not data:
+        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        raise ValueError(f"Empty data file: {filename}")
+
+    required_keys = ['hmc_distribution', 'days_since_last_hit']
+    missing_keys = [key for key in required_keys if key not in data]
+    if missing_keys:
+        print(f"\n⚠️  WARNING: Missing keys in {filename}: {missing_keys}")
+
+    print(f"✓ Loaded long-term statistics from {filename}")
+    print(f"  Purpose: Long-term pattern analysis features")
+
+    if 'hmc_distribution' in data:
+        hmc_patterns = data['hmc_distribution'].get('hmc_pattern_distribution', {})
+        print(f"  HMC patterns tracked: {len(hmc_patterns)}")
+
+    return data
+
+
 def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, int, float]:
     """
     Extract the most likely HMC distribution pattern.

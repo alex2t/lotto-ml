@@ -21,12 +21,11 @@ from ml_lotto.features.patterns import (
     calculate_has_consecutive_partner,
     calculate_consecutive_pair_affinity
 )
-from ml_lotto.features.bonus import calculate_bonus_hit_target_alignment
-from ml_lotto.features.realism import (
-    calculate_odd_even_affinity,
-    calculate_sum_contribution_score,
-    calculate_range_spread_affinity
-)
+# NOTE: Removed duplicate calculated features - using JSON versions instead:
+# - calculate_bonus_hit_target_alignment → bonus_hit_contribution
+# - calculate_odd_even_affinity → odd_even_json
+# - calculate_sum_contribution_score → sum_contribution_json
+# - calculate_range_spread_affinity → range_spread_json
 
 
 def extract_features_from_hmc_json(
@@ -98,31 +97,9 @@ def extract_features_from_hmc_json(
     else:
         print(f"\n❌ CRITICAL ERROR: Consecutive patterns data not provided.")
         raise ValueError("Missing consecutive_patterns data - cannot extract features")
-    
-    bonus_alignment_data = {}
-    if was_recent_bonus_data:
-        bonus_alignment_data = calculate_bonus_hit_target_alignment(
-            was_recent_bonus_data
-        )
-    else:
-        print(f"\n❌ CRITICAL ERROR: was_recent_bonus data not provided.")
-        raise ValueError("Missing was_recent_bonus data - cannot extract features")
-    
-    print("  Calculating Priority 3 features from JSON data...")
-    
-    if distribution_stats:
-        odd_even_affinity_data = calculate_odd_even_affinity(distribution_stats)
-        sum_contribution_data = calculate_sum_contribution_score(distribution_stats)
-    else:
-        print(f"\n⚠️  WARNING: distribution_stats not provided. Using default values.")
-        odd_even_affinity_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
-        sum_contribution_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
-    
-    if odds_data:
-        range_spread_data = calculate_range_spread_affinity(odds_data)
-    else:
-        print(f"\n⚠️  WARNING: odds_data not provided. Using default values.")
-        range_spread_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
+
+    # NOTE: Removed duplicate calculated features - using JSON versions instead
+    print("  ✓ Skipped duplicate calculations (using JSON-loaded versions)")
     
     print("  Loading NEW JSON features...")
     
@@ -164,10 +141,9 @@ def extract_features_from_hmc_json(
     
     print(f"\n✓ Extracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
-                     'series_total', 'series_recent', 'days_since_bonus', 
+                     'series_total', 'series_recent', 'days_since_bonus',
                      'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner',
-                     'consecutive_pair_affinity', 'bonus_hit_target_alignment',
-                     'odd_even_affinity', 'sum_contribution_score', 'range_spread_affinity',
+                     'consecutive_pair_affinity',
                      'bonus_hit_contribution', 'freshness_weight_score', 'pair_frequency_score',
                      'range_spread_json', 'odd_even_json', 'sum_contribution_json']
     fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() 
@@ -199,10 +175,6 @@ def extract_features_from_hmc_json(
             'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
             'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
             'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
-            'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
-            'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
-            'sum_contribution_score': sum_contribution_data.get(num, 0.5),
-            'range_spread_affinity': range_spread_data.get(num, 0.5),
             'bonus_hit_contribution': bonus_hit_contribution_data.get(num, 0.5),
             'freshness_weight_score': freshness_weight_score,
             'pair_frequency_score': pair_frequency_data.get(num, 0.5),
@@ -265,10 +237,6 @@ def extract_features_from_hmc_json(
             'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
             'has_consecutive_partner': has_consecutive_partner_data.get(num, 0),
             'consecutive_pair_affinity': consecutive_pair_affinity_data.get(num, 0.5),
-            'bonus_hit_target_alignment': bonus_alignment_data.get(num, 0.35),
-            'odd_even_affinity': odd_even_affinity_data.get(num, 0.5),
-            'sum_contribution_score': sum_contribution_data.get(num, 0.5),
-            'range_spread_affinity': range_spread_data.get(num, 0.5),
             'bonus_hit_contribution': bonus_hit_contribution_data.get(num, 0.5),
             'freshness_weight_score': freshness_weight_score,
             'pair_frequency_score': pair_frequency_data.get(num, 0.5),

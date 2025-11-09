@@ -35,8 +35,7 @@ from ml_lotto.features.patterns import (
 )
 
 from ml_lotto.features.bonus import (
-    calculate_was_recent_bonus,
-    calculate_bonus_hit_target_alignment
+    calculate_was_recent_bonus
 )
 
 from ml_lotto.features.freshness import (
@@ -44,11 +43,11 @@ from ml_lotto.features.freshness import (
     calculate_recency_weighted_pattern_score
 )
 
-from ml_lotto.features.realism import (
-    calculate_odd_even_affinity,
-    calculate_sum_contribution_score,
-    calculate_range_spread_affinity
-)
+# NOTE: Removed duplicate calculated features - using JSON versions instead:
+# - calculate_bonus_hit_target_alignment → bonus_hit_contribution
+# - calculate_odd_even_affinity → odd_even_json
+# - calculate_sum_contribution_score → sum_contribution_json
+# - calculate_range_spread_affinity → range_spread_json
 
 from ml_lotto.features.history import (
     extract_win_bias_ratio_from_history
@@ -73,17 +72,11 @@ __all__ = [
     
     # Bonus features
     'calculate_was_recent_bonus',
-    'calculate_bonus_hit_target_alignment',
-    
+
     # Freshness features
     'calculate_freshness_category_features',
     'calculate_recency_weighted_pattern_score',
-    
-    # Realism features (Priority 3, JSON-based)
-    'calculate_odd_even_affinity',
-    'calculate_sum_contribution_score',
-    'calculate_range_spread_affinity',
-    
+
     # History features
     'extract_win_bias_ratio_from_history'
 ]
