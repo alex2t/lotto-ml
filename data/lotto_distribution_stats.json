@@ -1,0 +1,730 @@
+{
+    "total_draws_analyzed": 406,
+    "analysis_6_main_numbers": {
+        "description": "Analysis of 6 main numbers (excluding bonus)",
+        "odd_even_patterns": {
+            "6_0": {
+                "count": 4,
+                "percentage": 0.99,
+                "odds": 0.0099
+            },
+            "5_1": {
+                "count": 39,
+                "percentage": 9.61,
+                "odds": 0.0961
+            },
+            "4_2": {
+                "count": 95,
+                "percentage": 23.4,
+                "odds": 0.234
+            },
+            "3_3": {
+                "count": 130,
+                "percentage": 32.02,
+                "odds": 0.3202
+            },
+            "2_4": {
+                "count": 95,
+                "percentage": 23.4,
+                "odds": 0.234
+            },
+            "1_5": {
+                "count": 38,
+                "percentage": 9.36,
+                "odds": 0.0936
+            },
+            "0_6": {
+                "count": 5,
+                "percentage": 1.23,
+                "odds": 0.0123
+            }
+        },
+        "sum_distributions": {
+            "S6_VERY_LOW (<110)": {
+                "count": 49,
+                "percentage": 12.07,
+                "odds": 0.1207
+            },
+            "S6_LOW (110-124)": {
+                "count": 57,
+                "percentage": 14.04,
+                "odds": 0.1404
+            },
+            "S6_MID_LOW (125-139)": {
+                "count": 66,
+                "percentage": 16.26,
+                "odds": 0.1626
+            },
+            "S6_MID (140-154)": {
+                "count": 81,
+                "percentage": 19.95,
+                "odds": 0.1995
+            },
+            "S6_MID_HIGH (155-169)": {
+                "count": 67,
+                "percentage": 16.5,
+                "odds": 0.165
+            },
+            "S6_HIGH (170-184)": {
+                "count": 42,
+                "percentage": 10.34,
+                "odds": 0.1034
+            },
+            "S6_VERY_HIGH (>=185)": {
+                "count": 44,
+                "percentage": 10.84,
+                "odds": 0.1084
+            }
+        }
+    },
+    "analysis_all_7_numbers": {
+        "description": "Analysis of all 7 numbers (6 main + bonus)",
+        "odd_even_patterns": {
+            "7_0": {
+                "count": 1,
+                "percentage": 0.25,
+                "odds": 0.0025
+            },
+            "6_1": {
+                "count": 21,
+                "percentage": 5.17,
+                "odds": 0.0517
+            },
+            "5_2": {
+                "count": 71,
+                "percentage": 17.49,
+                "odds": 0.1749
+            },
+            "4_3": {
+                "count": 117,
+                "percentage": 28.82,
+                "odds": 0.2882
+            },
+            "3_4": {
+                "count": 117,
+                "percentage": 28.82,
+                "odds": 0.2882
+            },
+            "2_5": {
+                "count": 58,
+                "percentage": 14.29,
+                "odds": 0.1429
+            },
+            "1_6": {
+                "count": 18,
+                "percentage": 4.43,
+                "odds": 0.0443
+            },
+            "0_7": {
+                "count": 3,
+                "percentage": 0.74,
+                "odds": 0.0074
+            }
+        },
+        "sum_distributions": {
+            "S_VERY_LOW (<130)": {
+                "count": 46,
+                "percentage": 11.33,
+                "odds": 0.1133
+            },
+            "S_LOW (130-144)": {
+                "count": 47,
+                "percentage": 11.58,
+                "odds": 0.1158
+            },
+            "S_MID_LOW (145-159)": {
+                "count": 64,
+                "percentage": 15.76,
+                "odds": 0.1576
+            },
+            "S_MID (160-174)": {
+                "count": 64,
+                "percentage": 15.76,
+                "odds": 0.1576
+            },
+            "S_MID_HIGH (175-189)": {
+                "count": 73,
+                "percentage": 17.98,
+                "odds": 0.1798
+            },
+            "S_HIGH (190-204)": {
+                "count": 49,
+                "percentage": 12.07,
+                "odds": 0.1207
+            },
+            "S_VERY_HIGH (>=205)": {
+                "count": 63,
+                "percentage": 15.52,
+                "odds": 0.1552
+            }
+        }
+    },
+    "odd_even_analysis": {
+        "1": {
+            "total_appearances": 52,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 17,
+            "odd_even_affinity": 0.75
+        },
+        "2": {
+            "total_appearances": 58,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 25,
+            "odd_even_affinity": 0.65
+        },
+        "3": {
+            "total_appearances": 49,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 15,
+            "odd_even_affinity": 0.75
+        },
+        "4": {
+            "total_appearances": 48,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 17,
+            "odd_even_affinity": 0.65
+        },
+        "5": {
+            "total_appearances": 53,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 23,
+            "odd_even_affinity": 0.75
+        },
+        "6": {
+            "total_appearances": 55,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 18,
+            "odd_even_affinity": 0.65
+        },
+        "7": {
+            "total_appearances": 47,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 15,
+            "odd_even_affinity": 0.75
+        },
+        "8": {
+            "total_appearances": 57,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 18,
+            "odd_even_affinity": 0.65
+        },
+        "9": {
+            "total_appearances": 43,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 12,
+            "odd_even_affinity": 0.75
+        },
+        "10": {
+            "total_appearances": 51,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 21,
+            "odd_even_affinity": 0.65
+        },
+        "11": {
+            "total_appearances": 51,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 16,
+            "odd_even_affinity": 0.75
+        },
+        "12": {
+            "total_appearances": 61,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 20,
+            "odd_even_affinity": 0.65
+        },
+        "13": {
+            "total_appearances": 61,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 22,
+            "odd_even_affinity": 0.75
+        },
+        "14": {
+            "total_appearances": 49,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 17,
+            "odd_even_affinity": 0.65
+        },
+        "15": {
+            "total_appearances": 33,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 10,
+            "odd_even_affinity": 0.75
+        },
+        "16": {
+            "total_appearances": 47,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 16,
+            "odd_even_affinity": 0.65
+        },
+        "17": {
+            "total_appearances": 46,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 15,
+            "odd_even_affinity": 0.75
+        },
+        "18": {
+            "total_appearances": 41,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 14,
+            "odd_even_affinity": 0.65
+        },
+        "19": {
+            "total_appearances": 51,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 14,
+            "odd_even_affinity": 0.75
+        },
+        "20": {
+            "total_appearances": 56,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 19,
+            "odd_even_affinity": 0.65
+        },
+        "21": {
+            "total_appearances": 62,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 23,
+            "odd_even_affinity": 0.75
+        },
+        "22": {
+            "total_appearances": 55,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 19,
+            "odd_even_affinity": 0.65
+        },
+        "23": {
+            "total_appearances": 36,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 12,
+            "odd_even_affinity": 0.75
+        },
+        "24": {
+            "total_appearances": 54,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 23,
+            "odd_even_affinity": 0.65
+        },
+        "25": {
+            "total_appearances": 55,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 17,
+            "odd_even_affinity": 0.75
+        },
+        "26": {
+            "total_appearances": 58,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 20,
+            "odd_even_affinity": 0.65
+        },
+        "27": {
+            "total_appearances": 57,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 20,
+            "odd_even_affinity": 0.75
+        },
+        "28": {
+            "total_appearances": 59,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 20,
+            "odd_even_affinity": 0.65
+        },
+        "29": {
+            "total_appearances": 57,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 22,
+            "odd_even_affinity": 0.75
+        },
+        "30": {
+            "total_appearances": 55,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 20,
+            "odd_even_affinity": 0.65
+        },
+        "31": {
+            "total_appearances": 41,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 16,
+            "odd_even_affinity": 0.75
+        },
+        "32": {
+            "total_appearances": 55,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 19,
+            "odd_even_affinity": 0.65
+        },
+        "33": {
+            "total_appearances": 40,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 13,
+            "odd_even_affinity": 0.75
+        },
+        "34": {
+            "total_appearances": 42,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 16,
+            "odd_even_affinity": 0.65
+        },
+        "35": {
+            "total_appearances": 69,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 24,
+            "odd_even_affinity": 0.75
+        },
+        "36": {
+            "total_appearances": 52,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 19,
+            "odd_even_affinity": 0.65
+        },
+        "37": {
+            "total_appearances": 53,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 19,
+            "odd_even_affinity": 0.75
+        },
+        "38": {
+            "total_appearances": 57,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 21,
+            "odd_even_affinity": 0.65
+        },
+        "39": {
+            "total_appearances": 53,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 17,
+            "odd_even_affinity": 0.75
+        },
+        "40": {
+            "total_appearances": 57,
+            "most_common_pattern": "2_4",
+            "pattern_frequency": 22,
+            "odd_even_affinity": 0.65
+        },
+        "41": {
+            "total_appearances": 50,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 20,
+            "odd_even_affinity": 0.75
+        },
+        "42": {
+            "total_appearances": 61,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 18,
+            "odd_even_affinity": 0.65
+        },
+        "43": {
+            "total_appearances": 53,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 22,
+            "odd_even_affinity": 0.75
+        },
+        "44": {
+            "total_appearances": 45,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 18,
+            "odd_even_affinity": 0.65
+        },
+        "45": {
+            "total_appearances": 60,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 27,
+            "odd_even_affinity": 0.75
+        },
+        "46": {
+            "total_appearances": 46,
+            "most_common_pattern": "3_3",
+            "pattern_frequency": 18,
+            "odd_even_affinity": 0.65
+        },
+        "47": {
+            "total_appearances": 45,
+            "most_common_pattern": "4_2",
+            "pattern_frequency": 17,
+            "odd_even_affinity": 0.75
+        }
+    },
+    "sum_contribution_analysis": {
+        "1": {
+            "total_appearances": 52,
+            "most_common_sum_bin": "S6_VERY_LOW (<110)",
+            "bin_frequency": 15,
+            "sum_contribution_score": 0.5
+        },
+        "2": {
+            "total_appearances": 58,
+            "most_common_sum_bin": "S6_MID_LOW (125-139)",
+            "bin_frequency": 18,
+            "sum_contribution_score": 0.5
+        },
+        "3": {
+            "total_appearances": 49,
+            "most_common_sum_bin": "S6_LOW (110-124)",
+            "bin_frequency": 12,
+            "sum_contribution_score": 0.5
+        },
+        "4": {
+            "total_appearances": 48,
+            "most_common_sum_bin": "S6_LOW (110-124)",
+            "bin_frequency": 12,
+            "sum_contribution_score": 0.5
+        },
+        "5": {
+            "total_appearances": 53,
+            "most_common_sum_bin": "S6_LOW (110-124)",
+            "bin_frequency": 13,
+            "sum_contribution_score": 0.5
+        },
+        "6": {
+            "total_appearances": 55,
+            "most_common_sum_bin": "S6_VERY_LOW (<110)",
+            "bin_frequency": 13,
+            "sum_contribution_score": 0.5
+        },
+        "7": {
+            "total_appearances": 47,
+            "most_common_sum_bin": "S6_VERY_LOW (<110)",
+            "bin_frequency": 17,
+            "sum_contribution_score": 0.5
+        },
+        "8": {
+            "total_appearances": 57,
+            "most_common_sum_bin": "S6_MID_LOW (125-139)",
+            "bin_frequency": 16,
+            "sum_contribution_score": 0.5
+        },
+        "9": {
+            "total_appearances": 43,
+            "most_common_sum_bin": "S6_VERY_LOW (<110)",
+            "bin_frequency": 11,
+            "sum_contribution_score": 0.5
+        },
+        "10": {
+            "total_appearances": 51,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.5
+        },
+        "11": {
+            "total_appearances": 51,
+            "most_common_sum_bin": "S6_MID_LOW (125-139)",
+            "bin_frequency": 15,
+            "sum_contribution_score": 0.7
+        },
+        "12": {
+            "total_appearances": 61,
+            "most_common_sum_bin": "S6_VERY_LOW (<110)",
+            "bin_frequency": 12,
+            "sum_contribution_score": 0.7
+        },
+        "13": {
+            "total_appearances": 61,
+            "most_common_sum_bin": "S6_VERY_LOW (<110)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.7
+        },
+        "14": {
+            "total_appearances": 49,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 10,
+            "sum_contribution_score": 0.7
+        },
+        "15": {
+            "total_appearances": 33,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 7,
+            "sum_contribution_score": 0.85
+        },
+        "16": {
+            "total_appearances": 47,
+            "most_common_sum_bin": "S6_MID_LOW (125-139)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.85
+        },
+        "17": {
+            "total_appearances": 46,
+            "most_common_sum_bin": "S6_VERY_LOW (<110)",
+            "bin_frequency": 11,
+            "sum_contribution_score": 0.85
+        },
+        "18": {
+            "total_appearances": 41,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.85
+        },
+        "19": {
+            "total_appearances": 51,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 15,
+            "sum_contribution_score": 0.85
+        },
+        "20": {
+            "total_appearances": 56,
+            "most_common_sum_bin": "S6_LOW (110-124)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.85
+        },
+        "21": {
+            "total_appearances": 62,
+            "most_common_sum_bin": "S6_MID_HIGH (155-169)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.85
+        },
+        "22": {
+            "total_appearances": 55,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 15,
+            "sum_contribution_score": 0.85
+        },
+        "23": {
+            "total_appearances": 36,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 8,
+            "sum_contribution_score": 0.85
+        },
+        "24": {
+            "total_appearances": 54,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 13,
+            "sum_contribution_score": 0.85
+        },
+        "25": {
+            "total_appearances": 55,
+            "most_common_sum_bin": "S6_LOW (110-124)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.85
+        },
+        "26": {
+            "total_appearances": 58,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 13,
+            "sum_contribution_score": 0.85
+        },
+        "27": {
+            "total_appearances": 57,
+            "most_common_sum_bin": "S6_MID_HIGH (155-169)",
+            "bin_frequency": 12,
+            "sum_contribution_score": 0.85
+        },
+        "28": {
+            "total_appearances": 59,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 15,
+            "sum_contribution_score": 0.85
+        },
+        "29": {
+            "total_appearances": 57,
+            "most_common_sum_bin": "S6_MID_LOW (125-139)",
+            "bin_frequency": 12,
+            "sum_contribution_score": 0.85
+        },
+        "30": {
+            "total_appearances": 55,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.85
+        },
+        "31": {
+            "total_appearances": 41,
+            "most_common_sum_bin": "S6_MID_HIGH (155-169)",
+            "bin_frequency": 11,
+            "sum_contribution_score": 0.85
+        },
+        "32": {
+            "total_appearances": 55,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 12,
+            "sum_contribution_score": 0.85
+        },
+        "33": {
+            "total_appearances": 40,
+            "most_common_sum_bin": "S6_MID_HIGH (155-169)",
+            "bin_frequency": 11,
+            "sum_contribution_score": 0.85
+        },
+        "34": {
+            "total_appearances": 42,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 10,
+            "sum_contribution_score": 0.85
+        },
+        "35": {
+            "total_appearances": 69,
+            "most_common_sum_bin": "S6_MID_HIGH (155-169)",
+            "bin_frequency": 16,
+            "sum_contribution_score": 0.85
+        },
+        "36": {
+            "total_appearances": 52,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.7
+        },
+        "37": {
+            "total_appearances": 53,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 13,
+            "sum_contribution_score": 0.7
+        },
+        "38": {
+            "total_appearances": 57,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 13,
+            "sum_contribution_score": 0.7
+        },
+        "39": {
+            "total_appearances": 53,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 11,
+            "sum_contribution_score": 0.7
+        },
+        "40": {
+            "total_appearances": 57,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 15,
+            "sum_contribution_score": 0.5
+        },
+        "41": {
+            "total_appearances": 50,
+            "most_common_sum_bin": "S6_MID (140-154)",
+            "bin_frequency": 12,
+            "sum_contribution_score": 0.5
+        },
+        "42": {
+            "total_appearances": 61,
+            "most_common_sum_bin": "S6_VERY_HIGH (>=185)",
+            "bin_frequency": 16,
+            "sum_contribution_score": 0.5
+        },
+        "43": {
+            "total_appearances": 53,
+            "most_common_sum_bin": "S6_MID_HIGH (155-169)",
+            "bin_frequency": 15,
+            "sum_contribution_score": 0.5
+        },
+        "44": {
+            "total_appearances": 45,
+            "most_common_sum_bin": "S6_MID_HIGH (155-169)",
+            "bin_frequency": 14,
+            "sum_contribution_score": 0.5
+        },
+        "45": {
+            "total_appearances": 60,
+            "most_common_sum_bin": "S6_VERY_HIGH (>=185)",
+            "bin_frequency": 17,
+            "sum_contribution_score": 0.5
+        },
+        "46": {
+            "total_appearances": 46,
+            "most_common_sum_bin": "S6_VERY_HIGH (>=185)",
+            "bin_frequency": 13,
+            "sum_contribution_score": 0.5
+        },
+        "47": {
+            "total_appearances": 45,
+            "most_common_sum_bin": "S6_VERY_HIGH (>=185)",
+            "bin_frequency": 11,
+            "sum_contribution_score": 0.5
+        }
+    }
+}

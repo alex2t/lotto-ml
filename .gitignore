@@ -3,6 +3,6 @@ venv/
 __pycache__/
 
 # Specific files to ignore
-*.json
+#*.json
 trend_analysis/
 # data/
