@@ -70,24 +70,41 @@ def generate_all_picks(
     models: Dict[str, Any],
     all_probabilities: Dict[str, np.ndarray],
     features_dict: Dict[int, Dict[str, Any]],
-    freshness_data: Dict[str, Any] = None
+    freshness_data: Dict[str, Any] = None,
+    pre_assigned_numbers: Dict[int, List[int]] = None
 ) -> List[Dict[str, Any]]:
     """
-    Generate 5 MAIN NUMBER picks from all models (bonus assigned separately).
-    
+    Generate MAIN NUMBER picks from all models with optional pre-assigned numbers.
+
     Args:
         models: Trained model pipelines and configs
         all_probabilities: Predicted probabilities from each model
         features_dict: Current feature values for all numbers
         freshness_data: Freshness pattern configuration from JSON
-        
+        pre_assigned_numbers: Dict mapping model_idx -> list of pre-assigned numbers
+                              These numbers are EXEMPT from selection and penalties
+
     Returns:
-        List of pick lines with metadata (5 main numbers each)
-        
-    UPDATED v3.6: Picks 5 main numbers instead of 6
+        List of pick lines with metadata
+
+    UPDATED v3.9: Support for pre-assigned numbers (bonus + bonus-to-main)
+    - If pre_assigned_numbers provided: picks remaining numbers to total 6 main
+    - Pre-assigned numbers are excluded from selection pool and diversity penalties
     """
+    # Initialize pre-assigned numbers if not provided
+    if pre_assigned_numbers is None:
+        pre_assigned_numbers = {}
+
+    # Determine target count: 5 if no pre-assigned, 4 if 2 pre-assigned (for 6 total main)
+    has_pre_assigned = len(pre_assigned_numbers) > 0
+    numbers_to_select = 4 if has_pre_assigned else 5
+
     print("\n" + "="*70)
-    print("GENERATING 5 MAIN NUMBER PICKS (Bonus Assigned Separately)")
+    if has_pre_assigned:
+        print(f"GENERATING {numbers_to_select} MAIN NUMBER PICKS + 2 PRE-ASSIGNED (6 Total)")
+        print("Pre-assigned numbers: EXEMPT from selection and diversity penalties")
+    else:
+        print("GENERATING 5 MAIN NUMBER PICKS (Bonus Assigned Separately)")
     print("="*70)
     
     if FILTERS_AVAILABLE:
@@ -121,7 +138,10 @@ def generate_all_picks(
             pattern_display_parts.append(f"C>= {i}={target_pattern[i]}")
     
     print(f"\n✓ Target Freshness Pattern (for 7 numbers): {', '.join(pattern_display_parts)}")
-    print(f"  NOTE: Picking 5 main numbers, so pattern will be adjusted proportionally")
+    if has_pre_assigned:
+        print(f"  NOTE: Picking {numbers_to_select} main numbers + 2 pre-assigned (6 total main)")
+    else:
+        print(f"  NOTE: Picking {numbers_to_select} main numbers, so pattern will be adjusted proportionally")
     
     number_categories = categorize_numbers_by_freshness(features_dict)
     
@@ -133,18 +153,41 @@ def generate_all_picks(
     for model_idx, (model_name, model_data) in enumerate(models.items(), 1):
         model_config = model_data['config']
         probabilities = all_probabilities[model_name]
-        
+
+        # Get pre-assigned numbers for this model (filter out None values)
+        model_pre_assigned = [x for x in pre_assigned_numbers.get(model_idx, []) if x is not None]
+
         h = model_config['hot_count']
         m = model_config['medium_count']
         c = model_config['cold_count']
         g = model_config['generic_count']
         penalty = model_config['diversity_penalty']
-        
+
+        # If pre-assigned numbers exist, adjust HMC targets
+        if model_pre_assigned:
+            # Determine HMC categories of pre-assigned numbers
+            pre_assigned_hmc_counts = {'hot': 0, 'medium': 0, 'cold': 0}
+            for num in model_pre_assigned:
+                if num in features_dict:
+                    cat = features_dict[num].get('category', 'medium')
+                    pre_assigned_hmc_counts[cat] += 1
+
+            # Subtract pre-assigned from target counts
+            h = max(0, h - pre_assigned_hmc_counts['hot'])
+            m = max(0, m - pre_assigned_hmc_counts['medium'])
+            c = max(0, c - pre_assigned_hmc_counts['cold'])
+
+            # Adjust total to match numbers_to_select
+            total_adjusted = h + m + c + g
+            if total_adjusted != numbers_to_select:
+                diff = numbers_to_select - total_adjusted
+                g = max(0, g + diff)
+
         total_picks = h + m + c + g
-        if total_picks != 5:
-            print(f"\n⚠️  WARNING: Model {model_idx} configured for {total_picks} numbers, adjusting to 5")
-            if total_picks > 5:
-                while h + m + c + g > 5:
+        if total_picks != numbers_to_select:
+            print(f"\n⚠️  WARNING: Model {model_idx} configured for {total_picks} numbers, adjusting to {numbers_to_select}")
+            if total_picks > numbers_to_select:
+                while h + m + c + g > numbers_to_select:
                     if g > 0:
                         g -= 1
                     elif c > 0:
@@ -154,24 +197,34 @@ def generate_all_picks(
                     elif h > 0:
                         h -= 1
             else:
-                g += (5 - total_picks)
-        
+                g += (numbers_to_select - total_picks)
+
         print(f"\n→ Model {model_idx}: {model_config['name']}")
-        print(f"  HMC Ratio: {h}H + {m}M + {c}C + {g}G = {h+m+c+g} numbers")
+        if model_pre_assigned:
+            print(f"  Pre-assigned: {sorted(model_pre_assigned)} (EXEMPT from penalties)")
+            print(f"  Selecting {h}H + {m}M + {c}C + {g}G = {h+m+c+g} additional numbers")
+        else:
+            print(f"  HMC Ratio: {h}H + {m}M + {c}C + {g}G = {h+m+c+g} numbers")
         
-        if penalty_numbers and penalty > 0:
-            print(f"  Diversity Penalty: {penalty*100:.0f}% on {len(penalty_numbers)} numbers")
-        
+        # Apply diversity penalty, but EXCLUDE pre-assigned numbers
+        penalty_set_for_model = penalty_numbers - set(model_pre_assigned) if model_pre_assigned else penalty_numbers
+
+        if penalty_set_for_model and penalty > 0:
+            print(f"  Diversity Penalty: {penalty*100:.0f}% on {len(penalty_set_for_model)} numbers")
+
         adjusted_probs, penalty_details = apply_rank_aware_penalty(
             probabilities,
-            penalty_numbers if penalty_numbers else set(),
+            penalty_set_for_model if penalty_set_for_model else set(),
             penalty
         )
-        
+
+        # Build pools, excluding pre-assigned numbers from selection
+        exclude_from_selection = set(model_pre_assigned) if model_pre_assigned else set()
         pools = build_dual_categorized_pools(
             features_dict,
             number_categories,
-            adjusted_probs
+            adjusted_probs,
+            exclude_numbers=exclude_from_selection
         )
         
         model_config_adjusted = model_config.copy()
@@ -189,25 +242,37 @@ def generate_all_picks(
             pools,
             penalty_numbers if penalty_numbers else set()
         )
-        
-        print(f"  Selected: {selected_numbers}")
+
+        # Combine pre-assigned numbers with selected numbers
+        if model_pre_assigned:
+            final_numbers = sorted(model_pre_assigned + selected_numbers)
+            print(f"  Selected: {selected_numbers}")
+            print(f"  Pre-assigned: {sorted(model_pre_assigned)}")
+            print(f"  Final: {final_numbers} ({len(final_numbers)} total)")
+        else:
+            final_numbers = selected_numbers
+            print(f"  Selected: {selected_numbers}")
+
         print(f"  Achieved Pattern: {achieved_pattern}")
-        
+
         if SHOW_DETAILED_PENALTIES and penalty_details:
             print(f"  Rank-aware penalties applied:")
             penalty_details.sort(key=lambda x: x['rank'])
             for detail in penalty_details[:3]:
                 print(f"    #{detail['num']} (Rank {detail['rank']}): "
                       f"{detail['penalty_pct']:.1f}% penalty")
-        
+
         lines.append({
             'model_name': model_config['name'],
             'model_index': model_idx,
             'config_str': f"{h}H-{m}M-{c}C+{g}G | {achieved_pattern}",
-            'numbers': selected_numbers,
+            'numbers': final_numbers,
+            'pre_assigned': model_pre_assigned if model_pre_assigned else [],
+            'selected': selected_numbers,
             'description': model_config['description']
         })
-        
+
+        # Add ONLY selected numbers to penalty set (not pre-assigned)
         penalty_numbers.update(selected_numbers)
     
     return lines

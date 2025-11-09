@@ -24,8 +24,9 @@ from lotto_analysis.analyzers.distribution_analyzer import (
     calculate_per_number_distribution_stats
 )
 from lotto_analysis.analyzers.bonus_analyzer import generate_bonus_analysis
+from lotto_analysis.analyzers.bonus_to_main_analyzer import generate_bonus_to_main_analysis
 from lotto_analysis.utils.output_generator import (
-    generate_hmc_analysis, generate_draw_range_analysis, 
+    generate_hmc_analysis, generate_draw_range_analysis,
     write_json_file, format_date_iso,
     generate_range_spread_analysis
 )
@@ -33,7 +34,7 @@ from lotto_analysis.utils.output_generator import (
 def main():
     """Main execution function"""
     print("=" * 70)
-    print("Lottery Analysis Program (Pattern + HMC Range + Consecutive + Distributions + Bonus)")
+    print("Lottery Analysis Program (Pattern + HMC + Consecutive + Distributions + Bonus + Bonus-to-Main)")
     print("=" * 70)
     
     # **DYNAMIC CONFIGURATION SETUP**
@@ -325,6 +326,25 @@ def main():
     OUTPUT_FILE_BONUS = "data/lotto_bonus_analysis.json"
     write_json_file(OUTPUT_FILE_BONUS, bonus_analysis,
                    "Comprehensive bonus ball analysis with data-driven weights and statistical validation")
+
+    # ===== BONUS-TO-MAIN TRANSITION ANALYSIS =====
+    print("\n" + "=" * 70)
+    print("Phase 9: Bonus-to-Main Transition Analysis")
+    print("=" * 70)
+
+    bonus_to_main_analysis = generate_bonus_to_main_analysis(
+        draw_history_log,
+        MAX_NUMBER
+    )
+
+    print(f"✓ Analyzed {bonus_to_main_analysis['metadata']['total_bonus_appearances']} bonus appearances")
+    print(f"✓ Overall transition rate: {bonus_to_main_analysis['metadata']['overall_transition_rate']*100:.2f}%")
+    print(f"✓ Boost over random: {bonus_to_main_analysis['transition_prediction_factors']['boost_factor']}x")
+
+    # ===== WRITE BONUS-TO-MAIN ANALYSIS FILE =====
+    OUTPUT_FILE_BONUS_TO_MAIN = "data/lotto_bonus_to_main_patterns.json"
+    write_json_file(OUTPUT_FILE_BONUS_TO_MAIN, bonus_to_main_analysis,
+                   "Bonus-to-Main transition patterns with data-driven weights for ML prediction")
 
     print("\n" + "=" * 70)
     print("Analysis Complete!")
