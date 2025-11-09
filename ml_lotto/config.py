@@ -18,6 +18,7 @@ ODDS_JSON_INPUT = 'data/lotto_odds_results.json'
 FRESHNESS_JSON_INPUT = 'data/lotto_7_number_freshness_results.json'
 DISTRIBUTION_STATS_JSON = 'data/lotto_distribution_stats.json'
 BONUS_ANALYSIS_JSON = 'data/lotto_bonus_analysis.json'
+BONUS_TO_MAIN_JSON = 'data/lotto_bonus_to_main_patterns.json'
 
 MAX_NUMBER = 47
 HOT_COUNT = 15
