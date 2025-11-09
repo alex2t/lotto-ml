@@ -29,6 +29,9 @@ from ml_lotto.config import (
     FRESHNESS_PATTERNS_VALIDATED_JSON,
     HMC_CATEGORIZATION_VALIDATED_JSON,
     CONSECUTIVE_PAIRS_VALIDATED_JSON,
+    ODD_EVEN_VALIDATED_JSON,
+    SUM_CONTRIBUTION_VALIDATED_JSON,
+    RANGE_SPREAD_VALIDATED_JSON,
     ACTIVE_MODELS,
     BONUS_MODEL_CONFIG,
     BONUS_TO_MAIN_MODEL_CONFIG,
@@ -53,7 +56,10 @@ from ml_lotto.data.loader import (
     load_long_term_patterns,
     load_freshness_patterns_validated,
     load_hmc_categorization_validated,
-    load_consecutive_pairs_validated
+    load_consecutive_pairs_validated,
+    load_odd_even_validated,
+    load_sum_contribution_validated,
+    load_range_spread_validated
 )
 
 from ml_lotto.features.extractor import (
@@ -226,19 +232,41 @@ def main():
         freshness_validated = load_freshness_patterns_validated(FRESHNESS_PATTERNS_VALIDATED_JSON)
         hmc_categorization_validated = load_hmc_categorization_validated(HMC_CATEGORIZATION_VALIDATED_JSON)
         consecutive_pairs_validated = load_consecutive_pairs_validated(CONSECUTIVE_PAIRS_VALIDATED_JSON)
+        odd_even_validated = load_odd_even_validated(ODD_EVEN_VALIDATED_JSON)
+        sum_contribution_validated = load_sum_contribution_validated(SUM_CONTRIBUTION_VALIDATED_JSON)
+        range_spread_validated = load_range_spread_validated(RANGE_SPREAD_VALIDATED_JSON)
 
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_analysis_data):
             sys.exit(1)
-        
+
         W, C_max, recent_key, top_pattern_dist = load_freshness_config(FRESHNESS_JSON_INPUT)
-        
+
         print("\nStep 1b: Loading NEW JSON features...")
         bonus_hit_contribution_data = load_bonus_hit_analysis(draw_history_log_raw)
         freshness_weight_data = load_freshness_weights(FRESHNESS_JSON_INPUT)
         pair_frequency_data = load_number_pair_frequency(ODDS_JSON_INPUT)
-        range_spread_json_data = load_range_spread_analysis(ODDS_JSON_INPUT)
-        odd_even_json_data = load_odd_even_analysis(DISTRIBUTION_STATS_JSON)
-        sum_contribution_json_data = load_sum_contribution_analysis(DISTRIBUTION_STATS_JSON)
+
+        # Use scipy-validated scores if available, otherwise fall back to standard analysis
+        if odd_even_validated and 'validated_scores' in odd_even_validated:
+            odd_even_json_data = {int(k): v for k, v in odd_even_validated['validated_scores'].items()}
+            print("  ✓ Using SCIPY-VALIDATED odd/even scores")
+        else:
+            odd_even_json_data = load_odd_even_analysis(DISTRIBUTION_STATS_JSON)
+            print("  ⚠️  Using standard odd/even scores (scipy validation not available)")
+
+        if sum_contribution_validated and 'validated_scores' in sum_contribution_validated:
+            sum_contribution_json_data = {int(k): v for k, v in sum_contribution_validated['validated_scores'].items()}
+            print("  ✓ Using SCIPY-VALIDATED sum contribution scores")
+        else:
+            sum_contribution_json_data = load_sum_contribution_analysis(DISTRIBUTION_STATS_JSON)
+            print("  ⚠️  Using standard sum contribution scores (scipy validation not available)")
+
+        if range_spread_validated and 'validated_scores' in range_spread_validated:
+            range_spread_json_data = {int(k): v for k, v in range_spread_validated['validated_scores'].items()}
+            print("  ✓ Using SCIPY-VALIDATED range spread scores")
+        else:
+            range_spread_json_data = load_range_spread_analysis(ODDS_JSON_INPUT)
+            print("  ⚠️  Using standard range spread scores (scipy validation not available)")
         
         print(f"\n✓ Data Loading Summary:")
         print(f"  - Historical draws: {len(all_draws)}")

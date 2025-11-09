@@ -26,6 +26,9 @@ STATISTICS_ANALYSIS_JSON = 'data/lotto_statistics_analysis.json'  # Legacy compa
 FRESHNESS_PATTERNS_VALIDATED_JSON = 'data/lotto_freshness_patterns_validated.json'  # Scipy chi-square validation
 HMC_CATEGORIZATION_VALIDATED_JSON = 'data/lotto_hmc_categorization_validated.json'  # Scipy ANOVA validation
 CONSECUTIVE_PAIRS_VALIDATED_JSON = 'data/lotto_consecutive_pairs_validated.json'  # Scipy independence tests
+ODD_EVEN_VALIDATED_JSON = 'data/lotto_odd_even_validated.json'  # Scipy chi-square and binomial tests
+SUM_CONTRIBUTION_VALIDATED_JSON = 'data/lotto_sum_contribution_validated.json'  # Scipy t-tests and ANOVA
+RANGE_SPREAD_VALIDATED_JSON = 'data/lotto_range_spread_validated.json'  # Scipy Levene's test and t-tests
 
 MAX_NUMBER = 47
 HOT_COUNT = 15
