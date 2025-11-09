@@ -14,6 +14,7 @@ OUTPUT_FILE_PERIODS = "data/lotto_trigger_periods.json"
 OUTPUT_FILE_HISTORY = "data/lotto_draw_history.json"
 OUTPUT_FILE_7_NUMBERS = "data/lotto_7_number_freshness_results.json"
 OUTPUT_FILE_DISTRIBUTIONS = "data/lotto_distribution_stats.json"
+OUTPUT_FILE_BONUS_TO_MAIN = "data/lotto_bonus_to_main_patterns.json"
 
 # =============== LOTTERY PARAMETERS ===============
 MAX_NUMBER = 47            # Maximum lottery number
