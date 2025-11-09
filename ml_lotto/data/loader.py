@@ -744,6 +744,130 @@ def load_statistics_analysis(filename: str) -> Dict[str, Any]:
     return data
 
 
+def load_freshness_patterns_validated(filename: str) -> Dict[str, Any]:
+    """
+    Load scipy-validated freshness pattern analysis.
+
+    Args:
+        filename: Path to lotto_freshness_patterns_validated.json
+
+    Returns:
+        Dictionary containing:
+        - metadata: Analysis metadata and statistical methods
+        - pattern_distribution_test: Chi-square test results
+        - bin_distribution_test: Bin uniformity test results
+        - top_pattern_validation: Top pattern significance
+        - validated_weights: Statistically validated freshness weights
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"   Using non-validated freshness weights as fallback")
+        print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/freshness_pattern_analyzer.py'")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        return {}
+
+    if not data:
+        return {}
+
+    print(f"✓ Loaded scipy-validated freshness patterns from {filename}")
+
+    if 'pattern_distribution_test' in data:
+        pattern_test = data['pattern_distribution_test']
+        print(f"  Pattern chi-square p-value: {pattern_test.get('p_value', 1.0):.4f}")
+        print(f"  Statistically significant: {pattern_test.get('significant', False)}")
+
+    return data
+
+
+def load_hmc_categorization_validated(filename: str) -> Dict[str, Any]:
+    """
+    Load scipy-validated HMC categorization analysis.
+
+    Args:
+        filename: Path to lotto_hmc_categorization_validated.json
+
+    Returns:
+        Dictionary containing:
+        - metadata: Analysis metadata
+        - anova_test: ANOVA results for category distinctness
+        - pairwise_comparisons: Bonferroni-corrected t-tests
+        - threshold_validation: Category overlap analysis
+        - categorization_valid: Overall validation status
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"   Using non-validated HMC categories as fallback")
+        print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/hmc_categorization_analyzer.py'")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        return {}
+
+    if not data:
+        return {}
+
+    print(f"✓ Loaded scipy-validated HMC categorization from {filename}")
+
+    if 'anova_test' in data:
+        anova = data['anova_test']
+        print(f"  ANOVA p-value: {anova.get('p_value', 1.0):.4f}")
+        print(f"  Categories statistically distinct: {anova.get('significant', False)}")
+        print(f"  Effect size (η²): {anova.get('eta_squared', 0.0):.4f}")
+
+    return data
+
+
+def load_consecutive_pairs_validated(filename: str) -> Dict[str, Any]:
+    """
+    Load scipy-validated consecutive pair analysis.
+
+    Args:
+        filename: Path to lotto_consecutive_pairs_validated.json
+
+    Returns:
+        Dictionary containing:
+        - metadata: Analysis metadata
+        - overall_chi_square_test: Chi-square test for independence
+        - top_pairs_validation: Binomial tests for top pairs
+        - number_pair_scores: Per-number validated pair scores
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"   Using non-validated pair scores as fallback")
+        print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/consecutive_pair_analyzer.py'")
+        return {}
+    except json.JSONDecodeError as e:
+        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        return {}
+
+    if not data:
+        return {}
+
+    print(f"✓ Loaded scipy-validated consecutive pairs from {filename}")
+
+    if 'overall_chi_square_test' in data:
+        chi2 = data['overall_chi_square_test']
+        print(f"  Chi-square p-value: {chi2.get('p_value', 1.0):.4f}")
+        print(f"  Pairs deviate from independence: {chi2.get('significant', False)}")
+
+    if 'top_pairs_validation' in data:
+        top_pairs = data['top_pairs_validation']
+        print(f"  Significant pairs found: {top_pairs.get('num_significant', 0)}")
+
+    return data
+
+
 def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, int, float]:
     """
     Extract the most likely HMC distribution pattern.

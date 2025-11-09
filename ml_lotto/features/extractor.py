@@ -48,7 +48,8 @@ def extract_features_from_hmc_json(
     range_spread_json_data: Dict[int, float] = None,
     odd_even_json_data: Dict[int, float] = None,
     sum_contribution_json_data: Dict[int, float] = None,
-    long_term_features: Dict[int, Dict[str, float]] = None
+    long_term_features: Dict[int, Dict[str, float]] = None,
+    consecutive_pairs_validated: Dict[str, Any] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating ALL custom features including new JSON features.
@@ -93,7 +94,8 @@ def extract_features_from_hmc_json(
     if consecutive_patterns:
         try:
             consecutive_pair_affinity_data = calculate_consecutive_pair_affinity(
-                consecutive_patterns
+                consecutive_patterns,
+                validated_scores=consecutive_pairs_validated
             )
         except ValueError as e:
             print(f"\n⚠️  Feature extraction stopped due to missing data.")
