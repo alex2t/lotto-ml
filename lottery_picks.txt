@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-09 16:23:36
+LOTTERY PICKS - GENERATED 2025-11-09 20:41:42
 ======================================================================
 BONUS-TO-MAIN PREDICTION EDITION V3.9
 Each line: 6 main numbers (2 pre-assigned + 4 selected) + 1 bonus ball
@@ -14,19 +14,19 @@ Bonus Ball: 35
 Complete: [6, 12, 16, 30, 34, 35] + BONUS 35
 Description: Immediate patterns with timing, consecutive boosts, and NEW JSON bonus features
 
-Line 2: Long-Term Value + Sum/Range + JSON Features [0H-2M-2C+0G | C0=2, C1=2, C_GE_2=0]
+Line 2: Long-Term Value + Sum/Range + JSON Features + LT Patterns [0H-2M-2C+0G | C0=2, C1=2, C_GE_2=0]
 Pre-assigned (exempt): [41, 42]
-ML-selected: [3, 4, 14, 37]
-Main Numbers (6): [3, 4, 14, 37, 41, 42]
+ML-selected: [3, 4, 20, 25]
+Main Numbers (6): [3, 4, 20, 25, 41, 42]
 Bonus Ball: 41
-Complete: [3, 4, 14, 37, 41, 42] + BONUS 41
-Description: Historical patterns with timing, bonus optimization, and NEW JSON realism features
+Complete: [3, 4, 20, 25, 41, 42] + BONUS 41
+Description: Historical patterns with timing, bonus optimization, JSON realism features, and LONG-TERM pattern analysis
 
-Line 3: Complex Pattern Discovery + All JSON Features [2H-1M-0C+1G | C0=2, C1=2, C_GE_2=0]
+Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-1M-0C+1G | C0=2, C1=2, C_GE_2=0]
 Pre-assigned (exempt): [9, 46]
-ML-selected: [13, 19, 38, 40]
-Main Numbers (6): [9, 13, 19, 38, 40, 46]
+ML-selected: [5, 13, 19, 38]
+Main Numbers (6): [5, 9, 13, 19, 38, 46]
 Bonus Ball: 9
-Complete: [9, 13, 19, 38, 40, 46] + BONUS 9
-Description: XGBoost with full feature set including ALL NEW JSON features
+Complete: [5, 9, 13, 19, 38, 46] + BONUS 9
+Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
 
