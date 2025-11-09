@@ -25,7 +25,7 @@ from ml_lotto.config import (
     DISTRIBUTION_STATS_JSON,
     BONUS_ANALYSIS_JSON,
     BONUS_TO_MAIN_JSON,
-    STATISTICS_ANALYSIS_JSON,
+    LONG_TERM_PATTERNS_JSON,
     ACTIVE_MODELS,
     BONUS_MODEL_CONFIG,
     BONUS_TO_MAIN_MODEL_CONFIG,
@@ -47,7 +47,7 @@ from ml_lotto.data.loader import (
     load_sum_contribution_analysis,
     load_bonus_analysis,
     load_bonus_to_main_patterns,
-    load_statistics_analysis
+    load_long_term_patterns
 )
 
 from ml_lotto.features.extractor import (
@@ -212,8 +212,8 @@ def main():
 
         bonus_to_main_data = load_bonus_to_main_patterns(BONUS_TO_MAIN_JSON)
 
-        # Load long-term statistical analysis
-        statistics_data = load_statistics_analysis(STATISTICS_ANALYSIS_JSON)
+        # Load long-term pattern analysis (scipy-validated)
+        long_term_analysis = load_long_term_patterns(LONG_TERM_PATTERNS_JSON)
 
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_analysis_data):
             sys.exit(1)
@@ -235,7 +235,7 @@ def main():
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
         print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
         print(f"  - Bonus analysis: {len(bonus_analysis_data.get('per_number_bonus_profile', {}))} numbers")
-        print(f"  - Statistics analysis: {len(statistics_data.get('hmc_distribution', {}).get('hmc_pattern_distribution', {}))} HMC patterns")
+        print(f"  - Long-term patterns: {long_term_analysis.get('metadata', {}).get('total_draws', 0)} draws analyzed (scipy-validated)")
         print(f"  - NEW JSON features loaded: 6 feature sets")
         
         print("\nStep 2: Extracting MAIN NUMBER features from HMC data...")
@@ -271,7 +271,7 @@ def main():
         from ml_lotto.features.long_term_patterns import expand_long_term_features
         long_term_pattern_features = expand_long_term_features(
             hmc_data=hmc_data,
-            statistics_data=statistics_data,
+            long_term_analysis=long_term_analysis,
             all_draws=all_draws
         )
 
