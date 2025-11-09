@@ -25,6 +25,7 @@ from ml_lotto.config import (
     DISTRIBUTION_STATS_JSON,
     BONUS_ANALYSIS_JSON,
     BONUS_TO_MAIN_JSON,
+    STATISTICS_ANALYSIS_JSON,
     ACTIVE_MODELS,
     BONUS_MODEL_CONFIG,
     BONUS_TO_MAIN_MODEL_CONFIG,
@@ -45,7 +46,8 @@ from ml_lotto.data.loader import (
     load_odd_even_analysis,
     load_sum_contribution_analysis,
     load_bonus_analysis,
-    load_bonus_to_main_patterns
+    load_bonus_to_main_patterns,
+    load_statistics_analysis
 )
 
 from ml_lotto.features.extractor import (
@@ -210,6 +212,9 @@ def main():
 
         bonus_to_main_data = load_bonus_to_main_patterns(BONUS_TO_MAIN_JSON)
 
+        # Load long-term statistical analysis
+        statistics_data = load_statistics_analysis(STATISTICS_ANALYSIS_JSON)
+
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_analysis_data):
             sys.exit(1)
         
@@ -230,6 +235,7 @@ def main():
         print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
         print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
         print(f"  - Bonus analysis: {len(bonus_analysis_data.get('per_number_bonus_profile', {}))} numbers")
+        print(f"  - Statistics analysis: {len(statistics_data.get('hmc_distribution', {}).get('hmc_pattern_distribution', {}))} HMC patterns")
         print(f"  - NEW JSON features loaded: 6 feature sets")
         
         print("\nStep 2: Extracting MAIN NUMBER features from HMC data...")
@@ -261,6 +267,14 @@ def main():
             top_pattern_dist=top_pattern_dist
         )
 
+        print("  Calculating 'long_term_pattern' features...")
+        from ml_lotto.features.long_term_patterns import expand_long_term_features
+        long_term_pattern_features = expand_long_term_features(
+            hmc_data=hmc_data,
+            statistics_data=statistics_data,
+            all_draws=all_draws
+        )
+
         pattern_score_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
 
         print("  Extracting dynamic recent count keys...")
@@ -270,8 +284,8 @@ def main():
         print("  Combining all MAIN NUMBER features...")
         try:
             features_dict = extract_features_from_hmc_json(
-                hmc_data, 
-                dynamic_recent_keys, 
+                hmc_data,
+                dynamic_recent_keys,
                 days_since_bonus_data,
                 pattern_score_data,
                 freshness_category_features,
@@ -286,7 +300,8 @@ def main():
                 pair_frequency_data,
                 range_spread_json_data,
                 odd_even_json_data,
-                sum_contribution_json_data
+                sum_contribution_json_data,
+                long_term_pattern_features
             )
             print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
         except Exception as e:

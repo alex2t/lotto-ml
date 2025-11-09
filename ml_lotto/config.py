@@ -143,8 +143,8 @@ MODEL_1_CONFIG = {
 }
 
 MODEL_2_CONFIG = {
-    'name': 'Long-Term Value + Sum/Range + JSON Features',
-    'description': 'Historical patterns with timing, bonus optimization, and NEW JSON realism features',
+    'name': 'Long-Term Value + Sum/Range + JSON Features + LT Patterns',
+    'description': 'Historical patterns with timing, bonus optimization, JSON realism features, and LONG-TERM pattern analysis',
     'algorithm': 'logistic_regression',
 
     'hot_count': 0,
@@ -164,7 +164,8 @@ MODEL_2_CONFIG = {
         'consecutive_pair_affinity',
         'sum_contribution_json',  # Replaced sum_contribution_score with JSON version
         'range_spread_json',  # Replaced range_spread_affinity with JSON version
-        'freshness_weight_score'
+        'freshness_weight_score',
+        LONG_TERM_PATTERN_WEIGHTS  # NEW: Long-term HMC and recency pattern analysis
     ],
     
     'diversity_penalty': 0.15,
@@ -185,8 +186,8 @@ MODEL_2_CONFIG = {
 }
 
 MODEL_3_CONFIG = {
-    'name': 'Complex Pattern Discovery + All JSON Features',
-    'description': 'XGBoost with full feature set including ALL NEW JSON features',
+    'name': 'Complex Pattern Discovery + All JSON Features + LT Patterns',
+    'description': 'XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis',
     'algorithm': 'xgboost',
 
     'hot_count': 2,
@@ -197,6 +198,7 @@ MODEL_3_CONFIG = {
     'features': [
         'recent_4',
         FRESHNESS_PATTERN_WEIGHTS,
+        LONG_TERM_PATTERN_WEIGHTS,  # NEW: Long-term HMC and recency pattern analysis
         'total_count',
         'days_since_last',
         'recency_zone_score',

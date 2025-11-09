@@ -4,7 +4,9 @@ extractor.py
 ============
 Main orchestrator for feature extraction from HMC JSON data.
 
-VERSION: 3.7 (New JSON Features Edition)
+VERSION: 3.8 (Long-Term Pattern Analysis Edition)
+- Added long-term pattern analysis features
+- Integrated LONG_TERM_PATTERN_WEIGHTS
 - Added bonus_hit_contribution feature
 - Added freshness_weight_score feature
 - Added pair_frequency_score feature
@@ -14,7 +16,7 @@ VERSION: 3.7 (New JSON Features Edition)
 
 import pandas as pd
 from typing import Dict, Any, List, Tuple
-from ml_lotto.config import MAX_NUMBER, FRESHNESS_PATTERN_WEIGHTS
+from ml_lotto.config import MAX_NUMBER, FRESHNESS_PATTERN_WEIGHTS, LONG_TERM_PATTERN_WEIGHTS
 
 from ml_lotto.features.timing import calculate_recency_zone_score
 from ml_lotto.features.patterns import (
@@ -29,7 +31,7 @@ from ml_lotto.features.patterns import (
 
 
 def extract_features_from_hmc_json(
-    hmc_data: Dict[str, Any], 
+    hmc_data: Dict[str, Any],
     dynamic_recent_keys: List[Tuple[str, str]],
     days_since_bonus_data: Dict[int, int],
     pattern_score_data: Dict[int, float],
@@ -45,11 +47,12 @@ def extract_features_from_hmc_json(
     pair_frequency_data: Dict[int, float] = None,
     range_spread_json_data: Dict[int, float] = None,
     odd_even_json_data: Dict[int, float] = None,
-    sum_contribution_json_data: Dict[int, float] = None
+    sum_contribution_json_data: Dict[int, float] = None,
+    long_term_features: Dict[int, Dict[str, float]] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating ALL custom features including new JSON features.
-    
+
     Args:
         hmc_data: HMC statistics from lotto_trigger_periods.json
         dynamic_recent_keys: List of (data_key, ml_key) tuples for recent counts
@@ -68,7 +71,8 @@ def extract_features_from_hmc_json(
         range_spread_json_data: NEW - Range spread from JSON
         odd_even_json_data: NEW - Odd/even affinity from JSON
         sum_contribution_json_data: NEW - Sum contribution from JSON
-        
+        long_term_features: NEW - Long-term pattern analysis features
+
     Returns:
         Dictionary mapping number (1-47) -> feature dictionary
     """
@@ -138,7 +142,14 @@ def extract_features_from_hmc_json(
         print(f"  ⚠️  Using default sum_contribution_json values")
     else:
         print(f"  ✓ Loaded sum_contribution_json data")
-    
+
+    # Load long-term pattern features
+    if long_term_features is None:
+        long_term_features = {}
+        print(f"  ⚠️  No long-term pattern features provided")
+    else:
+        print(f"  ✓ Loaded long-term pattern features")
+
     print(f"\n✓ Extracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
                      'series_total', 'series_recent', 'days_since_bonus',
@@ -146,12 +157,17 @@ def extract_features_from_hmc_json(
                      'consecutive_pair_affinity',
                      'bonus_hit_contribution', 'freshness_weight_score', 'pair_frequency_score',
                      'range_spread_json', 'odd_even_json', 'sum_contribution_json']
-    fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys() 
+    fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys()
                                    if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
-    
+
+    lt_feature_names = ['lt_hot_weight', 'lt_medium_weight', 'lt_cold_weight',
+                        'lt_category_alignment', 'lt_recency_weight'] if long_term_features else []
+
     print(f"  Static features: {base_features}")
     print(f"  Freshness features: {fresh_features_names + ['current_freshness_bin']}")
     print(f"  Dynamic features: {ml_feature_names}")
+    if lt_feature_names:
+        print(f"  Long-term pattern features: {lt_feature_names}")
     
     for num_str in range(1, MAX_NUMBER + 1):
         num = num_str
@@ -162,7 +178,10 @@ def extract_features_from_hmc_json(
         
         current_freshness_bin = fresh_feat.get('current_freshness_bin', 0)
         freshness_weight_score = freshness_weight_data.get(current_freshness_bin, 0.33)
-        
+
+        # Get long-term features for this number
+        lt_feat = long_term_features.get(num, {}) if long_term_features else {}
+
         default_features = {
             'total_count': 0,
             'category': 'cold',
@@ -183,6 +202,7 @@ def extract_features_from_hmc_json(
             'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
             **fresh_feat,
             **recent_fields,
+            **lt_feat,  # Add long-term pattern features
         }
         
         if num_key not in hmc_data:
@@ -225,6 +245,9 @@ def extract_features_from_hmc_json(
                     except:
                         pass
         
+        # Get long-term features for this number
+        lt_feat = long_term_features.get(num, {}) if long_term_features else {}
+
         features[num] = {
             'total_count': total_count,
             'category': category,
@@ -245,6 +268,7 @@ def extract_features_from_hmc_json(
             'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
             **fresh_feat,
             **recent_fields,
+            **lt_feat,  # Add long-term pattern features
         }
     
     return features
@@ -261,24 +285,28 @@ def get_all_feature_names(features_dict: Dict[int, Dict[str, Any]]) -> List[str]
 
 def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List[str]:
     """Expand feature specification into actual feature list."""
-    
+
     recent_features = sorted([f for f in all_features if f.startswith('recent_')],
                              key=lambda x: int(x.split('_')[1]))
-    
+
     freshness_weights_features = sorted([f for f in all_features if f.startswith('freshness_c') and f.endswith('_weight')])
-    
-    new_json_features = ['bonus_hit_contribution', 'freshness_weight_score', 
-                         'pair_frequency_score', 'range_spread_json', 
+
+    long_term_pattern_features = ['lt_hot_weight', 'lt_medium_weight', 'lt_cold_weight',
+                                   'lt_category_alignment', 'lt_recency_weight']
+
+    new_json_features = ['bonus_hit_contribution', 'freshness_weight_score',
+                         'pair_frequency_score', 'range_spread_json',
                          'odd_even_json', 'sum_contribution_json']
-                             
+
     custom_keywords = {
         'ALL': all_features,
         'RECENT_ALL': recent_features,
         'RECENT_SHORT': recent_features[:1] if recent_features else [],
         'RECENT_LONG': recent_features[-1:] if recent_features else [],
-        'BONUS_AWARE': ['days_since_bonus'], 
+        'BONUS_AWARE': ['days_since_bonus'],
         'FRESHNESS_PATTERN': freshness_weights_features,
         FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features,
+        LONG_TERM_PATTERN_WEIGHTS: long_term_pattern_features,
         'NEW_JSON_FEATURES': new_json_features
     }
 
