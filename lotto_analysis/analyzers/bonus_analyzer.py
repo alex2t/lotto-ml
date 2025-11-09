@@ -512,6 +512,8 @@ def calculate_per_number_bonus_profile(
     Returns:
         Dictionary with per-number bonus profiles
     """
+    from datetime import datetime
+    
     # Track appearances per number
     number_stats = {}
     
@@ -522,14 +524,18 @@ def calculate_per_number_bonus_profile(
             'main_appearances': 0,
             'last_bonus_date': None,
             'bonus_dates': [],
-            'category': 'unknown'
+            'category': 'unknown',
+            'bonus_timing_days': []  # Track days_since for each bonus appearance
         }
     
-    # Scan all draws
+    # Scan all draws to collect timing data
     sorted_draws = sorted(
         draw_history_log.items(),
         key=lambda x: x[1].get('draw_index', 0)
     )
+    
+    # Track when each number last appeared (for calculating days_since at bonus time)
+    number_last_appearance = {}
     
     for draw_date, draw_data in sorted_draws:
         winning_details = draw_data.get('winning_numbers_details', [])
@@ -537,24 +543,118 @@ def calculate_per_number_bonus_profile(
         if len(winning_details) < 7:
             continue
         
+        draw_date_obj = datetime.strptime(draw_date, "%Y-%m-%d")
+        
         # Process main numbers
         for i in range(6):
             num = winning_details[i]['number']
             number_stats[num]['total_appearances'] += 1
             number_stats[num]['main_appearances'] += 1
             number_stats[num]['category'] = winning_details[i].get('category', 'unknown')
+            number_last_appearance[num] = draw_date_obj
         
         # Process bonus
         bonus_num = winning_details[6]['number']
+        
+        # Calculate days since last appearance when this number appeared as bonus
+        days_since_at_bonus = None
+        if bonus_num in number_last_appearance:
+            days_since_at_bonus = (draw_date_obj - number_last_appearance[bonus_num]).days
+            number_stats[bonus_num]['bonus_timing_days'].append(days_since_at_bonus)
+        
         number_stats[bonus_num]['total_appearances'] += 1
         number_stats[bonus_num]['bonus_appearances'] += 1
         number_stats[bonus_num]['last_bonus_date'] = draw_date
         number_stats[bonus_num]['bonus_dates'].append(draw_date)
         number_stats[bonus_num]['category'] = winning_details[6].get('category', 'unknown')
+        number_last_appearance[bonus_num] = draw_date_obj
+    
+    # Build global timing distribution (for calculating weights)
+    all_bonus_timing_days = []
+    for num in range(1, max_number + 1):
+        all_bonus_timing_days.extend(number_stats[num]['bonus_timing_days'])
+    
+    # Calculate timing score function from actual data
+    timing_bins = {
+        '0-7': [],
+        '8-14': [],
+        '15-21': [],
+        '22-30': [],
+        '31-45': [],
+        '46-60': [],
+        '61+': []
+    }
+    
+    for days in all_bonus_timing_days:
+        if days <= 7:
+            timing_bins['0-7'].append(days)
+        elif days <= 14:
+            timing_bins['8-14'].append(days)
+        elif days <= 21:
+            timing_bins['15-21'].append(days)
+        elif days <= 30:
+            timing_bins['22-30'].append(days)
+        elif days <= 45:
+            timing_bins['31-45'].append(days)
+        elif days <= 60:
+            timing_bins['46-60'].append(days)
+        else:
+            timing_bins['61+'].append(days)
+    
+    # Calculate weights for each timing bin (normalized to peak)
+    timing_bin_counts = {bin_name: len(days_list) for bin_name, days_list in timing_bins.items()}
+    max_count = max(timing_bin_counts.values()) if timing_bin_counts else 1
+    timing_bin_weights = {bin_name: count / max_count for bin_name, count in timing_bin_counts.items()}
+    
+    # Calculate global average bonus rate
+    total_bonus_appearances = sum(s['bonus_appearances'] for s in number_stats.values())
+    total_appearances = sum(s['total_appearances'] for s in number_stats.values())
+    global_avg_bonus_rate = total_bonus_appearances / total_appearances if total_appearances > 0 else 0.149
+    
+    # Calculate recency effect from data
+    in_recent_bonus_appeared = 0
+    not_in_recent_bonus_appeared = 0
+    
+    for draw_date, draw_data in sorted_draws:
+        winning_details = draw_data.get('winning_numbers_details', [])
+        if len(winning_details) >= 7:
+            bonus_num = winning_details[6]['number']
+            recent_bonus_list = draw_data.get('recent_bonus_numbers', [])
+            
+            if bonus_num in recent_bonus_list:
+                in_recent_bonus_appeared += 1
+            else:
+                not_in_recent_bonus_appeared += 1
+    
+    # Calculate recency penalty multiplier
+    if in_recent_bonus_appeared + not_in_recent_bonus_appeared > 0:
+        in_recent_rate = in_recent_bonus_appeared / (in_recent_bonus_appeared + not_in_recent_bonus_appeared)
+        expected_rate = 10 / 47  # 10 in recent list, 47 total numbers
+        recency_penalty = in_recent_rate / expected_rate if expected_rate > 0 else 0.5
+    else:
+        recency_penalty = 0.5
+    
+    # Calculate category bonuses from actual data
+    category_bonus_rates = {'hot': 0, 'medium': 0, 'cold': 0}
+    category_totals = {'hot': 0, 'medium': 0, 'cold': 0}
+    
+    for num in range(1, max_number + 1):
+        stats = number_stats[num]
+        cat = stats['category']
+        if cat in category_bonus_rates:
+            if stats['total_appearances'] > 0:
+                category_bonus_rates[cat] += stats['bonus_appearances']
+                category_totals[cat] += stats['total_appearances']
+    
+    category_weights = {}
+    for cat in ['hot', 'medium', 'cold']:
+        if category_totals[cat] > 0:
+            cat_rate = category_bonus_rates[cat] / category_totals[cat]
+            category_weights[cat] = cat_rate / global_avg_bonus_rate if global_avg_bonus_rate > 0 else 1.0
+        else:
+            category_weights[cat] = 1.0
     
     # Calculate final profiles
-    from datetime import datetime
-    
     profiles = {}
     
     latest_draw_date = sorted_draws[-1][0] if sorted_draws else "2024-01-01"
@@ -583,13 +683,18 @@ def calculate_per_number_bonus_profile(
             
             avg_days_between = sum(intervals) / len(intervals) if intervals else None
         
-        # Determine optimal zone based on category and timing
-        if stats['category'] == 'hot':
-            optimal_zone = "8-14"
-        elif stats['category'] == 'medium':
-            optimal_zone = "15-30"
-        else:
-            optimal_zone = "31-45"
+        # Determine optimal zone from this number's actual timing history
+        optimal_zone = "unknown"
+        if stats['bonus_timing_days']:
+            avg_timing = sum(stats['bonus_timing_days']) / len(stats['bonus_timing_days'])
+            if avg_timing <= 14:
+                optimal_zone = "8-14"
+            elif avg_timing <= 30:
+                optimal_zone = "15-30"
+            elif avg_timing <= 60:
+                optimal_zone = "31-60"
+            else:
+                optimal_zone = "61+"
         
         # Check if in recent bonus 10
         in_recent_bonus = False
@@ -597,31 +702,54 @@ def calculate_per_number_bonus_profile(
             recent_bonus_list = sorted_draws[-1][1].get('recent_bonus_numbers', [])
             in_recent_bonus = num in recent_bonus_list
         
-        # Calculate predicted bonus score (simplified heuristic)
+        # ===== DATA-DRIVEN PREDICTED BONUS SCORE =====
         predicted_score = 0.0
         
         if stats['bonus_appearances'] > 0:
-            # Base score from historical rate
-            predicted_score += bonus_rate * 0.4
+            # 1. Relative bonus rate (normalized to global average)
+            relative_rate = bonus_rate / global_avg_bonus_rate if global_avg_bonus_rate > 0 else 1.0
+            predicted_score += min(1.0, relative_rate) * 0.35
             
-            # Timing factor
-            if days_since_last_bonus:
+            # 2. Timing factor (using data-driven weights)
+            if days_since_last_bonus is not None:
+                timing_weight = 0.0
                 if days_since_last_bonus <= 7:
-                    predicted_score += 0.1
-                elif 8 <= days_since_last_bonus <= 30:
-                    predicted_score += 0.3
-                elif 31 <= days_since_last_bonus <= 60:
-                    predicted_score += 0.2
+                    timing_weight = timing_bin_weights.get('0-7', 0)
+                elif days_since_last_bonus <= 14:
+                    timing_weight = timing_bin_weights.get('8-14', 0)
+                elif days_since_last_bonus <= 21:
+                    timing_weight = timing_bin_weights.get('15-21', 0)
+                elif days_since_last_bonus <= 30:
+                    timing_weight = timing_bin_weights.get('22-30', 0)
+                elif days_since_last_bonus <= 45:
+                    timing_weight = timing_bin_weights.get('31-45', 0)
+                elif days_since_last_bonus <= 60:
+                    timing_weight = timing_bin_weights.get('46-60', 0)
+                else:
+                    timing_weight = timing_bin_weights.get('61+', 0)
+                
+                predicted_score += timing_weight * 0.35
             
-            # Recency penalty
+            # 3. Category factor (data-driven weight)
+            category = stats['category']
+            if category in category_weights:
+                category_contribution = (category_weights[category] - 1.0) * 0.15
+                predicted_score += category_contribution
+            
+            # 4. Recency penalty (data-driven)
             if in_recent_bonus:
-                predicted_score *= 0.5
+                predicted_score *= recency_penalty
             
-            # Category factor
-            if stats['category'] == 'medium':
-                predicted_score += 0.1
+            # 5. Cycle position bonus (if we have cycle data)
+            if avg_days_between and days_since_last_bonus:
+                cycle_position = days_since_last_bonus / avg_days_between
+                # Numbers at 0.8-1.2x their average cycle get a boost
+                if 0.8 <= cycle_position <= 1.2:
+                    predicted_score += 0.15
+                elif 1.2 < cycle_position <= 1.5:
+                    predicted_score += 0.10
         
-        predicted_score = min(1.0, predicted_score)
+        predicted_score = min(1.0, max(0.0, predicted_score))
         
         profiles[str(num)] = {
             "total_appearances": stats['total_appearances'],
@@ -635,7 +763,19 @@ def calculate_per_number_bonus_profile(
             "bonus_frequency_ratio": round(bonus_rate, 2),
             "current_optimal_zone": optimal_zone,
             "in_recent_bonus_10": in_recent_bonus,
-            "predicted_bonus_score": round(predicted_score, 2)
+            "predicted_bonus_score": round(predicted_score, 2),
+            "data_driven_weights": {
+                "timing_weight": round(timing_bin_weights.get(
+                    '8-14' if days_since_last_bonus and days_since_last_bonus <= 14 else
+                    '15-21' if days_since_last_bonus and days_since_last_bonus <= 21 else
+                    '22-30' if days_since_last_bonus and days_since_last_bonus <= 30 else
+                    '31-45' if days_since_last_bonus and days_since_last_bonus <= 45 else
+                    '46-60' if days_since_last_bonus and days_since_last_bonus <= 60 else
+                    '61+', 0
+                ), 3) if days_since_last_bonus else None,
+                "category_weight": round(category_weights.get(stats['category'], 1.0), 3),
+                "recency_penalty": round(recency_penalty, 3)
+            }
         }
     
     return profiles
