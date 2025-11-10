@@ -95,17 +95,13 @@ def generate_all_picks(
     if pre_assigned_numbers is None:
         pre_assigned_numbers = {}
 
-    # Determine target count: 5 if no pre-assigned, 4 if 2 pre-assigned (for 6 total main)
-    has_pre_assigned = len(pre_assigned_numbers) > 0
-    numbers_to_select = 4 if has_pre_assigned else 5
-
     print("\n" + "="*70)
-    if has_pre_assigned:
-        print(f"GENERATING {numbers_to_select} MAIN NUMBER PICKS + 2 PRE-ASSIGNED (6 Total)")
-        print("Pre-assigned numbers: EXEMPT from selection and diversity penalties")
-    else:
-        print("GENERATING 5 MAIN NUMBER PICKS (Bonus Assigned Separately)")
+    print("GENERATING MAIN NUMBER PICKS (6 Numbers Per Model)")
     print("="*70)
+    print("Selection Strategy:")
+    print("  - Models with pre-assigned: select remaining numbers to reach 6 total")
+    print("  - Models without pre-assigned: select all 6 numbers")
+    print("  - Pre-assigned numbers are EXEMPT from selection and diversity penalties")
     
     if FILTERS_AVAILABLE:
         filter_stats = get_filter_statistics()
@@ -138,10 +134,7 @@ def generate_all_picks(
             pattern_display_parts.append(f"C>= {i}={target_pattern[i]}")
     
     print(f"\n✓ Target Freshness Pattern (for 7 numbers): {', '.join(pattern_display_parts)}")
-    if has_pre_assigned:
-        print(f"  NOTE: Picking {numbers_to_select} main numbers + 2 pre-assigned (6 total main)")
-    else:
-        print(f"  NOTE: Picking {numbers_to_select} main numbers, so pattern will be adjusted proportionally")
+    print(f"  NOTE: Each model picks 6 main numbers (adjusted proportionally from 7-number pattern)")
     
     number_categories = categorize_numbers_by_freshness(features_dict)
     
@@ -156,6 +149,10 @@ def generate_all_picks(
 
         # Get pre-assigned numbers for this model (filter out None values)
         model_pre_assigned = [x for x in pre_assigned_numbers.get(model_idx, []) if x is not None]
+
+        # Determine how many numbers THIS model needs to select
+        # Model target: 6 total main numbers
+        numbers_to_select = 6 - len(model_pre_assigned)
 
         h = model_config['hot_count']
         m = model_config['medium_count']

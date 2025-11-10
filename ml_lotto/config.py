@@ -224,7 +224,7 @@ MODEL_3_CONFIG = {
 
     'hot_count': 2,
     'medium_count': 2,
-    'cold_count': 1,
+    'cold_count': 2,
     'generic_count': 0,
 
     'features': [
