@@ -20,9 +20,9 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
     Load and parse the comprehensive lotto draw history JSON file.
     
     USED FOR:
-        ✓ ML Training Labels (y = 1 if number won, 0 if not)
-        ✓ Custom Feature Generation (days since bonus hit)
-        ✓ NEW: Bonus hit analysis features
+        [OK] ML Training Labels (y = 1 if number won, 0 if not)
+        [OK] Custom Feature Generation (days since bonus hit)
+        [OK] NEW: Bonus hit analysis features
     
     Returns:
         List of dictionaries with draw details, sorted by draw_index.
@@ -35,18 +35,18 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"   This file contains historical draw data required for training.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate data files.")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"Corrupted JSON file: {filename}")
     
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         print(f"   The file exists but contains no data.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
@@ -59,7 +59,7 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
         winning_numbers_details = draw_data.get('winning_numbers_details', [])
         
         if not winning_numbers_details:
-            print(f"\n⚠️  WARNING: Draw {draw_date} has no winning_numbers_details")
+            print(f"\n[WARNING] WARNING: Draw {draw_date} has no winning_numbers_details")
             continue
         
         for detail in winning_numbers_details:
@@ -71,7 +71,7 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
                 bonus_number = number
         
         if not winning_numbers:
-            print(f"\n⚠️  WARNING: Draw {draw_date} has no valid winning numbers")
+            print(f"\n[WARNING] WARNING: Draw {draw_date} has no valid winning numbers")
             continue
         
         draw_list.append({
@@ -82,14 +82,14 @@ def load_draw_history_json(filename: str) -> List[Dict[str, Any]]:
         })
     
     if not draw_list:
-        print(f"\n❌ CRITICAL ERROR: No valid draws found in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: No valid draws found in {filename}")
         print(f"   The file contains data but no parseable draw records.")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"No valid draws in data file: {filename}")
     
     draw_list.sort(key=lambda x: x['draw_index'])
     
-    print(f"✓ Loaded {len(draw_list)} historical draws from {filename}")
+    print(f"[OK] Loaded {len(draw_list)} historical draws from {filename}")
     print(f"  Purpose: ML training labels + custom feature generation")
     print(f"  Date range: {draw_list[0]['date']} to {draw_list[-1]['date']}")
     
@@ -111,30 +111,30 @@ def load_hmc_json(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"   This file contains per-number statistics required for features.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate data files.")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"Corrupted JSON file: {filename}")
     
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
     filtered_data = {k: v for k, v in data.items() if k != 'analysis'}
     
     if not filtered_data:
-        print(f"\n❌ CRITICAL ERROR: No number data found in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: No number data found in {filename}")
         print(f"   Expected data for numbers 1-{MAX_NUMBER}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"No number data in file: {filename}")
     
-    print(f"✓ Loaded HMC data from {filename}")
+    print(f"[OK] Loaded HMC data from {filename}")
     print(f"  Purpose: ML training features + number categorization")
     print(f"  Numbers tracked: {len(filtered_data)}")
     
@@ -156,17 +156,17 @@ def load_draw_history_with_bias_ratios(filename: str) -> Tuple[List[Dict], Dict[
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate data files.")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"Corrupted JSON file: {filename}")
     
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
@@ -194,13 +194,13 @@ def load_draw_history_with_bias_ratios(filename: str) -> Tuple[List[Dict], Dict[
             })
     
     if not draw_list:
-        print(f"\n❌ CRITICAL ERROR: No valid draws found in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: No valid draws found in {filename}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"No valid draws in data file: {filename}")
     
     draw_list.sort(key=lambda x: x['draw_index'])
     
-    print(f"✓ Loaded {len(draw_list)} historical draws from {filename}")
+    print(f"[OK] Loaded {len(draw_list)} historical draws from {filename}")
     print(f"  Includes: bias ratios, freshness patterns, and full draw details")
     
     return draw_list, data
@@ -221,27 +221,27 @@ def load_odds_json(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"   This file contains HMC patterns and consecutive analysis.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate data files.")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"Corrupted JSON file: {filename}")
     
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
     if 'hmc' not in data:
-        print(f"\n⚠️  WARNING: 'hmc' section missing from {filename}")
+        print(f"\n[WARNING] WARNING: 'hmc' section missing from {filename}")
     if 'patterns' not in data:
-        print(f"\n⚠️  WARNING: 'patterns' section missing from {filename}")
+        print(f"\n[WARNING] WARNING: 'patterns' section missing from {filename}")
     
-    print(f"✓ Loaded odds data from {filename}")
+    print(f"[OK] Loaded odds data from {filename}")
     print(f"  Purpose: Display HMC patterns + consecutive pair analysis")
     
     return data
@@ -263,18 +263,18 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"   This file contains freshness pattern analysis required for predictions.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate data files.")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"Corrupted JSON file: {filename}")
     
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data.")
         raise ValueError(f"Empty data file: {filename}")
     
@@ -283,7 +283,7 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
     recent_key = data.get('recent_count_key')
     
     if W is None or C_max is None or recent_key is None:
-        print(f"\n❌ CRITICAL ERROR: Missing required configuration in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Missing required configuration in {filename}")
         print(f"   Expected: window_size_W, c_max_threshold, recent_count_key")
         print(f"   Found: W={W}, C_max={C_max}, recent_key={recent_key}")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
@@ -291,7 +291,7 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
     
     analysis_list = data.get('distribution_analysis_7_numbers', [])
     if not analysis_list:
-        print(f"\n❌ CRITICAL ERROR: 'distribution_analysis_7_numbers' is empty in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: 'distribution_analysis_7_numbers' is empty in {filename}")
         print(f"   No pattern data found for freshness analysis.")
         print(f"\n   REQUIRED ACTION: Delete {filename} and run 'python drawpick.py'")
         raise ValueError(f"No pattern data in {filename}")
@@ -309,7 +309,7 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
         total_numbers += count
     
     if total_numbers != 7:
-        print(f"\n⚠️  WARNING: Top pattern total is {total_numbers}, expected 7.")
+        print(f"\n[WARNING] WARNING: Top pattern total is {total_numbers}, expected 7.")
         print(f"   Pattern: {top_pattern.get('pattern', 'unknown')}")
         print(f"   Continuing with normalization anyway...")
         if total_numbers == 0:
@@ -325,7 +325,7 @@ def load_freshness_config(filename: str) -> Tuple[int, int, str, Dict[int, float
         count = top_pattern.get(count_key, 0)
         top_pattern_dist[i] = count / total_numbers
     
-    print(f"✓ Loaded Freshness Config: W={W}, C_max={C_max}, key={recent_key}")
+    print(f"[OK] Loaded Freshness Config: W={W}, C_max={C_max}, key={recent_key}")
     print(f"  Top pattern: {top_pattern.get('pattern', 'unknown')}")
     print(f"  Pattern weights: {top_pattern_dist}")
     
@@ -350,17 +350,17 @@ def load_bonus_analysis(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"   This file contains bonus ball analysis required for bonus prediction.")
         print(f"\n   REQUIRED ACTION: Ensure lotto_bonus_analysis.json is available.")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         raise ValueError(f"Corrupted JSON file: {filename}")
     
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         raise ValueError(f"Empty data file: {filename}")
     
     required_keys = ['per_number_bonus_profile', 'bonus_category_preference', 
@@ -368,9 +368,9 @@ def load_bonus_analysis(filename: str) -> Dict[str, Any]:
     
     missing_keys = [key for key in required_keys if key not in data]
     if missing_keys:
-        print(f"\n⚠️  WARNING: Missing keys in {filename}: {missing_keys}")
+        print(f"\n[WARNING] WARNING: Missing keys in {filename}: {missing_keys}")
     
-    print(f"✓ Loaded bonus analysis from {filename}")
+    print(f"[OK] Loaded bonus analysis from {filename}")
     print(f"  Purpose: Bonus ball prediction features")
     print(f"  Numbers tracked: {len(data.get('per_number_bonus_profile', {}))}")
     
@@ -394,7 +394,7 @@ def load_bonus_hit_analysis(draw_history_log: Dict[str, Any]) -> Dict[int, float
             latest_draw = draw_data
     
     if not latest_draw:
-        print(f"\n⚠️  WARNING: No draws found in history for bonus hit analysis")
+        print(f"\n[WARNING] WARNING: No draws found in history for bonus hit analysis")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     bonus_contribution = {}
@@ -409,7 +409,7 @@ def load_bonus_hit_analysis(draw_history_log: Dict[str, Any]) -> Dict[int, float
         if num not in bonus_contribution:
             bonus_contribution[num] = 0.5
     
-    print(f"✓ Loaded bonus hit contributions from latest draw")
+    print(f"[OK] Loaded bonus hit contributions from latest draw")
     return bonus_contribution
 
 
@@ -424,13 +424,13 @@ def load_freshness_weights(filename: str) -> Dict[int, float]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        print(f"\n⚠️  WARNING: Could not load freshness weights from {filename}")
+        print(f"\n[WARNING] WARNING: Could not load freshness weights from {filename}")
         return {0: 0.33, 1: 0.33, 2: 0.34}
     
     weight_calc = data.get('freshness_weight_calculation', {})
     
     if not weight_calc:
-        print(f"\n⚠️  WARNING: No freshness_weight_calculation in {filename}")
+        print(f"\n[WARNING] WARNING: No freshness_weight_calculation in {filename}")
         return {0: 0.33, 1: 0.33, 2: 0.34}
     
     weights = {}
@@ -445,7 +445,7 @@ def load_freshness_weights(filename: str) -> Dict[int, float]:
             except (ValueError, AttributeError):
                 continue
     
-    print(f"✓ Loaded freshness weights: {weights}")
+    print(f"[OK] Loaded freshness weights: {weights}")
     return weights
 
 
@@ -460,13 +460,13 @@ def load_number_pair_frequency(filename: str) -> Dict[int, float]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        print(f"\n⚠️  WARNING: Could not load pair frequency from {filename}")
+        print(f"\n[WARNING] WARNING: Could not load pair frequency from {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     pair_freq = data.get('number_pair_frequency', {})
     
     if not pair_freq:
-        print(f"\n⚠️  WARNING: No number_pair_frequency in {filename}")
+        print(f"\n[WARNING] WARNING: No number_pair_frequency in {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     scores = {}
@@ -481,7 +481,7 @@ def load_number_pair_frequency(filename: str) -> Dict[int, float]:
         if num not in scores:
             scores[num] = 0.5
     
-    print(f"✓ Loaded number pair frequencies")
+    print(f"[OK] Loaded number pair frequencies")
     return scores
 
 
@@ -496,13 +496,13 @@ def load_range_spread_analysis(filename: str) -> Dict[int, float]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        print(f"\n⚠️  WARNING: Could not load range spread from {filename}")
+        print(f"\n[WARNING] WARNING: Could not load range spread from {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     range_spread = data.get('range_spread_analysis', {})
     
     if not range_spread:
-        print(f"\n⚠️  WARNING: No range_spread_analysis in {filename}")
+        print(f"\n[WARNING] WARNING: No range_spread_analysis in {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     scores = {}
@@ -517,7 +517,7 @@ def load_range_spread_analysis(filename: str) -> Dict[int, float]:
         if num not in scores:
             scores[num] = 0.5
     
-    print(f"✓ Loaded range spread analysis")
+    print(f"[OK] Loaded range spread analysis")
     return scores
 
 
@@ -532,13 +532,13 @@ def load_odd_even_analysis(filename: str) -> Dict[int, float]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        print(f"\n⚠️  WARNING: Could not load odd/even analysis from {filename}")
+        print(f"\n[WARNING] WARNING: Could not load odd/even analysis from {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     odd_even = data.get('odd_even_analysis', {})
     
     if not odd_even:
-        print(f"\n⚠️  WARNING: No odd_even_analysis in {filename}")
+        print(f"\n[WARNING] WARNING: No odd_even_analysis in {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     scores = {}
@@ -553,7 +553,7 @@ def load_odd_even_analysis(filename: str) -> Dict[int, float]:
         if num not in scores:
             scores[num] = 0.5
     
-    print(f"✓ Loaded odd/even affinity analysis")
+    print(f"[OK] Loaded odd/even affinity analysis")
     return scores
 
 
@@ -568,13 +568,13 @@ def load_sum_contribution_analysis(filename: str) -> Dict[int, float]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        print(f"\n⚠️  WARNING: Could not load sum contribution from {filename}")
+        print(f"\n[WARNING] WARNING: Could not load sum contribution from {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     sum_contrib = data.get('sum_contribution_analysis', {})
     
     if not sum_contrib:
-        print(f"\n⚠️  WARNING: No sum_contribution_analysis in {filename}")
+        print(f"\n[WARNING] WARNING: No sum_contribution_analysis in {filename}")
         return {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
     
     scores = {}
@@ -589,7 +589,7 @@ def load_sum_contribution_analysis(filename: str) -> Dict[int, float]:
         if num not in scores:
             scores[num] = 0.5
     
-    print(f"✓ Loaded sum contribution analysis")
+    print(f"[OK] Loaded sum contribution analysis")
     return scores
 
 
@@ -612,7 +612,7 @@ def load_bonus_to_main_patterns(filename: str) -> Dict[str, Any]:
     try:
         with open(filename, 'r') as f:
             data = json.load(f)
-        print(f"✓ Loaded bonus-to-main transition patterns from {filename}")
+        print(f"[OK] Loaded bonus-to-main transition patterns from {filename}")
 
         if 'metadata' in data:
             meta = data['metadata']
@@ -621,11 +621,11 @@ def load_bonus_to_main_patterns(filename: str) -> Dict[str, Any]:
 
         return data
     except FileNotFoundError:
-        print(f"\n❌ ERROR: {filename} not found")
+        print(f"\n[ERROR] ERROR: {filename} not found")
         print(f"   REQUIRED ACTION: Run 'python drawpick.py' to generate this file")
         return {}
     except json.JSONDecodeError as e:
-        print(f"\n❌ ERROR: Invalid JSON in {filename}: {e}")
+        print(f"\n[ERROR] ERROR: Invalid JSON in {filename}: {e}")
         return {}
 
 
@@ -654,27 +654,27 @@ def load_long_term_patterns(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"   This file contains scipy-validated long-term pattern analysis.")
         print(f"\n   REQUIRED ACTION: Run 'python lotto_analysis/analyzers/long_term_pattern_analyzer.py'")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         raise ValueError(f"Corrupted JSON file: {filename}")
 
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         raise ValueError(f"Empty data file: {filename}")
 
     # Validate scipy-generated structure
     required_keys = ['hmc_pattern_analysis', 'recency_correlation_analysis', 'metadata']
     missing_keys = [key for key in required_keys if key not in data]
     if missing_keys:
-        print(f"\n⚠️  WARNING: Missing keys in {filename}: {missing_keys}")
+        print(f"\n[WARNING] WARNING: Missing keys in {filename}: {missing_keys}")
         print(f"   Expected scipy-validated analysis structure")
 
-    print(f"✓ Loaded long-term pattern analysis from {filename}")
+    print(f"[OK] Loaded long-term pattern analysis from {filename}")
     print(f"  Purpose: Scipy-validated long-term pattern features")
 
     # Display statistical validation info
@@ -716,25 +716,25 @@ def load_statistics_analysis(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n❌ CRITICAL ERROR: {filename} not found.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
         print(f"   This file contains long-term pattern analysis.")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate data files.")
         raise FileNotFoundError(f"Missing required file: {filename}")
     except json.JSONDecodeError as e:
-        print(f"\n❌ CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
         print(f"   Error details: {e}")
         raise ValueError(f"Corrupted JSON file: {filename}")
 
     if not data:
-        print(f"\n❌ CRITICAL ERROR: {filename} is empty.")
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
         raise ValueError(f"Empty data file: {filename}")
 
     required_keys = ['hmc_distribution', 'days_since_last_hit']
     missing_keys = [key for key in required_keys if key not in data]
     if missing_keys:
-        print(f"\n⚠️  WARNING: Missing keys in {filename}: {missing_keys}")
+        print(f"\n[WARNING] WARNING: Missing keys in {filename}: {missing_keys}")
 
-    print(f"✓ Loaded long-term statistics from {filename}")
+    print(f"[OK] Loaded long-term statistics from {filename}")
     print(f"  Purpose: Long-term pattern analysis features")
 
     if 'hmc_distribution' in data:
@@ -763,18 +763,18 @@ def load_freshness_patterns_validated(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"\n[WARNING] WARNING: {filename} not found.")
         print(f"   Using non-validated freshness weights as fallback")
         print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/freshness_pattern_analyzer.py'")
         return {}
     except json.JSONDecodeError as e:
-        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        print(f"\n[WARNING] WARNING: Invalid JSON in {filename}: {e}")
         return {}
 
     if not data:
         return {}
 
-    print(f"✓ Loaded scipy-validated freshness patterns from {filename}")
+    print(f"[OK] Loaded scipy-validated freshness patterns from {filename}")
 
     if 'pattern_distribution_test' in data:
         pattern_test = data['pattern_distribution_test']
@@ -803,24 +803,24 @@ def load_hmc_categorization_validated(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"\n[WARNING] WARNING: {filename} not found.")
         print(f"   Using non-validated HMC categories as fallback")
         print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/hmc_categorization_analyzer.py'")
         return {}
     except json.JSONDecodeError as e:
-        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        print(f"\n[WARNING] WARNING: Invalid JSON in {filename}: {e}")
         return {}
 
     if not data:
         return {}
 
-    print(f"✓ Loaded scipy-validated HMC categorization from {filename}")
+    print(f"[OK] Loaded scipy-validated HMC categorization from {filename}")
 
     if 'anova_test' in data:
         anova = data['anova_test']
         print(f"  ANOVA p-value: {anova.get('p_value', 1.0):.4f}")
         print(f"  Categories statistically distinct: {anova.get('significant', False)}")
-        print(f"  Effect size (η²): {anova.get('eta_squared', 0.0):.4f}")
+        print(f"  Effect size (eta^2): {anova.get('eta_squared', 0.0):.4f}")
 
     return data
 
@@ -843,18 +843,18 @@ def load_consecutive_pairs_validated(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"\n[WARNING] WARNING: {filename} not found.")
         print(f"   Using non-validated pair scores as fallback")
         print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/consecutive_pair_analyzer.py'")
         return {}
     except json.JSONDecodeError as e:
-        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        print(f"\n[WARNING] WARNING: Invalid JSON in {filename}: {e}")
         return {}
 
     if not data:
         return {}
 
-    print(f"✓ Loaded scipy-validated consecutive pairs from {filename}")
+    print(f"[OK] Loaded scipy-validated consecutive pairs from {filename}")
 
     if 'overall_chi_square_test' in data:
         chi2 = data['overall_chi_square_test']
@@ -886,18 +886,18 @@ def load_odd_even_validated(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"\n[WARNING] WARNING: {filename} not found.")
         print(f"   Using non-validated odd/even scores as fallback")
         print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/odd_even_analyzer.py'")
         return {}
     except json.JSONDecodeError as e:
-        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        print(f"\n[WARNING] WARNING: Invalid JSON in {filename}: {e}")
         return {}
 
     if not data:
         return {}
 
-    print(f"✓ Loaded scipy-validated odd/even distribution from {filename}")
+    print(f"[OK] Loaded scipy-validated odd/even distribution from {filename}")
 
     if 'overall_distribution_test' in data:
         overall = data['overall_distribution_test']
@@ -930,18 +930,18 @@ def load_sum_contribution_validated(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"\n[WARNING] WARNING: {filename} not found.")
         print(f"   Using non-validated sum contribution scores as fallback")
         print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/sum_contribution_analyzer.py'")
         return {}
     except json.JSONDecodeError as e:
-        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        print(f"\n[WARNING] WARNING: Invalid JSON in {filename}: {e}")
         return {}
 
     if not data:
         return {}
 
-    print(f"✓ Loaded scipy-validated sum contribution from {filename}")
+    print(f"[OK] Loaded scipy-validated sum contribution from {filename}")
 
     if 'overall_distribution' in data:
         overall = data['overall_distribution']
@@ -978,18 +978,18 @@ def load_range_spread_validated(filename: str) -> Dict[str, Any]:
         with open(filename, 'r') as f:
             data = json.load(f)
     except FileNotFoundError:
-        print(f"\n⚠️  WARNING: {filename} not found.")
+        print(f"\n[WARNING] WARNING: {filename} not found.")
         print(f"   Using non-validated range spread scores as fallback")
         print(f"   RECOMMENDATION: Run 'python lotto_analysis/analyzers/range_spread_analyzer.py'")
         return {}
     except json.JSONDecodeError as e:
-        print(f"\n⚠️  WARNING: Invalid JSON in {filename}: {e}")
+        print(f"\n[WARNING] WARNING: Invalid JSON in {filename}: {e}")
         return {}
 
     if not data:
         return {}
 
-    print(f"✓ Loaded scipy-validated range spread from {filename}")
+    print(f"[OK] Loaded scipy-validated range spread from {filename}")
 
     if 'overall_distribution' in data:
         overall = data['overall_distribution']
@@ -1014,7 +1014,7 @@ def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, in
         Tuple of (hot_count, medium_count, cold_count, percentage)
     """
     if 'hmc' not in odds_data:
-        print(f"\n⚠️  WARNING: HMC distribution not found in odds data.")
+        print(f"\n[WARNING] WARNING: HMC distribution not found in odds data.")
         print(f"   Using neutral default pattern: 2-3-2")
         return (2, 3, 2, 0.0)
 
@@ -1031,18 +1031,18 @@ def get_most_likely_hmc_pattern(odds_data: Dict[str, Any]) -> Tuple[int, int, in
     if best_pattern:
         parts = best_pattern.split('-')
         if len(parts) != 3:
-            print(f"\n⚠️  WARNING: Invalid HMC pattern format: {best_pattern}")
+            print(f"\n[WARNING] WARNING: Invalid HMC pattern format: {best_pattern}")
             return (2, 3, 2, 0.0)
 
         try:
             hot_count = int(parts[0])
             medium_count = int(parts[1])
             cold_count = int(parts[2])
-            print(f"✓ Most likely HMC pattern: {best_pattern} ({best_percentage:.2f}%)")
+            print(f"[OK] Most likely HMC pattern: {best_pattern} ({best_percentage:.2f}%)")
             return (hot_count, medium_count, cold_count, best_percentage)
         except ValueError:
-            print(f"\n⚠️  WARNING: Could not parse HMC pattern: {best_pattern}")
+            print(f"\n[WARNING] WARNING: Could not parse HMC pattern: {best_pattern}")
             return (2, 3, 2, 0.0)
 
-    print(f"\n⚠️  WARNING: No HMC patterns found. Using default: 2-3-2")
+    print(f"\n[WARNING] WARNING: No HMC patterns found. Using default: 2-3-2")
     return (2, 3, 2, 0.0)
