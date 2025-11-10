@@ -113,29 +113,34 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
 }
 
 MODEL_1_CONFIG = {
-    'name': 'Short-Term Momentum + Patterns + JSON Bonus',
-    'description': 'Immediate patterns with timing, consecutive boosts, and NEW JSON bonus features',
+    'name': 'Short-Term Momentum + Pre-Assignment Specialist',
+    'description': 'Captures immediate patterns with bonus and recent-bonus pre-assignment',
     'algorithm': 'logistic_regression',
 
     'hot_count': 1,
     'medium_count': 2,
-    'cold_count': 2,
+    'cold_count': 1,
     'generic_count': 0,
 
     'features': [
-        FRESHNESS_PATTERN_WEIGHTS,
-        'days_since_last',
-        'recency_zone_score',
-        'total_count',
-        'was_recent_bonus',
-        'has_consecutive_partner',
-        'odd_even_json',  # Replaced odd_even_affinity with JSON version
-        'bonus_hit_contribution',
-        'pair_frequency_score'
+        FRESHNESS_PATTERN_WEIGHTS,    # Statistically validated freshness
+        'days_since_last',              # Core timing
+        'recency_zone_score',           # Optimal window detection
+        'total_count',                  # Historical frequency
+        'recent_4',                     # NEW - immediate hot streak
+        'was_recent_bonus',             # Proven 71% pattern
+        'has_consecutive_partner',      # 57% consecutive pattern
+        'odd_even_json',                # Realism constraint
+        'pair_frequency_score',         # Pattern affinity
+        'bonus_hit_contribution',       # JSON feature
+        'lt_hot_weight',                # Long-term validation
+        'lt_medium_weight',             # Long-term validation
+        'lt_cold_weight',               # Long-term validation
+        'lt_category_alignment',        # Category performance
     ],
-    
+
     'diversity_penalty': 0.0,
-    
+
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
@@ -144,7 +149,7 @@ MODEL_1_CONFIG = {
         'random_state': 42,
         'C': 1.0
     },
-    
+
     'calibration': {
         'method': 'sigmoid',
         'cv': 5
@@ -152,33 +157,48 @@ MODEL_1_CONFIG = {
 }
 
 MODEL_2_CONFIG = {
-    'name': 'Long-Term Value + Sum/Range + JSON Features + LT Patterns',
-    'description': 'Historical patterns with timing, bonus optimization, JSON realism features, and LONG-TERM pattern analysis',
+    'name': 'Jackpot Optimizer - 6-Ball Main Prize Specialist',
+    'description': 'Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes',
     'algorithm': 'logistic_regression',
 
     'hot_count': 0,
     'medium_count': 3,
     'cold_count': 2,
-    'generic_count': 0,
+    'generic_count': 1,
 
     'features': [
+        # HMC Foundation
         'total_count',
+
+        # Long-term stability (critical for 6-ball consistency)
+        'lt_hot_weight',
+        'lt_medium_weight',
+        'lt_cold_weight',
+        'lt_category_alignment',
+        'lt_recency_weight',
+
+        # Timing (essential - captures optimal windows)
         'days_since_last',
         'recency_zone_score',
-        'days_since_bonus',
-        'was_recent_bonus',
-        'bonus_hit_contribution',  # Replaced bonus_hit_target_alignment with JSON version
-        'recent_14',
+        'recent_14',                    # Longer window for stability
+
+        # Historical bias correction
         'win_bias_ratio',
+
+        # Pattern consistency
         'consecutive_pair_affinity',
-        'sum_contribution_json',  # Replaced sum_contribution_score with JSON version
-        'range_spread_json',  # Replaced range_spread_affinity with JSON version
+
+        # Realism constraints (ensure valid 6-ball combinations)
+        'sum_contribution_json',
+        'range_spread_json',
+
+        # Validated freshness patterns
         'freshness_weight_score',
-        LONG_TERM_PATTERN_WEIGHTS  # NEW: Long-term HMC and recency pattern analysis
+        FRESHNESS_PATTERN_WEIGHTS,
     ],
-    
+
     'diversity_penalty': 0.15,
-    
+
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
@@ -187,7 +207,7 @@ MODEL_2_CONFIG = {
         'random_state': 42,
         'C': 0.5
     },
-    
+
     'calibration': {
         'method': 'sigmoid',
         'cv': 3
