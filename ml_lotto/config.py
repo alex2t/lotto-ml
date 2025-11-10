@@ -182,6 +182,9 @@ MODEL_2_CONFIG = {
         'recency_zone_score',
         'recent_14',                    # Longer window for stability
 
+        # Bonus-to-Main pattern (70% transition rate)
+        'was_recent_bonus',             # Recent bonus balls appear in main 6
+
         # Historical bias correction
         'win_bias_ratio',
 
