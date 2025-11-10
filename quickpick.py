@@ -290,9 +290,9 @@ def main():
     print("=" * 70)
     print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model + 1 bonus-to-main model")
     print("NEW: Specialized model objectives with different training strategies")
-    print("  Model 1: Momentum specialist (2 pre-assigned + 4 selected)")
-    print("  Model 2: Jackpot optimizer - trained on MAIN 6 ONLY (6 selected)")
-    print("  Model 3: Complexity explorer (6 selected)")
+    print("  Model 1: Momentum specialist (6 main + bonus)")
+    print("  Model 2: Jackpot optimizer - MAIN 6 ONLY (NO BONUS)")
+    print("  Model 3: Complexity explorer (6 main + bonus)")
     
     try:
         if VERBOSE:
@@ -695,20 +695,22 @@ def main():
         print("\nStep 10: Final assembly - adding separate bonus balls...")
         for line in lines:
             model_idx = line['model_index']
-            # Note: bonus is already in the main numbers as one of the pre-assigned
-            # But we still track it separately for display purposes
-            line['bonus_for_draw'] = bonus_assignments.get(model_idx)
+            # Model 2 does NOT get a bonus ball - it only predicts 6 main numbers
+            if model_idx == 2:
+                line['bonus_for_draw'] = None  # No bonus for jackpot optimizer
+            else:
+                # Models 1 & 3 get bonus balls from BONUS_MODEL
+                line['bonus_for_draw'] = bonus_assignments.get(model_idx)
 
         print("\nStep 11: Displaying complete results (6 main + 1 bonus)...")
         try:
             print("\n" + "=" * 70)
-            print("FINAL RECOMMENDED PICKS (6 MAIN + 1 BONUS)")
+            print("FINAL RECOMMENDED PICKS")
             print("=" * 70)
             print("SPECIALIZED MODEL ARCHITECTURE:")
-            print("  Model 1: 2 pre-assigned + 4 ML-selected")
-            print("  Model 2: 6 ML-selected (jackpot optimizer, no pre-assignment)")
-            print("  Model 3: 6 ML-selected (complexity explorer, no pre-assignment)")
-            print("  All Models: + 1 separate bonus ball")
+            print("  Model 1: 6 main numbers (2 pre-assigned + 4 ML-selected) + 1 bonus")
+            print("  Model 2: 6 main numbers ONLY (jackpot optimizer - NO BONUS)")
+            print("  Model 3: 6 main numbers (6 ML-selected) + 1 bonus")
             print("=" * 70)
 
             for line in lines:
@@ -718,8 +720,14 @@ def main():
                     print(f"Pre-assigned (exempt): {sorted(line['pre_assigned'])}")
                     print(f"ML-selected: {sorted(line['selected'])}")
                 print(f"Main Numbers (6): {sorted(line['numbers'])}")
-                print(f"Bonus Ball: {line['bonus_for_draw']}")
-                print(f"Complete Line: {sorted(line['numbers'])} + BONUS {line['bonus_for_draw']}")
+
+                # Model 2 does not have a bonus ball
+                if line['bonus_for_draw'] is not None:
+                    print(f"Bonus Ball: {line['bonus_for_draw']}")
+                    print(f"Complete Line: {sorted(line['numbers'])} + BONUS {line['bonus_for_draw']}")
+                else:
+                    print(f"Bonus Ball: None (jackpot optimizer - main 6 only)")
+                    print(f"Complete Line: {sorted(line['numbers'])} (6 main numbers only)")
             
             display_overlap_analysis(lines)
             display_rank_aware_explanation(ACTIVE_MODELS)
@@ -732,10 +740,9 @@ def main():
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
                     f.write("SPECIALIZED MODEL ARCHITECTURE V3.9\n")
-                    f.write("Model 1: 2 pre-assigned + 4 selected (momentum specialist)\n")
-                    f.write("Model 2: 6 selected (jackpot optimizer - trained on main 6 only)\n")
-                    f.write("Model 3: 6 selected (complexity explorer)\n")
-                    f.write("All Models: + 1 bonus ball\n")
+                    f.write("Model 1: 6 main (2 pre-assigned + 4 selected) + 1 bonus\n")
+                    f.write("Model 2: 6 main ONLY (jackpot optimizer - NO BONUS)\n")
+                    f.write("Model 3: 6 main (6 selected) + 1 bonus\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
@@ -743,8 +750,14 @@ def main():
                             f.write(f"Pre-assigned (exempt): {sorted(line['pre_assigned'])}\n")
                             f.write(f"ML-selected: {sorted(line['selected'])}\n")
                         f.write(f"Main Numbers (6): {sorted(line['numbers'])}\n")
-                        f.write(f"Bonus Ball: {line['bonus_for_draw']}\n")
-                        f.write(f"Complete: {sorted(line['numbers'])} + BONUS {line['bonus_for_draw']}\n")
+
+                        # Model 2 does not have a bonus ball
+                        if line['bonus_for_draw'] is not None:
+                            f.write(f"Bonus Ball: {line['bonus_for_draw']}\n")
+                            f.write(f"Complete: {sorted(line['numbers'])} + BONUS {line['bonus_for_draw']}\n")
+                        else:
+                            f.write(f"Bonus Ball: None (jackpot optimizer - main 6 only)\n")
+                            f.write(f"Complete: {sorted(line['numbers'])} (6 main only)\n")
                         f.write(f"Description: {line['description']}\n\n")
                 print("\n✓ Results saved to 'lottery_picks.txt'")
             except Exception as e:
