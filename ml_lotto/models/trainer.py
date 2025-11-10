@@ -14,53 +14,63 @@ from ml_lotto.features.extractor import expand_feature_selection, get_all_featur
 def build_training_dataset(
     all_draws: List[Dict[str, Any]],
     features_dict: Dict[int, Dict[str, Any]],
-    all_feature_names: List[str]
+    all_feature_names: List[str],
+    exclude_bonus: bool = False
 ) -> pd.DataFrame:
     """
     Build training dataset by combining features and labels.
-    
+
     INPUT SOURCES:
         all_draws (from lotto_draw_history.json) → LABELS (y = did number win?)
         features_dict (from lotto_trigger_periods.json) → FEATURES (X = number statistics)
-    
+
     TRAINING PROCESS:
         For each historical draw #100 onwards:
             For each number 1-47:
                 X (features) ← [total_count, days_since_last, ..., days_since_bonus]
                 y (label)    ← 1 if number won that draw, 0 if not
-    
+
     Args:
         all_draws: Historical draw data with winning numbers
         features_dict: Feature values for each number
         all_feature_names: List of all available feature names
-        
+        exclude_bonus: If True, only main 6 numbers are labeled as hits (for Model 2)
+
     Returns:
         DataFrame with all features + 'hit' column (label)
     """
-    print("\nBuilding training dataset...")
+    print(f"\nBuilding training dataset (exclude_bonus={exclude_bonus})...")
     records = []
-    
+
     # Build training data by combining FEATURES + LABELS
     for draw_idx in range(TRAINING_START_DRAW, len(all_draws)):
-        # LABELS: Get winning numbers from Draw History JSON
-        # Note: 'numbers' contains both main and bonus balls
-        target_numbers = set(all_draws[draw_idx]['numbers'])
-        
+        # CRITICAL CHANGE: Different labeling strategy based on exclude_bonus
+        if exclude_bonus:
+            # Model 2: ONLY the first 6 numbers (main balls, exclude bonus)
+            target_numbers = set(all_draws[draw_idx]['numbers'][:6])
+            if draw_idx == TRAINING_START_DRAW:
+                print("  Model 2: Training on MAIN 6 ONLY (excluding bonus ball)")
+        else:
+            # Models 1 & 3: All 7 numbers (including bonus)
+            target_numbers = set(all_draws[draw_idx]['numbers'])
+            if draw_idx == TRAINING_START_DRAW:
+                print("  Standard: Training on ALL 7 positions")
+
         for num in range(1, MAX_NUMBER + 1):
             if num in features_dict:
                 # FEATURES: Get statistics from JSON
                 feat = features_dict[num]
                 record = {}
-                
+
                 # Add all features
                 for feature_name in all_feature_names:
                     record[feature_name] = feat.get(feature_name, 0)
-                
+
                 # LABEL: Did this number win in this draw?
                 record['hit'] = 1 if num in target_numbers else 0
-                
+
                 records.append(record)
-    
+
     train_df = pd.DataFrame(records)
     print(f"✓ Training dataset created: {len(train_df)} records")
     return train_df
@@ -70,23 +80,28 @@ def train_model(
     model_config: Dict[str, Any],
     train_df: pd.DataFrame,
     all_feature_names: List[str],
-    model_index: int
+    model_index: int,
+    exclude_bonus: bool = False
 ) -> Tuple[Any, List[str]]:
     """
     Train a single model based on its configuration.
-    
+
     Args:
         model_config: Model configuration dictionary
         train_df: Training DataFrame with features and labels
         all_feature_names: All available feature names
         model_index: Model number (for display)
-        
+        exclude_bonus: If True, model is trained on main 6 only
+
     Returns:
         Tuple of (trained_pipeline, selected_features)
     """
     print(f"\n→ Model {model_index}: {model_config['name']}")
     print(f"  Description: {model_config['description']}")
     print(f"  Algorithm: {model_config['algorithm']}")
+
+    if exclude_bonus:
+        print(f"  ⭐ SPECIAL TRAINING: Optimized for MAIN 6 BALLS (jackpot focus)")
     
     # Expand feature selection
     selected_features = expand_feature_selection(
@@ -126,50 +141,77 @@ def train_all_models(
     features_dict: Dict[int, Dict[str, Any]]
 ) -> Tuple[Dict[str, Any], Dict[str, List[str]]]:
     """
-    Train all configured models.
-    
+    Train all configured models with specialized training strategies.
+
     Args:
         model_configs: List of model configuration dictionaries
         all_draws: Historical draw data
         features_dict: Feature values for all numbers
-        
+
     Returns:
         Tuple of (models_dict, model_features_dict)
         - models_dict: {model_name: {'pipeline': pipeline, 'config': config}}
         - model_features_dict: {model_name: [feature_names]}
     """
     print("\n" + "="*70)
-    print("TRAINING MULTIPLE ML MODELS WITH DIFFERENT STRATEGIES")
+    print("TRAINING MULTIPLE ML MODELS WITH SPECIALIZED OBJECTIVES")
     print("="*70)
+    print("\nMODEL SPECIALIZATION:")
+    print("  Model 1: Momentum specialist (all 7 positions)")
+    print("  Model 2: Jackpot optimizer (main 6 ONLY) ⭐")
+    print("  Model 3: Complexity explorer (all 7 positions)")
     print("\nDATA SOURCES:")
     print("  Features (X) ← lotto_trigger_periods.json + custom calculations")
     print("  Labels (y)   ← lotto_draw_history.json")
-    
+
     # Get all available feature names
     all_feature_names = get_all_feature_names(features_dict)
-    
-    # Build training dataset once
-    train_df = build_training_dataset(all_draws, features_dict, all_feature_names)
     print(f"  Available features: {all_feature_names}\n")
-    
+
+    # Build TWO different training datasets
+    print("\n1. Building standard training dataset (Models 1 & 3)...")
+    train_df_standard = build_training_dataset(
+        all_draws,
+        features_dict,
+        all_feature_names,
+        exclude_bonus=False  # All 7 positions
+    )
+
+    print("\n2. Building specialized training dataset (Model 2)...")
+    train_df_model2 = build_training_dataset(
+        all_draws,
+        features_dict,
+        all_feature_names,
+        exclude_bonus=True  # Main 6 only ⭐
+    )
+
     # Train each model
     models = {}
     model_features = {}
-    
+
     for idx, model_config in enumerate(model_configs, 1):
         model_name = f"model_{idx}"
-        
+
+        # Use specialized dataset for Model 2
+        if idx == 2:
+            train_df_to_use = train_df_model2
+            exclude_bonus = True
+        else:
+            train_df_to_use = train_df_standard
+            exclude_bonus = False
+
         pipeline, selected_features = train_model(
             model_config,
-            train_df,
+            train_df_to_use,
             all_feature_names,
-            idx
+            idx,
+            exclude_bonus=exclude_bonus
         )
-        
+
         models[model_name] = {
             'pipeline': pipeline,
             'config': model_config
         }
         model_features[model_name] = selected_features
-    
+
     return models, model_features
