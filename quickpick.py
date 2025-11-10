@@ -2,12 +2,12 @@
 """
 quickpick.py (main.py)
 ======================
-Main entry point for the Lottery Prediction System V3.8
+Main entry point for the Lottery Prediction System V3.9
 
-VERSION: 3.8 (Bonus Ball Prediction Edition)
-- Added bonus ball prediction model training
-- Integrated 3 bonus predictions assigned to main models
-- Modified main models to pick 5 numbers + 1 assigned bonus
+VERSION: 3.9 (Scipy Statistical Validation Edition)
+- Complete scipy statistical validation across all features
+- Concise output mode for essential information only
+- Set VERBOSE = False for clean, focused output
 """
 
 import warnings
@@ -16,6 +16,26 @@ import json
 import time
 import sys
 from pathlib import Path
+
+# OUTPUT MODE: Set to False for concise, essential output only
+VERBOSE = False
+
+import os
+import contextlib
+
+@contextlib.contextmanager
+def suppress_output():
+    """Suppress stdout when not in verbose mode."""
+    if VERBOSE:
+        yield
+    else:
+        with open(os.devnull, 'w') as devnull:
+            old_stdout = sys.stdout
+            sys.stdout = devnull
+            try:
+                yield
+            finally:
+                sys.stdout = old_stdout
 
 from ml_lotto.config import (
     DRAW_HISTORY_JSON,
@@ -26,6 +46,12 @@ from ml_lotto.config import (
     BONUS_ANALYSIS_JSON,
     BONUS_TO_MAIN_JSON,
     LONG_TERM_PATTERNS_JSON,
+    FRESHNESS_PATTERNS_VALIDATED_JSON,
+    HMC_CATEGORIZATION_VALIDATED_JSON,
+    CONSECUTIVE_PAIRS_VALIDATED_JSON,
+    ODD_EVEN_VALIDATED_JSON,
+    SUM_CONTRIBUTION_VALIDATED_JSON,
+    RANGE_SPREAD_VALIDATED_JSON,
     ACTIVE_MODELS,
     BONUS_MODEL_CONFIG,
     BONUS_TO_MAIN_MODEL_CONFIG,
@@ -47,7 +73,13 @@ from ml_lotto.data.loader import (
     load_sum_contribution_analysis,
     load_bonus_analysis,
     load_bonus_to_main_patterns,
-    load_long_term_patterns
+    load_long_term_patterns,
+    load_freshness_patterns_validated,
+    load_hmc_categorization_validated,
+    load_consecutive_pairs_validated,
+    load_odd_even_validated,
+    load_sum_contribution_validated,
+    load_range_spread_validated
 )
 
 from ml_lotto.features.extractor import (
@@ -163,6 +195,91 @@ def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distrib
     return True
 
 
+def print_scipy_validation_summary(scipy_data):
+    """Print concise scipy validation status."""
+    print("\n" + "=" * 70)
+    print("SCIPY STATISTICAL VALIDATION STATUS")
+    print("=" * 70)
+
+    validations = [
+        ("Freshness Patterns", scipy_data.get('freshness'), 'pattern_distribution_test'),
+        ("HMC Categorization", scipy_data.get('hmc'), 'anova_test'),
+        ("Consecutive Pairs", scipy_data.get('pairs'), 'overall_chi_square_test'),
+        ("Odd/Even Distribution", scipy_data.get('odd_even'), 'overall_distribution_test'),
+        ("Sum Contribution", scipy_data.get('sum'), 'anova_analysis'),
+        ("Range Spread", scipy_data.get('range'), 'levene_analysis'),
+    ]
+
+    successful = []
+    failed = []
+
+    for name, data, test_key in validations:
+        if data and test_key in data:
+            test = data[test_key]
+            p_value = test.get('p_value', 1.0)
+            significant = test.get('significant', False)
+
+            if significant and p_value < 0.05:
+                successful.append(f"  ✓ {name:25} (p={p_value:.4f})")
+            else:
+                failed.append(f"  ✗ {name:25} (p={p_value:.4f}) - using standard fallback")
+        else:
+            failed.append(f"  ✗ {name:25} - file not found")
+
+    if successful:
+        print("\nSCIPY-VALIDATED Features:")
+        for item in successful:
+            print(item)
+
+    if failed:
+        print("\nStandard (non-validated) Features:")
+        for item in failed:
+            print(item)
+
+    print()
+
+
+def print_model_picks_detailed(model_name, model_desc, picks, bonus, bonus_to_main, hmc_data, probabilities, algorithm):
+    """Print detailed model picks with HMC categories and probabilities."""
+    print(f"\n{'=' * 70}")
+    print(f"{model_name}")
+    print(f"{'=' * 70}")
+    print(f"Algorithm: {algorithm}")
+    print(f"Description: {model_desc}")
+    print()
+
+    # Pre-assigned numbers
+    print("PRE-ASSIGNED (from models):")
+    bonus_cat = hmc_data.get(str(bonus), {}).get('category', 'unknown')
+    bonus_prob = probabilities.get(bonus, 0.0) if probabilities else 0.0
+    print(f"  Bonus Ball:      #{bonus:2d}  [{bonus_cat:6}]  prob={bonus_prob:.1%}")
+
+    btm_cat = hmc_data.get(str(bonus_to_main), {}).get('category', 'unknown')
+    btm_prob = probabilities.get(bonus_to_main, 0.0) if probabilities else 0.0
+    print(f"  Bonus-to-Main:   #{bonus_to_main:2d}  [{btm_cat:6}]  prob={btm_prob:.1%}")
+
+    # ML-selected numbers
+    ml_picks = [p for p in picks if p not in [bonus, bonus_to_main]]
+    print("\nML-SELECTED (4 numbers):")
+    for i, num in enumerate(ml_picks, 1):
+        cat = hmc_data.get(str(num), {}).get('category', 'unknown')
+        prob = probabilities.get(num, 0.0) if probabilities else 0.0
+        print(f"  Pick {i}:          #{num:2d}  [{cat:6}]  prob={prob:.1%}")
+
+    # Final line
+    print(f"\nFINAL LINE: {sorted(picks)} + BONUS {bonus}")
+
+    # HMC distribution
+    hmc_counts = {'hot': 0, 'medium': 0, 'cold': 0}
+    for num in picks:
+        cat = hmc_data.get(str(num), {}).get('category', 'unknown')
+        if cat in hmc_counts:
+            hmc_counts[cat] += 1
+
+    print(f"HMC Distribution: {hmc_counts['hot']}H-{hmc_counts['medium']}M-{hmc_counts['cold']}C")
+    print()
+
+
 def main():
     """Main execution function with bonus ball prediction."""
     start_time = time.time()
@@ -175,70 +292,137 @@ def main():
     print("Each model then selects 4 additional numbers for 6 total main numbers")
     
     try:
-        print("\nStep 0: Validating data files...")
+        if VERBOSE:
+            print("\nStep 0: Validating data files...")
         if not validate_data_files():
             sys.exit(1)
-        print("✓ All required files present")
-        
-        print("\nStep 1: Loading data files...")
-        
-        all_draws, draw_history_log_raw = load_draw_history_with_bias_ratios(DRAW_HISTORY_JSON)
-        hmc_data = load_hmc_json(HMC_JSON_INPUT)
-        odds_data = load_odds_json(ODDS_JSON_INPUT)
+        if VERBOSE:
+            print("✓ All required files present")
+
+        if not VERBOSE:
+            print("\nLoading data files...")
+        else:
+            print("\nStep 1: Loading data files...")
+
+        with suppress_output():
+            all_draws, draw_history_log_raw = load_draw_history_with_bias_ratios(DRAW_HISTORY_JSON)
+            hmc_data = load_hmc_json(HMC_JSON_INPUT)
+            odds_data = load_odds_json(ODDS_JSON_INPUT)
         
         freshness_data = {}
-        try:
-            with open(FRESHNESS_JSON_INPUT, 'r') as f:
-                freshness_data = json.load(f)
-            print(f"✓ Loaded freshness data from {FRESHNESS_JSON_INPUT}")
-            print(f"  Contains {len(freshness_data.get('distribution_analysis_7_numbers', []))} pattern distributions")
-        except FileNotFoundError:
-            print(f"✗ Error: {FRESHNESS_JSON_INPUT} not found.")
-        except json.JSONDecodeError as e:
-            print(f"✗ Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
-        
+        with suppress_output():
+            try:
+                with open(FRESHNESS_JSON_INPUT, 'r') as f:
+                    freshness_data = json.load(f)
+                if VERBOSE:
+                    print(f"✓ Loaded freshness data from {FRESHNESS_JSON_INPUT}")
+                    print(f"  Contains {len(freshness_data.get('distribution_analysis_7_numbers', []))} pattern distributions")
+            except FileNotFoundError:
+                if VERBOSE:
+                    print(f"✗ Error: {FRESHNESS_JSON_INPUT} not found.")
+            except json.JSONDecodeError as e:
+                if VERBOSE:
+                    print(f"✗ Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
+
         distribution_stats = {}
-        try:
-            with open(DISTRIBUTION_STATS_JSON, 'r') as f:
-                distribution_stats = json.load(f)
-            print(f"✓ Loaded distribution stats from {DISTRIBUTION_STATS_JSON}")
-            print(f"  Total draws analyzed: {distribution_stats.get('total_draws_analyzed', 0)}")
-        except FileNotFoundError:
-            print(f"✗ Error: {DISTRIBUTION_STATS_JSON} not found.")
-        except json.JSONDecodeError as e:
-            print(f"✗ Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
-        
-        bonus_analysis_data = load_bonus_analysis(BONUS_ANALYSIS_JSON)
+        with suppress_output():
+            try:
+                with open(DISTRIBUTION_STATS_JSON, 'r') as f:
+                    distribution_stats = json.load(f)
+                if VERBOSE:
+                    print(f"✓ Loaded distribution stats from {DISTRIBUTION_STATS_JSON}")
+                    print(f"  Total draws analyzed: {distribution_stats.get('total_draws_analyzed', 0)}")
+            except FileNotFoundError:
+                if VERBOSE:
+                    print(f"✗ Error: {DISTRIBUTION_STATS_JSON} not found.")
+            except json.JSONDecodeError as e:
+                if VERBOSE:
+                    print(f"✗ Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
 
-        bonus_to_main_data = load_bonus_to_main_patterns(BONUS_TO_MAIN_JSON)
+        with suppress_output():
+            bonus_analysis_data = load_bonus_analysis(BONUS_ANALYSIS_JSON)
+            bonus_to_main_data = load_bonus_to_main_patterns(BONUS_TO_MAIN_JSON)
+            long_term_analysis = load_long_term_patterns(LONG_TERM_PATTERNS_JSON)
 
-        # Load long-term pattern analysis (scipy-validated)
-        long_term_analysis = load_long_term_patterns(LONG_TERM_PATTERNS_JSON)
+        # Load scipy-validated feature analyses
+        if VERBOSE:
+            print("\nStep 1c: Loading scipy-validated feature analyses...")
+
+        with suppress_output():
+            freshness_validated = load_freshness_patterns_validated(FRESHNESS_PATTERNS_VALIDATED_JSON)
+            hmc_categorization_validated = load_hmc_categorization_validated(HMC_CATEGORIZATION_VALIDATED_JSON)
+            consecutive_pairs_validated = load_consecutive_pairs_validated(CONSECUTIVE_PAIRS_VALIDATED_JSON)
+            odd_even_validated = load_odd_even_validated(ODD_EVEN_VALIDATED_JSON)
+            sum_contribution_validated = load_sum_contribution_validated(SUM_CONTRIBUTION_VALIDATED_JSON)
+            range_spread_validated = load_range_spread_validated(RANGE_SPREAD_VALIDATED_JSON)
+
+        # Print concise scipy validation summary (non-verbose mode)
+        if not VERBOSE:
+            scipy_summary_data = {
+                'freshness': freshness_validated,
+                'hmc': hmc_categorization_validated,
+                'pairs': consecutive_pairs_validated,
+                'odd_even': odd_even_validated,
+                'sum': sum_contribution_validated,
+                'range': range_spread_validated
+            }
+            print_scipy_validation_summary(scipy_summary_data)
 
         if not validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distribution_stats, bonus_analysis_data):
             sys.exit(1)
-        
+
         W, C_max, recent_key, top_pattern_dist = load_freshness_config(FRESHNESS_JSON_INPUT)
-        
-        print("\nStep 1b: Loading NEW JSON features...")
-        bonus_hit_contribution_data = load_bonus_hit_analysis(draw_history_log_raw)
-        freshness_weight_data = load_freshness_weights(FRESHNESS_JSON_INPUT)
-        pair_frequency_data = load_number_pair_frequency(ODDS_JSON_INPUT)
-        range_spread_json_data = load_range_spread_analysis(ODDS_JSON_INPUT)
-        odd_even_json_data = load_odd_even_analysis(DISTRIBUTION_STATS_JSON)
-        sum_contribution_json_data = load_sum_contribution_analysis(DISTRIBUTION_STATS_JSON)
-        
-        print(f"\n✓ Data Loading Summary:")
-        print(f"  - Historical draws: {len(all_draws)}")
-        print(f"  - HMC numbers tracked: {len(hmc_data)}")
-        print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
-        print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
-        print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
-        print(f"  - Bonus analysis: {len(bonus_analysis_data.get('per_number_bonus_profile', {}))} numbers")
-        print(f"  - Long-term patterns: {long_term_analysis.get('metadata', {}).get('total_draws', 0)} draws analyzed (scipy-validated)")
-        print(f"  - NEW JSON features loaded: 6 feature sets")
-        
-        print("\nStep 2: Extracting MAIN NUMBER features from HMC data...")
+
+        if VERBOSE:
+            print("\nStep 1b: Loading NEW JSON features...")
+        with suppress_output():
+            bonus_hit_contribution_data = load_bonus_hit_analysis(draw_history_log_raw)
+            freshness_weight_data = load_freshness_weights(FRESHNESS_JSON_INPUT)
+            pair_frequency_data = load_number_pair_frequency(ODDS_JSON_INPUT)
+
+        # Use scipy-validated scores if available, otherwise fall back to standard analysis
+        if odd_even_validated and 'validated_scores' in odd_even_validated:
+            odd_even_json_data = {int(k): v for k, v in odd_even_validated['validated_scores'].items()}
+            if VERBOSE:
+                print("  ✓ Using SCIPY-VALIDATED odd/even scores")
+        else:
+            odd_even_json_data = load_odd_even_analysis(DISTRIBUTION_STATS_JSON)
+            if VERBOSE:
+                print("  ⚠️  Using standard odd/even scores (scipy validation not available)")
+
+        if sum_contribution_validated and 'validated_scores' in sum_contribution_validated:
+            sum_contribution_json_data = {int(k): v for k, v in sum_contribution_validated['validated_scores'].items()}
+            if VERBOSE:
+                print("  ✓ Using SCIPY-VALIDATED sum contribution scores")
+        else:
+            sum_contribution_json_data = load_sum_contribution_analysis(DISTRIBUTION_STATS_JSON)
+            if VERBOSE:
+                print("  ⚠️  Using standard sum contribution scores (scipy validation not available)")
+
+        if range_spread_validated and 'validated_scores' in range_spread_validated:
+            range_spread_json_data = {int(k): v for k, v in range_spread_validated['validated_scores'].items()}
+            if VERBOSE:
+                print("  ✓ Using SCIPY-VALIDATED range spread scores")
+        else:
+            range_spread_json_data = load_range_spread_analysis(ODDS_JSON_INPUT)
+            if VERBOSE:
+                print("  ⚠️  Using standard range spread scores (scipy validation not available)")
+
+        if VERBOSE:
+            print(f"\n✓ Data Loading Summary:")
+            print(f"  - Historical draws: {len(all_draws)}")
+            print(f"  - HMC numbers tracked: {len(hmc_data)}")
+            print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
+            print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
+            print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
+            print(f"  - Bonus analysis: {len(bonus_analysis_data.get('per_number_bonus_profile', {}))} numbers")
+            print(f"  - Long-term patterns: {long_term_analysis.get('metadata', {}).get('total_draws', 0)} draws analyzed (scipy-validated)")
+            print(f"  - NEW JSON features loaded: 6 feature sets")
+
+        if VERBOSE:
+            print("\nStep 2: Extracting MAIN NUMBER features from HMC data...")
+        else:
+            print("\nExtracting features and training models...")
         feature_start = time.time()
 
         consecutive_patterns = odds_data.get('patterns', {})
@@ -260,11 +444,15 @@ def main():
         )
 
         print("  Calculating 'freshness_category' features...")
+        # Extract validated weights if available
+        validated_freshness_weights = freshness_validated.get('validated_weights') if freshness_validated else None
+
         freshness_category_features = calculate_freshness_category_features(
             hmc_data=hmc_data,
             c_max_threshold=C_max,
             recent_key=recent_key,
-            top_pattern_dist=top_pattern_dist
+            top_pattern_dist=top_pattern_dist,
+            validated_weights=validated_freshness_weights
         )
 
         print("  Calculating 'long_term_pattern' features...")
@@ -301,7 +489,8 @@ def main():
                 range_spread_json_data,
                 odd_even_json_data,
                 sum_contribution_json_data,
-                long_term_pattern_features
+                long_term_pattern_features,
+                consecutive_pairs_validated
             )
             print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
         except Exception as e:

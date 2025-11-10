@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ======================================================================
 LOTTERY PICKS - GENERATED 2025-11-09 20:41:42
 ======================================================================
@@ -30,3 +31,37 @@ Bonus Ball: 9
 Complete: [5, 9, 13, 19, 38, 46] + BONUS 9
 Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
 
+=======
+======================================================================
+LOTTERY PICKS - GENERATED 2025-11-09 22:34:14
+======================================================================
+BONUS-TO-MAIN PREDICTION EDITION V3.9
+Each line: 6 main numbers (2 pre-assigned + 4 selected) + 1 bonus ball
+Pre-assigned numbers are EXEMPT from diversity penalties
+======================================================================
+
+Line 1: Short-Term Momentum + Patterns + JSON Bonus [0H-2M-2C+0G | C0=2, C1=2, C_GE_2=0]
+Pre-assigned (exempt): [12, 35]
+ML-selected: [3, 6, 30, 34]
+Main Numbers (6): [3, 6, 12, 30, 34, 35]
+Bonus Ball: 35
+Complete: [3, 6, 12, 30, 34, 35] + BONUS 35
+Description: Immediate patterns with timing, consecutive boosts, and NEW JSON bonus features
+
+Line 2: Long-Term Value + Sum/Range + JSON Features + LT Patterns [0H-2M-2C+0G | C0=2, C1=2, C_GE_2=0]
+Pre-assigned (exempt): [41, 42]
+ML-selected: [4, 16, 20, 25]
+Main Numbers (6): [4, 16, 20, 25, 41, 42]
+Bonus Ball: 41
+Complete: [4, 16, 20, 25, 41, 42] + BONUS 41
+Description: Historical patterns with timing, bonus optimization, JSON realism features, and LONG-TERM pattern analysis
+
+Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-1M-0C+1G | C0=2, C1=2, C_GE_2=0]
+Pre-assigned (exempt): [9, 46]
+ML-selected: [5, 13, 19, 38]
+Main Numbers (6): [5, 9, 13, 19, 38, 46]
+Bonus Ball: 9
+Complete: [5, 9, 13, 19, 38, 46] + BONUS 9
+Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
+
+>>>>>>> claude/refactor-duplicate-features-011CUxiNUhQd7oPEfayfVAZA

@@ -77,22 +77,43 @@ def calculate_has_consecutive_partner(
 
 
 def calculate_consecutive_pair_affinity(
-    consecutive_patterns: Dict[str, Any]
+    consecutive_patterns: Dict[str, Any],
+    validated_scores: Dict[str, Any] = None
 ) -> Dict[int, float]:
     """
     Calculate affinity score: How often does this number appear in consecutive pairs?
-    
-    Uses "all_pairs" data showing historical pair frequencies.
-    
+
+    Uses "all_pairs" data showing historical pair frequencies, or scipy-validated
+    scores if available.
+
     Args:
         consecutive_patterns: Consecutive patterns data from lotto_odds_results.json
-        
+        validated_scores: Optional scipy-validated scores from consecutive_pair_analyzer
+
     Returns:
         Dict mapping number -> affinity_score (0.0 to 1.0)
-        
+
     Raises:
         ValueError: If consecutive patterns data is missing or invalid
     """
+    # Check if scipy-validated scores are available
+    if validated_scores and 'number_pair_scores' in validated_scores:
+        print(f"✓ Using SCIPY-VALIDATED consecutive pair scores (binomial tested)")
+
+        # Extract validated scores
+        number_scores = validated_scores['number_pair_scores']
+
+        # Convert string keys to int if needed
+        affinity = {}
+        for num in range(1, MAX_NUMBER + 1):
+            score = number_scores.get(str(num), number_scores.get(num, 0.5))
+            affinity[num] = float(score)
+
+        high_affinity = sum(1 for v in affinity.values() if v > 0.7)
+        print(f"  {high_affinity}/47 numbers have high pair affinity (>0.7)")
+        print(f"  SOURCE: Scipy binomial tests with p<0.05 significance")
+
+        return affinity
     all_pairs = consecutive_patterns.get('2_consecutive', {}).get('all_pairs', {})
     
     if not all_pairs:
@@ -128,5 +149,6 @@ def calculate_consecutive_pair_affinity(
     high_affinity = sum(1 for v in affinity.values() if v > 0.7)
     print(f"✓ Custom feature 'consecutive_pair_affinity' calculated.")
     print(f"  {high_affinity}/47 numbers have high pair affinity (>0.7)")
-    
+    print(f"  SOURCE: Standard frequency-based calculation")
+
     return affinity
