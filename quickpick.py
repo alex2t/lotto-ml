@@ -286,11 +286,13 @@ def main():
     start_time = time.time()
     
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.9: BONUS-TO-MAIN PREDICTION EDITION")
+    print("INTELLIGENT LOTTO SYSTEM V3.9: SPECIALIZED MODEL ARCHITECTURE")
     print("=" * 70)
     print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model + 1 bonus-to-main model")
-    print("NEW: Pre-assignment system - each model gets 2 numbers (bonus + bonus-to-main)")
-    print("Each model then selects 4 additional numbers for 6 total main numbers")
+    print("NEW: Specialized model objectives with different training strategies")
+    print("  Model 1: Momentum specialist (2 pre-assigned + 4 selected)")
+    print("  Model 2: Jackpot optimizer - trained on MAIN 6 ONLY (6 selected)")
+    print("  Model 3: Complexity explorer (6 selected)")
     
     try:
         if VERBOSE:
@@ -628,6 +630,20 @@ def main():
         try:
             models, model_features = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
             print(f"\n✓ Main model training completed in {time.time() - training_start:.2f} seconds")
+
+            # Model training validation
+            print("\n" + "="*70)
+            print("MODEL TRAINING VALIDATION")
+            print("="*70)
+            print(f"Model 1: Trained on ALL 7 positions (momentum capture)")
+            print(f"Model 2: Trained on MAIN 6 ONLY (jackpot optimization) ⭐")
+            print(f"Model 3: Trained on ALL 7 positions (complexity)")
+            print(f"\nModel 2 Key Differences:")
+            print(f"  - Excludes bonus ball from training labels")
+            print(f"  - Uses long-term stability features")
+            print(f"  - No pre-assigned numbers")
+            print(f"  - Optimizes for 6-ball main prize")
+
         except Exception as e:
             print(f"\n✗ Error during model training: {e}")
             import traceback
@@ -645,15 +661,22 @@ def main():
             sys.exit(1)
         
         print("\nStep 8: Creating pre-assigned number combinations (bonus + bonus-to-main)...")
-        # Combine bonus and bonus-to-main assignments into pre_assigned_numbers
+        # ONLY Model 1 gets pre-assigned numbers (momentum specialist)
+        # Models 2 & 3 select all 6 numbers via ML
         pre_assigned_numbers = {}
         for model_idx in range(1, len(ACTIVE_MODELS) + 1):
-            bonus_num = bonus_assignments.get(model_idx)
-            bonus_to_main_num = bonus_to_main_assignments.get(model_idx)
-            pre_assigned_numbers[model_idx] = [bonus_num, bonus_to_main_num]
-            print(f"  Model {model_idx}: Pre-assigned [Bonus: {bonus_num}, Bonus-to-Main: {bonus_to_main_num}]")
+            if model_idx == 1:
+                # Model 1: Pre-assign bonus + recent-bonus
+                bonus_num = bonus_assignments.get(model_idx)
+                bonus_to_main_num = bonus_to_main_assignments.get(model_idx)
+                pre_assigned_numbers[model_idx] = [bonus_num, bonus_to_main_num]
+                print(f"  Model {model_idx}: Pre-assigned [Bonus: {bonus_num}, Bonus-to-Main: {bonus_to_main_num}]")
+            else:
+                # Models 2 & 3: No pre-assignment - select all 6 numbers
+                pre_assigned_numbers[model_idx] = []
+                print(f"  Model {model_idx}: No pre-assignment (selects all 6 numbers)")
 
-        print("\nStep 9: Selecting optimal 4 MAIN NUMBERS per model (+ 2 pre-assigned = 6 total)...")
+        print("\nStep 9: Selecting optimal MAIN NUMBERS per model (Model 1: 4+2, Models 2&3: 6)...")
         try:
             lines = generate_all_picks(
                 models,
@@ -681,10 +704,11 @@ def main():
             print("\n" + "=" * 70)
             print("FINAL RECOMMENDED PICKS (6 MAIN + 1 BONUS)")
             print("=" * 70)
-            print("NEW ARCHITECTURE: Each line has:")
-            print("  - 2 pre-assigned numbers (exempt from diversity penalties)")
-            print("  - 4 ML-selected numbers")
-            print("  - 1 separate bonus ball for the draw")
+            print("SPECIALIZED MODEL ARCHITECTURE:")
+            print("  Model 1: 2 pre-assigned + 4 ML-selected")
+            print("  Model 2: 6 ML-selected (jackpot optimizer, no pre-assignment)")
+            print("  Model 3: 6 ML-selected (complexity explorer, no pre-assignment)")
+            print("  All Models: + 1 separate bonus ball")
             print("=" * 70)
 
             for line in lines:
@@ -707,9 +731,11 @@ def main():
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
-                    f.write("BONUS-TO-MAIN PREDICTION EDITION V3.9\n")
-                    f.write("Each line: 6 main numbers (2 pre-assigned + 4 selected) + 1 bonus ball\n")
-                    f.write("Pre-assigned numbers are EXEMPT from diversity penalties\n")
+                    f.write("SPECIALIZED MODEL ARCHITECTURE V3.9\n")
+                    f.write("Model 1: 2 pre-assigned + 4 selected (momentum specialist)\n")
+                    f.write("Model 2: 6 selected (jackpot optimizer - trained on main 6 only)\n")
+                    f.write("Model 3: 6 selected (complexity explorer)\n")
+                    f.write("All Models: + 1 bonus ball\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
