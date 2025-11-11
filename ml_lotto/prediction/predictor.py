@@ -271,5 +271,53 @@ def generate_all_picks(
 
         # Add ONLY selected numbers to penalty set (not pre-assigned)
         penalty_numbers.update(selected_numbers)
-    
+
     return lines
+
+
+def generate_pool_picks(
+    models: Dict[str, Any],
+    all_probabilities: Dict[str, np.ndarray],
+    features_dict: Dict[int, Dict[str, Any]]
+) -> Dict[str, Any]:
+    """
+    Generate pool from Model 4 if present.
+
+    Args:
+        models: Trained model pipelines and configs
+        all_probabilities: Predicted probabilities from each model
+        features_dict: Current feature values for all numbers
+
+    Returns:
+        pool_data dict or None if Model 4 not present
+    """
+    from ml_lotto.prediction.pool_generator import generate_pool_from_model
+
+    # Find Model 4 (Intelligent Pool Generator)
+    model_4_name = None
+    for model_name, model_data in models.items():
+        if 'Pool Generator' in model_data['config']['name']:
+            model_4_name = model_name
+            break
+
+    if model_4_name is None:
+        return None
+
+    print("\n" + "="*70)
+    print("GENERATING MODEL 4: CANDIDATE POOL")
+    print("="*70)
+
+    model_config = models[model_4_name]['config']
+    probabilities = all_probabilities[model_4_name]
+
+    pool_data = generate_pool_from_model(
+        model_config,
+        probabilities,
+        features_dict
+    )
+
+    print(f"✓ Pool generated: {pool_data['pool_config']}")
+    print(f"  Total candidates: {pool_data['pool_size']}")
+    print(f"  Quality score: {pool_data['quality_score']:.0f}/100")
+
+    return pool_data

@@ -124,7 +124,7 @@ from ml_lotto.models.trainer import train_all_models
 from ml_lotto.models.bonus_trainer import train_bonus_model
 from ml_lotto.models.bonus_to_main_trainer import train_bonus_to_main_model
 
-from ml_lotto.prediction.predictor import generate_predictions, generate_all_picks
+from ml_lotto.prediction.predictor import generate_predictions, generate_all_picks, generate_pool_picks
 from ml_lotto.prediction.bonus_predictor import generate_bonus_predictions, assign_bonus_to_models
 from ml_lotto.prediction.bonus_to_main_predictor import generate_bonus_to_main_predictions, assign_bonus_to_main_to_models
 
@@ -134,7 +134,8 @@ from ml_lotto.display import (
     display_rank_aware_explanation,
     display_data_source_summary,
     display_feature_configuration,
-    display_completion_message
+    display_completion_message,
+    display_pool_analysis
 )
 
 
@@ -293,6 +294,7 @@ def main():
     print("  Model 1: Momentum specialist (6 main + bonus)")
     print("  Model 2: Jackpot optimizer - MAIN 6 ONLY (NO BONUS)")
     print("  Model 3: Complexity explorer (6 main + bonus)")
+    print("  Model 4: Pool generator (configurable candidate pool)")
     
     try:
         if VERBOSE:
@@ -663,8 +665,18 @@ def main():
         print("\nStep 8: Creating pre-assigned number combinations (bonus + bonus-to-main)...")
         # ONLY Model 1 gets pre-assigned numbers (momentum specialist)
         # Models 2 & 3 select all 6 numbers via ML
+        # Model 4 is a pool generator - doesn't pick specific numbers
+
+        # Filter out Model 4 (pool generator) from pick generation
+        pick_models = {}
+        pick_probabilities = {}
+        for model_name, model_data in models.items():
+            if 'Pool Generator' not in model_data['config']['name']:
+                pick_models[model_name] = model_data
+                pick_probabilities[model_name] = all_probabilities[model_name]
+
         pre_assigned_numbers = {}
-        for model_idx in range(1, len(ACTIVE_MODELS) + 1):
+        for model_idx in range(1, len(pick_models) + 1):
             if model_idx == 1:
                 # Model 1: Pre-assign bonus + recent-bonus
                 bonus_num = bonus_assignments.get(model_idx)
@@ -676,11 +688,11 @@ def main():
                 pre_assigned_numbers[model_idx] = []
                 print(f"  Model {model_idx}: No pre-assignment (selects all 6 numbers)")
 
-        print("\nStep 9: Selecting optimal MAIN NUMBERS per model (Model 1: 4+2, Models 2&3: 6)...")
+        print("\nStep 9: Selecting optimal MAIN NUMBERS per model (Models 1-3 only, Model 4 generates pool)...")
         try:
             lines = generate_all_picks(
-                models,
-                all_probabilities,
+                pick_models,
+                pick_probabilities,
                 features_dict,
                 freshness_data,
                 pre_assigned_numbers=pre_assigned_numbers
@@ -702,7 +714,14 @@ def main():
                 # Models 1 & 3 get bonus balls from BONUS_MODEL
                 line['bonus_for_draw'] = bonus_assignments.get(model_idx)
 
-        print("\nStep 11: Displaying complete results (6 main + 1 bonus)...")
+        print("\nStep 11: Generating Model 4 candidate pool...")
+        try:
+            pool_data = generate_pool_picks(models, all_probabilities, features_dict)
+        except Exception as e:
+            print(f"⚠️  Error generating pool: {e}")
+            pool_data = None
+
+        print("\nStep 12: Displaying complete results (6 main + 1 bonus)...")
         try:
             print("\n" + "=" * 70)
             print("FINAL RECOMMENDED PICKS")
@@ -711,6 +730,7 @@ def main():
             print("  Model 1: 6 main numbers (2 pre-assigned + 4 ML-selected) + 1 bonus")
             print("  Model 2: 6 main numbers ONLY (jackpot optimizer - NO BONUS)")
             print("  Model 3: 6 main numbers (6 ML-selected) + 1 bonus")
+            print("  Model 4: Candidate pool generator (configurable pool size)")
             print("=" * 70)
 
             for line in lines:
@@ -728,7 +748,11 @@ def main():
                 else:
                     print(f"Bonus Ball: None (jackpot optimizer - main 6 only)")
                     print(f"Complete Line: {sorted(line['numbers'])} (6 main numbers only)")
-            
+
+            # Display Model 4 pool analysis
+            if pool_data:
+                display_pool_analysis(pool_data)
+
             display_overlap_analysis(lines)
             display_rank_aware_explanation(ACTIVE_MODELS)
             display_feature_configuration(ACTIVE_MODELS)
@@ -743,6 +767,7 @@ def main():
                     f.write("Model 1: 6 main (2 pre-assigned + 4 selected) + 1 bonus\n")
                     f.write("Model 2: 6 main ONLY (jackpot optimizer - NO BONUS)\n")
                     f.write("Model 3: 6 main (6 selected) + 1 bonus\n")
+                    f.write("Model 4: Candidate pool generator (configurable pool size)\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
@@ -759,6 +784,25 @@ def main():
                             f.write(f"Bonus Ball: None (jackpot optimizer - main 6 only)\n")
                             f.write(f"Complete: {sorted(line['numbers'])} (6 main only)\n")
                         f.write(f"Description: {line['description']}\n\n")
+
+                    # Add Model 4 pool data
+                    if pool_data:
+                        f.write("=" * 70 + "\n")
+                        f.write("MODEL 4: CANDIDATE POOL ANALYSIS\n")
+                        f.write("=" * 70 + "\n")
+                        f.write(f"Pool Configuration: {pool_data['pool_config']}\n")
+                        f.write(f"Total Candidates: {pool_data['pool_size']}\n")
+                        f.write(f"Quality Score: {pool_data['quality_score']:.0f}/100\n\n")
+                        f.write(f"Full Pool (ranked by probability): {pool_data['pool']}\n\n")
+
+                        # Freshness distribution
+                        f.write("Freshness Distribution:\n")
+                        for bin_val in sorted(pool_data['freshness_distribution'].keys()):
+                            count = pool_data['freshness_distribution'][bin_val]
+                            pct = (count / pool_data['pool_size'] * 100) if pool_data['pool_size'] > 0 else 0
+                            f.write(f"  C{bin_val}: {count:2d} numbers ({pct:5.1f}%)\n")
+                        f.write("\n")
+
                 print("\n✓ Results saved to 'lottery_picks.txt'")
             except Exception as e:
                 print(f"⚠️  Could not save to file: {e}")

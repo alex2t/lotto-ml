@@ -137,6 +137,95 @@ def display_feature_configuration(model_configs: List[Dict[str, Any]]):
         print(f"  Diversity Penalty: {config['diversity_penalty']*100:.0f}%")
 
 
+def display_pool_analysis(pool_data: Dict[str, Any]):
+    """
+    Display pool with dynamic sizing based on pool_data['pool_size'].
+
+    Show:
+    - Hot/Medium/Cold candidates with probabilities
+    - Freshness distribution (C0/C1/C2 counts)
+    - Quality score (0-100)
+    - Full ranked pool list
+    """
+    print("\n" + "=" * 70)
+    print("MODEL 4: CANDIDATE POOL ANALYSIS")
+    print("=" * 70)
+    print(f"Pool Configuration: {pool_data['pool_config']}")
+    print(f"Total Candidates: {pool_data['pool_size']}")
+
+    # Display HOT candidates
+    hot_candidates = pool_data['hot_candidates']
+    if hot_candidates:
+        print(f"\nHOT CANDIDATES ({len(hot_candidates)} numbers):")
+        print(f"{'Rank':<6} {'Number':<8} {'Prob':<10} {'Fresh':<8} {'Recent_4':<10} {'Days_Since':<12}")
+        print("-" * 70)
+        for idx, candidate in enumerate(hot_candidates, 1):
+            print(f"{idx:<6} #{candidate['number']:<6} {candidate['probability']:<10.4f} "
+                  f"C{candidate['freshness_bin']:<7} {candidate['recent_4']:<10} "
+                  f"{candidate['days_since_last']:<12}")
+
+    # Display MEDIUM candidates
+    medium_candidates = pool_data['medium_candidates']
+    if medium_candidates:
+        print(f"\nMEDIUM CANDIDATES ({len(medium_candidates)} numbers):")
+        print(f"{'Rank':<6} {'Number':<8} {'Prob':<10} {'Fresh':<8} {'Recent_4':<10} {'Days_Since':<12}")
+        print("-" * 70)
+        for idx, candidate in enumerate(medium_candidates, 1):
+            print(f"{idx:<6} #{candidate['number']:<6} {candidate['probability']:<10.4f} "
+                  f"C{candidate['freshness_bin']:<7} {candidate['recent_4']:<10} "
+                  f"{candidate['days_since_last']:<12}")
+
+    # Display COLD candidates
+    cold_candidates = pool_data['cold_candidates']
+    if cold_candidates:
+        print(f"\nCOLD CANDIDATES ({len(cold_candidates)} numbers):")
+        print(f"{'Rank':<6} {'Number':<8} {'Prob':<10} {'Fresh':<8} {'Recent_4':<10} {'Days_Since':<12}")
+        print("-" * 70)
+        for idx, candidate in enumerate(cold_candidates, 1):
+            print(f"{idx:<6} #{candidate['number']:<6} {candidate['probability']:<10.4f} "
+                  f"C{candidate['freshness_bin']:<7} {candidate['recent_4']:<10} "
+                  f"{candidate['days_since_last']:<12}")
+
+    # Display freshness distribution
+    freshness_dist = pool_data['freshness_distribution']
+    pool_size = pool_data['pool_size']
+    print(f"\nFRESHNESS DISTRIBUTION:")
+
+    # Expected targets
+    expected_targets = {0: 0.43, 1: 0.29, 2: 0.28}
+
+    for bin_val in sorted(freshness_dist.keys()):
+        count = freshness_dist[bin_val]
+        pct = (count / pool_size * 100) if pool_size > 0 else 0
+        target_pct = expected_targets.get(bin_val, 0) * 100
+
+        # Check if within 10% of target
+        deviation = abs(pct - target_pct)
+        status = "✓" if deviation < 10 else "~"
+
+        print(f"C{bin_val}:  {count:2d} numbers ({pct:5.1f}%)  Target: ~{target_pct:.0f}%  {status}")
+
+    # Display quality score
+    quality_score = pool_data['quality_score']
+    if quality_score >= 90:
+        quality_label = "Excellent"
+    elif quality_score >= 75:
+        quality_label = "Very Good"
+    elif quality_score >= 60:
+        quality_label = "Good"
+    elif quality_score >= 50:
+        quality_label = "Fair"
+    else:
+        quality_label = "Poor"
+
+    print(f"\nPOOL QUALITY: {quality_score:.0f}/100 ({quality_label})")
+
+    # Display full pool (sorted by probability)
+    pool_numbers = pool_data['pool']
+    print(f"\nFULL POOL (ranked by probability): {pool_numbers}")
+    print("=" * 70)
+
+
 def display_completion_message():
     """Display completion message."""
     print("\n" + "=" * 70)
