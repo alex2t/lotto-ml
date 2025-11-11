@@ -560,16 +560,28 @@ def main():
         
         bonus_assignments = assign_bonus_to_models(bonus_predictions, len(ACTIVE_MODELS))
 
-        print("\nStep 4b: Extracting BONUS-TO-MAIN features from JSON...")
+        print("\nStep 4b: Calculating LIVE bonus window and extracting BONUS-TO-MAIN features...")
         bonus_to_main_feature_start = time.time()
 
         try:
-            # Import feature extractor
+            # Import helpers
+            from ml_lotto.utils.bonus_window import calculate_current_bonus_window
             from ml_lotto.features.bonus_to_main_features import extract_bonus_to_main_features_dict
 
+            # Calculate LIVE bonus window from recent draws
+            print("  Calculating current bonus window from recent draws...")
+            live_bonus_window = calculate_current_bonus_window(
+                all_draws,
+                window_size=10,
+                hmc_data=hmc_data
+            )
+            print(f"  ✓ Live bonus window calculated: {len(live_bonus_window)} entries")
+
+            # Extract features using LIVE window
             bonus_to_main_features_dict = extract_bonus_to_main_features_dict(
                 bonus_to_main_data,
-                features_dict
+                features_dict,
+                current_bonus_window=live_bonus_window
             )
             print(f"  ✓ Bonus-to-main features extracted for {len(bonus_to_main_features_dict)} numbers")
         except Exception as e:
@@ -600,17 +612,18 @@ def main():
 
         print("\nStep 4d: Generating 3 BONUS-TO-MAIN predictions...")
 
-        current_bonus_window = bonus_to_main_data['current_bonus_window']['last_10_bonus_numbers']
-        current_bonus_numbers = [b['number'] for b in current_bonus_window]
+        # Use LIVE bonus window (already calculated in Step 4b)
+        current_bonus_numbers = [b['number'] for b in live_bonus_window]
 
         print(f"  Current bonus window (last 10 draws): {current_bonus_numbers}")
+        print(f"  Using LIVE window (adapts to most recent draws)")
 
         try:
             bonus_to_main_predictions = generate_bonus_to_main_predictions(
                 bonus_to_main_pipeline,
                 bonus_to_main_features,
                 bonus_to_main_features_dict,
-                current_bonus_numbers,
+                live_bonus_window,  # Pass full window with metadata
                 category_dict,
                 num_predictions=3
             )

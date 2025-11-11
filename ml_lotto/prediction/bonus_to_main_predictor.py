@@ -2,17 +2,19 @@
 Bonus-to-Main Number Predictor
 ===============================
 Generates predictions for which numbers from recent bonus list will appear as main numbers.
+
+UPDATED v3.10: Accepts bonus window as dict entries for better metadata
 """
 
 import numpy as np
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 
 
 def generate_bonus_to_main_predictions(
     model_pipeline,
     feature_names: List[str],
     bonus_to_main_features: Dict,
-    current_bonus_window: List[int],
+    current_bonus_window: List[Any],
     category_dict: Dict,
     num_predictions: int = 3
 ) -> List[int]:
@@ -23,7 +25,7 @@ def generate_bonus_to_main_predictions(
         model_pipeline: Trained bonus-to-main model
         feature_names: List of feature names
         bonus_to_main_features: Feature dictionary for all numbers
-        current_bonus_window: List of numbers currently in bonus window (last 10)
+        current_bonus_window: List of bonus entries (numbers or dicts) in window
         category_dict: Dictionary mapping number to category
         num_predictions: Number of predictions to generate (default 3)
 
@@ -34,13 +36,19 @@ def generate_bonus_to_main_predictions(
         print("\n⚠️  No numbers in current bonus window")
         return []
 
+    # Extract numbers from window (handle both list of ints and list of dicts)
+    if isinstance(current_bonus_window[0], dict):
+        bonus_numbers = [entry['number'] for entry in current_bonus_window]
+    else:
+        bonus_numbers = current_bonus_window
+
     print(f"\n{'='*70}")
     print("GENERATING BONUS-TO-MAIN PREDICTIONS")
     print(f"{'='*70}")
-    print(f"Current bonus window: {current_bonus_window}")
+    print(f"Current bonus window: {bonus_numbers}")
 
     # Deduplicate bonus window (same number can appear multiple times in last 10 draws)
-    unique_bonus_numbers = list(dict.fromkeys(current_bonus_window))  # Preserves order
+    unique_bonus_numbers = list(dict.fromkeys(bonus_numbers))  # Preserves order
     print(f"Unique candidates: {len(unique_bonus_numbers)} numbers (after deduplication)")
 
     # Predict for all numbers in window

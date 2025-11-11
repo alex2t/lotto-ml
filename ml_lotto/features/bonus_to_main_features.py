@@ -4,6 +4,8 @@ bonus_to_main_features.py
 Extract features for bonus-to-main transition prediction.
 
 Features track which numbers from recent bonus draws are likely to appear as main numbers.
+
+UPDATED v3.10: Uses LIVE bonus window calculation instead of stale JSON data
 """
 
 from typing import Dict, Any, List
@@ -11,7 +13,8 @@ from typing import Dict, Any, List
 
 def extract_bonus_to_main_features_dict(
     bonus_to_main_data: Dict[str, Any],
-    features_dict: Dict[int, Dict[str, Any]]
+    features_dict: Dict[int, Dict[str, Any]],
+    current_bonus_window: List[Dict[str, Any]] = None
 ) -> Dict[int, Dict[str, float]]:
     """
     Extract bonus-to-main transition features for all numbers.
@@ -19,6 +22,8 @@ def extract_bonus_to_main_features_dict(
     Args:
         bonus_to_main_data: Loaded JSON from lotto_bonus_to_main_patterns.json
         features_dict: Existing features dictionary (for category, freshness)
+        current_bonus_window: LIVE bonus window from calculate_current_bonus_window()
+                              If None, falls back to JSON data (NOT RECOMMENDED)
 
     Returns:
         Dictionary mapping number -> bonus-to-main features
@@ -43,12 +48,18 @@ def extract_bonus_to_main_features_dict(
     category_weights = bonus_to_main_data.get('category_transition_weights', {})
     freshness_weights = bonus_to_main_data.get('freshness_transition_weights', {})
     timing_weights = bonus_to_main_data.get('timing_decay_weights', {})
-    current_window = bonus_to_main_data.get('current_bonus_window', {}).get('last_10_bonus_numbers', [])
     base_rate = bonus_to_main_data.get('transition_prediction_factors', {}).get('base_rate', 0.74)
+
+    # Use LIVE bonus window if provided, otherwise fall back to JSON
+    if current_bonus_window is not None:
+        print("  ✓ Using LIVE bonus window (dynamically calculated from recent draws)")
+    else:
+        print("  ⚠️  Using stale JSON bonus window (consider passing live window)")
+        current_bonus_window = bonus_to_main_data.get('current_bonus_window', {}).get('last_10_bonus_numbers', [])
 
     # Build lookup for current bonus window
     bonus_window_lookup = {}
-    for entry in current_window:
+    for entry in current_bonus_window:
         num = entry['number']
         bonus_window_lookup[num] = {
             'draws_ago': entry['draws_ago'],
