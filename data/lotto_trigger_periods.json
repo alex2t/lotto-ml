@@ -7,28 +7,35 @@
             "last_4": 2,
             "last_5": 2,
             "last_9": 2,
-            "last_103": 19
+            "last_24": 7
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2022/01/01",
+                        "end_date": "2022/03/26",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/09/06",
                         "end_date": "2025/10/08",
-                        "count": 3
+                        "count": 2
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
                         "start_date": "2025/06/18",
                         "end_date": "2025/07/05",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/22",
-                        "end_date": "2025/11/05",
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
                         "count": 10
                     }
                 ]
@@ -43,15 +50,15 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 14
+            "last_24": 4
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2023/05/13",
-                        "end_date": "2024/05/08",
-                        "count": 1
+                        "start_date": "2024/01/10",
+                        "end_date": "2024/04/03",
+                        "count": 2
                     }
                 ],
                 "10_consecutives_4_times": [
@@ -65,7 +72,7 @@
                     {
                         "start_date": "2025/07/23",
                         "end_date": "2025/08/06",
-                        "count": 10
+                        "count": 14
                     }
                 ]
             }
@@ -79,29 +86,29 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_103": 10
+            "last_24": 2
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2023/02/15",
-                        "end_date": "2024/02/10",
+                        "start_date": "2023/06/28",
+                        "end_date": "2023/09/20",
                         "count": 1
                     }
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2022/07/30",
-                        "end_date": "2022/08/31",
-                        "count": 1
+                        "start_date": "2024/01/17",
+                        "end_date": "2024/02/17",
+                        "count": 4
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/07/19",
                         "end_date": "2025/08/02",
-                        "count": 8
+                        "count": 10
                     }
                 ]
             }
@@ -115,21 +122,21 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_103": 12
+            "last_24": 2
         },
         "series": {
             "series": {
-                "10_consecutives_4_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2024/04/10",
-                        "end_date": "2024/05/11",
-                        "count": 2
+                        "start_date": "2024/04/06",
+                        "end_date": "2024/06/29",
+                        "count": 1
                     }
                 ],
-                "6_consecutives_3_times": [
+                "10_consecutives_4_times": [
                     {
-                        "start_date": "2024/06/12",
-                        "end_date": "2024/06/29",
+                        "start_date": "2023/06/10",
+                        "end_date": "2023/07/12",
                         "count": 1
                     }
                 ],
@@ -137,7 +144,7 @@
                     {
                         "start_date": "2025/07/30",
                         "end_date": "2025/08/13",
-                        "count": 11
+                        "count": 10
                     }
                 ]
             }
@@ -150,16 +157,16 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 1,
-            "last_103": 23
+            "last_9": 0,
+            "last_24": 6
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2024/10/16",
+                        "start_date": "2025/07/19",
                         "end_date": "2025/10/11",
-                        "count": 1
+                        "count": 2
                     }
                 ],
                 "10_consecutives_4_times": [
@@ -178,9 +185,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2024/04/03",
-                        "end_date": "2024/04/17",
-                        "count": 5
+                        "start_date": "2025/06/25",
+                        "end_date": "2025/07/09",
+                        "count": 8
                     }
                 ]
             }
@@ -192,17 +199,24 @@
         "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 3,
-            "last_103": 20
+            "last_24": 5
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2023/04/08",
+                        "end_date": "2023/07/01",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/10/01",
                         "end_date": "2025/11/01",
-                        "count": 5
+                        "count": 4
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -216,7 +230,7 @@
                     {
                         "start_date": "2025/08/02",
                         "end_date": "2025/08/16",
-                        "count": 10
+                        "count": 9
                     }
                 ]
             }
@@ -230,7 +244,7 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 13
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -263,25 +277,25 @@
         "last_seen": "2025/11/01",
         "category": "medium",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 2,
-            "last_103": 16
+            "last_24": 4
         },
         "series": {
             "series": {
-                "10_consecutives_4_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2025/05/07",
-                        "end_date": "2025/06/07",
-                        "count": 5
+                        "start_date": "2025/03/26",
+                        "end_date": "2025/06/18",
+                        "count": 2
                     }
                 ],
-                "6_consecutives_3_times": [
+                "10_consecutives_4_times": [
                     {
-                        "start_date": "2024/06/29",
-                        "end_date": "2024/07/17",
-                        "count": 1
+                        "start_date": "2024/05/01",
+                        "end_date": "2024/06/01",
+                        "count": 2
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -295,14 +309,14 @@
         }
     },
     "9": {
-        "total_count": 68,
-        "last_seen": "2025/09/24",
+        "total_count": 69,
+        "last_seen": "2025/11/08",
         "category": "cold",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
-            "last_9": 0,
-            "last_103": 12
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 1,
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -331,29 +345,36 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 14
+            "last_24": 1
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2024/02/14",
+                        "end_date": "2024/05/08",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2024/12/28",
                         "end_date": "2025/01/29",
-                        "count": 4
+                        "count": 2
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
                         "start_date": "2025/07/02",
                         "end_date": "2025/07/19",
-                        "count": 3
+                        "count": 1
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2024/11/16",
                         "end_date": "2024/11/30",
-                        "count": 6
+                        "count": 5
                     }
                 ]
             }
@@ -367,7 +388,7 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_103": 18
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -402,30 +423,37 @@
         "recent": {
             "last_4": 2,
             "last_5": 2,
-            "last_9": 4,
-            "last_103": 20
+            "last_9": 3,
+            "last_24": 7
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/08/13",
+                        "end_date": "2025/11/05",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/10/04",
-                        "end_date": "2025/11/05",
-                        "count": 6
+                        "start_date": "2024/01/10",
+                        "end_date": "2024/02/10",
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2022/10/29",
-                        "end_date": "2022/11/16",
-                        "count": 2
+                        "start_date": "2025/07/19",
+                        "end_date": "2025/08/06",
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/09/17",
-                        "end_date": "2025/10/01",
-                        "count": 8
+                        "start_date": "2025/05/14",
+                        "end_date": "2025/05/28",
+                        "count": 6
                     }
                 ]
             }
@@ -437,24 +465,24 @@
         "category": "medium",
         "recent": {
             "last_4": 1,
-            "last_5": 2,
+            "last_5": 1,
             "last_9": 3,
-            "last_103": 17
+            "last_24": 5
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2023/12/06",
-                        "end_date": "2024/11/30",
-                        "count": 1
+                        "start_date": "2024/08/10",
+                        "end_date": "2024/11/02",
+                        "count": 3
                     }
                 ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/10/01",
                         "end_date": "2025/11/01",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -466,9 +494,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2023/03/11",
-                        "end_date": "2023/03/25",
-                        "count": 6
+                        "start_date": "2024/06/05",
+                        "end_date": "2024/06/19",
+                        "count": 7
                     }
                 ]
             }
@@ -480,17 +508,17 @@
         "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 1,
-            "last_103": 18
+            "last_24": 2
         },
         "series": {
             "series": {
-                "10_consecutives_4_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2025/04/12",
-                        "end_date": "2025/05/14",
-                        "count": 4
+                        "start_date": "2025/04/02",
+                        "end_date": "2025/06/25",
+                        "count": 2
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -502,8 +530,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/06/11",
-                        "end_date": "2025/06/25",
+                        "start_date": "2025/03/15",
+                        "end_date": "2025/03/29",
                         "count": 13
                     }
                 ]
@@ -511,14 +539,14 @@
         }
     },
     "15": {
-        "total_count": 61,
-        "last_seen": "2025/10/29",
+        "total_count": 62,
+        "last_seen": "2025/11/08",
         "category": "cold",
         "recent": {
-            "last_4": 1,
-            "last_5": 1,
-            "last_9": 2,
-            "last_103": 8
+            "last_4": 2,
+            "last_5": 2,
+            "last_9": 3,
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -538,9 +566,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2024/05/08",
-                        "end_date": "2024/05/22",
-                        "count": 6
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
+                        "count": 7
                     }
                 ]
             }
@@ -551,18 +579,25 @@
         "last_seen": "2025/10/22",
         "category": "cold",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 3,
-            "last_103": 14
+            "last_24": 6
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2023/09/06",
+                        "end_date": "2023/11/29",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2024/12/11",
                         "end_date": "2025/01/11",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -576,7 +611,7 @@
                     {
                         "start_date": "2025/04/16",
                         "end_date": "2025/04/30",
-                        "count": 11
+                        "count": 9
                     }
                 ]
             }
@@ -590,22 +625,29 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 2,
-            "last_103": 14
+            "last_24": 3
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2024/02/24",
+                        "end_date": "2024/05/18",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2024/12/11",
                         "end_date": "2025/01/11",
-                        "count": 3
+                        "count": 2
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/07/05",
                         "end_date": "2025/07/19",
-                        "count": 8
+                        "count": 7
                     }
                 ]
             }
@@ -619,15 +661,22 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 13
+            "last_24": 2
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2022/11/05",
+                        "end_date": "2023/01/28",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/03/08",
                         "end_date": "2025/04/09",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -641,7 +690,7 @@
                     {
                         "start_date": "2023/08/09",
                         "end_date": "2023/08/23",
-                        "count": 3
+                        "count": 2
                     }
                 ]
             }
@@ -655,15 +704,22 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_103": 20
+            "last_24": 5
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2024/05/22",
+                        "end_date": "2024/08/14",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/04/02",
                         "end_date": "2025/05/03",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -677,43 +733,43 @@
                     {
                         "start_date": "2025/07/12",
                         "end_date": "2025/07/26",
-                        "count": 8
+                        "count": 7
                     }
                 ]
             }
         }
     },
     "20": {
-        "total_count": 76,
-        "last_seen": "2025/10/08",
+        "total_count": 77,
+        "last_seen": "2025/11/08",
         "category": "medium",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
-            "last_9": 1,
-            "last_103": 16
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 2,
+            "last_24": 4
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2022/05/14",
-                        "end_date": "2023/05/10",
-                        "count": 1
+                        "start_date": "2022/12/28",
+                        "end_date": "2023/03/22",
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
                         "start_date": "2025/03/22",
                         "end_date": "2025/04/09",
-                        "count": 2
+                        "count": 1
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/05/14",
                         "end_date": "2025/05/28",
-                        "count": 9
+                        "count": 10
                     }
                 ]
             }
@@ -726,30 +782,37 @@
         "recent": {
             "last_4": 2,
             "last_5": 2,
-            "last_9": 3,
-            "last_103": 16
+            "last_9": 2,
+            "last_24": 5
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2023/08/16",
+                        "end_date": "2023/11/08",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2023/09/06",
-                        "end_date": "2023/10/07",
-                        "count": 4
+                        "start_date": "2022/11/23",
+                        "end_date": "2022/12/24",
+                        "count": 1
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
                         "start_date": "2025/08/06",
                         "end_date": "2025/08/23",
-                        "count": 7
+                        "count": 6
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/22",
-                        "end_date": "2025/11/05",
-                        "count": 5
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
+                        "count": 6
                     }
                 ]
             }
@@ -762,30 +825,37 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
-            "last_103": 17
+            "last_9": 1,
+            "last_24": 4
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2023/11/18",
+                        "end_date": "2024/02/10",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2023/11/25",
-                        "end_date": "2023/12/27",
-                        "count": 3
+                        "start_date": "2022/10/26",
+                        "end_date": "2022/11/26",
+                        "count": 2
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
                         "start_date": "2025/07/09",
                         "end_date": "2025/07/26",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/09/27",
                         "end_date": "2025/10/11",
-                        "count": 11
+                        "count": 10
                     }
                 ]
             }
@@ -799,22 +869,29 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 1,
-            "last_103": 14
+            "last_24": 1
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/04/30",
+                        "end_date": "2025/07/23",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/06/18",
-                        "end_date": "2025/07/19",
-                        "count": 4
+                        "start_date": "2024/11/27",
+                        "end_date": "2024/12/28",
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2025/05/24",
-                        "end_date": "2025/06/11",
-                        "count": 2
+                        "start_date": "2023/10/07",
+                        "end_date": "2023/10/25",
+                        "count": 1
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -835,15 +912,22 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 15
+            "last_24": 1
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/05/10",
+                        "end_date": "2025/08/02",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/07/05",
-                        "end_date": "2025/08/06",
-                        "count": 2
+                        "start_date": "2024/02/03",
+                        "end_date": "2024/03/06",
+                        "count": 1
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -855,9 +939,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/06/18",
-                        "end_date": "2025/07/02",
-                        "count": 12
+                        "start_date": "2025/03/15",
+                        "end_date": "2025/03/29",
+                        "count": 10
                     }
                 ]
             }
@@ -871,15 +955,22 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 1,
-            "last_103": 16
+            "last_24": 2
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2023/04/19",
+                        "end_date": "2023/07/12",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/04/02",
                         "end_date": "2025/05/03",
-                        "count": 6
+                        "count": 4
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -904,10 +995,10 @@
         "last_seen": "2025/11/01",
         "category": "hot",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 2,
-            "last_103": 15
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -936,29 +1027,36 @@
         }
     },
     "27": {
-        "total_count": 84,
-        "last_seen": "2025/10/18",
+        "total_count": 85,
+        "last_seen": "2025/11/08",
         "category": "hot",
         "recent": {
-            "last_4": 0,
+            "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
-            "last_103": 12
+            "last_9": 3,
+            "last_24": 5
         },
         "series": {
             "series": {
-                "10_consecutives_4_times": [
+                "25_consecutives_8_times": [
                     {
                         "start_date": "2024/09/07",
-                        "end_date": "2024/10/09",
-                        "count": 3
+                        "end_date": "2024/11/30",
+                        "count": 2
+                    }
+                ],
+                "10_consecutives_4_times": [
+                    {
+                        "start_date": "2022/05/28",
+                        "end_date": "2022/06/29",
+                        "count": 1
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
                         "start_date": "2024/05/11",
                         "end_date": "2024/05/29",
-                        "count": 4
+                        "count": 2
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -976,25 +1074,32 @@
         "last_seen": "2025/11/05",
         "category": "cold",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 3,
-            "last_103": 18
+            "last_24": 4
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/02/19",
+                        "end_date": "2025/05/14",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/02/22",
-                        "end_date": "2025/03/26",
-                        "count": 5
+                        "start_date": "2023/06/21",
+                        "end_date": "2023/07/22",
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/10/22",
                         "end_date": "2025/11/05",
-                        "count": 11
+                        "count": 8
                     }
                 ]
             }
@@ -1008,15 +1113,22 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 14
+            "last_24": 4
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2023/09/06",
+                        "end_date": "2023/11/29",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/08/20",
                         "end_date": "2025/09/20",
-                        "count": 7
+                        "count": 4
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1030,7 +1142,7 @@
                     {
                         "start_date": "2025/07/12",
                         "end_date": "2025/07/26",
-                        "count": 6
+                        "count": 5
                     }
                 ]
             }
@@ -1044,15 +1156,22 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 18
+            "last_24": 3
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/02/01",
+                        "end_date": "2025/04/26",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/06/11",
                         "end_date": "2025/07/12",
-                        "count": 4
+                        "count": 2
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1073,14 +1192,14 @@
         }
     },
     "31": {
-        "total_count": 63,
-        "last_seen": "2025/08/06",
+        "total_count": 64,
+        "last_seen": "2025/11/08",
         "category": "cold",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
-            "last_9": 0,
-            "last_103": 12
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 1,
+            "last_24": 1
         },
         "series": {
             "series": {
@@ -1116,28 +1235,35 @@
             "last_4": 2,
             "last_5": 2,
             "last_9": 2,
-            "last_103": 19
+            "last_24": 5
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2024/09/11",
+                        "end_date": "2024/12/04",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/06/11",
                         "end_date": "2025/07/12",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2024/09/11",
-                        "end_date": "2024/09/28",
-                        "count": 4
+                        "start_date": "2023/01/07",
+                        "end_date": "2023/01/25",
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/22",
-                        "end_date": "2025/11/05",
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
                         "count": 10
                     }
                 ]
@@ -1152,7 +1278,7 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 15
+            "last_24": 1
         },
         "series": {
             "series": {
@@ -1185,18 +1311,25 @@
         "last_seen": "2025/10/22",
         "category": "cold",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 1,
-            "last_103": 10
+            "last_24": 1
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2023/01/07",
+                        "end_date": "2023/04/01",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2023/12/09",
                         "end_date": "2024/01/10",
-                        "count": 4
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1210,50 +1343,50 @@
                     {
                         "start_date": "2025/07/23",
                         "end_date": "2025/08/06",
-                        "count": 5
+                        "count": 4
                     }
                 ]
             }
         }
     },
     "35": {
-        "total_count": 93,
-        "last_seen": "2025/10/25",
+        "total_count": 94,
+        "last_seen": "2025/11/08",
         "category": "hot",
         "recent": {
-            "last_4": 1,
+            "last_4": 2,
             "last_5": 2,
-            "last_9": 3,
-            "last_103": 11
+            "last_9": 4,
+            "last_24": 4
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2024/02/17",
-                        "end_date": "2025/02/12",
-                        "count": 2
+                        "start_date": "2024/07/20",
+                        "end_date": "2024/10/12",
+                        "count": 4
                     }
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2023/09/27",
-                        "end_date": "2023/10/28",
-                        "count": 4
+                        "start_date": "2025/10/08",
+                        "end_date": "2025/11/08",
+                        "count": 5
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2025/10/15",
-                        "end_date": "2025/11/01",
-                        "count": 1
+                        "start_date": "2024/02/07",
+                        "end_date": "2024/02/24",
+                        "count": 2
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2023/12/30",
-                        "end_date": "2024/01/13",
-                        "count": 3
+                        "start_date": "2024/12/25",
+                        "end_date": "2025/01/08",
+                        "count": 7
                     }
                 ]
             }
@@ -1267,15 +1400,22 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 2,
-            "last_103": 12
+            "last_24": 4
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2022/01/08",
+                        "end_date": "2022/04/02",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2024/10/02",
                         "end_date": "2024/11/02",
-                        "count": 5
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -1296,29 +1436,36 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 1,
-            "last_103": 12
+            "last_24": 3
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2024/07/24",
+                        "end_date": "2024/10/16",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2024/08/14",
-                        "end_date": "2024/09/14",
-                        "count": 3
+                        "start_date": "2023/11/01",
+                        "end_date": "2023/12/02",
+                        "count": 1
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2024/07/24",
-                        "end_date": "2024/08/10",
-                        "count": 2
+                        "start_date": "2023/03/15",
+                        "end_date": "2023/04/01",
+                        "count": 1
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/08/30",
                         "end_date": "2025/09/13",
-                        "count": 10
+                        "count": 8
                     }
                 ]
             }
@@ -1332,58 +1479,65 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_103": 13
+            "last_24": 2
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2024/02/24",
-                        "end_date": "2025/02/19",
-                        "count": 1
+                        "start_date": "2024/07/31",
+                        "end_date": "2024/10/23",
+                        "count": 3
                     }
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2023/01/21",
-                        "end_date": "2023/02/22",
-                        "count": 3
+                        "start_date": "2022/07/30",
+                        "end_date": "2022/08/31",
+                        "count": 1
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2022/03/02",
-                        "end_date": "2022/03/19",
-                        "count": 1
+                        "start_date": "2025/02/19",
+                        "end_date": "2025/03/08",
+                        "count": 2
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/03/05",
-                        "end_date": "2025/03/19",
-                        "count": 5
+                        "start_date": "2025/01/18",
+                        "end_date": "2025/02/01",
+                        "count": 7
                     }
                 ]
             }
         }
     },
     "39": {
-        "total_count": 74,
-        "last_seen": "2025/10/29",
+        "total_count": 75,
+        "last_seen": "2025/11/08",
         "category": "medium",
         "recent": {
-            "last_4": 1,
-            "last_5": 1,
+            "last_4": 2,
+            "last_5": 2,
             "last_9": 2,
-            "last_103": 18
+            "last_24": 7
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/07/30",
+                        "end_date": "2025/10/22",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/08/23",
-                        "end_date": "2025/09/24",
-                        "count": 5
+                        "start_date": "2023/10/18",
+                        "end_date": "2023/11/18",
+                        "count": 2
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1395,8 +1549,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/06/04",
-                        "end_date": "2025/06/18",
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
                         "count": 10
                     }
                 ]
@@ -1410,16 +1564,23 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 1,
-            "last_103": 21
+            "last_9": 0,
+            "last_24": 6
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/07/30",
+                        "end_date": "2025/10/22",
+                        "count": 3
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/09/10",
-                        "end_date": "2025/10/11",
-                        "count": 4
+                        "start_date": "2023/12/23",
+                        "end_date": "2024/01/24",
+                        "count": 1
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1431,9 +1592,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/08/23",
-                        "end_date": "2025/09/06",
-                        "count": 13
+                        "start_date": "2025/03/12",
+                        "end_date": "2025/03/26",
+                        "count": 10
                     }
                 ]
             }
@@ -1444,18 +1605,25 @@
         "last_seen": "2025/10/22",
         "category": "medium",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 1,
-            "last_103": 14
+            "last_24": 2
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2024/11/06",
+                        "end_date": "2025/01/29",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/07/16",
                         "end_date": "2025/08/16",
-                        "count": 6
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1467,9 +1635,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/01/15",
-                        "end_date": "2025/01/29",
-                        "count": 5
+                        "start_date": "2023/08/02",
+                        "end_date": "2023/08/16",
+                        "count": 3
                     }
                 ]
             }
@@ -1480,32 +1648,39 @@
         "last_seen": "2025/10/25",
         "category": "hot",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 2,
-            "last_103": 21
+            "last_24": 5
         },
         "series": {
             "series": {
-                "104_consecutives_25_times": [
+                "25_consecutives_8_times": [
                     {
-                        "start_date": "2023/09/27",
-                        "end_date": "2024/09/21",
-                        "count": 1
+                        "start_date": "2025/03/29",
+                        "end_date": "2025/06/21",
+                        "count": 3
                     }
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/06/21",
-                        "end_date": "2025/07/23",
-                        "count": 4
+                        "start_date": "2024/05/01",
+                        "end_date": "2024/06/01",
+                        "count": 3
+                    }
+                ],
+                "6_consecutives_3_times": [
+                    {
+                        "start_date": "2025/07/02",
+                        "end_date": "2025/07/19",
+                        "count": 1
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/10/22",
                         "end_date": "2025/11/05",
-                        "count": 9
+                        "count": 10
                     }
                 ]
             }
@@ -1518,16 +1693,23 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 3,
-            "last_103": 17
+            "last_9": 2,
+            "last_24": 4
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2021/12/22",
+                        "end_date": "2022/03/16",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/04/09",
                         "end_date": "2025/05/10",
-                        "count": 5
+                        "count": 4
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1541,7 +1723,7 @@
                     {
                         "start_date": "2025/10/15",
                         "end_date": "2025/10/29",
-                        "count": 11
+                        "count": 9
                     }
                 ]
             }
@@ -1553,17 +1735,24 @@
         "category": "medium",
         "recent": {
             "last_4": 1,
-            "last_5": 2,
+            "last_5": 1,
             "last_9": 3,
-            "last_103": 14
+            "last_24": 4
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2022/09/14",
+                        "end_date": "2022/12/07",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2024/04/17",
                         "end_date": "2024/05/18",
-                        "count": 5
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1591,15 +1780,22 @@
             "last_4": 2,
             "last_5": 2,
             "last_9": 3,
-            "last_103": 20
+            "last_24": 6
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2024/07/24",
+                        "end_date": "2024/10/16",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/01/01",
                         "end_date": "2025/02/01",
-                        "count": 5
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
@@ -1611,9 +1807,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/22",
-                        "end_date": "2025/11/05",
-                        "count": 9
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
+                        "count": 10
                     }
                 ]
             }
@@ -1627,22 +1823,22 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 3,
-            "last_103": 17
+            "last_24": 5
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2022/07/13",
+                        "end_date": "2022/10/05",
+                        "count": 1
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
                         "start_date": "2025/01/11",
                         "end_date": "2025/02/12",
-                        "count": 4
-                    }
-                ],
-                "6_consecutives_3_times": [
-                    {
-                        "start_date": "2022/09/10",
-                        "end_date": "2022/09/28",
-                        "count": 1
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -1661,31 +1857,38 @@
         "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 1,
-            "last_103": 16
+            "last_24": 1
         },
         "series": {
             "series": {
+                "25_consecutives_8_times": [
+                    {
+                        "start_date": "2025/04/09",
+                        "end_date": "2025/07/02",
+                        "count": 2
+                    }
+                ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/05/31",
-                        "end_date": "2025/07/02",
-                        "count": 3
+                        "start_date": "2023/07/26",
+                        "end_date": "2023/08/26",
+                        "count": 1
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2025/04/30",
-                        "end_date": "2025/05/17",
-                        "count": 4
+                        "start_date": "2024/08/17",
+                        "end_date": "2024/09/04",
+                        "count": 2
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
                         "start_date": "2025/08/06",
                         "end_date": "2025/08/20",
-                        "count": 9
+                        "count": 8
                     }
                 ]
             }
