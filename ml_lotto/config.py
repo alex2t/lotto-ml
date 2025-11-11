@@ -248,9 +248,9 @@ MODEL_3_CONFIG = {
         'freshness_weight_score',
         'pair_frequency_score'
     ],
-    
+
     'diversity_penalty': 0.25,
-    
+
     'algorithm_params': {
         'n_estimators': 150,
         'max_depth': 4,
@@ -263,10 +263,67 @@ MODEL_3_CONFIG = {
         'colsample_bytree': 0.7,
         'min_child_weight': 3
     },
-    
+
     'calibration': {
         'method': 'sigmoid',
         'cv': 3
+    }
+}
+
+MODEL_4_CONFIG = {
+    'name': 'Intelligent Pool Generator',
+    'description': 'Generates expanded ranked pool for flexible selection strategies',
+    'algorithm': 'logistic_regression',
+
+    # Pool size = hot_count + medium_count + cold_count
+    # Change these to adjust pool size (default: 18)
+    'hot_count': 6,      # Configurable
+    'medium_count': 8,   # Configurable
+    'cold_count': 4,     # Configurable
+    'generic_count': 0,
+
+    'features': [
+        # Core timing
+        'total_count',
+        'days_since_last',
+        'recency_zone_score',
+
+        # Momentum
+        'recent_4',
+        'recent_9',
+        'recent_14',
+
+        # Freshness (CRITICAL)
+        'freshness_c0_weight',
+        'freshness_c1_weight',
+        'freshness_c2_weight',
+        'current_freshness_bin',
+
+        # Long-term patterns
+        'lt_hot_weight',
+        'lt_medium_weight',
+        'lt_cold_weight',
+        'lt_category_alignment',
+
+        # Bonus & bias
+        'was_recent_bonus',
+        'win_bias_ratio'
+    ],
+
+    'diversity_penalty': 0.0,
+
+    'algorithm_params': {
+        'penalty': 'l2',
+        'solver': 'liblinear',
+        'max_iter': 1000,
+        'class_weight': 'balanced',
+        'random_state': 42,
+        'C': 1.0
+    },
+
+    'calibration': {
+        'method': 'sigmoid',
+        'cv': 5
     }
 }
 
@@ -274,6 +331,7 @@ ACTIVE_MODELS = [
     MODEL_1_CONFIG,
     MODEL_2_CONFIG,
     MODEL_3_CONFIG,
+    MODEL_4_CONFIG,  # Add Model 4
 ]
 
 SHOW_DETAILED_PENALTIES = True
