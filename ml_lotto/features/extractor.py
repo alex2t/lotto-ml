@@ -23,6 +23,7 @@ from ml_lotto.features.patterns import (
     calculate_has_consecutive_partner,
     calculate_consecutive_pair_affinity
 )
+from ml_lotto.features.window_saturation import calculate_window_saturation_score
 # NOTE: Removed duplicate calculated features - using JSON versions instead:
 # - calculate_bonus_hit_target_alignment → bonus_hit_contribution
 # - calculate_odd_even_affinity → odd_even_json
@@ -152,6 +153,24 @@ def extract_features_from_hmc_json(
     else:
         print(f"  ✓ Loaded long-term pattern features")
 
+    # Calculate window saturation scores (NEW v3.10)
+    print("  Calculating window_saturation_penalty feature...")
+    window_saturation_data = {}
+    if odds_data:
+        try:
+            window_saturation_data = calculate_window_saturation_score(
+                hmc_data,
+                odds_data,
+                MAX_NUMBER
+            )
+            print(f"  ✓ Window saturation penalties calculated for {len(window_saturation_data)} numbers")
+        except Exception as e:
+            print(f"  ⚠️  Error calculating window saturation: {e}")
+            window_saturation_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
+    else:
+        print(f"  ⚠️  No odds_data provided - using zero saturation penalties")
+        window_saturation_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
+
     print(f"\n✓ Extracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
                      'series_total', 'series_recent', 'days_since_bonus',
@@ -268,6 +287,7 @@ def extract_features_from_hmc_json(
             'range_spread_json': range_spread_json_data.get(num, 0.5),
             'odd_even_json': odd_even_json_data.get(num, 0.5),
             'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
+            'window_saturation_penalty': window_saturation_data.get(num, 0.0),  # NEW v3.10
             **fresh_feat,
             **recent_fields,
             **lt_feat,  # Add long-term pattern features

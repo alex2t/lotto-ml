@@ -182,6 +182,9 @@ MODEL_2_CONFIG = {
         'recency_zone_score',
         'recent_14',                    # Longer window for stability
 
+        # Window saturation penalty (NEW v3.10 - avoids over-saturated numbers)
+        'window_saturation_penalty',
+
         # Bonus-to-Main pattern (70% transition rate)
         'was_recent_bonus',             # Recent bonus balls appear in main 6
 
@@ -292,6 +295,9 @@ MODEL_4_CONFIG = {
         'recent_4',
         'recent_9',
         'recent_14',
+
+        # Window saturation penalty (NEW v3.10 - avoids over-saturated numbers)
+        'window_saturation_penalty',
 
         # Freshness (CRITICAL)
         'freshness_c0_weight',
