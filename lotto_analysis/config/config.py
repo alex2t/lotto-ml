@@ -27,7 +27,7 @@ SCENARIOS = [
     {"window": 5,  "targets": [2]},
     {"window": 6,  "targets": [3]},
     {"window": 10, "targets": [4]},
-    {"window": 104, "targets": [25]}
+    {"window": 25, "targets": [8]}
 ]
 
 # **NEW CONFIGURATION:** Index of the SCENARIOS list to use for 7-number freshness...
