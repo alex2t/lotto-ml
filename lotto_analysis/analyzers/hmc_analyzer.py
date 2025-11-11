@@ -316,7 +316,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
                 recent_bonus_numbers.pop(0)
 
         # Update draw_history_log to include current bonus in recent list
-        draw_history_log[formatted_date]["recent_bonus_numbers"] = recent_bonus_numbers[:]
+        draw_history_log[draw_date]["recent_bonus_numbers"] = recent_bonus_numbers[:]
 
     # Final categories
     final_categories = get_hot_cold(frequency_count)
