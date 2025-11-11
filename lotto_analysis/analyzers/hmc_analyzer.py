@@ -303,17 +303,20 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             "distribution_features": distribution_features,
             "bonus_hit_analysis": bonus_hit_analysis
         }
-        
+
         # Update Frequency and Last Seen Date (POST-DRAW)
         for number in winning_numbers:
             frequency_count[number] += 1
             last_seen_date[number] = draw_date
-            
-        # Update the recent bonus number list (POST-DRAW)
+
+        # Update the recent bonus number list (POST-DRAW) - FIX v3.10: Update BEFORE logging next draw
         if bonus_number is not None:
             recent_bonus_numbers.append(bonus_number)
             if len(recent_bonus_numbers) > 10:
                 recent_bonus_numbers.pop(0)
+
+        # Update draw_history_log to include current bonus in recent list
+        draw_history_log[formatted_date]["recent_bonus_numbers"] = recent_bonus_numbers[:]
 
     # Final categories
     final_categories = get_hot_cold(frequency_count)
