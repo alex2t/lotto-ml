@@ -93,6 +93,7 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
         'freshness_multiplier',
         'timing_decay_weight',
         'composite_transition_score',
+        'window_saturation_penalty',
         'avg_draws_to_transition',
         'recent_4',
         'recent_9',
@@ -133,6 +134,7 @@ MODEL_1_CONFIG = {
         'odd_even_json',                # Realism constraint
         'pair_frequency_score',         # Pattern affinity
         'bonus_hit_contribution',       # JSON feature
+        'window_saturation_penalty',
         'lt_hot_weight',                # Long-term validation
         'lt_medium_weight',             # Long-term validation
         'lt_cold_weight',               # Long-term validation
