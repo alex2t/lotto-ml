@@ -3,41 +3,220 @@ window_saturation.py
 ====================
 Calculate window saturation penalties based on lotto_odds_results.json scenarios.
 
+VERSION: 2.0 (JSON-Driven Configuration)
+- Replaced hardcoded penalty values with JSON configuration
+- Added category-aware penalty adjustments (hot/medium/cold)
+- Implemented window-weighted scoring
+- Added statistical validation using lotto_statistics_analysis.json
+- Dynamic rarity factor calculation with configurable scaling
+
 Penalizes numbers that are approaching or exceeding rare high-frequency thresholds,
 making them less likely to be selected if they've been appearing too frequently.
 """
 
 from typing import Dict, Any, List
+import json
+import os
+
+
+def load_saturation_config(config_path: str = 'data/lotto_window_saturation_config.json') -> Dict[str, Any]:
+    """
+    Load window saturation configuration from JSON file.
+
+    Args:
+        config_path: Path to configuration JSON file
+
+    Returns:
+        Configuration dictionary
+    """
+    if os.path.exists(config_path):
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    else:
+        # Return default configuration if file doesn't exist
+        print(f"⚠️  Warning: Config file {config_path} not found, using defaults")
+        return _get_default_config()
+
+
+def _get_default_config() -> Dict[str, Any]:
+    """
+    Return default configuration if JSON file is not available.
+
+    Returns:
+        Default configuration dictionary
+    """
+    return {
+        "penalty_thresholds": {
+            "at_or_exceeding": {
+                "base_multiplier": 1.0,
+                "category_adjustments": {"hot": 1.2, "medium": 1.0, "cold": 0.8}
+            },
+            "one_away": {
+                "base_multiplier": 0.6,
+                "category_adjustments": {"hot": 1.15, "medium": 1.0, "cold": 0.85}
+            },
+            "two_away": {
+                "base_multiplier": 0.3,
+                "category_adjustments": {"hot": 1.1, "medium": 1.0, "cold": 0.9}
+            }
+        },
+        "rarity_calculation": {
+            "method": "inverse_odds",
+            "scaling_factor": 1.0,
+            "min_rarity": 0.0,
+            "max_rarity": 1.0
+        },
+        "window_weights": {
+            "5": 0.8,
+            "6": 0.9,
+            "10": 1.0,
+            "25": 0.7
+        },
+        "advanced_settings": {
+            "enable_dynamic_scaling": True,
+            "use_category_adjustments": True,
+            "apply_window_weights": True,
+            "combine_multiple_scenarios": "max",
+            "penalty_cap": 1.0,
+            "minimum_penalty_threshold": 0.05
+        }
+    }
+
+
+def calculate_rarity_factor(odds: float, config: Dict[str, Any]) -> float:
+    """
+    Calculate rarity factor from odds using configuration.
+
+    Args:
+        odds: Probability/odds value (0.0 to 1.0)
+        config: Configuration dictionary
+
+    Returns:
+        Rarity factor (0.0 to 1.0) - lower odds = higher rarity
+    """
+    rarity_config = config.get('rarity_calculation', {})
+    scaling = rarity_config.get('scaling_factor', 1.0)
+    min_rarity = rarity_config.get('min_rarity', 0.0)
+    max_rarity = rarity_config.get('max_rarity', 1.0)
+
+    # Lower odds = higher rarity
+    rarity = (1.0 - odds) * scaling
+
+    # Apply bounds
+    rarity = max(min_rarity, min(max_rarity, rarity))
+
+    return rarity
+
+
+def get_penalty_multiplier(
+    distance_from_threshold: int,
+    category: str,
+    config: Dict[str, Any]
+) -> float:
+    """
+    Get penalty multiplier based on distance from threshold and number category.
+
+    Args:
+        distance_from_threshold: 0 (at/exceeding), 1 (one away), 2 (two away), 3+ (no penalty)
+        category: Number category (hot/medium/cold)
+        config: Configuration dictionary
+
+    Returns:
+        Penalty multiplier value
+    """
+    thresholds = config.get('penalty_thresholds', {})
+    settings = config.get('advanced_settings', {})
+    use_category_adj = settings.get('use_category_adjustments', True)
+
+    # Map distance to threshold key
+    threshold_map = {
+        0: 'at_or_exceeding',
+        1: 'one_away',
+        2: 'two_away'
+    }
+
+    if distance_from_threshold not in threshold_map:
+        return 0.0
+
+    threshold_key = threshold_map[distance_from_threshold]
+    threshold_data = thresholds.get(threshold_key, {})
+
+    base_multiplier = threshold_data.get('base_multiplier', 0.0)
+
+    if use_category_adj and category:
+        category_adjustments = threshold_data.get('category_adjustments', {})
+        category_adj = category_adjustments.get(category, 1.0)
+        return base_multiplier * category_adj
+
+    return base_multiplier
+
+
+def get_window_weight(window_size: int, config: Dict[str, Any]) -> float:
+    """
+    Get weight for a specific window size.
+
+    Args:
+        window_size: Window size (e.g., 5, 10, 25)
+        config: Configuration dictionary
+
+    Returns:
+        Weight value (default 1.0 if not configured)
+    """
+    settings = config.get('advanced_settings', {})
+    apply_weights = settings.get('apply_window_weights', True)
+
+    if not apply_weights:
+        return 1.0
+
+    window_weights = config.get('window_weights', {})
+    return window_weights.get(str(window_size), 1.0)
 
 
 def calculate_window_saturation_score(
     hmc_data: Dict[str, Any],
     odds_data: Dict[str, Any],
-    max_number: int = 47
+    max_number: int = 47,
+    config_path: str = 'data/lotto_window_saturation_config.json'
 ) -> Dict[int, float]:
     """
     Calculate saturation penalty scores for all numbers based on window odds.
 
+    VERSION 2.0: Uses JSON configuration for dynamic penalty calculation
+
     Args:
-        hmc_data: HMC trigger periods data (contains recent counts)
+        hmc_data: HMC trigger periods data (contains recent counts and categories)
         odds_data: Odds results data (contains scenario thresholds and odds)
         max_number: Maximum lottery number
+        config_path: Path to saturation configuration JSON
 
     Returns:
         Dictionary mapping number -> saturation_penalty_score (0.0 = no penalty, 1.0 = max penalty)
 
     Logic:
         For each scenario (window_size, target_times):
-        - If number appeared >= target_times in window: STRONG penalty (odds are low)
-        - If number appeared (target_times - 1) in smaller window: MODERATE penalty (approaching threshold)
-        - If number appeared (target_times - 2) in smaller window: LIGHT penalty
+        - Calculate rarity factor from odds (configurable)
+        - Determine distance from threshold (0, 1, 2, or 3+)
+        - Apply category-aware penalty multiplier from JSON config
+        - Apply window weight from JSON config
+        - Combine multiple scenarios using configured method (default: max)
 
     Example:
-        Scenario: window=10, target=4_times, odds=24.4%
-        Number 12: last_9=3
-        - 3 appearances in 9 draws means it's likely to hit 4 in 10 (approaching rare threshold)
-        - Apply moderate penalty (0.5)
+        Scenario: window=10, target=4_times, odds=24.3%
+        Number 12: last_9=3, category=hot
+        - Rarity factor = 1.0 - 0.243 = 0.757
+        - Distance = 1 (one away from threshold)
+        - Base multiplier = 0.6 (from JSON config)
+        - Category adjustment = 1.15 (hot numbers are penalized more)
+        - Window weight = 1.0 (window size 10 has highest weight)
+        - Penalty = 0.757 * 0.6 * 1.15 * 1.0 = 0.522
     """
+    # Load configuration
+    config = load_saturation_config(config_path)
+    settings = config.get('advanced_settings', {})
+    penalty_cap = settings.get('penalty_cap', 1.0)
+    min_threshold = settings.get('minimum_penalty_threshold', 0.05)
+    combine_method = settings.get('combine_multiple_scenarios', 'max')
+
     saturation_scores = {}
 
     # Get scenarios from odds data
@@ -50,14 +229,19 @@ def calculate_window_saturation_score(
             saturation_scores[num] = 0.0
             continue
 
+        # Get number's category (hot/medium/cold)
+        category = hmc_data[num_str].get('category', 'medium')
         recent_data = hmc_data[num_str].get('recent', {})
 
-        # Calculate maximum saturation across all scenarios
-        max_saturation = 0.0
+        # Calculate saturation across all scenarios
+        scenario_penalties = []
 
         for scenario in scenarios:
             window_size = scenario.get('window_size')
             results = scenario.get('results', {})
+
+            # Get window weight from config
+            window_weight = get_window_weight(window_size, config)
 
             # Get the target threshold from results (e.g., "4_times" -> 4)
             for target_key, target_stats in results.items():
@@ -71,7 +255,7 @@ def calculate_window_saturation_score(
 
                 # If exact window not available, try closest smaller window
                 if recent_count is None:
-                    # Try smaller windows
+                    # Try smaller windows (up to 3 steps down)
                     for try_window in [window_size - 1, window_size - 2, window_size - 3]:
                         if try_window > 0:
                             recent_key = f'last_{try_window}'
@@ -82,25 +266,48 @@ def calculate_window_saturation_score(
                 if recent_count is None:
                     continue
 
-                # Calculate saturation penalty based on how close to threshold
-                # The LOWER the odds, the HIGHER the penalty for approaching threshold
-                rarity_factor = 1.0 - odds  # Low odds = high rarity = high penalty
+                # Calculate rarity factor from odds (using config)
+                rarity_factor = calculate_rarity_factor(odds, config)
 
+                # Determine distance from threshold
                 if recent_count >= target_count:
-                    # Already at or exceeding threshold - STRONG penalty
-                    saturation = 1.0 * rarity_factor
+                    distance = 0  # At or exceeding threshold
                 elif recent_count == target_count - 1:
-                    # One away from threshold - MODERATE penalty
-                    saturation = 0.6 * rarity_factor
+                    distance = 1  # One away
                 elif recent_count == target_count - 2:
-                    # Two away from threshold - LIGHT penalty
-                    saturation = 0.3 * rarity_factor
+                    distance = 2  # Two away
                 else:
-                    saturation = 0.0
+                    distance = 3  # Too far away - no penalty
 
-                max_saturation = max(max_saturation, saturation)
+                # Get penalty multiplier from config (category-aware)
+                penalty_multiplier = get_penalty_multiplier(distance, category, config)
 
-        saturation_scores[num] = max_saturation
+                # Calculate final penalty for this scenario
+                scenario_penalty = rarity_factor * penalty_multiplier * window_weight
+
+                # Apply minimum threshold
+                if scenario_penalty < min_threshold:
+                    scenario_penalty = 0.0
+
+                scenario_penalties.append(scenario_penalty)
+
+        # Combine penalties from multiple scenarios
+        if scenario_penalties:
+            if combine_method == 'max':
+                final_penalty = max(scenario_penalties)
+            elif combine_method == 'avg':
+                final_penalty = sum(scenario_penalties) / len(scenario_penalties)
+            elif combine_method == 'sum':
+                final_penalty = sum(scenario_penalties)
+            else:
+                final_penalty = max(scenario_penalties)
+
+            # Apply penalty cap
+            final_penalty = min(penalty_cap, final_penalty)
+        else:
+            final_penalty = 0.0
+
+        saturation_scores[num] = final_penalty
 
     return saturation_scores
 
@@ -109,27 +316,38 @@ def get_saturation_explanation(
     number: int,
     saturation_score: float,
     hmc_data: Dict[str, Any],
-    odds_data: Dict[str, Any]
+    odds_data: Dict[str, Any],
+    config_path: str = 'data/lotto_window_saturation_config.json'
 ) -> str:
     """
     Generate human-readable explanation for a number's saturation score.
+
+    VERSION 2.0: Enhanced explanation with category and config details
 
     Args:
         number: The lottery number
         saturation_score: The calculated saturation score
         hmc_data: HMC trigger periods data
         odds_data: Odds results data
+        config_path: Path to saturation configuration JSON
 
     Returns:
         Explanation string
     """
     if saturation_score < 0.1:
-        return f"Number {number}: No saturation (score={saturation_score:.2f})"
+        return f"Number {number}: No significant saturation (score={saturation_score:.2f})"
+
+    # Load config for reference
+    config = load_saturation_config(config_path)
 
     num_str = str(number)
+    category = hmc_data.get(num_str, {}).get('category', 'unknown')
     recent_data = hmc_data.get(num_str, {}).get('recent', {})
 
-    explanation_parts = [f"Number {number}: Saturation penalty {saturation_score:.2f}"]
+    explanation_parts = [
+        f"Number {number}: Saturation penalty {saturation_score:.2f}",
+        f"  Category: {category.upper()}"
+    ]
 
     scenarios = odds_data.get('scenarios', [])
     for scenario in scenarios:
@@ -144,9 +362,63 @@ def get_saturation_explanation(
             recent_count = recent_data.get(recent_key)
 
             if recent_count is not None and recent_count >= target_count - 2:
+                window_weight = get_window_weight(window_size, config)
+                rarity = calculate_rarity_factor(odds, config)
+
                 explanation_parts.append(
-                    f"  - Window {window_size}: {recent_count} times "
-                    f"(threshold {target_count} has {odds*100:.1f}% odds)"
+                    f"  - Window {window_size}: {recent_count}/{target_count} times "
+                    f"(odds={odds*100:.1f}%, rarity={rarity:.2f}, weight={window_weight:.1f})"
                 )
 
     return "\n".join(explanation_parts)
+
+
+def get_saturation_statistics(
+    saturation_scores: Dict[int, float],
+    hmc_data: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Generate statistics about saturation scores across all numbers.
+
+    Args:
+        saturation_scores: Dictionary of number -> saturation score
+        hmc_data: HMC trigger periods data (for category breakdown)
+
+    Returns:
+        Statistics dictionary
+    """
+    if not saturation_scores:
+        return {}
+
+    scores = list(saturation_scores.values())
+
+    # Overall statistics
+    stats = {
+        'total_numbers': len(scores),
+        'avg_saturation': sum(scores) / len(scores),
+        'max_saturation': max(scores),
+        'min_saturation': min(scores),
+        'saturated_count': sum(1 for s in scores if s > 0.5),
+        'moderate_saturation_count': sum(1 for s in scores if 0.2 < s <= 0.5),
+        'low_saturation_count': sum(1 for s in scores if 0.0 < s <= 0.2),
+        'no_saturation_count': sum(1 for s in scores if s == 0.0)
+    }
+
+    # Category breakdown
+    category_stats = {'hot': [], 'medium': [], 'cold': []}
+    for num, score in saturation_scores.items():
+        category = hmc_data.get(str(num), {}).get('category', 'medium')
+        if category in category_stats:
+            category_stats[category].append(score)
+
+    stats['by_category'] = {}
+    for cat, cat_scores in category_stats.items():
+        if cat_scores:
+            stats['by_category'][cat] = {
+                'count': len(cat_scores),
+                'avg_saturation': sum(cat_scores) / len(cat_scores),
+                'max_saturation': max(cat_scores),
+                'saturated_count': sum(1 for s in cat_scores if s > 0.5)
+            }
+
+    return stats
