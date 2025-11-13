@@ -112,14 +112,31 @@ def calculate_dynamic_penalties(saturation_rates: Dict[str, Any],
     """
     scenarios = odds_data.get('scenarios', [])
 
-    # Calculate relative saturation risks by category (relative to medium)
-    # Use the most relevant windows for each scenario
-    window_mapping = {
-        5: 'last_5',
-        6: 'last_5',  # Use closest available
-        10: 'last_9',  # Use closest available
-        25: 'last_9'   # No exact match, use representative
-    }
+    # Get available windows from saturation_rates (e.g., last_4, last_5, last_9)
+    available_windows = {}
+    for window_key in saturation_rates.keys():
+        if window_key.startswith('last_'):
+            window_size = int(window_key.replace('last_', ''))
+            available_windows[window_size] = window_key
+
+    # Dynamically map scenario windows to closest available data windows
+    def find_closest_window(target_window: int, available: Dict[int, str]) -> str:
+        """Find closest available window to target window."""
+        if target_window in available:
+            return available[target_window]
+
+        # Find closest smaller or equal window
+        smaller = [w for w in available.keys() if w <= target_window]
+        if smaller:
+            closest = max(smaller)
+            return available[closest]
+
+        # If no smaller, use smallest available
+        if available:
+            smallest = min(available.keys())
+            return available[smallest]
+
+        return 'last_5'  # Fallback
 
     category_multipliers = {
         'at_or_exceeding': {'hot': 1.0, 'medium': 1.0, 'cold': 1.0},
@@ -149,10 +166,22 @@ def calculate_dynamic_penalties(saturation_rates: Dict[str, Any],
                 category_multipliers[threshold]['cold'] = max(0.5, cold_risk)
 
     # Calculate window weights based on odds (inverse of odds = rarity)
+    # Also build dynamic window mapping for documentation
     window_weights = {}
+    window_mapping_doc = {}
+
     for scenario in scenarios:
         window_size = scenario.get('window_size')
         results = scenario.get('results', {})
+
+        # Find which data window this scenario maps to
+        data_window_key = find_closest_window(window_size, available_windows)
+        data_window_size = int(data_window_key.replace('last_', ''))
+        window_mapping_doc[str(window_size)] = {
+            'data_window': data_window_key,
+            'data_window_size': data_window_size,
+            'exact_match': window_size == data_window_size
+        }
 
         # Get the odds for this scenario
         for target_key, target_stats in results.items():
@@ -197,6 +226,8 @@ def calculate_dynamic_penalties(saturation_rates: Dict[str, Any],
             }
         },
         'window_weights': window_weights,
+        'window_mapping': window_mapping_doc,
+        'available_data_windows': list(available_windows.values()),
         'calculation_method': 'data_driven',
         'source': 'calculated from lotto_statistics_analysis.json',
         'statistical_validation': 'derived from actual historical saturation rates'
@@ -317,6 +348,13 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
     print("\n  Window Weights (from odds analysis):")
     for window, weight in penalties['window_weights'].items():
         print(f"    Window {window}: {weight}x")
+
+    print("\n  Dynamic Window Mapping (scenario → data):")
+    print(f"  Available data windows: {penalties['available_data_windows']}")
+    for scenario_window, mapping_info in penalties['window_mapping'].items():
+        match_indicator = "✓" if mapping_info['exact_match'] else "→"
+        print(f"    Scenario window {scenario_window} {match_indicator} {mapping_info['data_window']} "
+              f"(size {mapping_info['data_window_size']})")
 
     # Build final output
     output_data = {

@@ -1,7 +1,7 @@
 {
     "description": "Data-driven window saturation penalty configuration",
     "version": "1.0",
-    "generated_date": "2025-11-13 22:15:31",
+    "generated_date": "2025-11-13 22:32:55",
     "data_source": {
         "statistics": "/home/user/lotto-ml/data/lotto_statistics_analysis.json",
         "odds": "/home/user/lotto-ml/data/lotto_odds_results.json",
@@ -105,6 +105,33 @@
             "10": 1.0,
             "25": 1.0
         },
+        "window_mapping": {
+            "5": {
+                "data_window": "last_5",
+                "data_window_size": 5,
+                "exact_match": true
+            },
+            "6": {
+                "data_window": "last_5",
+                "data_window_size": 5,
+                "exact_match": false
+            },
+            "10": {
+                "data_window": "last_9",
+                "data_window_size": 9,
+                "exact_match": false
+            },
+            "25": {
+                "data_window": "last_9",
+                "data_window_size": 9,
+                "exact_match": false
+            }
+        },
+        "available_data_windows": [
+            "last_4",
+            "last_5",
+            "last_9"
+        ],
         "calculation_method": "data_driven",
         "source": "calculated from lotto_statistics_analysis.json",
         "statistical_validation": "derived from actual historical saturation rates"
