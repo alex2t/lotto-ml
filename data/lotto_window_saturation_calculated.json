@@ -1,0 +1,120 @@
+{
+    "description": "Data-driven window saturation penalty configuration",
+    "version": "1.0",
+    "generated_date": "2025-11-13 22:15:31",
+    "data_source": {
+        "statistics": "/home/user/lotto-ml/data/lotto_statistics_analysis.json",
+        "odds": "/home/user/lotto-ml/data/lotto_odds_results.json",
+        "method": "calculated from actual historical saturation rates"
+    },
+    "saturation_rates_by_category": {
+        "last_4": {
+            "hot": {
+                "high_saturation_probability": 22.745098039215687,
+                "expected_frequency": 0.8928104575163397,
+                "threshold": 2
+            },
+            "medium": {
+                "high_saturation_probability": 17.68082663605052,
+                "expected_frequency": 0.7726750861079218,
+                "threshold": 2
+            },
+            "cold": {
+                "high_saturation_probability": 13.125,
+                "expected_frequency": 0.65375,
+                "threshold": 2
+            }
+        },
+        "last_5": {
+            "hot": {
+                "high_saturation_probability": 29.411764705882355,
+                "expected_frequency": 1.062745098039216,
+                "threshold": 2
+            },
+            "medium": {
+                "high_saturation_probability": 24.68427095292767,
+                "expected_frequency": 0.928817451205511,
+                "threshold": 2
+            },
+            "cold": {
+                "high_saturation_probability": 17.5,
+                "expected_frequency": 0.77875,
+                "threshold": 2
+            }
+        },
+        "last_9": {
+            "hot": {
+                "high_saturation_probability": 24.313725490196074,
+                "expected_frequency": 1.7633986928104577,
+                "threshold": 3
+            },
+            "medium": {
+                "high_saturation_probability": 18.82893226176808,
+                "expected_frequency": 1.5269804822043627,
+                "threshold": 3
+            },
+            "cold": {
+                "high_saturation_probability": 13.875,
+                "expected_frequency": 1.2974999999999999,
+                "threshold": 3
+            }
+        }
+    },
+    "statistical_validation": {
+        "test": "Basic comparison",
+        "method": "mean_differences",
+        "hot_mean": 25.49019607843137,
+        "medium_mean": 20.398009950248756,
+        "cold_mean": 14.833333333333334,
+        "significant": true,
+        "interpretation": "Hot > Medium > Cold in saturation rates"
+    },
+    "penalty_configuration": {
+        "penalty_thresholds": {
+            "at_or_exceeding": {
+                "description": "Recent count >= target (already saturated)",
+                "base_multiplier": 1.0,
+                "category_adjustments": {
+                    "hot": 1.2912960306073649,
+                    "medium": 1.0,
+                    "cold": 0.7368978658536586
+                }
+            },
+            "one_away": {
+                "description": "Recent count = target - 1 (approaching saturation)",
+                "base_multiplier": 0.6,
+                "category_adjustments": {
+                    "hot": 1.2912960306073649,
+                    "medium": 1.0,
+                    "cold": 0.7368978658536586
+                }
+            },
+            "two_away": {
+                "description": "Recent count = target - 2 (near saturation)",
+                "base_multiplier": 0.3,
+                "category_adjustments": {
+                    "hot": 1.2912960306073649,
+                    "medium": 1.0,
+                    "cold": 0.7368978658536586
+                }
+            }
+        },
+        "window_weights": {
+            "5": 0.6,
+            "6": 1.0,
+            "10": 1.0,
+            "25": 1.0
+        },
+        "calculation_method": "data_driven",
+        "source": "calculated from lotto_statistics_analysis.json",
+        "statistical_validation": "derived from actual historical saturation rates"
+    },
+    "advanced_settings": {
+        "enable_dynamic_scaling": true,
+        "use_category_adjustments": true,
+        "apply_window_weights": true,
+        "combine_multiple_scenarios": "max",
+        "penalty_cap": 1.0,
+        "minimum_penalty_threshold": 0.05
+    }
+}
