@@ -1,31 +1,31 @@
 {
     "bonus_validation": {
-        "statistic": 3.66,
-        "p_value": 0.599,
+        "statistic": 0.16,
+        "p_value": 1.0,
         "significant": false,
         "conclusion": "Bonus distribution differs from main but not statistically significant"
     },
     "bonus_category_preference": {
         "hot": {
-            "count": 132,
-            "percentage": 32.43,
-            "expected_if_equal": 127.7,
-            "weight": 1.03,
-            "p_value": 0.63
+            "count": 191,
+            "percentage": 46.93,
+            "expected_if_equal": 194.0,
+            "weight": 0.98,
+            "p_value": 0.8
         },
         "medium": {
-            "count": 160,
-            "percentage": 39.31,
-            "expected_if_equal": 145.5,
-            "weight": 1.1,
-            "p_value": 0.13
+            "count": 98,
+            "percentage": 24.08,
+            "expected_if_equal": 98.8,
+            "weight": 0.99,
+            "p_value": 0.95
         },
         "cold": {
-            "count": 115,
-            "percentage": 28.26,
-            "expected_if_equal": 133.8,
-            "weight": 0.86,
-            "p_value": 0.05
+            "count": 118,
+            "percentage": 28.99,
+            "expected_if_equal": 114.2,
+            "weight": 1.03,
+            "p_value": 0.66
         }
     },
     "recent_bonus_exclusion": {
@@ -71,113 +71,113 @@
     "bonus_timing_by_category": {
         "hot": {
             "0-7": {
-                "count": 35,
-                "percentage": 26.52,
+                "count": 101,
+                "percentage": 52.88,
                 "weight": 1.0
             },
             "8-14": {
-                "count": 33,
-                "percentage": 25.0,
-                "weight": 0.94
+                "count": 90,
+                "percentage": 47.12,
+                "weight": 0.89
             },
             "15-21": {
-                "count": 17,
-                "percentage": 12.88,
-                "weight": 0.49
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "22-30": {
-                "count": 17,
-                "percentage": 12.88,
-                "weight": 0.49
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "31-45": {
-                "count": 20,
-                "percentage": 15.15,
-                "weight": 0.57
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "46-60": {
-                "count": 8,
-                "percentage": 6.06,
-                "weight": 0.23
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "61+": {
-                "count": 2,
-                "percentage": 1.52,
-                "weight": 0.06
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             }
         },
         "medium": {
             "0-7": {
-                "count": 37,
-                "percentage": 23.12,
-                "weight": 0.93
+                "count": 1,
+                "percentage": 1.02,
+                "weight": 0.02
             },
             "8-14": {
-                "count": 40,
-                "percentage": 25.0,
-                "weight": 1.0
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "15-21": {
-                "count": 18,
-                "percentage": 11.25,
-                "weight": 0.45
+                "count": 52,
+                "percentage": 53.06,
+                "weight": 1.0
             },
             "22-30": {
-                "count": 19,
-                "percentage": 11.88,
-                "weight": 0.47
+                "count": 45,
+                "percentage": 45.92,
+                "weight": 0.87
             },
             "31-45": {
-                "count": 25,
-                "percentage": 15.62,
-                "weight": 0.62
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "46-60": {
-                "count": 11,
-                "percentage": 6.88,
-                "weight": 0.28
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "61+": {
-                "count": 10,
-                "percentage": 6.25,
-                "weight": 0.25
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             }
         },
         "cold": {
             "0-7": {
-                "count": 30,
-                "percentage": 26.09,
-                "weight": 1.0
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "8-14": {
-                "count": 17,
-                "percentage": 14.78,
-                "weight": 0.57
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "15-21": {
-                "count": 17,
-                "percentage": 14.78,
-                "weight": 0.57
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "22-30": {
-                "count": 9,
-                "percentage": 7.83,
-                "weight": 0.3
+                "count": 0,
+                "percentage": 0.0,
+                "weight": 0.0
             },
             "31-45": {
-                "count": 14,
-                "percentage": 12.17,
-                "weight": 0.47
+                "count": 59,
+                "percentage": 50.0,
+                "weight": 1.0
             },
             "46-60": {
-                "count": 12,
-                "percentage": 10.43,
-                "weight": 0.4
+                "count": 31,
+                "percentage": 26.27,
+                "weight": 0.53
             },
             "61+": {
-                "count": 16,
-                "percentage": 13.91,
-                "weight": 0.53
+                "count": 28,
+                "percentage": 23.73,
+                "weight": 0.47
             }
         }
     },
@@ -223,7 +223,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.873,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -232,17 +232,17 @@
             "bonus_appearances": 10,
             "main_appearances": 58,
             "bonus_rate": 0.15,
-            "category": "hot",
+            "category": "medium",
             "last_bonus_date": "2025-09-17",
             "days_since_last_bonus": 52,
             "avg_days_between_bonus": 138.9,
             "bonus_frequency_ratio": 0.15,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.45,
+            "predicted_bonus_score": 0.47,
             "data_driven_weights": {
                 "timing_weight": 0.294,
-                "category_weight": 0.973,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -258,10 +258,10 @@
             "bonus_frequency_ratio": 0.16,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.44,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -277,10 +277,10 @@
             "bonus_frequency_ratio": 0.09,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.32,
+            "predicted_bonus_score": 0.33,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -289,17 +289,17 @@
             "bonus_appearances": 6,
             "main_appearances": 53,
             "bonus_rate": 0.1,
-            "category": "hot",
+            "category": "medium",
             "last_bonus_date": "2025-08-27",
             "days_since_last_bonus": 73,
             "avg_days_between_bonus": 255.6,
             "bonus_frequency_ratio": 0.1,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.33,
+            "predicted_bonus_score": 0.35,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -308,17 +308,17 @@
             "bonus_appearances": 7,
             "main_appearances": 55,
             "bonus_rate": 0.11,
-            "category": "medium",
+            "category": "hot",
             "last_bonus_date": "2025-06-25",
             "days_since_last_bonus": 136,
             "avg_days_between_bonus": 134.8,
             "bonus_frequency_ratio": 0.11,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.52,
+            "predicted_bonus_score": 0.5,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -327,17 +327,17 @@
             "bonus_appearances": 9,
             "main_appearances": 47,
             "bonus_rate": 0.16,
-            "category": "cold",
+            "category": "medium",
             "last_bonus_date": "2025-08-16",
             "days_since_last_bonus": 84,
             "avg_days_between_bonus": 160.5,
             "bonus_frequency_ratio": 0.16,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.45,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -346,7 +346,7 @@
             "bonus_appearances": 3,
             "main_appearances": 57,
             "bonus_rate": 0.05,
-            "category": "medium",
+            "category": "hot",
             "last_bonus_date": "2025-11-01",
             "days_since_last_bonus": 7,
             "avg_days_between_bonus": 477.5,
@@ -356,7 +356,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.873,
-                "category_weight": 1.035,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -372,10 +372,10 @@
             "bonus_frequency_ratio": 0.2,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.44,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -384,7 +384,7 @@
             "bonus_appearances": 10,
             "main_appearances": 51,
             "bonus_rate": 0.16,
-            "category": "medium",
+            "category": "cold",
             "last_bonus_date": "2025-08-09",
             "days_since_last_bonus": 91,
             "avg_days_between_bonus": 112.8,
@@ -394,7 +394,7 @@
             "predicted_bonus_score": 0.59,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -403,7 +403,7 @@
             "bonus_appearances": 9,
             "main_appearances": 51,
             "bonus_rate": 0.15,
-            "category": "medium",
+            "category": "cold",
             "last_bonus_date": "2025-08-23",
             "days_since_last_bonus": 77,
             "avg_days_between_bonus": 154.9,
@@ -413,7 +413,7 @@
             "predicted_bonus_score": 0.44,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -429,10 +429,10 @@
             "bonus_frequency_ratio": 0.13,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.51,
+            "predicted_bonus_score": 0.5,
             "data_driven_weights": {
                 "timing_weight": 0.569,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -441,17 +441,17 @@
             "bonus_appearances": 9,
             "main_appearances": 61,
             "bonus_rate": 0.13,
-            "category": "medium",
+            "category": "hot",
             "last_bonus_date": "2025-10-01",
             "days_since_last_bonus": 38,
             "avg_days_between_bonus": 128.2,
             "bonus_frequency_ratio": 0.13,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.52,
+            "predicted_bonus_score": 0.5,
             "data_driven_weights": {
                 "timing_weight": 0.569,
-                "category_weight": 1.035,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -467,10 +467,10 @@
             "bonus_frequency_ratio": 0.09,
             "current_optimal_zone": "8-14",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.47,
+            "predicted_bonus_score": 0.48,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -479,7 +479,7 @@
             "bonus_appearances": 11,
             "main_appearances": 34,
             "bonus_rate": 0.24,
-            "category": "cold",
+            "category": "hot",
             "last_bonus_date": "2025-10-11",
             "days_since_last_bonus": 28,
             "avg_days_between_bonus": 138.2,
@@ -489,7 +489,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.431,
-                "category_weight": 0.989,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -498,17 +498,17 @@
             "bonus_appearances": 8,
             "main_appearances": 47,
             "bonus_rate": 0.15,
-            "category": "cold",
+            "category": "hot",
             "last_bonus_date": "2025-09-06",
             "days_since_last_bonus": 63,
             "avg_days_between_bonus": 191.4,
             "bonus_frequency_ratio": 0.15,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.42,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -517,7 +517,7 @@
             "bonus_appearances": 9,
             "main_appearances": 46,
             "bonus_rate": 0.16,
-            "category": "cold",
+            "category": "medium",
             "last_bonus_date": "2025-10-15",
             "days_since_last_bonus": 24,
             "avg_days_between_bonus": 120.8,
@@ -527,7 +527,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.431,
-                "category_weight": 0.989,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -543,10 +543,10 @@
             "bonus_frequency_ratio": 0.13,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.51,
+            "predicted_bonus_score": 0.52,
             "data_driven_weights": {
                 "timing_weight": 0.569,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -562,10 +562,10 @@
             "bonus_frequency_ratio": 0.19,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.44,
+            "predicted_bonus_score": 0.45,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -574,7 +574,7 @@
             "bonus_appearances": 10,
             "main_appearances": 57,
             "bonus_rate": 0.15,
-            "category": "medium",
+            "category": "cold",
             "last_bonus_date": "2025-09-20",
             "days_since_last_bonus": 49,
             "avg_days_between_bonus": 124.8,
@@ -584,7 +584,7 @@
             "predicted_bonus_score": 0.46,
             "data_driven_weights": {
                 "timing_weight": 0.294,
-                "category_weight": 1.035,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -600,10 +600,10 @@
             "bonus_frequency_ratio": 0.06,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.33,
+            "predicted_bonus_score": 0.32,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -612,17 +612,17 @@
             "bonus_appearances": 9,
             "main_appearances": 55,
             "bonus_rate": 0.14,
-            "category": "hot",
+            "category": "medium",
             "last_bonus_date": "2025-07-26",
             "days_since_last_bonus": 105,
             "avg_days_between_bonus": 160.5,
             "bonus_frequency_ratio": 0.14,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.44,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -638,10 +638,10 @@
             "bonus_frequency_ratio": 0.2,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.44,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -657,10 +657,10 @@
             "bonus_frequency_ratio": 0.05,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.21,
+            "predicted_bonus_score": 0.22,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -669,17 +669,17 @@
             "bonus_appearances": 8,
             "main_appearances": 55,
             "bonus_rate": 0.13,
-            "category": "medium",
+            "category": "cold",
             "last_bonus_date": "2025-04-16",
             "days_since_last_bonus": 206,
             "avg_days_between_bonus": 127.6,
             "bonus_frequency_ratio": 0.13,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.4,
+            "predicted_bonus_score": 0.41,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -695,10 +695,10 @@
             "bonus_frequency_ratio": 0.12,
             "current_optimal_zone": "8-14",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.38,
+            "predicted_bonus_score": 0.37,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -707,17 +707,17 @@
             "bonus_appearances": 8,
             "main_appearances": 58,
             "bonus_rate": 0.12,
-            "category": "hot",
+            "category": "medium",
             "last_bonus_date": "2024-11-27",
             "days_since_last_bonus": 346,
             "avg_days_between_bonus": 147.0,
             "bonus_frequency_ratio": 0.12,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.38,
+            "predicted_bonus_score": 0.4,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -726,17 +726,17 @@
             "bonus_appearances": 1,
             "main_appearances": 59,
             "bonus_rate": 0.02,
-            "category": "cold",
+            "category": "hot",
             "last_bonus_date": "2024-04-13",
             "days_since_last_bonus": 574,
             "avg_days_between_bonus": null,
             "bonus_frequency_ratio": 0.02,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.12,
+            "predicted_bonus_score": 0.11,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -752,10 +752,10 @@
             "bonus_frequency_ratio": 0.12,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.4,
+            "predicted_bonus_score": 0.39,
             "data_driven_weights": {
                 "timing_weight": 0.294,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -764,17 +764,17 @@
             "bonus_appearances": 8,
             "main_appearances": 55,
             "bonus_rate": 0.13,
-            "category": "medium",
+            "category": "hot",
             "last_bonus_date": "2025-06-21",
             "days_since_last_bonus": 140,
             "avg_days_between_bonus": 128.4,
             "bonus_frequency_ratio": 0.13,
             "current_optimal_zone": "8-14",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.55,
+            "predicted_bonus_score": 0.53,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -790,10 +790,10 @@
             "bonus_frequency_ratio": 0.14,
             "current_optimal_zone": "8-14",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.44,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -809,10 +809,10 @@
             "bonus_frequency_ratio": 0.14,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.54,
+            "predicted_bonus_score": 0.53,
             "data_driven_weights": {
                 "timing_weight": 0.569,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -828,10 +828,10 @@
             "bonus_frequency_ratio": 0.18,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.53,
+            "predicted_bonus_score": 0.54,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -847,10 +847,10 @@
             "bonus_frequency_ratio": 0.21,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.44,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -869,7 +869,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": null,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -878,17 +878,17 @@
             "bonus_appearances": 4,
             "main_appearances": 52,
             "bonus_rate": 0.07,
-            "category": "cold",
+            "category": "hot",
             "last_bonus_date": "2024-06-08",
             "days_since_last_bonus": 518,
             "avg_days_between_bonus": 292.7,
             "bonus_frequency_ratio": 0.07,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.26,
+            "predicted_bonus_score": 0.25,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.989,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -897,7 +897,7 @@
             "bonus_appearances": 7,
             "main_appearances": 53,
             "bonus_rate": 0.12,
-            "category": "medium",
+            "category": "cold",
             "last_bonus_date": "2025-07-12",
             "days_since_last_bonus": 119,
             "avg_days_between_bonus": 198.8,
@@ -907,7 +907,7 @@
             "predicted_bonus_score": 0.38,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         },
@@ -916,17 +916,17 @@
             "bonus_appearances": 11,
             "main_appearances": 57,
             "bonus_rate": 0.16,
-            "category": "hot",
+            "category": "medium",
             "last_bonus_date": "2025-08-20",
             "days_since_last_bonus": 80,
             "avg_days_between_bonus": 118.0,
             "bonus_frequency_ratio": 0.16,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.43,
+            "predicted_bonus_score": 0.45,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -935,17 +935,17 @@
             "bonus_appearances": 6,
             "main_appearances": 54,
             "bonus_rate": 0.1,
-            "category": "medium",
+            "category": "hot",
             "last_bonus_date": "2025-01-04",
             "days_since_last_bonus": 308,
             "avg_days_between_bonus": 206.4,
             "bonus_frequency_ratio": 0.1,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.44,
+            "predicted_bonus_score": 0.42,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -961,10 +961,10 @@
             "bonus_frequency_ratio": 0.14,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.52,
+            "predicted_bonus_score": 0.51,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -980,10 +980,10 @@
             "bonus_frequency_ratio": 0.21,
             "current_optimal_zone": "31-60",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.59,
+            "predicted_bonus_score": 0.6,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -1002,7 +1002,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.49,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -1011,17 +1011,17 @@
             "bonus_appearances": 10,
             "main_appearances": 53,
             "bonus_rate": 0.16,
-            "category": "medium",
+            "category": "hot",
             "last_bonus_date": "2025-04-12",
             "days_since_last_bonus": 210,
             "avg_days_between_bonus": 102.7,
             "bonus_frequency_ratio": 0.16,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.44,
+            "predicted_bonus_score": 0.42,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 1.035,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -1030,7 +1030,7 @@
             "bonus_appearances": 11,
             "main_appearances": 45,
             "bonus_rate": 0.2,
-            "category": "medium",
+            "category": "hot",
             "last_bonus_date": "2025-10-29",
             "days_since_last_bonus": 10,
             "avg_days_between_bonus": 134.8,
@@ -1040,7 +1040,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.873,
-                "category_weight": 1.035,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -1056,10 +1056,10 @@
             "bonus_frequency_ratio": 0.15,
             "current_optimal_zone": "15-30",
             "in_recent_bonus_10": false,
-            "predicted_bonus_score": 0.58,
+            "predicted_bonus_score": 0.57,
             "data_driven_weights": {
                 "timing_weight": 0.245,
-                "category_weight": 0.973,
+                "category_weight": 0.915,
                 "recency_penalty": 4.7
             }
         },
@@ -1078,7 +1078,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.873,
-                "category_weight": 1.035,
+                "category_weight": 1.098,
                 "recency_penalty": 4.7
             }
         },
@@ -1087,7 +1087,7 @@
             "bonus_appearances": 12,
             "main_appearances": 45,
             "bonus_rate": 0.21,
-            "category": "medium",
+            "category": "cold",
             "last_bonus_date": "2025-10-18",
             "days_since_last_bonus": 21,
             "avg_days_between_bonus": 183.1,
@@ -1097,7 +1097,7 @@
             "predicted_bonus_score": 1.0,
             "data_driven_weights": {
                 "timing_weight": 0.49,
-                "category_weight": 1.035,
+                "category_weight": 1.058,
                 "recency_penalty": 4.7
             }
         }
