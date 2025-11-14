@@ -4,7 +4,7 @@
         "last_seen": "2025/11/05",
         "category": "hot",
         "recent": {
-            "last_4": 1,
+            "last_4": 2,
             "last_5": 2,
             "last_9": 2,
             "last_24": 7
@@ -83,7 +83,7 @@
         "last_seen": "2025/10/25",
         "category": "cold",
         "recent": {
-            "last_4": 0,
+            "last_4": 1,
             "last_5": 1,
             "last_9": 1,
             "last_24": 2
@@ -200,7 +200,7 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 2,
+            "last_9": 3,
             "last_24": 5
         },
         "series": {
@@ -244,7 +244,7 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_24": 4
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -273,14 +273,14 @@
         }
     },
     "8": {
-        "total_count": 76,
-        "last_seen": "2025/11/09",
+        "total_count": 75,
+        "last_seen": "2025/11/01",
         "category": "medium",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
-            "last_9": 3,
-            "last_24": 5
+            "last_9": 2,
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -300,8 +300,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/29",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/10/22",
+                        "end_date": "2025/11/05",
                         "count": 8
                     }
                 ]
@@ -381,13 +381,13 @@
         }
     },
     "11": {
-        "total_count": 73,
-        "last_seen": "2025/11/09",
+        "total_count": 72,
+        "last_seen": "2025/11/01",
         "category": "medium",
         "recent": {
-            "last_4": 2,
-            "last_5": 2,
-            "last_9": 2,
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 1,
             "last_24": 4
         },
         "series": {
@@ -408,45 +408,45 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/29",
-                        "end_date": "2025/11/09",
-                        "count": 12
+                        "start_date": "2025/04/16",
+                        "end_date": "2025/04/30",
+                        "count": 11
                     }
                 ]
             }
         }
     },
     "12": {
-        "total_count": 90,
-        "last_seen": "2025/11/09",
+        "total_count": 89,
+        "last_seen": "2025/11/05",
         "category": "hot",
         "recent": {
-            "last_4": 3,
-            "last_5": 3,
+            "last_4": 2,
+            "last_5": 2,
             "last_9": 3,
-            "last_24": 8
+            "last_24": 7
         },
         "series": {
             "series": {
                 "25_consecutives_8_times": [
                     {
-                        "start_date": "2025/08/20",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/08/13",
+                        "end_date": "2025/11/05",
                         "count": 2
                     }
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/07/16",
-                        "end_date": "2025/08/16",
-                        "count": 4
+                        "start_date": "2024/01/10",
+                        "end_date": "2024/02/10",
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2022/10/29",
-                        "end_date": "2022/11/16",
-                        "count": 2
+                        "start_date": "2025/07/19",
+                        "end_date": "2025/08/06",
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -460,14 +460,14 @@
         }
     },
     "13": {
-        "total_count": 79,
-        "last_seen": "2025/11/09",
+        "total_count": 78,
+        "last_seen": "2025/11/01",
         "category": "medium",
         "recent": {
-            "last_4": 2,
-            "last_5": 2,
-            "last_9": 4,
-            "last_24": 6
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 3,
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -480,8 +480,8 @@
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/10/11",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/10/01",
+                        "end_date": "2025/11/01",
                         "count": 3
                     }
                 ],
@@ -494,9 +494,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/09/17",
-                        "end_date": "2025/10/01",
-                        "count": 8
+                        "start_date": "2024/06/05",
+                        "end_date": "2024/06/19",
+                        "count": 7
                     }
                 ]
             }
@@ -566,8 +566,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/29",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
                         "count": 7
                     }
                 ]
@@ -580,7 +580,7 @@
         "category": "cold",
         "recent": {
             "last_4": 0,
-            "last_5": 0,
+            "last_5": 1,
             "last_9": 3,
             "last_24": 6
         },
@@ -661,7 +661,7 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_24": 1
+            "last_24": 2
         },
         "series": {
             "series": {
@@ -704,7 +704,7 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_24": 4
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -746,7 +746,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 1,
+            "last_9": 2,
             "last_24": 4
         },
         "series": {
@@ -780,7 +780,7 @@
         "last_seen": "2025/10/29",
         "category": "hot",
         "recent": {
-            "last_4": 1,
+            "last_4": 2,
             "last_5": 2,
             "last_9": 2,
             "last_24": 5
@@ -819,14 +819,14 @@
         }
     },
     "22": {
-        "total_count": 81,
-        "last_seen": "2025/11/09",
+        "total_count": 80,
+        "last_seen": "2025/11/01",
         "category": "hot",
         "recent": {
-            "last_4": 2,
-            "last_5": 2,
-            "last_9": 2,
-            "last_24": 5
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 1,
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -853,9 +853,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/29",
-                        "end_date": "2025/11/09",
-                        "count": 11
+                        "start_date": "2025/09/27",
+                        "end_date": "2025/10/11",
+                        "count": 10
                     }
                 ]
             }
@@ -954,7 +954,7 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 0,
+            "last_9": 1,
             "last_24": 2
         },
         "series": {
@@ -991,13 +991,13 @@
         }
     },
     "26": {
-        "total_count": 81,
-        "last_seen": "2025/11/09",
+        "total_count": 80,
+        "last_seen": "2025/11/01",
         "category": "hot",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
-            "last_9": 3,
+            "last_9": 2,
             "last_24": 4
         },
         "series": {
@@ -1018,8 +1018,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/29",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/10/22",
+                        "end_date": "2025/11/05",
                         "count": 20
                     }
                 ]
@@ -1075,7 +1075,7 @@
         "category": "cold",
         "recent": {
             "last_4": 1,
-            "last_5": 1,
+            "last_5": 2,
             "last_9": 3,
             "last_24": 4
         },
@@ -1228,13 +1228,13 @@
         }
     },
     "32": {
-        "total_count": 82,
-        "last_seen": "2025/11/09",
+        "total_count": 81,
+        "last_seen": "2025/11/05",
         "category": "hot",
         "recent": {
-            "last_4": 3,
-            "last_5": 3,
-            "last_9": 3,
+            "last_4": 2,
+            "last_5": 2,
+            "last_9": 2,
             "last_24": 5
         },
         "series": {
@@ -1255,16 +1255,16 @@
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2025/10/25",
-                        "end_date": "2025/11/09",
-                        "count": 4
+                        "start_date": "2023/01/07",
+                        "end_date": "2023/01/25",
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/09/13",
-                        "end_date": "2025/09/27",
-                        "count": 9
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
+                        "count": 10
                     }
                 ]
             }
@@ -1312,7 +1312,7 @@
         "category": "cold",
         "recent": {
             "last_4": 0,
-            "last_5": 0,
+            "last_5": 1,
             "last_9": 1,
             "last_24": 1
         },
@@ -1354,7 +1354,7 @@
         "last_seen": "2025/11/08",
         "category": "hot",
         "recent": {
-            "last_4": 1,
+            "last_4": 2,
             "last_5": 2,
             "last_9": 4,
             "last_24": 4
@@ -1370,8 +1370,8 @@
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/10/11",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/10/08",
+                        "end_date": "2025/11/08",
                         "count": 5
                     }
                 ],
@@ -1397,10 +1397,10 @@
         "last_seen": "2025/10/25",
         "category": "cold",
         "recent": {
-            "last_4": 0,
+            "last_4": 1,
             "last_5": 1,
             "last_9": 2,
-            "last_24": 3
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -1435,7 +1435,7 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 0,
+            "last_9": 1,
             "last_24": 3
         },
         "series": {
@@ -1549,8 +1549,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/29",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
                         "count": 10
                     }
                 ]
@@ -1606,7 +1606,7 @@
         "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 0,
+            "last_5": 1,
             "last_9": 1,
             "last_24": 2
         },
@@ -1648,8 +1648,8 @@
         "last_seen": "2025/10/25",
         "category": "hot",
         "recent": {
-            "last_4": 0,
-            "last_5": 1,
+            "last_4": 1,
+            "last_5": 2,
             "last_9": 2,
             "last_24": 5
         },
@@ -1691,7 +1691,7 @@
         "last_seen": "2025/10/25",
         "category": "hot",
         "recent": {
-            "last_4": 0,
+            "last_4": 1,
             "last_5": 1,
             "last_9": 2,
             "last_24": 4
@@ -1736,7 +1736,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
+            "last_9": 3,
             "last_24": 4
         },
         "series": {
@@ -1807,8 +1807,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/29",
-                        "end_date": "2025/11/09",
+                        "start_date": "2025/10/25",
+                        "end_date": "2025/11/08",
                         "count": 10
                     }
                 ]
@@ -1822,7 +1822,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
+            "last_9": 3,
             "last_24": 5
         },
         "series": {

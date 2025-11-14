@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-11 22:48:31
+LOTTERY PICKS - GENERATED 2025-11-14 18:06:37
 ======================================================================
 SPECIALIZED MODEL ARCHITECTURE V3.9
 Model 1: 6 main (2 pre-assigned + 4 selected) + 1 bonus
@@ -8,24 +8,24 @@ Model 3: 6 main (6 selected) + 1 bonus
 Model 4: Candidate pool generator (configurable pool size)
 ======================================================================
 
-Line 1: Short-Term Momentum + Pre-Assignment Specialist [0H-1M-1C+2G | C0=2, C1=2, C_GE_2=0]
+Line 1: Short-Term Momentum + Pre-Assignment Specialist [0H-1M-1C+2G | C0=1, C1=3, C_GE_2=0]
 Pre-assigned (exempt): [41, 42]
-ML-selected: [6, 13, 28, 38]
-Main Numbers (6): [6, 13, 28, 38, 41, 42]
+ML-selected: [6, 13, 27, 28]
+Main Numbers (6): [6, 13, 27, 28, 41, 42]
 Bonus Ball: 41
-Complete: [6, 13, 28, 38, 41, 42] + BONUS 41
+Complete: [6, 13, 27, 28, 41, 42] + BONUS 41
 Description: Captures immediate patterns with bonus and recent-bonus pre-assignment
 
 Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [0H-3M-2C+1G | C0=3, C1=2, C_GE_2=1]
-Main Numbers (6): [3, 9, 10, 12, 25, 29]
+Main Numbers (6): [3, 9, 10, 12, 29, 30]
 Bonus Ball: None (jackpot optimizer - main 6 only)
-Complete: [3, 9, 10, 12, 25, 29] (6 main only)
+Complete: [3, 9, 10, 12, 29, 30] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes
 
 Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
-Main Numbers (6): [5, 8, 19, 24, 33, 40]
+Main Numbers (6): [5, 7, 19, 20, 24, 40]
 Bonus Ball: 9
-Complete: [5, 8, 19, 24, 33, 40] + BONUS 9
+Complete: [5, 7, 19, 20, 24, 40] + BONUS 9
 Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
 
 ======================================================================
@@ -33,12 +33,12 @@ MODEL 4: CANDIDATE POOL ANALYSIS
 ======================================================================
 Pool Configuration: 6H+8M+4C=18
 Total Candidates: 18
-Quality Score: 91/100
+Quality Score: 87/100
 
-Full Pool (ranked by probability): [35, 45, 12, 38, 42, 13, 27, 29, 39, 10, 30, 6, 20, 8, 28, 3, 7, 9]
+Full Pool (ranked by probability): [35, 45, 12, 13, 27, 26, 42, 29, 30, 6, 8, 20, 39, 10, 28, 7, 3, 9]
 
 Freshness Distribution:
-  C0:  6 numbers ( 33.3%)
-  C1:  8 numbers ( 44.4%)
+  C0:  5 numbers ( 27.8%)
+  C1:  9 numbers ( 50.0%)
   C2:  4 numbers ( 22.2%)
 
