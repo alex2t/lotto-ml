@@ -19,8 +19,28 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
+from datetime import datetime
 from scipy import stats
 import numpy as np
+
+
+def calculate_days_since_date(date_str: str) -> int:
+    """
+    Calculate days since a given date string.
+
+    Args:
+        date_str: Date string in format "YYYY/MM/DD"
+
+    Returns:
+        Number of days since the date
+    """
+    try:
+        date_obj = datetime.strptime(date_str, "%Y/%m/%d")
+        today = datetime.now()
+        delta = today - date_obj
+        return delta.days
+    except (ValueError, AttributeError):
+        return 0
 
 
 def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -47,7 +67,9 @@ def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
 
         try:
             category = data.get('category', 'unknown')
-            days_since = data.get('days_since_last_hit', 0)
+            # Calculate days_since from last_seen date
+            last_seen = data.get('last_seen', '')
+            days_since = calculate_days_since_date(last_seen) if last_seen else 0
 
             if category == 'hot':
                 hot_frequencies.append(days_since)
@@ -147,7 +169,9 @@ def calculate_pairwise_comparisons(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
 
         try:
             category = data.get('category', 'unknown')
-            days_since = data.get('days_since_last_hit', 0)
+            # Calculate days_since from last_seen date
+            last_seen = data.get('last_seen', '')
+            days_since = calculate_days_since_date(last_seen) if last_seen else 0
 
             if category == 'hot':
                 hot_frequencies.append(days_since)
@@ -278,7 +302,9 @@ def calculate_threshold_validation(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
 
         try:
             category = data.get('category', 'unknown')
-            days_since = data.get('days_since_last_hit', 0)
+            # Calculate days_since from last_seen date
+            last_seen = data.get('last_seen', '')
+            days_since = calculate_days_since_date(last_seen) if last_seen else 0
 
             if category == 'hot':
                 hot_days.append(days_since)

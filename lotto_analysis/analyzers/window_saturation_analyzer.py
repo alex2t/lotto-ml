@@ -180,7 +180,7 @@ def calculate_dynamic_penalties(saturation_rates: Dict[str, Any],
         window_mapping_doc[str(window_size)] = {
             'data_window': data_window_key,
             'data_window_size': data_window_size,
-            'exact_match': window_size == data_window_size
+            'exact_match': bool(window_size == data_window_size)
         }
 
         # Get the odds for this scenario
@@ -270,7 +270,7 @@ def validate_category_differences(saturation_rates: Dict[str, Any]) -> Dict[str,
             'test': 'One-way ANOVA',
             'f_statistic': float(f_statistic),
             'p_value': float(p_value),
-            'significant': p_value < 0.05,
+            'significant': bool(p_value < 0.05),
             'interpretation': 'Category saturation rates are significantly different' if p_value < 0.05
                             else 'Category differences not significant',
             'hot_mean': float(hot_mean),
@@ -285,7 +285,7 @@ def validate_category_differences(saturation_rates: Dict[str, Any]) -> Dict[str,
             'hot_mean': float(hot_mean),
             'medium_mean': float(med_mean),
             'cold_mean': float(cold_mean),
-            'significant': hot_mean > med_mean > cold_mean,
+            'significant': bool(hot_mean > med_mean > cold_mean),
             'interpretation': 'Hot > Medium > Cold in saturation rates' if hot_mean > cold_mean
                             else 'Category differences unclear'
         }

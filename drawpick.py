@@ -5,6 +5,7 @@ Orchestrates all analysis phases and generates output files
 """
 
 from collections import defaultdict
+from datetime import datetime
 from lotto_analysis.config import (
     CSV_FILE, TOTAL_DRAWS, TRAINING_DATA, NUM_DRAWS, 
     OUTPUT_FILE_MAIN, OUTPUT_FILE_PERIODS, OUTPUT_FILE_HISTORY,
