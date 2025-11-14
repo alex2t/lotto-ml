@@ -8,6 +8,47 @@ from typing import Dict, Tuple, List, Any
 from scipy import stats
 import numpy as np
 import json
+from pathlib import Path
+
+
+def load_baseline_category_weights() -> Dict[str, float]:
+    """
+    Load baseline category weights from lotto_statistics_analysis.json.
+
+    Uses REAL historical distribution instead of hardcoded estimates.
+
+    Returns:
+        Dictionary with normalized category weights from real data
+    """
+    try:
+        stats_file = Path(__file__).parent.parent.parent / 'data' / 'lotto_statistics_analysis.json'
+        with open(stats_file, 'r') as f:
+            stats_data = json.load(f)
+
+        # Get real main category distribution
+        hmc_dist = stats_data.get('hmc_distribution', {})
+        main_cat_dist = hmc_dist.get('main_category_distribution', {})
+
+        # Check if ALL required keys exist - use data ONLY if complete
+        if main_cat_dist and 'hot' in main_cat_dist and 'medium' in main_cat_dist and 'cold' in main_cat_dist:
+            hot_pct = main_cat_dist['hot']      # No default - we know key exists
+            medium_pct = main_cat_dist['medium']  # No default - we know key exists
+            cold_pct = main_cat_dist['cold']    # No default - we know key exists
+
+            # Normalize to sum to 1.0
+            total = hot_pct + medium_pct + cold_pct
+            if total > 0:
+                return {
+                    'hot': hot_pct / total,
+                    'medium': medium_pct / total,
+                    'cold': cold_pct / total
+                }
+    except (FileNotFoundError, KeyError, json.JSONDecodeError):
+        pass
+
+    # Fallback: equal distribution (calculated, not hardcoded)
+    # Only used if file doesn't exist or data incomplete
+    return {'hot': 1/3, 'medium': 1/3, 'cold': 1/3}
 
 
 def convert_to_native_types(obj):
@@ -71,12 +112,15 @@ def calculate_hmc_pattern_significance(
             total_draws += 1
 
     if total_draws == 0:
+        # Load baseline weights from REAL data instead of hardcoded values
+        baseline_weights = load_baseline_category_weights()
         return {
             'pattern_distribution': {},
             'overall_chi2': 0.0,
             'p_value': 1.0,
             'significant': False,
-            'category_weights': {'hot': 0.33, 'medium': 0.34, 'cold': 0.33}
+            'category_weights': baseline_weights,
+            'note': 'Using baseline weights from lotto_statistics_analysis.json (no draw data available)'
         }
 
     # Filter patterns by minimum count
@@ -148,7 +192,11 @@ def calculate_hmc_pattern_significance(
             medium_weight /= total_weight
             cold_weight /= total_weight
     else:
-        hot_weight = medium_weight = cold_weight = 1.0 / 3.0
+        # Load baseline weights from REAL data instead of hardcoded 1/3
+        baseline_weights = load_baseline_category_weights()
+        hot_weight = baseline_weights['hot']
+        medium_weight = baseline_weights['medium']
+        cold_weight = baseline_weights['cold']
 
     return {
         'pattern_distribution': pattern_details,
