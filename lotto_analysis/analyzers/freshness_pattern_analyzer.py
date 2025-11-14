@@ -55,7 +55,8 @@ def calculate_pattern_significance(
     pattern_names = []
 
     for pattern in pattern_distributions:
-        count = pattern.get('count', 0)
+        # Use 'draws_matched' (actual field) instead of 'count'
+        count = pattern.get('draws_matched', pattern.get('count', 0))
         if count > 0:  # Only include patterns that actually occurred
             observed_counts.append(count)
             pattern_names.append(pattern.get('pattern', 'unknown'))
@@ -123,7 +124,8 @@ def calculate_bin_distribution_test(
     bin_counts = defaultdict(int)
 
     for pattern in pattern_distributions:
-        count = pattern.get('count', 0)
+        # Use 'draws_matched' (actual field) instead of 'count'
+        count = pattern.get('draws_matched', pattern.get('count', 0))
         for i in range(c_max + 1):
             if i < c_max:
                 bin_key = f'C{i}'
@@ -192,7 +194,8 @@ def calculate_top_pattern_validation(
     Returns:
         Dictionary with top pattern validation results
     """
-    top_count = top_pattern.get('count', 0)
+    # Use 'draws_matched' (actual field) instead of 'count'
+    top_count = top_pattern.get('draws_matched', top_pattern.get('count', 0))
     top_percentage = top_pattern.get('percentage', 0)
 
     # Calculate average pattern frequency
@@ -205,7 +208,7 @@ def calculate_top_pattern_validation(
 
     # Binomial test for top pattern
     # H0: top pattern frequency = expected frequency
-    total_draws = sum(p.get('count', 0) for p in all_patterns)
+    total_draws = sum(p.get('draws_matched', p.get('count', 0)) for p in all_patterns)
 
     if total_draws == 0:
         return {'significant': False, 'z_score': 0.0, 'p_value': 1.0}
@@ -366,7 +369,7 @@ def analyze_freshness_patterns(freshness_data: Dict[str, Any]) -> Dict[str, Any]
         'validated_weights': validated_weights,
         'top_pattern_details': {
             'pattern': top_pattern.get('pattern', 'unknown'),
-            'count': top_pattern.get('count', 0),
+            'draws_matched': top_pattern.get('draws_matched', top_pattern.get('count', 0)),
             'percentage': top_pattern.get('percentage', 0.0)
         }
     }
