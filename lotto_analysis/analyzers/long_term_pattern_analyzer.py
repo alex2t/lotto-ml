@@ -29,22 +29,25 @@ def load_baseline_category_weights() -> Dict[str, float]:
         hmc_dist = stats_data.get('hmc_distribution', {})
         main_cat_dist = hmc_dist.get('main_category_distribution', {})
 
-        if main_cat_dist:
-            hot_pct = main_cat_dist.get('hot', 33.33)
-            medium_pct = main_cat_dist.get('medium', 33.33)
-            cold_pct = main_cat_dist.get('cold', 33.33)
+        # Check if ALL required keys exist - use data ONLY if complete
+        if main_cat_dist and 'hot' in main_cat_dist and 'medium' in main_cat_dist and 'cold' in main_cat_dist:
+            hot_pct = main_cat_dist['hot']      # No default - we know key exists
+            medium_pct = main_cat_dist['medium']  # No default - we know key exists
+            cold_pct = main_cat_dist['cold']    # No default - we know key exists
 
             # Normalize to sum to 1.0
             total = hot_pct + medium_pct + cold_pct
-            return {
-                'hot': hot_pct / total,
-                'medium': medium_pct / total,
-                'cold': cold_pct / total
-            }
+            if total > 0:
+                return {
+                    'hot': hot_pct / total,
+                    'medium': medium_pct / total,
+                    'cold': cold_pct / total
+                }
     except (FileNotFoundError, KeyError, json.JSONDecodeError):
         pass
 
-    # Fallback only if file doesn't exist
+    # Fallback: equal distribution (calculated, not hardcoded)
+    # Only used if file doesn't exist or data incomplete
     return {'hot': 1/3, 'medium': 1/3, 'cold': 1/3}
 
 
