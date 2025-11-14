@@ -35,6 +35,17 @@ from lotto_analysis.analyzers.freshness_pattern_analyzer import analyze_freshnes
 from lotto_analysis.analyzers.hmc_categorization_analyzer import analyze_hmc_categorization
 from lotto_analysis.analyzers.long_term_pattern_analyzer import generate_long_term_pattern_analysis
 
+# Import statistics and window saturation analyzers (Phase 11)
+from analysis.bonus_analysis import (
+    get_dynamic_recent_count_keys,
+    analyze_hmc_distribution,
+    analyze_days_since_last_hit,
+    analyze_recent_counts,
+    analyze_freshness_patterns as analyze_stats_freshness_patterns,
+    analyze_bonus_patterns
+)
+from lotto_analysis.analyzers.window_saturation_analyzer import generate_window_saturation_data
+
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis,
     write_json_file, format_date_iso,
@@ -503,8 +514,66 @@ def main():
     print("  - Random noise filtered out through proper hypothesis testing")
     print("  - Effect sizes calculated (Cohen's d, Cramér's V, eta-squared)")
 
+    # ===== STATISTICS ANALYSIS (PHASE 11) =====
     print("\n" + "=" * 70)
-    print("Analysis Complete!")
+    print("Phase 11: Statistical Analysis Generation")
+    print("=" * 70)
+    print("Generating lotto_statistics_analysis.json from draw history...")
+
+    try:
+        # Get recent count keys dynamically
+        recent_keys = get_dynamic_recent_count_keys(draw_history_log)
+        print(f"  ✓ Found {len(recent_keys)} recent count windows: {recent_keys}")
+
+        # Run all statistics analyses
+        hmc_stats = analyze_hmc_distribution(draw_history_log)
+        days_stats = analyze_days_since_last_hit(draw_history_log)
+        recent_stats = analyze_recent_counts(draw_history_log, recent_keys)
+        freshness_stats = analyze_stats_freshness_patterns(draw_history_log)
+        bonus_stats = analyze_bonus_patterns(draw_history_log)
+
+        # Combine results
+        statistics_results = {
+            'hmc_distribution': hmc_stats,
+            'days_since_last_hit': days_stats,
+            'recent_counts': recent_stats,
+            'freshness_patterns': freshness_stats,
+            'bonus_patterns': bonus_stats,
+            'metadata': {
+                'total_draws': len(draw_history_log),
+                'recent_count_windows': recent_keys,
+                'analysis_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            }
+        }
+
+        # Save statistics file
+        OUTPUT_FILE_STATISTICS = "data/lotto_statistics_analysis.json"
+        write_json_file(OUTPUT_FILE_STATISTICS, statistics_results,
+                       "Comprehensive statistical analysis of draw history patterns")
+        print(f"  ✓ Saved to {OUTPUT_FILE_STATISTICS}")
+
+    except Exception as e:
+        print(f"  ✗ Error generating statistics analysis: {e}")
+
+    # ===== WINDOW SATURATION ANALYSIS (PHASE 12) =====
+    print("\n" + "=" * 70)
+    print("Phase 12: Window Saturation Analysis")
+    print("=" * 70)
+    print("Generating data-driven window saturation penalties...")
+
+    try:
+        stats_file = "data/lotto_statistics_analysis.json"
+        odds_file = OUTPUT_FILE_MAIN
+        output_file = "data/lotto_window_saturation_calculated.json"
+
+        generate_window_saturation_data(stats_file, odds_file, output_file)
+        print(f"  ✓ Window saturation analysis complete")
+
+    except Exception as e:
+        print(f"  ✗ Error generating window saturation analysis: {e}")
+
+    print("\n" + "=" * 70)
+    print("✓ All Analysis Phases Complete!")
     print("=" * 70)
 
 
