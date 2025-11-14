@@ -1,77 +1,77 @@
 {
-  "metadata": {
-    "analysis_type": "freshness_pattern_validation",
-    "statistical_methods": [
-      "chi_square_goodness_of_fit",
-      "chi_square_uniformity_test",
-      "z_test_proportion"
-    ],
-    "total_draws": 406,
-    "total_patterns": 28,
-    "c_max": 2,
-    "significance_level": 0.05
-  },
-  "pattern_distribution_test": {
-    "significant": false,
-    "chi2_stat": 0.0,
-    "p_value": 1.0,
-    "num_patterns": 0
-  },
-  "bin_distribution_test": {
-    "significant": false,
-    "chi2_stat": NaN,
-    "p_value": NaN,
-    "degrees_of_freedom": 2,
-    "bin_analysis": {
-      "C0": {
-        "observed": 0,
-        "expected": 0.0,
-        "percentage": NaN,
-        "z_score": NaN,
-        "over_represented": false,
-        "under_represented": false
-      },
-      "C1": {
-        "observed": 0,
-        "expected": 0.0,
-        "percentage": NaN,
-        "z_score": NaN,
-        "over_represented": false,
-        "under_represented": false
-      },
-      "C_GE_2": {
-        "observed": 0,
-        "expected": 0.0,
-        "percentage": NaN,
-        "z_score": NaN,
-        "over_represented": false,
-        "under_represented": false
-      }
+    "metadata": {
+        "analysis_type": "freshness_pattern_validation",
+        "statistical_methods": [
+            "chi_square_goodness_of_fit",
+            "chi_square_uniformity_test",
+            "z_test_proportion"
+        ],
+        "total_draws": 407,
+        "total_patterns": 28,
+        "c_max": 2,
+        "significance_level": 0.05
     },
-    "interpretation": "Bin distribution is non-uniform (freshness bias detected)"
-  },
-  "top_pattern_validation": {
-    "significant": false,
-    "z_score": 0.0,
-    "p_value": 1.0
-  },
-  "validated_weights": {
-    "C0": {
-      "normalized_weight": 0.3333333333333333,
-      "statistically_validated": false
+    "pattern_distribution_test": {
+        "significant": false,
+        "chi2_stat": 0.0,
+        "p_value": 1.0,
+        "num_patterns": 0
     },
-    "C1": {
-      "normalized_weight": 0.3333333333333333,
-      "statistically_validated": false
+    "bin_distribution_test": {
+        "significant": false,
+        "chi2_stat": NaN,
+        "p_value": NaN,
+        "degrees_of_freedom": 2,
+        "bin_analysis": {
+            "C0": {
+                "observed": 0,
+                "expected": 0.0,
+                "percentage": NaN,
+                "z_score": NaN,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "C1": {
+                "observed": 0,
+                "expected": 0.0,
+                "percentage": NaN,
+                "z_score": NaN,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "C_GE_2": {
+                "observed": 0,
+                "expected": 0.0,
+                "percentage": NaN,
+                "z_score": NaN,
+                "over_represented": false,
+                "under_represented": false
+            }
+        },
+        "interpretation": "Bin distribution is non-uniform (freshness bias detected)"
     },
-    "C_GE_2": {
-      "normalized_weight": 0.3333333333333333,
-      "statistically_validated": false
+    "top_pattern_validation": {
+        "significant": false,
+        "z_score": 0.0,
+        "p_value": 1.0
+    },
+    "validated_weights": {
+        "C0": {
+            "normalized_weight": 0.3333333333333333,
+            "statistically_validated": false
+        },
+        "C1": {
+            "normalized_weight": 0.3333333333333333,
+            "statistically_validated": false
+        },
+        "C_GE_2": {
+            "normalized_weight": 0.3333333333333333,
+            "statistically_validated": false
+        }
+    },
+    "top_pattern_details": {
+        "pattern": "C0=3, C1=3, C_GE_2=1",
+        "count": 0,
+        "percentage": 13.02
     }
-  },
-  "top_pattern_details": {
-    "pattern": "C0=3, C1=3, C_GE_2=1",
-    "count": 0,
-    "percentage": 13.05
-  }
 }
