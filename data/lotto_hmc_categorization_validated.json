@@ -12,59 +12,59 @@
     },
     "anova_test": {
         "significant": false,
-        "f_statistic": NaN,
-        "p_value": NaN,
-        "eta_squared": 0.0,
+        "f_statistic": 0.14908591826486797,
+        "p_value": 0.8619284308487138,
+        "eta_squared": 0.0067310190052550485,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
                 "count": 15,
-                "mean_days_since": 0.0,
-                "std_dev": 0.0,
-                "median": 0.0,
-                "min": 0.0,
-                "max": 0.0
+                "mean_days_since": 22.6,
+                "std_dev": 20.027837769322122,
+                "median": 13.0,
+                "min": 6.0,
+                "max": 69.0
             },
             "medium": {
                 "count": 17,
-                "mean_days_since": 0.0,
-                "std_dev": 0.0,
-                "median": 0.0,
-                "min": 0.0,
-                "max": 0.0
+                "mean_days_since": 26.176470588235293,
+                "std_dev": 18.142613145980537,
+                "median": 23.0,
+                "min": 6.0,
+                "max": 62.0
             },
             "cold": {
                 "count": 15,
-                "mean_days_since": 0.0,
-                "std_dev": 0.0,
-                "median": 0.0,
-                "min": 0.0,
-                "max": 0.0
+                "mean_days_since": 25.133333333333333,
+                "std_dev": 18.446318512556015,
+                "median": 20.0,
+                "min": 6.0,
+                "max": 55.0
             }
         },
-        "interpretation": "Significant but negligible effect (categories barely distinct)"
+        "interpretation": "Categories are NOT statistically distinct (may need redefinition)"
     },
     "pairwise_comparisons": {
         "bonferroni_corrected_alpha": 0.016666666666666666,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": NaN,
-                "p_value": NaN,
+                "t_statistic": -0.5300961096389267,
+                "p_value": 0.5999471970620703,
                 "significant": false,
-                "mean_difference": 0.0
+                "mean_difference": -3.576470588235292
             },
             "hot_vs_cold": {
-                "t_statistic": NaN,
-                "p_value": NaN,
+                "t_statistic": -0.3603439668199452,
+                "p_value": 0.7212940645076711,
                 "significant": false,
-                "mean_difference": 0.0
+                "mean_difference": -2.5333333333333314
             },
             "medium_vs_cold": {
-                "t_statistic": NaN,
-                "p_value": NaN,
+                "t_statistic": 0.16104316725764065,
+                "p_value": 0.8731390172701721,
                 "significant": false,
-                "mean_difference": 0.0
+                "mean_difference": 1.0431372549019606
             }
         },
         "all_significant": false
@@ -90,21 +90,21 @@
         "medium_cold_overlap": true,
         "categories_distinct": false,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 0.0,
-            "medium_cold_cutoff": 0.0
+            "hot_medium_cutoff": 13.0,
+            "medium_cold_cutoff": 27.0
         },
         "current_ranges": {
             "hot": {
-                "min": 0.0,
-                "max": 0.0
+                "min": 6.0,
+                "max": 69.0
             },
             "medium": {
-                "min": 0.0,
-                "max": 0.0
+                "min": 6.0,
+                "max": 62.0
             },
             "cold": {
-                "min": 0.0,
-                "max": 0.0
+                "min": 6.0,
+                "max": 55.0
             }
         }
     },
