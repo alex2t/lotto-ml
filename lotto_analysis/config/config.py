@@ -18,8 +18,18 @@ OUTPUT_FILE_BONUS_TO_MAIN = "data/lotto_bonus_to_main_patterns.json"
 
 # =============== LOTTERY PARAMETERS ===============
 MAX_NUMBER = 47            # Maximum lottery number
-HOT_COUNT = 15            # Number of hot numbers
-COLD_COUNT = 15           # Number of cold numbers
+
+# HMC Categorization Method
+HMC_METHOD = "recency"    # Options: "frequency" (old) or "recency" (validated)
+
+# FREQUENCY-BASED (deprecated - kept for backwards compatibility)
+HOT_COUNT = 15            # Number of hot numbers (frequency-based)
+COLD_COUNT = 15           # Number of cold numbers (frequency-based)
+
+# RECENCY-BASED (VALIDATED - scipy ANOVA thresholds from statistical analysis)
+HMC_HOT_THRESHOLD = 13    # Hot: appeared in last 13 days (33rd percentile)
+HMC_COLD_THRESHOLD = 27   # Cold: appeared 27+ days ago (67th percentile)
+                          # Medium: 13 < days < 27
 
 # =============== ANALYSIS SCENARIOS ===============
 # Window sizes and target repetition counts to detect

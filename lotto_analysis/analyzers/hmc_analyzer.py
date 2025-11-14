@@ -1,8 +1,14 @@
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Tuple
-from ..config import TRAINING_DATA, MAX_NUMBER, SCENARIOS
-from .frequency_analyzer import calculate_frequency, get_hot_cold, get_draw_metrics
+from ..config import TRAINING_DATA, MAX_NUMBER, SCENARIOS, HMC_METHOD, HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD
+from .frequency_analyzer import (
+    calculate_frequency,
+    get_hot_cold,
+    get_hot_cold_by_recency,
+    calculate_days_since_last_hit,
+    get_draw_metrics
+)
 
 HISTORY_WINDOWS_DATA = [s["window"] for s in SCENARIOS]
 
@@ -125,13 +131,24 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             if len(recent_bonus_numbers) > 10:
                 recent_bonus_numbers.pop(0)
 
+    # Print HMC method being used (one-time debug)
+    print(f"  Using HMC categorization method: {HMC_METHOD}")
+    if HMC_METHOD == "recency":
+        print(f"  Recency thresholds: Hot <= {HMC_HOT_THRESHOLD} days, Cold >= {HMC_COLD_THRESHOLD} days")
+
     for i in range(TRAINING_DATA, len(all_draws)):
         current_draw = all_draws[i]
         draw_date = current_draw["date"]
         winning_numbers = current_draw["numbers"]
-        
-        # Categorize based on current frequency counts (PRIOR to this draw)
-        categories = get_hot_cold(frequency_count)
+
+        # Categorize based on HMC_METHOD (PRIOR to this draw)
+        if HMC_METHOD == "recency":
+            # Use RECENCY-BASED categorization (validated with scipy ANOVA)
+            days_since = calculate_days_since_last_hit(all_draws[:i])
+            categories = get_hot_cold_by_recency(days_since, HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD)
+        else:
+            # Use FREQUENCY-BASED categorization (deprecated)
+            categories = get_hot_cold(frequency_count)
         
         # ============ Calculate per-draw freshness pattern ============
         temp_history = {}
@@ -318,8 +335,17 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         # Update draw_history_log to include current bonus in recent list
         draw_history_log[draw_date]["recent_bonus_numbers"] = recent_bonus_numbers[:]
 
-    # Final categories
-    final_categories = get_hot_cold(frequency_count)
-    
-    return (categorization_history, frequency_count, dict(hmc_distribution_counts), 
+    # Final categories (using current HMC method)
+    if HMC_METHOD == "recency":
+        # Use RECENCY-BASED categorization for final output
+        days_since_final = calculate_days_since_last_hit(all_draws)
+        final_categories = get_hot_cold_by_recency(days_since_final, HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD)
+        print(f"  Final categories (recency): Hot={len(final_categories['hot_numbers'])}, "
+              f"Medium={len(final_categories['medium_numbers'])}, "
+              f"Cold={len(final_categories['cold_numbers'])}")
+    else:
+        # Use FREQUENCY-BASED categorization (deprecated)
+        final_categories = get_hot_cold(frequency_count)
+
+    return (categorization_history, frequency_count, dict(hmc_distribution_counts),
             final_categories, draw_history_log, dict(recent_bonus_hit_counts))
