@@ -17,6 +17,22 @@ VERSION: 3.15 (win_bias_ratio Removal - Redundant Feature)
   * Attempted win_bias_ratio fix (ultimately determined to be redundant)
 """
 
+# ============================================================================
+# RANDOM SEED CONFIGURATION
+# ============================================================================
+# IMPORTANT: Use FIXED random seeds for deterministic, reproducible results
+# This ensures predictions change ONLY when data changes, not due to randomness
+#
+# Benefits of fixed seeds:
+#   - Same data = Same predictions (reproducible)
+#   - Different data = Different predictions (responsive to updates)
+#   - Easy to verify model is learning from new draws
+#
+# When you add new data to irish500.csv:
+#   1. Run: python drawpick.py  (regenerates JSON with new features)
+#   2. Run: python quickpick.py (produces new predictions based on updated data)
+RANDOM_SEED = 42  # Fixed seed for deterministic results
+
 TOTAL_DRAWS = 600
 TRAINING_DATA = 100
 NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA
@@ -92,7 +108,7 @@ BONUS_MODEL_CONFIG = {
         'class_weight': 'balanced',
         'solver': 'liblinear',
         'max_iter': 1000,
-        'random_state': None  # Allow random variation each run
+        'random_state': 42  # Fixed for reproducibility - predictions change only when data changes
     },
     'calibration': {
         'method': 'sigmoid',
@@ -124,7 +140,7 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
         'class_weight': {0: 1.0, 1: 3.5},  # Reflect 3.5x boost over random
         'solver': 'liblinear',
         'max_iter': 1000,
-        'random_state': None  # Allow random variation each run
+        'random_state': 42  # Fixed for reproducibility - predictions change only when data changes
     },
     'calibration': {
         'method': 'isotonic',  # Better for skewed distributions
@@ -167,7 +183,7 @@ MODEL_1_CONFIG = {
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
-        'random_state': None,  # Allow random variation each run
+        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
         'C': 1.0
     },
 
@@ -227,7 +243,7 @@ MODEL_2_CONFIG = {
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
-        'random_state': None,  # Allow random variation each run
+        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
         'C': 0.5
     },
 
@@ -277,7 +293,7 @@ MODEL_3_CONFIG = {
         'learning_rate': 0.1,
         'use_label_encoder': False,
         'eval_metric': 'logloss',
-        'random_state': None,  # Allow random variation each run
+        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
         'n_jobs': -1,
         'subsample': 0.8,
         'colsample_bytree': 0.7,
@@ -339,7 +355,7 @@ MODEL_4_CONFIG = {
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
-        'random_state': None,  # Allow random variation each run
+        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
         'C': 1.0
     },
 
