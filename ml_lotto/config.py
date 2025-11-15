@@ -205,7 +205,7 @@ MODEL_2_CONFIG = {
         'was_recent_bonus',             # Recent bonus balls appear in main 6
 
         # Historical bias correction
-        'win_bias_ratio',
+        #'win_bias_ratio',
 
         # Pattern consistency
        # 'consecutive_pair_affinity',
@@ -221,7 +221,7 @@ MODEL_2_CONFIG = {
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
     ],
 
-    'diversity_penalty': 0.15,
+    'diversity_penalty': 0.00,
 
     'algorithm_params': {
         'penalty': 'l2',
@@ -249,7 +249,7 @@ MODEL_3_CONFIG = {
     'generic_count': 0,
 
     'features': [
-        'recent_4',
+        #'recent_4',
         FRESHNESS_PATTERN_WEIGHTS,        # Interaction features for freshness patterns
         LONG_TERM_PATTERN_WEIGHTS,        # UPDATED v3.13: Long-term HMC and recency (removed redundant hot/medium/cold)
         ADVANCED_PATTERN_FEATURES,        # NEW v3.13: Volatility and trend features
@@ -258,8 +258,8 @@ MODEL_3_CONFIG = {
         'recency_zone_score',
         'recent_14',
         'days_since_bonus',
-        'was_recent_bonus',
-        'bonus_hit_contribution',         # Replaced bonus_hit_target_alignment with JSON version
+        #'was_recent_bonus',
+        #'bonus_hit_contribution',         # Replaced bonus_hit_target_alignment with JSON version
         'has_consecutive_partner',
         #'consecutive_pair_affinity',
         'series_recent',
@@ -271,7 +271,7 @@ MODEL_3_CONFIG = {
         #'pair_frequency_score'
     ],
 
-    'diversity_penalty': 0.25,
+    'diversity_penalty': 0.00,
 
     'algorithm_params': {
         'n_estimators': 150,
@@ -319,10 +319,10 @@ MODEL_4_CONFIG = {
         'window_saturation_penalty',
 
         # Freshness (using old one-hot encoding for pool diversity)
-        'freshness_c0_weight',
-        'freshness_c1_weight',
-        'freshness_c2_weight',
-        'current_freshness_bin',
+        #'freshness_c0_weight',
+        #'freshness_c1_weight',
+        #'freshness_c2_weight',
+        #'current_freshness_bin',
 
         # Long-term patterns
         LONG_TERM_PATTERN_WEIGHTS,    # UPDATED v3.13: lt_category_alignment, lt_recency_weight (removed redundant hot/medium/cold)
@@ -331,8 +331,8 @@ MODEL_4_CONFIG = {
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
 
         # Bonus & bias
-        'was_recent_bonus',
-        'win_bias_ratio'
+        'was_recent_bonus'
+        #'win_bias_ratio'
     ],
 
     'diversity_penalty': 0.0,
