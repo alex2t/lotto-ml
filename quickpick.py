@@ -58,7 +58,10 @@ from ml_lotto.config import (
     BONUS_MODEL_CONFIG,
     BONUS_TO_MAIN_MODEL_CONFIG,
     MAX_NUMBER,
-    TRAINING_START_DRAW
+    TRAINING_START_DRAW,
+    ENSEMBLE_MODE,
+    ENSEMBLE_RUNS,
+    RANDOM_SEED_BASE
 )
 
 from ml_lotto.data.loader import (
@@ -288,19 +291,24 @@ def main():
     """Main execution function with bonus ball prediction."""
     start_time = time.time()
 
-    # Initialize fixed random seed for deterministic, reproducible results
-    # Predictions change ONLY when data changes, not due to randomness
+    # Initialize random seed based on mode
     import numpy as np
     import random
-    from ml_lotto.config import RANDOM_SEED
-
-    np.random.seed(RANDOM_SEED)
-    random.seed(RANDOM_SEED)
 
     print("=" * 70)
     print("INTELLIGENT LOTTO SYSTEM V3.9: SPECIALIZED MODEL ARCHITECTURE")
     print("=" * 70)
-    print(f"Random Seed: {RANDOM_SEED} (fixed - deterministic results)")
+
+    if ENSEMBLE_MODE:
+        print(f"MODE: Ensemble Voting ({ENSEMBLE_RUNS} runs per model)")
+        print(f"  Each model runs {ENSEMBLE_RUNS}x with different seeds")
+        print(f"  Numbers ranked by consistency across runs")
+        print(f"  Base seed: {RANDOM_SEED_BASE}")
+    else:
+        print(f"MODE: Single Deterministic Run (seed: {RANDOM_SEED_BASE})")
+        np.random.seed(RANDOM_SEED_BASE)
+        random.seed(RANDOM_SEED_BASE)
+
     print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model + 1 bonus-to-main model")
     print("NEW: Specialized model objectives with different training strategies")
     print("  Model 1: Momentum specialist (6 main + bonus)")

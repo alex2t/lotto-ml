@@ -18,20 +18,25 @@ VERSION: 3.15 (win_bias_ratio Removal - Redundant Feature)
 """
 
 # ============================================================================
-# RANDOM SEED CONFIGURATION
+# RANDOM SEED CONFIGURATION - ENSEMBLE MODE
 # ============================================================================
-# IMPORTANT: Use FIXED random seeds for deterministic, reproducible results
-# This ensures predictions change ONLY when data changes, not due to randomness
+# ENSEMBLE MODE: Run models multiple times with different random seeds
+# to identify numbers that are CONSISTENTLY ranked high across runs.
 #
-# Benefits of fixed seeds:
-#   - Same data = Same predictions (reproducible)
-#   - Different data = Different predictions (responsive to updates)
-#   - Easy to verify model is learning from new draws
+# Benefits of ensemble voting:
+#   - See which numbers are "robustly" strong picks
+#   - Numbers appearing in 80%+ of runs are very confident picks
+#   - Numbers appearing in 50% of runs are uncertain/borderline
+#   - More reliable than single random initialization
 #
-# When you add new data to irish500.csv:
-#   1. Run: python drawpick.py  (regenerates JSON with new features)
-#   2. Run: python quickpick.py (produces new predictions based on updated data)
-RANDOM_SEED = 42  # Fixed seed for deterministic results
+# Configuration:
+ENSEMBLE_MODE = False # Set to True to enable ensemble mode in quickpick.py (not used currently)
+ENSEMBLE_RUNS = 15    # Number of runs for ensemble.py script (recommend 10-20)
+RANDOM_SEED_BASE = 42 # Base seed - fixed for deterministic results
+
+# Dynamic random seed (will be updated for each ensemble run)
+# This is what model configs will use
+_CURRENT_RANDOM_SEED = RANDOM_SEED_BASE
 
 TOTAL_DRAWS = 600
 TRAINING_DATA = 100
