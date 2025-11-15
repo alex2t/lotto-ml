@@ -2,9 +2,15 @@
 """
 Configuration settings for lottery analysis
 
-VERSION: 3.5 (Bonus Ball Edition)
-- Added BONUS_MODEL_CONFIG for bonus ball prediction
-- Added BONUS_ANALYSIS_JSON file path
+VERSION: 3.12 (Pattern Weights Fix Edition)
+- FIXED: FRESHNESS_PATTERN_WEIGHTS now uses interaction features instead of redundant one-hot encoding
+  * New features: freshness_momentum, freshness_timing, freshness_category_interaction
+  * Removes multicollinearity and provides better within-bin discrimination
+- FIXED: LONG_TERM_PATTERN_WEIGHTS now uses corrected recency data
+  * Fixed days_since_last calculation to use historical values
+  * Recency correlations now properly distributed across bins (0-7, 8-14, ..., 121+ days)
+- Kept BONUS_MODEL_CONFIG for bonus ball prediction
+- Kept BONUS_ANALYSIS_JSON file path
 """
 
 TOTAL_DRAWS = 600
