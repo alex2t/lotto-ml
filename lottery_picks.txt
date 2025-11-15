@@ -1,5 +1,9 @@
 ======================================================================
+<<<<<<< HEAD
 LOTTERY PICKS - GENERATED 2025-11-15 17:45:51
+=======
+LOTTERY PICKS - GENERATED 2025-11-15 20:23:51
+>>>>>>> claude/analyze-hardcoded-values-01PK9tQG9eYiMaws8Sxufz1D
 ======================================================================
 SPECIALIZED MODEL ARCHITECTURE V3.9
 Model 1: 6 main (2 pre-assigned + 4 selected) + 1 bonus
@@ -23,9 +27,9 @@ Complete: [4, 6, 10, 12, 31, 37] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes
 
 Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
-Main Numbers (6): [5, 11, 18, 23, 33, 36]
+Main Numbers (6): [11, 18, 23, 33, 34, 36]
 Bonus Ball: 10
-Complete: [5, 11, 18, 23, 33, 36] + BONUS 10
+Complete: [11, 18, 23, 33, 34, 36] + BONUS 10
 Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
 
 ======================================================================

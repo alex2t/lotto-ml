@@ -434,6 +434,10 @@
             "last_9",
             "last_24"
         ],
+<<<<<<< HEAD
         "analysis_date": "2025-11-15 17:36:33"
+=======
+        "analysis_date": "2025-11-15 20:12:57"
+>>>>>>> claude/analyze-hardcoded-values-01PK9tQG9eYiMaws8Sxufz1D
     }
 }
