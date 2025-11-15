@@ -1,7 +1,7 @@
 {
     "description": "Data-driven window saturation penalty configuration",
     "version": "1.0",
-    "generated_date": "2025-11-15 12:58:14",
+    "generated_date": "2025-11-15 13:39:19",
     "data_source": {
         "statistics": "data/lotto_statistics_analysis.json",
         "odds": "data/lotto_odds_results.json",
@@ -80,7 +80,7 @@
     "statistical_validation": {
         "test": "One-way ANOVA",
         "f_statistic": 8.221409442546305,
-        "p_value": 0.009312103056130451,
+        "p_value": 0.009312103056130455,
         "significant": true,
         "interpretation": "Category saturation rates are significantly different",
         "hot_mean": 23.669527896995707,

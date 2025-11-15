@@ -12,8 +12,8 @@
     },
     "anova_test": {
         "significant": false,
-        "f_statistic": 1.6734492180518301,
-        "p_value": 0.1993173553597641,
+        "f_statistic": 1.6734492180518294,
+        "p_value": 0.19931735535976403,
         "eta_squared": 0.07068886340296227,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
@@ -56,7 +56,7 @@
             },
             "hot_vs_cold": {
                 "t_statistic": -1.2277727540755021,
-                "p_value": 0.2279648151926381,
+                "p_value": 0.22796481519263811,
                 "significant": false,
                 "mean_difference": -8.34448160535117
             },
