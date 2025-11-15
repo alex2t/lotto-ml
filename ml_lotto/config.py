@@ -133,13 +133,13 @@ MODEL_1_CONFIG = {
     'features': [
         FRESHNESS_PATTERN_WEIGHTS,    # Statistically validated freshness
         'days_since_last',              # Core timing
-        'recency_zone_score',           # Optimal window detection
+        #'recency_zone_score',           # Optimal window detection
         'total_count',                  # Historical frequency
-        'recent_4',                     # NEW - immediate hot streak
+        #'recent_4',                     # NEW - immediate hot streak
         'was_recent_bonus',             # Proven 71% pattern
-        'has_consecutive_partner',      # 57% consecutive pattern
-        'odd_even_json',                # Realism constraint
-        'pair_frequency_score',         # Pattern affinity
+        #'has_consecutive_partner',      # 57% consecutive pattern
+        #'odd_even_json',                # Realism constraint
+        #'pair_frequency_score',         # Pattern affinity
         'bonus_hit_contribution',       # JSON feature
         'window_saturation_penalty',
         'lt_hot_weight',                # Long-term validation
@@ -201,14 +201,14 @@ MODEL_2_CONFIG = {
         'win_bias_ratio',
 
         # Pattern consistency
-        'consecutive_pair_affinity',
+       # 'consecutive_pair_affinity',
 
         # Realism constraints (ensure valid 6-ball combinations)
         'sum_contribution_json',
         'range_spread_json',
 
         # Validated freshness patterns
-        'freshness_weight_score',
+        #'freshness_weight_score',
         FRESHNESS_PATTERN_WEIGHTS,
     ],
 
@@ -251,14 +251,14 @@ MODEL_3_CONFIG = {
         'was_recent_bonus',
         'bonus_hit_contribution',  # Replaced bonus_hit_target_alignment with JSON version
         'has_consecutive_partner',
-        'consecutive_pair_affinity',
+        #'consecutive_pair_affinity',
         'series_recent',
-        'win_bias_ratio',
+        #'win_bias_ratio',
         'odd_even_json',  # Replaced odd_even_affinity with JSON version
         'sum_contribution_json',  # Replaced sum_contribution_score with JSON version
         'range_spread_json',  # Replaced range_spread_affinity with JSON version
-        'freshness_weight_score',
-        'pair_frequency_score'
+        'freshness_weight_score'
+        #'pair_frequency_score'
     ],
 
     'diversity_penalty': 0.25,
@@ -301,7 +301,7 @@ MODEL_4_CONFIG = {
         'recency_zone_score',
 
         # Momentum
-        'recent_4',
+       # 'recent_4',
         'recent_9',
         'recent_14',
 

@@ -1,7 +1,7 @@
 {
     "description": "Data-driven window saturation penalty configuration",
     "version": "1.0",
-    "generated_date": "2025-11-15 02:08:54",
+    "generated_date": "2025-11-15 12:58:14",
     "data_source": {
         "statistics": "data/lotto_statistics_analysis.json",
         "odds": "data/lotto_odds_results.json",
@@ -10,82 +10,82 @@
     "saturation_rates_by_category": {
         "last_4": {
             "hot": {
-                "high_saturation_probability": 29.38144329896907,
-                "expected_frequency": 1.2508591065292096,
+                "high_saturation_probability": 29.356223175965663,
+                "expected_frequency": 1.2506437768240346,
                 "threshold": 2
             },
             "medium": {
                 "high_saturation_probability": 0.0,
-                "expected_frequency": 0.2715008431703204,
+                "expected_frequency": 0.27181208053691275,
                 "threshold": 2
             },
             "cold": {
-                "high_saturation_probability": 0.145985401459854,
-                "expected_frequency": 0.0072992700729927005,
+                "high_saturation_probability": 0.1455604075691412,
+                "expected_frequency": 0.0072780203784570605,
                 "threshold": 2
             }
         },
         "last_5": {
             "hot": {
-                "high_saturation_probability": 37.628865979381445,
-                "expected_frequency": 1.384020618556701,
+                "high_saturation_probability": 37.596566523605155,
+                "expected_frequency": 1.3836909871244634,
                 "threshold": 2
             },
             "medium": {
-                "high_saturation_probability": 3.541315345699832,
-                "expected_frequency": 0.5497470489038786,
+                "high_saturation_probability": 3.523489932885906,
+                "expected_frequency": 0.5503355704697985,
                 "threshold": 2
             },
             "cold": {
-                "high_saturation_probability": 0.145985401459854,
-                "expected_frequency": 0.00875912408759124,
+                "high_saturation_probability": 0.1455604075691412,
+                "expected_frequency": 0.008733624454148471,
                 "threshold": 2
             }
         },
         "last_9": {
             "hot": {
-                "high_saturation_probability": 25.687285223367695,
-                "expected_frequency": 1.9020618556701023,
+                "high_saturation_probability": 25.75107296137339,
+                "expected_frequency": 1.903004291845494,
                 "threshold": 3
             },
             "medium": {
-                "high_saturation_probability": 6.913996627318719,
-                "expected_frequency": 1.3086003372681283,
+                "high_saturation_probability": 6.879194630872484,
+                "expected_frequency": 1.308724832214765,
                 "threshold": 3
             },
             "cold": {
                 "high_saturation_probability": 0.0,
-                "expected_frequency": 0.2948905109489051,
+                "expected_frequency": 0.2954876273653566,
                 "threshold": 3
             }
         },
         "last_24": {
             "hot": {
-                "high_saturation_probability": 1.9759450171821304,
-                "expected_frequency": 3.833333333333334,
+                "high_saturation_probability": 1.9742489270386265,
+                "expected_frequency": 3.8334763948497854,
                 "threshold": 8
             },
             "medium": {
-                "high_saturation_probability": 0.5059021922428331,
-                "expected_frequency": 3.0674536256323783,
+                "high_saturation_probability": 0.5033557046979865,
+                "expected_frequency": 3.065436241610738,
                 "threshold": 8
             },
             "cold": {
                 "high_saturation_probability": 0.0,
-                "expected_frequency": 2.2,
+                "expected_frequency": 2.2023289665211068,
                 "threshold": 8
             }
         }
     },
     "statistical_validation": {
         "test": "One-way ANOVA",
-        "f_statistic": 8.20333979040134,
-        "p_value": 0.009371857907628544,
+        "f_statistic": 8.221409442546305,
+        "p_value": 0.009312103056130451,
         "significant": true,
         "interpretation": "Category saturation rates are significantly different",
-        "hot_mean": 23.668384879725085,
-        "medium_mean": 2.7403035413153463,
-        "cold_mean": 0.072992700729927
+        "hot_mean": 23.669527896995707,
+        "medium_mean": 2.726510067114094,
+        "cold_mean": 0.0727802037845706
     },
     "penalty_configuration": {
         "penalty_thresholds": {
@@ -93,7 +93,7 @@
                 "description": "Recent count >= target (already saturated)",
                 "base_multiplier": 1.0,
                 "category_adjustments": {
-                    "hot": 3.9057846506300113,
+                    "hot": 3.922174535050072,
                     "medium": 1.0,
                     "cold": 0.5
                 }
@@ -102,7 +102,7 @@
                 "description": "Recent count = target - 1 (approaching saturation)",
                 "base_multiplier": 0.6,
                 "category_adjustments": {
-                    "hot": 3.9057846506300113,
+                    "hot": 3.922174535050072,
                     "medium": 1.0,
                     "cold": 0.5
                 }
@@ -111,7 +111,7 @@
                 "description": "Recent count = target - 2 (near saturation)",
                 "base_multiplier": 0.3,
                 "category_adjustments": {
-                    "hot": 3.9057846506300113,
+                    "hot": 3.922174535050072,
                     "medium": 1.0,
                     "cold": 0.5
                 }
