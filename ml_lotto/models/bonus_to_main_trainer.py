@@ -17,7 +17,9 @@ def train_bonus_to_main_model(
     model_config: Dict,
     all_draws: List[Dict],
     bonus_to_main_features: Dict,
-    training_start_draw: int
+    training_start_draw: int,
+    training_end_draw: int = None,
+    validation_start_draw: int = None
 ) -> Tuple:
     """
     Train model to predict which numbers from recent bonus list will appear as main.
@@ -27,10 +29,15 @@ def train_bonus_to_main_model(
         all_draws: List of all historical draws
         bonus_to_main_features: Feature dictionary for all numbers
         training_start_draw: Index to start training from
+        training_end_draw: Index to end training (exclusive). If None, uses all available draws.
+        validation_start_draw: Index to start validation from
 
     Returns:
         Tuple of (trained_pipeline, feature_list)
     """
+    if training_end_draw is None:
+        training_end_draw = len(all_draws)
+
     print(f"\n{'='*70}")
     print(f"TRAINING BONUS-TO-MAIN PREDICTOR: {model_config['name']}")
     print(f"{'='*70}")
@@ -44,17 +51,18 @@ def train_bonus_to_main_model(
     X_train = []
     y_train = []
 
-    print(f"\nBuilding training dataset...")
+    print(f"\nBuilding TRAINING dataset...")
     print(f"  Total draws available: {len(all_draws)}")
     print(f"  Training start index: {training_start_draw}")
-    print(f"  Training draws: {len(all_draws) - training_start_draw}")
+    print(f"  Training end index: {training_end_draw}")
+    print(f"  Training draws: {training_end_draw - training_start_draw}")
 
     # Check first draw structure
     if all_draws:
         print(f"  Sample draw keys: {list(all_draws[0].keys())}")
 
     # For each draw starting from training_start_draw
-    for draw_idx in range(training_start_draw, len(all_draws)):
+    for draw_idx in range(training_start_draw, training_end_draw):
         current_draw = all_draws[draw_idx]
 
         # Get numbers in recent bonus window for this draw
@@ -158,6 +166,75 @@ def train_bonus_to_main_model(
 
     print(f"\n✓ Training complete!")
     print(f"  Training accuracy: {train_acc*100:.1f}%")
+
+    # Build validation dataset if specified
+    if validation_start_draw is not None:
+        print(f"\nBuilding VALIDATION dataset...")
+        print(f"  Validation start index: {validation_start_draw}")
+        print(f"  Validation draws: {len(all_draws) - validation_start_draw}")
+
+        X_val = []
+        y_val = []
+
+        for draw_idx in range(validation_start_draw, len(all_draws)):
+            current_draw = all_draws[draw_idx]
+
+            if draw_idx < 10:
+                continue
+
+            recent_bonus_numbers = []
+            recent_bonus_positions = {}
+
+            lookback_start = max(0, draw_idx - 10)
+            for prev_idx in range(lookback_start, draw_idx):
+                prev_draw = all_draws[prev_idx]
+                bonus_num = prev_draw.get('bonus_number') or prev_draw.get('bonus')
+                if bonus_num:
+                    if bonus_num not in recent_bonus_numbers:
+                        recent_bonus_numbers.append(bonus_num)
+                        draws_ago = draw_idx - prev_idx - 1
+                        recent_bonus_positions[bonus_num] = draws_ago
+
+            current_main_numbers = current_draw.get('numbers', [])
+
+            for num in recent_bonus_numbers:
+                if num not in bonus_to_main_features:
+                    continue
+
+                base_features = bonus_to_main_features[num]
+                draws_since_bonus = recent_bonus_positions.get(num, -1)
+
+                feature_vector = []
+                for fname in feature_names:
+                    if fname == 'is_in_bonus_window':
+                        feature_vector.append(1.0)
+                    elif fname == 'draws_since_bonus':
+                        feature_vector.append(float(draws_since_bonus))
+                    elif fname == 'timing_decay_weight':
+                        val = base_features.get(fname, 0.0)
+                        feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
+                    else:
+                        val = base_features.get(fname, 0.0)
+                        feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
+
+                X_val.append(feature_vector)
+                y_val.append(1 if num in current_main_numbers else 0)
+
+        if len(X_val) > 0:
+            X_val = np.array(X_val)
+            y_val = np.array(y_val)
+
+            val_pred = pipeline.predict(X_val)
+            val_acc = np.mean(val_pred == y_val)
+
+            print(f"\n📊 Train Accuracy: {train_acc:.4f}")
+            print(f"📊 Validation Accuracy: {val_acc:.4f}")
+            print(f"  Validation samples: {len(X_val)}")
+
+            if train_acc - val_acc > 0.05:
+                print(f"  ⚠️  Warning: Possible overfitting detected (diff: {train_acc - val_acc:.4f})")
+        else:
+            print("  ⚠️  No validation samples generated")
 
     return pipeline, feature_names
 
