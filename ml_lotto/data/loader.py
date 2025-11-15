@@ -693,6 +693,77 @@ def load_long_term_patterns(filename: str) -> Dict[str, Any]:
     return data
 
 
+def load_advanced_patterns(filename: str) -> Dict[str, Any]:
+    """
+    Load advanced pattern features (volatility, trend, temporal).
+
+    This loads the output from lotto_analysis/analyzers/advanced_pattern_analyzer.py
+    which provides volatility and trend features for improved ML prediction.
+
+    Args:
+        filename: Path to lotto_advanced_patterns.json
+
+    Returns:
+        Dictionary containing:
+        - metadata: Analysis metadata
+        - summary_statistics: Overall volatility and trend stats
+        - per_number_features: Features for each number including:
+            * appearance_volatility: Coefficient of variation of gaps
+            * gap_consistency_score: 1/(1+volatility), bounded [0-1]
+            * max_gap_ratio: Max gap / avg gap
+            * appearance_trend: Recent vs older frequency change
+            * appearance_acceleration: Very recent trend change
+
+    Raises:
+        FileNotFoundError: If the data file doesn't exist
+        ValueError: If the data is invalid
+    """
+    try:
+        with open(filename, 'r') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} not found.")
+        print(f"   This file contains advanced pattern features (volatility, trend).")
+        print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to generate all data files.")
+        raise FileNotFoundError(f"Missing required file: {filename}")
+    except json.JSONDecodeError as e:
+        print(f"\n[ERROR] CRITICAL ERROR: Invalid JSON in {filename}")
+        print(f"   Error details: {e}")
+        raise ValueError(f"Corrupted JSON file: {filename}")
+
+    if not data:
+        print(f"\n[ERROR] CRITICAL ERROR: {filename} is empty.")
+        raise ValueError(f"Empty data file: {filename}")
+
+    # Validate structure
+    required_keys = ['per_number_features', 'metadata']
+    missing_keys = [key for key in required_keys if key not in data]
+    if missing_keys:
+        print(f"\n[WARNING] WARNING: Missing keys in {filename}: {missing_keys}")
+
+    print(f"[OK] Loaded advanced pattern features from {filename}")
+    print(f"  Purpose: Volatility and trend features for ML prediction")
+
+    # Display summary info
+    if 'metadata' in data:
+        meta = data['metadata']
+        print(f"  Feature types: {', '.join(meta.get('feature_types', []))}")
+        print(f"  Total numbers: {meta.get('total_numbers', 0)}")
+        print(f"  Total draws: {meta.get('total_draws', 0)}")
+
+    if 'summary_statistics' in data:
+        summary = data['summary_statistics']
+        if 'volatility' in summary:
+            vol_stats = summary['volatility']
+            print(f"  Volatility range: {vol_stats.get('min', 0):.2f} - {vol_stats.get('max', 0):.2f}")
+        if 'trend' in summary:
+            trend_stats = summary['trend']
+            print(f"  Trending up: {trend_stats.get('trending_up_count', 0)} numbers")
+            print(f"  Trending down: {trend_stats.get('trending_down_count', 0)} numbers")
+
+    return data
+
+
 def load_statistics_analysis(filename: str) -> Dict[str, Any]:
     """
     DEPRECATED: Use load_long_term_patterns() instead.

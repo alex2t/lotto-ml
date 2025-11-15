@@ -35,6 +35,7 @@ from lotto_analysis.analyzers.sum_contribution_analyzer import analyze_sum_contr
 from lotto_analysis.analyzers.freshness_pattern_analyzer import analyze_freshness_patterns
 from lotto_analysis.analyzers.hmc_categorization_analyzer import analyze_hmc_categorization
 from lotto_analysis.analyzers.long_term_pattern_analyzer import generate_long_term_pattern_analysis
+from lotto_analysis.analyzers.advanced_pattern_analyzer import generate_advanced_pattern_analysis
 
 # Import statistics and window saturation analyzers (Phase 11)
 from analysis.bonus_analysis import (
@@ -544,6 +545,18 @@ def main():
     generate_window_saturation_data(stats_file, odds_file, output_file)
     print(f"  ✓ Window saturation analysis complete")
 
+    # ===== ADVANCED PATTERN ANALYSIS (PHASE 13) =====
+    print("\n" + "=" * 70)
+    print("Phase 13: Advanced Pattern Features (Volatility + Trend)")
+    print("=" * 70)
+    print("Generating volatility and trend features for improved prediction...")
+
+    advanced_pattern_results = generate_advanced_pattern_analysis(draw_history_log, MAX_NUMBER)
+    OUTPUT_FILE_ADVANCED = "data/lotto_advanced_patterns.json"
+    write_json_file(OUTPUT_FILE_ADVANCED, advanced_pattern_results,
+                   "Advanced pattern features: volatility, trend, and temporal analysis")
+    print(f"  ✓ Saved to {OUTPUT_FILE_ADVANCED}")
+
     print("\n" + "=" * 70)
     print("✓ All Analysis Phases Complete!")
     print("=" * 70)
@@ -572,7 +585,8 @@ def main():
         "data/lotto_hmc_categorization_validated.json",
         "data/lotto_long_term_patterns.json",
         "data/lotto_statistics_analysis.json",
-        "data/lotto_window_saturation_calculated.json"
+        "data/lotto_window_saturation_calculated.json",
+        "data/lotto_advanced_patterns.json"
     ]
 
     missing_files = []

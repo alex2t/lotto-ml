@@ -47,6 +47,7 @@ from ml_lotto.config import (
     BONUS_ANALYSIS_JSON,
     BONUS_TO_MAIN_JSON,
     LONG_TERM_PATTERNS_JSON,
+    ADVANCED_PATTERNS_JSON,
     FRESHNESS_PATTERNS_VALIDATED_JSON,
     HMC_CATEGORIZATION_VALIDATED_JSON,
     CONSECUTIVE_PAIRS_VALIDATED_JSON,
@@ -75,6 +76,7 @@ from ml_lotto.data.loader import (
     load_bonus_analysis,
     load_bonus_to_main_patterns,
     load_long_term_patterns,
+    load_advanced_patterns,
     load_freshness_patterns_validated,
     load_hmc_categorization_validated,
     load_consecutive_pairs_validated,
@@ -348,6 +350,7 @@ def main():
             bonus_analysis_data = load_bonus_analysis(BONUS_ANALYSIS_JSON)
             bonus_to_main_data = load_bonus_to_main_patterns(BONUS_TO_MAIN_JSON)
             long_term_analysis = load_long_term_patterns(LONG_TERM_PATTERNS_JSON)
+            advanced_patterns_analysis = load_advanced_patterns(ADVANCED_PATTERNS_JSON)
 
         # Load scipy-validated feature analyses
         if VERBOSE:
@@ -468,6 +471,18 @@ def main():
             all_draws=all_draws
         )
 
+        print("  Extracting 'advanced_pattern' features (volatility + trend)...")
+        # Extract per-number features from advanced_patterns_analysis
+        advanced_pattern_features_dict = {}
+        if advanced_patterns_analysis and 'per_number_features' in advanced_patterns_analysis:
+            for num_str, features in advanced_patterns_analysis['per_number_features'].items():
+                num = int(num_str)
+                advanced_pattern_features_dict[num] = features
+            print(f"    ✓ Loaded advanced features for {len(advanced_pattern_features_dict)} numbers")
+        else:
+            print("    ⚠️  No advanced pattern features found - using defaults")
+            advanced_pattern_features_dict = {}
+
         pattern_score_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
 
         print("  Extracting dynamic recent count keys...")
@@ -495,6 +510,7 @@ def main():
                 odd_even_json_data,
                 sum_contribution_json_data,
                 long_term_pattern_features,
+                advanced_pattern_features_dict,
                 consecutive_pairs_validated
             )
             print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
