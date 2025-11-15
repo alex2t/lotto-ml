@@ -13,34 +13,34 @@
     "anova_test": {
         "significant": true,
         "f_statistic": 183.95289158966483,
-        "p_value": 4.269778178215309e-22,
+        "p_value": 4.2697781782153075e-22,
         "eta_squared": 0.8931794556017589,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
                 "count": 23,
-                "mean_days_since": 10.173913043478262,
+                "mean_days_since": 11.173913043478262,
                 "std_dev": 3.7374295239696913,
-                "median": 9.0,
-                "min": 6.0,
-                "max": 16.0
+                "median": 10.0,
+                "min": 7.0,
+                "max": 17.0
             },
             "medium": {
                 "count": 11,
-                "mean_days_since": 23.636363636363637,
+                "mean_days_since": 24.636363636363637,
                 "std_dev": 3.585323619221207,
-                "median": 23.0,
-                "min": 20.0,
-                "max": 30.0
+                "median": 24.0,
+                "min": 21.0,
+                "max": 31.0
             },
             "cold": {
                 "count": 13,
-                "mean_days_since": 51.30769230769231,
+                "mean_days_since": 52.30769230769231,
                 "std_dev": 10.19300916792661,
-                "median": 51.0,
-                "min": 37.0,
-                "max": 69.0
+                "median": 52.0,
+                "min": 38.0,
+                "max": 70.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -90,21 +90,21 @@
         "medium_cold_overlap": false,
         "categories_distinct": true,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 13.0,
-            "medium_cold_cutoff": 27.0
+            "hot_medium_cutoff": 14.0,
+            "medium_cold_cutoff": 28.0
         },
         "current_ranges": {
             "hot": {
-                "min": 6.0,
-                "max": 16.0
+                "min": 7.0,
+                "max": 17.0
             },
             "medium": {
-                "min": 20.0,
-                "max": 30.0
+                "min": 21.0,
+                "max": 31.0
             },
             "cold": {
-                "min": 37.0,
-                "max": 69.0
+                "min": 38.0,
+                "max": 70.0
             }
         }
     },
