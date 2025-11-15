@@ -7,6 +7,10 @@ TOTAL_DRAWS = 600          # Total number of draws to analyze
 TRAINING_DATA = 100        # Initial training window size for HMC analysis
 NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA  # Draws used for pattern analysis
 
+# Train/Validation Split Configuration (matches ml_lotto/config.py)
+# Prevents data leakage by calculating final categories only from training data
+VALIDATION_SPLIT_RATIO = 0.80  # 80% train, 20% validation
+
 # =============== FILE PATHS ===============
 CSV_FILE = 'data/irish500.csv'  # Path to CSV file
 OUTPUT_FILE_MAIN = "data/lotto_odds_results.json"
