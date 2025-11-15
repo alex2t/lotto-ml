@@ -147,7 +147,7 @@ MODEL_1_CONFIG = {
         'days_since_last',              # Core timing
         #'recency_zone_score',           # Optimal window detection
         'total_count',                  # Historical frequency
-        #'recent_4',                     # NEW - immediate hot streak
+        'recent_4',                     # NEW - immediate hot streak
         'was_recent_bonus',             # Proven 71% pattern
         #'has_consecutive_partner',      # 57% consecutive pattern
         #'odd_even_json',                # Realism constraint
@@ -245,7 +245,7 @@ MODEL_3_CONFIG = {
     'generic_count': 0,
 
     'features': [
-        #'recent_4',
+        'recent_4',
         FRESHNESS_PATTERN_WEIGHTS,        # Interaction features for freshness patterns
         LONG_TERM_PATTERN_WEIGHTS,        # UPDATED v3.13: Long-term HMC and recency (removed redundant hot/medium/cold)
         ADVANCED_PATTERN_FEATURES,        # NEW v3.13: Volatility and trend features
@@ -306,7 +306,7 @@ MODEL_4_CONFIG = {
         'recency_zone_score',
 
         # Momentum
-       # 'recent_4',
+        'recent_4',
         'recent_9',
         'recent_14',
 
