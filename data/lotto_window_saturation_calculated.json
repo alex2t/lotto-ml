@@ -1,7 +1,11 @@
 {
     "description": "Data-driven window saturation penalty configuration",
     "version": "1.0",
+<<<<<<< HEAD
     "generated_date": "2025-11-15 17:36:33",
+=======
+    "generated_date": "2025-11-15 20:12:57",
+>>>>>>> claude/analyze-hardcoded-values-01PK9tQG9eYiMaws8Sxufz1D
     "data_source": {
         "statistics": "data/lotto_statistics_analysis.json",
         "odds": "data/lotto_odds_results.json",
