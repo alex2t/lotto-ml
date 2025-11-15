@@ -27,7 +27,7 @@
             "transition_rate": 0.9,
             "avg_draws_to_transition": 3.78,
             "days_since_last_bonus": 52,
-            "most_common_category": "hot",
+            "most_common_category": "medium",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
                 "draw_4_5": 2,
@@ -57,7 +57,7 @@
             "transition_rate": 0.8,
             "avg_draws_to_transition": 5.0,
             "days_since_last_bonus": 476,
-            "most_common_category": "hot",
+            "most_common_category": "medium",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_6_10": 2,
@@ -71,7 +71,7 @@
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 4.75,
             "days_since_last_bonus": 73,
-            "most_common_category": "hot",
+            "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_6_10": 2,
@@ -115,7 +115,7 @@
             "transition_rate": 0.5,
             "avg_draws_to_transition": 5.0,
             "days_since_last_bonus": 161,
-            "most_common_category": "hot",
+            "most_common_category": "medium",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
                 "draw_4_5": 1
@@ -350,7 +350,7 @@
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 3.0,
             "days_since_last_bonus": 185,
-            "most_common_category": "hot",
+            "most_common_category": "medium",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_4_5": 1,
@@ -523,7 +523,7 @@
             "transition_rate": 0.75,
             "avg_draws_to_transition": 5.0,
             "days_since_last_bonus": 518,
-            "most_common_category": "hot",
+            "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_1_3": 2,
@@ -537,7 +537,7 @@
             "transition_rate": 0.7143,
             "avg_draws_to_transition": 4.8,
             "days_since_last_bonus": 119,
-            "most_common_category": "hot",
+            "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_6_10": 2,
