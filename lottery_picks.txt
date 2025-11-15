@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-15 15:48:05
+LOTTERY PICKS - GENERATED 2025-11-15 20:23:51
 ======================================================================
 SPECIALIZED MODEL ARCHITECTURE V3.9
 Model 1: 6 main (2 pre-assigned + 4 selected) + 1 bonus
@@ -17,15 +17,15 @@ Complete: [6, 10, 20, 21, 35, 42] + BONUS 20
 Description: Captures immediate patterns with bonus and recent-bonus pre-assignment
 
 Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [0H-3M-2C+1G | C0=2, C1=3, C_GE_2=1]
-Main Numbers (6): [6, 10, 12, 21, 31, 35]
+Main Numbers (6): [4, 6, 10, 12, 31, 37]
 Bonus Ball: None (jackpot optimizer - main 6 only)
-Complete: [6, 10, 12, 21, 31, 35] (6 main only)
+Complete: [4, 6, 10, 12, 31, 37] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes
 
 Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
-Main Numbers (6): [5, 11, 18, 23, 33, 36]
+Main Numbers (6): [11, 18, 23, 33, 34, 36]
 Bonus Ball: 10
-Complete: [5, 11, 18, 23, 33, 36] + BONUS 10
+Complete: [11, 18, 23, 33, 34, 36] + BONUS 10
 Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
 
 ======================================================================
@@ -33,12 +33,12 @@ MODEL 4: CANDIDATE POOL ANALYSIS
 ======================================================================
 Pool Configuration: 6H+8M+4C=18
 Total Candidates: 18
-Quality Score: 87/100
+Quality Score: 91/100
 
-Full Pool (ranked by probability): [35, 38, 45, 27, 10, 12, 26, 21, 13, 37, 22, 43, 28, 40, 11, 6, 7, 8]
+Full Pool (ranked by probability): [35, 38, 45, 27, 10, 12, 26, 21, 13, 2, 37, 43, 11, 28, 7, 40, 6, 8]
 
 Freshness Distribution:
-  C0:  6 numbers ( 33.3%)
-  C1:  9 numbers ( 50.0%)
+  C0:  7 numbers ( 38.9%)
+  C1:  8 numbers ( 44.4%)
   C2:  3 numbers ( 16.7%)
 
