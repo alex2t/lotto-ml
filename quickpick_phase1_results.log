@@ -1,0 +1,667 @@
+======================================================================
+INTELLIGENT LOTTO SYSTEM V3.9: SPECIALIZED MODEL ARCHITECTURE
+======================================================================
+Active Models: 4 main models + 1 bonus model + 1 bonus-to-main model
+NEW: Specialized model objectives with different training strategies
+  Model 1: Momentum specialist (6 main + bonus)
+  Model 2: Jackpot optimizer - MAIN 6 ONLY (NO BONUS)
+  Model 3: Complexity explorer (6 main + bonus)
+  Model 4: Pool generator (configurable candidate pool)
+
+Loading data files...
+
+======================================================================
+SCIPY STATISTICAL VALIDATION STATUS
+======================================================================
+
+SCIPY-VALIDATED Features:
+  ✓ Freshness Patterns        (p=0.0000)
+  ✓ Sum Contribution          (p=0.0000)
+  ✓ Range Spread              (p=0.0222)
+
+Standard (non-validated) Features:
+  ✗ HMC Categorization        (p=0.1993) - using standard fallback
+  ✗ Consecutive Pairs         (p=0.7968) - using standard fallback
+  ✗ Odd/Even Distribution     (p=0.9678) - using standard fallback
+
+[OK] Loaded Freshness Config: W=5, C_max=2, key=last_4
+  Top pattern: C0=3, C1=3, C_GE_2=1
+  Pattern weights: {0: 0.42857142857142855, 1: 0.42857142857142855, 2: 0.14285714285714285}
+
+Extracting features and training models...
+  ✓ Loaded consecutive patterns data
+  Calculating 'days_since_bonus' feature...
+✓ Custom feature 'days_since_bonus' calculated.
+  Calculating 'was_recent_bonus' feature...
+✓ Custom feature 'was_recent_bonus' calculated (last 10 draws).
+  9 numbers were recent bonus balls: [1, 8, 15, 17, 35, 42, 44, 46, 47]
+  Extracting 'win_bias_ratio' from draw history...
+✓ Extracted 'win_bias_ratio' from latest draw (2025-11-11)
+  Calculating 'freshness_category' features...
+
+✓ Using SCIPY-VALIDATED freshness weights (chi-square tested)
+
+✓ Freshness Pattern Analysis (W-1 key: last_4, C_max: 2):
+  SOURCE: Scipy-validated chi-square tested weights
+  Target bins: ['C0', 'C1', 'C>=2']
+    C0 weight: 42.9%
+    C1 weight: 42.9%
+    C>=2 weight: 14.3%
+
+  Current number distribution:
+    C0: 19 numbers
+    C1: 21 numbers
+    C>=2: 7 numbers
+  Calculating 'long_term_pattern' features...
+
+============================================================
+LONG-TERM PATTERN ANALYSIS (Statistical Features)
+============================================================
+
+✓ Long-Term HMC Pattern Analysis (Statistical):
+  Total patterns analyzed: 19
+  Chi-square p-value: 0.0000
+  Statistically significant: True (p < 0.05)
+  Validated category weights:
+    Hot weight: 48.7%
+    Medium weight: 23.3%
+    Cold weight: 28.0%
+
+  Current number distribution:
+    Hot: 23 numbers
+    Medium: 11 numbers
+    Cold: 13 numbers
+
+✓ Long-Term Recency Correlation Analysis:
+  Hot: correlation=-0.973, p=0.1475, sig=False
+  Medium: correlation=0.000, p=1.0000, sig=False
+  Cold: correlation=-0.831, p=0.0812, sig=False
+
+✓ Long-term statistical features calculated for all 47 numbers
+============================================================
+
+  Extracting 'advanced_pattern' features (volatility + trend)...
+    ✓ Loaded advanced features for 47 numbers
+  Extracting dynamic recent count keys...
+    Found 4 dynamic features: ['recent_4', 'recent_5', 'recent_9', 'recent_24']
+  Combining all MAIN NUMBER features...
+  Calculating Priority 2 features...
+✓ Custom feature 'has_consecutive_partner' calculated.
+  40/47 numbers have hot consecutive neighbors
+✓ Using SCIPY-VALIDATED consecutive pair scores (binomial tested)
+  0/47 numbers have high pair affinity (>0.7)
+  SOURCE: Scipy binomial tests with p<0.05 significance
+  ✓ Skipped duplicate calculations (using JSON-loaded versions)
+  Loading NEW JSON features...
+  ✓ Loaded bonus_hit_contribution data
+  ✓ Loaded freshness_weight data
+  ✓ Loaded pair_frequency data
+  ✓ Loaded range_spread_json data
+  ✓ Loaded odd_even_json data
+  ✓ Loaded sum_contribution_json data
+  ✓ Loaded long-term pattern features
+  ✓ Loaded advanced pattern features (volatility, trend)
+  Calculating window_saturation_penalty feature...
+  ✓ Window saturation penalties calculated for 47 numbers
+
+✓ Extracting features from HMC data:
+  Static features: ['total_count', 'days_since_last', 'recency_zone_score', 'series_total', 'series_recent', 'days_since_bonus', 'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner', 'consecutive_pair_affinity', 'bonus_hit_contribution', 'freshness_weight_score', 'pair_frequency_score', 'range_spread_json', 'odd_even_json', 'sum_contribution_json']
+  Freshness features: ['freshness_c0_weight', 'freshness_c1_weight', 'freshness_c2_weight', 'current_freshness_bin']
+  Dynamic features: ['recent_4', 'recent_5', 'recent_9', 'recent_24']
+  Long-term pattern features: ['lt_hot_weight', 'lt_medium_weight', 'lt_cold_weight', 'lt_category_alignment', 'lt_recency_weight']
+  ✓ Main number features extracted for 47 numbers
+✓ Main feature extraction completed in 0.06 seconds
+
+Step 2b: Extracting BONUS BALL features from JSON...
+
+======================================================================
+EXTRACTING BONUS FEATURES FROM JSON
+======================================================================
+Source: lotto_bonus_analysis.json
+CRITICAL: All weights loaded from JSON - NO HARDCODED VALUES
+
+✓ Extracted bonus features for 47 numbers
+  Features per number: 8
+  Category weights from JSON: {0.99, 1.03}
+  Recent bonus exclusions: 9 numbers
+  ✓ Bonus features extracted for 47 numbers
+✓ Bonus feature extraction completed in 0.00 seconds
+
+Step 3: Training BONUS BALL prediction model...
+
+======================================================================
+TRAINING BONUS BALL PREDICTION MODEL
+======================================================================
+Model: Bonus Ball Predictor
+Algorithm: logistic_regression
+Features: ['category_weight', 'was_bonus_last_10', 'freshness_weight', 'timing_zone_weight', 'days_since_last_bonus', 'bonus_frequency_ratio', 'total_bonus_count', 'avg_days_between_bonus']
+
+  Building bonus full dataset...
+    Draw range: 100 to 407 (308 draws)
+    Training records: 14476
+    Bonus ball occurrences: 308
+    Class balance: 308/14476 (2.13%)
+
+  Training bonus model...
+  ✓ Bonus model training complete
+✓ Bonus model training completed in 0.12 seconds
+
+Step 4: Generating 3 BONUS BALL predictions...
+
+======================================================================
+GENERATING BONUS BALL PREDICTIONS
+======================================================================
+
+  Total candidates: 47
+  Recent bonus exclusions: 9 numbers
+  Available pool: 38 numbers
+
+  Selecting 3 diverse predictions...
+    Prediction 1: #20 (prob=0.0272, cat=hot) - Highest probability
+    Prediction 2: #41 (prob=0.0266, cat=hot) - Category diversity
+    Prediction 3: #10 (prob=0.0260, cat=medium) - Alternative category
+
+✓ Generated 3 bonus predictions: [20, 41, 10]
+  Category distribution: ['hot', 'hot', 'medium']
+✓ Generated 3 bonus predictions
+
+  Bonus assignments:
+    Model 1 → Bonus #20
+    Model 2 → Bonus #41
+    Model 3 → Bonus #10
+    Model 4 → Bonus #20
+
+Step 4b: Calculating LIVE bonus window and extracting BONUS-TO-MAIN features...
+  Calculating current bonus window from recent draws...
+  ✓ Live bonus window calculated: 10 entries
+  ✓ Using LIVE bonus window (dynamically calculated from recent draws)
+  ✓ Bonus-to-main features extracted for 47 numbers
+✓ Bonus-to-main feature extraction completed in 0.00 seconds
+
+Step 4c: Training BONUS-TO-MAIN prediction model...
+
+======================================================================
+TRAINING BONUS-TO-MAIN PREDICTOR: Bonus-to-Main Transition Predictor
+======================================================================
+Features: 12
+  - is_in_bonus_window
+  - draws_since_bonus
+  - historical_transition_rate
+  - category_multiplier
+  - freshness_multiplier
+  - timing_decay_weight
+  - composite_transition_score
+  - window_saturation_penalty
+  - avg_draws_to_transition
+  - recent_4
+  - recent_9
+  - total_count
+
+Building TRAINING dataset...
+  Total draws available: 408
+  Training start index: 100
+  Training end index: 408
+  Training draws: 308
+  Sample draw keys: ['date', 'draw_index', 'numbers', 'bonus_number']
+
+Training data: 2864 samples
+  Positive class (appeared as main): 430 (15.0%)
+  Negative class: 2434 (85.0%)
+
+Training logistic_regression...
+Applying isotonic calibration...
+
+✓ Training complete!
+  Training accuracy: 85.0%
+✓ Bonus-to-main model training completed in 0.05 seconds
+
+Step 4d: Generating 3 BONUS-TO-MAIN predictions...
+  Current bonus window (last 10 draws): [46, 35, 46, 8, 44, 1, 42, 47, 17, 15]
+  Using LIVE window (adapts to most recent draws)
+
+======================================================================
+GENERATING BONUS-TO-MAIN PREDICTIONS
+======================================================================
+Current bonus window: [46, 35, 46, 8, 44, 1, 42, 47, 17, 15]
+Unique candidates: 9 numbers (after deduplication)
+
+Top candidates from bonus window:
+  1. Number 42:  17.3% [hot   ] (6.0 draws ago)
+  2. Number 35:  12.9% [medium] (1.0 draws ago)
+  3. Number  1:  12.9% [hot   ] (5.0 draws ago)
+  4. Number 47:  12.9% [cold  ] (7.0 draws ago)
+  5. Number 15:  12.9% [medium] (9.0 draws ago)
+  6. Number 46:  12.8% [hot   ] (2.0 draws ago)
+  7. Number 17:  11.5% [hot   ] (8.0 draws ago)
+  8. Number 44:  11.2% [medium] (4.0 draws ago)
+  9. Number  8:   6.9% [medium] (3.0 draws ago)
+
+✓ Selected 3 numbers from recent bonus window:
+  Pick 1: Number 42 - 17.3% [hot   ] (6.0 draws ago)
+  Pick 2: Number 35 - 12.9% [medium] (1.0 draws ago)
+  Pick 3: Number  1 - 12.9% [hot   ] (5.0 draws ago)
+✓ Generated 3 bonus-to-main predictions: [42, 35, 1]
+
+======================================================================
+BONUS-TO-MAIN ASSIGNMENTS TO MODELS
+======================================================================
+Model 1: Number 42
+Model 2: Number 35
+Model 3: Number  1
+Model 4: No assignment
+
+Step 5: Analyzing HMC distribution patterns...
+[OK] Most likely HMC pattern: 4-1-2 (12.50%)
+
+Step 6: Training MAIN NUMBER prediction models...
+
+======================================================================
+TRAINING MULTIPLE ML MODELS WITH SPECIALIZED OBJECTIVES
+======================================================================
+
+MODEL SPECIALIZATION:
+  Model 1: Momentum specialist (all 7 positions)
+  Model 2: Jackpot optimizer (main 6 ONLY) ⭐
+  Model 3: Complexity explorer (all 7 positions)
+
+DATA SOURCES:
+  Features (X) ← lotto_trigger_periods.json + custom calculations
+  Labels (y)   ← lotto_draw_history.json
+
+📊 TRAIN/VALIDATION SPLIT:
+  Total available draws: 308
+  Training draws: 246 (79.9%)
+  Validation draws: 62 (20.1%)
+  Split ratio: 0.80
+  ✓ Validation set held out to prevent data leakage
+  Available features: ['total_count', 'days_since_last', 'recency_zone_score', 'series_total', 'series_recent', 'days_since_bonus', 'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner', 'consecutive_pair_affinity', 'bonus_hit_contribution', 'freshness_weight_score', 'pair_frequency_score', 'range_spread_json', 'odd_even_json', 'sum_contribution_json', 'window_saturation_penalty', 'freshness_momentum', 'freshness_timing', 'freshness_category_interaction', 'freshness_c0_weight', 'freshness_c1_weight', 'freshness_c2_weight', 'current_freshness_bin', 'recent_4', 'recent_5', 'recent_9', 'recent_24', 'lt_hot_weight', 'lt_medium_weight', 'lt_cold_weight', 'lt_category_alignment', 'lt_statistical_confidence', 'lt_category', 'lt_recency_weight', 'appearance_volatility', 'gap_consistency_score', 'max_gap_ratio', 'appearance_count', 'avg_gap_days', 'std_gap_days', 'appearance_trend', 'appearance_acceleration', 'recent_vs_baseline', 'recent_count', 'older_count', 'very_recent_count']
+
+
+1. Building standard TRAINING dataset (Models 1, 3, 4)...
+
+Building training dataset (exclude_bonus=False)...
+  Draw range: 100 to 345 (246 draws)
+  Standard: Training on ALL 7 positions
+✓ Training dataset created: 11562 records
+
+2. Building standard VALIDATION dataset (Models 1, 3, 4)...
+
+Building full dataset (exclude_bonus=False)...
+  Draw range: 346 to 407 (62 draws)
+✓ Training dataset created: 2914 records
+
+3. Building specialized TRAINING dataset (Model 2)...
+
+Building training dataset (exclude_bonus=True)...
+  Draw range: 100 to 345 (246 draws)
+  Model 2: Training on MAIN 6 ONLY (excluding bonus ball)
+✓ Training dataset created: 11562 records
+
+4. Building specialized VALIDATION dataset (Model 2)...
+
+Building full dataset (exclude_bonus=True)...
+  Draw range: 346 to 407 (62 draws)
+✓ Training dataset created: 2914 records
+
+→ Model 1: Short-Term Momentum + Pre-Assignment Specialist
+  Description: Captures immediate patterns with bonus and recent-bonus pre-assignment
+  Algorithm: logistic_regression
+  Selected features (13): ['lt_hot_weight', 'freshness_timing', 'current_freshness_bin', 'freshness_momentum', 'lt_medium_weight', 'days_since_last', 'bonus_hit_contribution', 'freshness_category_interaction', 'lt_category_alignment', 'was_recent_bonus', 'lt_cold_weight', 'total_count', 'window_saturation_penalty']
+  HMC Configuration: 1H-2M-1C+0G
+  Diversity Penalty: 0%
+  ✓ Training complete
+  📊 Train Accuracy: 0.8511
+  📊 Validation Accuracy: 0.8511
+
+  📊 Feature Importance Analysis:
+  Top 10 Most Important Features:
+    freshness_category_interaction :   0.2060
+    current_freshness_bin          :   0.1840
+    lt_category_alignment          :   0.1802
+    total_count                    :   0.1512
+    freshness_momentum             :   0.0975
+    was_recent_bonus               :   0.0254
+    days_since_last                :   0.0221
+    bonus_hit_contribution         :   0.0167
+    freshness_timing               :   0.0103
+    window_saturation_penalty      :   0.0033
+
+  ⚠️  4 features with importance < 0.01:
+      window_saturation_penalty, lt_cold_weight, lt_medium_weight, lt_hot_weight
+
+  🎯 Calibration Analysis:
+     Mean Calibration Error: 0.0257
+     ✅ Good calibration
+
+→ Model 2: Jackpot Optimizer - 6-Ball Main Prize Specialist
+  Description: Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes
+  Algorithm: logistic_regression
+  ⭐ SPECIAL TRAINING: Optimized for MAIN 6 BALLS (jackpot focus)
+  Selected features (17): ['lt_hot_weight', 'lt_recency_weight', 'recency_zone_score', 'range_spread_json', 'freshness_timing', 'win_bias_ratio', 'current_freshness_bin', 'lt_medium_weight', 'freshness_momentum', 'days_since_last', 'lt_category_alignment', 'sum_contribution_json', 'freshness_category_interaction', 'lt_cold_weight', 'was_recent_bonus', 'total_count', 'window_saturation_penalty']
+  HMC Configuration: 0H-3M-2C+1G
+  Diversity Penalty: 15%
+  ✓ Training complete
+  📊 Train Accuracy: 0.8723
+  📊 Validation Accuracy: 0.8723
+
+  📊 Feature Importance Analysis:
+  Top 10 Most Important Features:
+    total_count                    :   0.1173
+    days_since_last                :   0.1155
+    window_saturation_penalty      :   0.1144
+    current_freshness_bin          :   0.1080
+    freshness_momentum             :   0.0994
+    lt_recency_weight              :   0.0821
+    freshness_category_interaction :   0.0578
+    range_spread_json              :   0.0486
+    was_recent_bonus               :   0.0441
+    freshness_timing               :   0.0387
+
+  ⚠️  5 features with importance < 0.01:
+      lt_category_alignment, lt_cold_weight, lt_hot_weight, lt_medium_weight, win_bias_ratio
+
+  🎯 Calibration Analysis:
+     Mean Calibration Error: 0.0104
+     ✅ Good calibration
+
+→ Model 3: Complex Pattern Discovery + All JSON Features + LT Patterns
+  Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
+  Algorithm: xgboost
+  Selected features (19): ['freshness_timing', 'recent_4', 'days_since_last', 'freshness_category_interaction', 'was_recent_bonus', 'lt_recency_weight', 'range_spread_json', 'freshness_weight_score', 'bonus_hit_contribution', 'series_recent', 'total_count', 'lt_category_alignment', 'has_consecutive_partner', 'current_freshness_bin', 'odd_even_json', 'recency_zone_score', 'freshness_momentum', 'sum_contribution_json', 'days_since_bonus']
+  HMC Configuration: 2H-2M-2C+0G
+  Diversity Penalty: 25%
+  ✓ Training complete
+  📊 Train Accuracy: 0.8511
+  📊 Validation Accuracy: 0.8511
+
+  📊 Feature Importance Analysis:
+  Top 10 Most Important Features:
+    bonus_hit_contribution         :   0.1016
+    total_count                    :   0.0906
+    days_since_bonus               :   0.0688
+    freshness_momentum             :   0.0641
+    recency_zone_score             :   0.0639
+    odd_even_json                  :   0.0631
+    lt_category_alignment          :   0.0631
+    sum_contribution_json          :   0.0571
+    range_spread_json              :   0.0565
+    lt_recency_weight              :   0.0564
+
+  🎯 Calibration Analysis:
+     Mean Calibration Error: 0.0129
+     ✅ Good calibration
+
+→ Model 4: Intelligent Pool Generator
+  Description: Generates expanded ranked pool for flexible selection strategies
+  Algorithm: logistic_regression
+  Selected features (15): ['lt_hot_weight', 'freshness_c2_weight', 'recency_zone_score', 'freshness_c1_weight', 'current_freshness_bin', 'lt_medium_weight', 'recent_9', 'days_since_last', 'lt_category_alignment', 'freshness_c0_weight', 'win_bias_ratio', 'lt_cold_weight', 'was_recent_bonus', 'total_count', 'window_saturation_penalty']
+  HMC Configuration: 6H-8M-4C+0G
+  Diversity Penalty: 0%
+  ✓ Training complete
+  📊 Train Accuracy: 0.8511
+  📊 Validation Accuracy: 0.8511
+
+  📊 Feature Importance Analysis:
+  Top 10 Most Important Features:
+    total_count                    :   0.1280
+    recent_9                       :   0.0577
+    days_since_last                :   0.0486
+    was_recent_bonus               :   0.0365
+    freshness_c1_weight            :   0.0274
+    freshness_c2_weight            :   0.0222
+    window_saturation_penalty      :   0.0154
+    freshness_c0_weight            :   0.0116
+    recency_zone_score             :   0.0114
+    lt_category_alignment          :   0.0094
+
+  ⚠️  6 features with importance < 0.01:
+      lt_category_alignment, current_freshness_bin, lt_cold_weight, lt_hot_weight, lt_medium_weight
+      ... and 1 more
+
+  🎯 Calibration Analysis:
+     Mean Calibration Error: 0.0114
+     ✅ Good calibration
+
+======================================================================
+✓ ALL MODELS TRAINED WITH PROPER VALIDATION
+======================================================================
+
+✓ Main model training completed in 1.16 seconds
+
+======================================================================
+MODEL TRAINING VALIDATION
+======================================================================
+Model 1: Trained on ALL 7 positions (momentum capture)
+Model 2: Trained on MAIN 6 ONLY (jackpot optimization) ⭐
+Model 3: Trained on ALL 7 positions (complexity)
+
+Model 2 Key Differences:
+  - Excludes bonus ball from training labels
+  - Uses long-term stability features
+  - No pre-assigned numbers
+  - Optimizes for 6-ball main prize
+
+Step 7: Generating MAIN NUMBER predictions...
+
+======================================================================
+GENERATING MAIN NUMBER PREDICTIONS
+======================================================================
+  ✓ model_1 predictions generated
+  ✓ model_2 predictions generated
+  ✓ model_3 predictions generated
+  ✓ model_4 predictions generated
+✓ Main number predictions generated for 4 models
+
+Step 8: Creating pre-assigned number combinations (bonus + bonus-to-main)...
+  Model 1: Pre-assigned [Bonus: 20, Bonus-to-Main: 42]
+  Model 2: No pre-assignment (selects all 6 numbers)
+  Model 3: No pre-assignment (selects all 6 numbers)
+
+Step 9: Selecting optimal MAIN NUMBERS per model (Models 1-3 only, Model 4 generates pool)...
+
+======================================================================
+GENERATING MAIN NUMBER PICKS (6 Numbers Per Model)
+======================================================================
+Selection Strategy:
+  - Models with pre-assigned: select remaining numbers to reach 6 total
+  - Models without pre-assigned: select all 6 numbers
+  - Pre-assigned numbers are EXEMPT from selection and diversity penalties
+
+⚠️  Phase 1 filters not available (running without post-generation validation)
+
+✓ Target Freshness Pattern (for 7 numbers): C0=3, C1=3, C>= 2=1
+  NOTE: Each model picks 6 main numbers (adjusted proportionally from 7-number pattern)
+
+  Available numbers by HMC:
+    Hot:    23 numbers
+    Medium: 11 numbers
+    Cold:   13 numbers
+
+  Available numbers by Freshness (C_max=2):
+    C0: 19 numbers
+    C1: 21 numbers
+    C>=2: 7 numbers
+
+→ Model 1: Short-Term Momentum + Pre-Assignment Specialist
+  Pre-assigned: [20, 42] (EXEMPT from penalties)
+  Selecting 0H + 2M + 1C + 1G = 4 additional numbers
+  Selected: [6, 10, 21, 35]
+  Pre-assigned: [20, 42]
+  Final: [6, 10, 20, 21, 35, 42] (6 total)
+  Achieved Pattern: C0=2, C1=2, C_GE_2=0
+
+→ Model 2: Jackpot Optimizer - 6-Ball Main Prize Specialist
+  HMC Ratio: 0H + 3M + 2C + 1G = 6 numbers
+  Diversity Penalty: 15% on 4 numbers
+  Selected: [4, 6, 10, 12, 19, 37]
+  Achieved Pattern: C0=2, C1=3, C_GE_2=1
+  Rank-aware penalties applied:
+    #35 (Rank 1): 15.0% penalty
+    #21 (Rank 6): 14.2% penalty
+    #10 (Rank 12): 13.2% penalty
+
+→ Model 3: Complex Pattern Discovery + All JSON Features + LT Patterns
+  HMC Ratio: 2H + 2M + 2C + 0G = 6 numbers
+  Diversity Penalty: 25% on 8 numbers
+  Selected: [5, 11, 18, 23, 33, 36]
+  Achieved Pattern: C0=4, C1=2, C_GE_2=0
+  Rank-aware penalties applied:
+    #6 (Rank 14): 21.5% penalty
+    #19 (Rank 19): 20.1% penalty
+    #21 (Rank 21): 19.6% penalty
+✓ Generated 3 lines of main number picks
+
+Step 10: Final assembly - adding separate bonus balls...
+
+Step 11: Generating Model 4 candidate pool...
+
+======================================================================
+GENERATING MODEL 4: CANDIDATE POOL
+======================================================================
+✓ Pool generated: 6H+8M+4C=18
+  Total candidates: 18
+  Quality score: 84/100
+
+Step 12: Displaying complete results (6 main + 1 bonus)...
+
+======================================================================
+FINAL RECOMMENDED PICKS
+======================================================================
+SPECIALIZED MODEL ARCHITECTURE:
+  Model 1: 6 main numbers (2 pre-assigned + 4 ML-selected) + 1 bonus
+  Model 2: 6 main numbers ONLY (jackpot optimizer - NO BONUS)
+  Model 3: 6 main numbers (6 ML-selected) + 1 bonus
+  Model 4: Candidate pool generator (configurable pool size)
+======================================================================
+
+Line 1: Short-Term Momentum + Pre-Assignment Specialist [0H-2M-1C+1G | C0=2, C1=2, C_GE_2=0]
+Description: Captures immediate patterns with bonus and recent-bonus pre-assignment
+Pre-assigned (exempt): [20, 42]
+ML-selected: [6, 10, 21, 35]
+Main Numbers (6): [6, 10, 20, 21, 35, 42]
+Bonus Ball: 20
+Complete Line: [6, 10, 20, 21, 35, 42] + BONUS 20
+
+Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [0H-3M-2C+1G | C0=2, C1=3, C_GE_2=1]
+Description: Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes
+Main Numbers (6): [4, 6, 10, 12, 19, 37]
+Bonus Ball: None (jackpot optimizer - main 6 only)
+Complete Line: [4, 6, 10, 12, 19, 37] (6 main numbers only)
+
+Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
+Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
+Main Numbers (6): [5, 11, 18, 23, 33, 36]
+Bonus Ball: 10
+Complete Line: [5, 11, 18, 23, 33, 36] + BONUS 10
+
+======================================================================
+MODEL 4: CANDIDATE POOL ANALYSIS
+======================================================================
+Pool Configuration: 6H+8M+4C=18
+Total Candidates: 18
+
+HOT CANDIDATES (6 numbers):
+Rank   Number   Prob       Fresh    Recent_4   Days_Since  
+----------------------------------------------------------------------
+1      #45     0.1687     C2       2          10          
+2      #38     0.1643     C0       0          70          
+3      #12     0.1642     C2       2          10          
+4      #27     0.1633     C1       1          7           
+5      #1      0.1580     C1       1          10          
+6      #26     0.1577     C1       1          14          
+
+MEDIUM CANDIDATES (8 numbers):
+Rank   Number   Prob       Fresh    Recent_4   Days_Since  
+----------------------------------------------------------------------
+1      #35     0.1733     C1       1          7           
+2      #10     0.1551     C0       0          63          
+3      #13     0.1543     C2       2          4           
+4      #6      0.1507     C0       0          28          
+5      #37     0.1500     C1       1          4           
+6      #11     0.1473     C1       1          14          
+7      #28     0.1463     C1       1          10          
+8      #8      0.1450     C1       1          14          
+
+COLD CANDIDATES (4 numbers):
+Rank   Number   Prob       Fresh    Recent_4   Days_Since  
+----------------------------------------------------------------------
+1      #40     0.1612     C0       0          42          
+2      #21     0.1609     C1       1          17          
+3      #43     0.1524     C0       0          21          
+4      #19     0.1467     C1       1          17          
+
+FRESHNESS DISTRIBUTION:
+C0:   5 numbers ( 27.8%)  Target: ~43%  ~
+C1:  10 numbers ( 55.6%)  Target: ~29%  ~
+C2:   3 numbers ( 16.7%)  Target: ~28%  ~
+
+POOL QUALITY: 84/100 (Very Good)
+
+FULL POOL (ranked by probability): [35, 45, 38, 12, 27, 40, 21, 1, 26, 10, 13, 43, 6, 37, 11, 19, 28, 8]
+======================================================================
+
+======================================================================
+DIVERSITY ANALYSIS
+======================================================================
+Model 1 ∩ Model 2: 2 shared numbers
+Model 1 ∩ Model 3: 0 shared numbers
+Model 2 ∩ Model 3: 0 shared numbers
+All models share: 0 numbers
+
+Total unique numbers across all models: 16
+
+======================================================================
+RANK-AWARE PENALTY EXPLANATION
+======================================================================
+
+How rank-aware penalties work:
+  • Top-ranked numbers (model's strongest picks) get HIGHER penalties
+  • Low-ranked numbers (uncertain picks) get LOWER penalties
+  • Formula: penalty = base × (0.5 + 0.5 × rank_weight)
+
+With 25% base penalty:
+  • Rank #1:  ~25.0% penalty (full strength)
+  • Rank #10: ~22.5% penalty
+  • Rank #25: ~18.8% penalty
+  • Rank #40: ~13.8% penalty
+
+Benefit: Encourages diversity while allowing flexibility for uncertain picks
+
+======================================================================
+FEATURE CONFIGURATION SUMMARY
+======================================================================
+
+Model 1: Short-Term Momentum + Pre-Assignment Specialist
+  Features: FRESHNESS_PATTERN_WEIGHTS, days_since_last, total_count, was_recent_bonus, bonus_hit_contribution, window_saturation_penalty, lt_hot_weight, lt_medium_weight, lt_cold_weight, lt_category_alignment
+  Algorithm: logistic_regression
+  Diversity Penalty: 0%
+
+Model 2: Jackpot Optimizer - 6-Ball Main Prize Specialist
+  Features: total_count, lt_hot_weight, lt_medium_weight, lt_cold_weight, lt_category_alignment, lt_recency_weight, days_since_last, recency_zone_score, recent_14, window_saturation_penalty, was_recent_bonus, win_bias_ratio, sum_contribution_json, range_spread_json, FRESHNESS_PATTERN_WEIGHTS
+  Algorithm: logistic_regression
+  Diversity Penalty: 15%
+
+Model 3: Complex Pattern Discovery + All JSON Features + LT Patterns
+  Features: recent_4, FRESHNESS_PATTERN_WEIGHTS, LONG_TERM_PATTERN_WEIGHTS, total_count, days_since_last, recency_zone_score, recent_14, days_since_bonus, was_recent_bonus, bonus_hit_contribution, has_consecutive_partner, series_recent, odd_even_json, sum_contribution_json, range_spread_json, freshness_weight_score
+  Algorithm: xgboost
+  Diversity Penalty: 25%
+
+Model 4: Intelligent Pool Generator
+  Features: total_count, days_since_last, recency_zone_score, recent_9, recent_14, window_saturation_penalty, freshness_c0_weight, freshness_c1_weight, freshness_c2_weight, current_freshness_bin, lt_hot_weight, lt_medium_weight, lt_cold_weight, lt_category_alignment, was_recent_bonus, win_bias_ratio
+  Algorithm: logistic_regression
+  Diversity Penalty: 0%
+
+✓ Results saved to 'lottery_picks.txt'
+
+======================================================================
+PERFORMANCE SUMMARY
+======================================================================
+Main feature extraction: 0.06s
+Bonus feature extraction: 0.00s
+Bonus model training: 1.38s
+Main model training: 1.18s
+Total execution time: 1.48s
+
+======================================================================
+✓ Analysis complete!
+======================================================================
