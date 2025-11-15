@@ -45,27 +45,30 @@ def calculate_win_bias_ratio_for_draw(
         category = cat_name.replace('_numbers', '')
         for num in num_list:
             num_to_category[num] = category
-    
+
+    # Get number of training draws for rate calculations
+    num_training_draws = len(preceding_draws)
+
     # 3. Calculate category average win rates
     category_win_totals = defaultdict(int)
     category_counts = defaultdict(int)
-    
+
     for num in range(1, max_number + 1):
         category = num_to_category.get(num, 'cold')
         category_win_totals[category] += individual_wins[num]
         category_counts[category] += 1
-    
+
     category_avg_win_rates = {}
     for category in category_win_totals:
         if category_counts[category] > 0:
+            # FIX: Convert to rate (wins per draw) to match num_win_rate units
             category_avg_win_rates[category] = (
-                category_win_totals[category] / category_counts[category]
+                category_win_totals[category] / category_counts[category] / num_training_draws
             )
         else:
             category_avg_win_rates[category] = 0.0
-    
+
     # 4. Calculate bias ratio for each number
-    num_training_draws = len(preceding_draws)
     overall_avg = sum(individual_wins.values()) / (max_number * num_training_draws)
     
     win_bias_ratios = {}
