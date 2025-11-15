@@ -13,7 +13,7 @@
     "anova_test": {
         "significant": true,
         "f_statistic": 183.95289158966483,
-        "p_value": 4.2697781782153075e-22,
+        "p_value": 4.269778178215309e-22,
         "eta_squared": 0.8931794556017589,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
