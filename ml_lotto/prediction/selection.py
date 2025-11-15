@@ -24,7 +24,7 @@ def pick_line_hybrid(
 ) -> Tuple[List[int], List[Dict[str, Any]], str]:
     """
     HYBRID PICKER: Respects BOTH HMC ratios AND freshness patterns dynamically.
-    
+
     Args:
         model_config: Model configuration with HMC counts and penalties
         probabilities: Base probability array (for rebalancing if needed)
@@ -33,15 +33,19 @@ def pick_line_hybrid(
         target_pattern: Optimal freshness distribution {bin: count}
         pools: Pre-built dual-categorized pools {HMC: {freshness: [(prob, num)]}}
         penalty_numbers: Numbers to avoid (from previous models)
-        
+
     Returns:
         Tuple of (selected_numbers, penalty_details, pattern_string)
-        
+
     Selection Strategy:
         PHASE 1: Pick from HMC categories, prioritizing needed freshness bins
         PHASE 2: Fill generic slots, prioritizing freshness gaps
         PHASE 3: Apply Phase 1 filters if available
     """
+    # Initialize penalty_numbers if None
+    if penalty_numbers is None:
+        penalty_numbers = set()
+
     h = model_config['hot_count']
     m = model_config['medium_count']
     c = model_config['cold_count']
@@ -59,36 +63,37 @@ def pick_line_hybrid(
     def pick_from_hmc_pool(hmc_cat: str, count_needed: int) -> List[int]:
         """
         Pick 'count_needed' numbers from HMC category, prioritizing target freshness.
-        
+
         Strategy:
             1. Sort freshness bins by gap (needed - current)
             2. Pick highest probability numbers from most-needed bins first
-            3. Stop when count_needed is reached
+            3. Skip numbers in penalty_numbers set (previously selected by other models)
+            4. Stop when count_needed is reached
         """
         picked = []
-        
+
         # Sort freshness bins by how much we need them (gap)
         freshness_priority = sorted(
             freshness_needed.keys(),
             key=lambda f: freshness_needed[f] - freshness_counts[f],
             reverse=True
         )
-        
+
         for fresh_cat in freshness_priority:
             available = pools[hmc_cat].get(fresh_cat, [])
-            
+
             for prob, num in available:
-                # Only pick if number hasn't been picked yet
-                if num not in line and len(picked) < count_needed:
+                # Only pick if number hasn't been picked yet AND is not penalized
+                if num not in line and num not in penalty_numbers and len(picked) < count_needed:
                     picked.append(num)
                     freshness_counts[fresh_cat] += 1
-                    
+
                 if len(picked) >= count_needed:
                     break
-            
+
             if len(picked) >= count_needed:
                 break
-        
+
         return picked
     
     # Pick Hot, Medium, Cold numbers
@@ -98,20 +103,20 @@ def pick_line_hybrid(
     
     # PHASE 2: Fill generic slots, prioritizing freshness gaps
     if g > 0:
-        # Collect all remaining candidates
+        # Collect all remaining candidates (excluding penalized numbers)
         all_remaining = []
-        
+
         for hmc_cat in pools:
             for fresh_cat in pools[hmc_cat]:
                 for prob, num in pools[hmc_cat][fresh_cat]:
-                    if num not in line:
+                    if num not in line and num not in penalty_numbers:
                         # Score by: probability + bonus if we need this freshness category
                         freshness_gap = max(0, freshness_needed[fresh_cat] - freshness_counts[fresh_cat])
                         score = prob * (1.0 + 0.5 * freshness_gap)
                         all_remaining.append((score, prob, num, fresh_cat))
-        
+
         all_remaining.sort(reverse=True)
-        
+
         for score, prob, num, fresh_cat in all_remaining[:g]:
             line.append(num)
             freshness_counts[fresh_cat] += 1

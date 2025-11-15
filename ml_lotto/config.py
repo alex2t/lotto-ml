@@ -92,7 +92,7 @@ BONUS_MODEL_CONFIG = {
         'class_weight': 'balanced',
         'solver': 'liblinear',
         'max_iter': 1000,
-        'random_state': 42
+        'random_state': None  # Allow random variation each run
     },
     'calibration': {
         'method': 'sigmoid',
@@ -124,7 +124,7 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
         'class_weight': {0: 1.0, 1: 3.5},  # Reflect 3.5x boost over random
         'solver': 'liblinear',
         'max_iter': 1000,
-        'random_state': 42
+        'random_state': None  # Allow random variation each run
     },
     'calibration': {
         'method': 'isotonic',  # Better for skewed distributions
@@ -160,14 +160,14 @@ MODEL_1_CONFIG = {
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
     ],
 
-    'diversity_penalty': 0.0,
+    'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers
 
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
-        'random_state': 42,
+        'random_state': None,  # Allow random variation each run
         'C': 1.0
     },
 
@@ -220,14 +220,14 @@ MODEL_2_CONFIG = {
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
     ],
 
-    'diversity_penalty': 0.15,
+    'diversity_penalty': 0.4,  # 40% penalty on previously selected numbers
 
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
-        'random_state': 42,
+        'random_state': None,  # Allow random variation each run
         'C': 0.5
     },
 
@@ -269,7 +269,7 @@ MODEL_3_CONFIG = {
         #'pair_frequency_score'
     ],
 
-    'diversity_penalty': 0.00,
+    'diversity_penalty': 0.35,  # 35% penalty on previously selected numbers
 
     'algorithm_params': {
         'n_estimators': 150,
@@ -277,7 +277,7 @@ MODEL_3_CONFIG = {
         'learning_rate': 0.1,
         'use_label_encoder': False,
         'eval_metric': 'logloss',
-        'random_state': 123,
+        'random_state': None,  # Allow random variation each run
         'n_jobs': -1,
         'subsample': 0.8,
         'colsample_bytree': 0.7,
@@ -332,14 +332,14 @@ MODEL_4_CONFIG = {
         'was_recent_bonus'
     ],
 
-    'diversity_penalty': 0.0,
+    'diversity_penalty': 0.25,  # 25% penalty on previously selected numbers (for pool generator)
 
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
-        'random_state': 42,
+        'random_state': None,  # Allow random variation each run
         'C': 1.0
     },
 
