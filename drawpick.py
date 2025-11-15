@@ -400,110 +400,89 @@ def main():
 
     # 1. Consecutive Pairs Validation
     print("\n  [1/7] Consecutive Pair Analysis (chi-square + binomial tests)...")
-    try:
-        consecutive_pairs_results = analyze_consecutive_pairs(draw_list, MAX_NUMBER)
-        OUTPUT_FILE_CONSECUTIVE_PAIRS = "data/lotto_consecutive_pairs_validated.json"
-        write_json_file(OUTPUT_FILE_CONSECUTIVE_PAIRS, consecutive_pairs_results,
-                       "Scipy-validated consecutive pair analysis with binomial significance tests")
-        print(f"        ✓ Saved to {OUTPUT_FILE_CONSECUTIVE_PAIRS}")
+    consecutive_pairs_results = analyze_consecutive_pairs(draw_list, MAX_NUMBER)
+    OUTPUT_FILE_CONSECUTIVE_PAIRS = "data/lotto_consecutive_pairs_validated.json"
+    write_json_file(OUTPUT_FILE_CONSECUTIVE_PAIRS, consecutive_pairs_results,
+                   "Scipy-validated consecutive pair analysis with binomial significance tests")
+    print(f"        ✓ Saved to {OUTPUT_FILE_CONSECUTIVE_PAIRS}")
 
-        # Show validation summary
-        chi2_test = consecutive_pairs_results.get('overall_chi_square_test', {})
-        print(f"        Chi-square p-value: {chi2_test.get('p_value', 1.0):.6f}")
-        print(f"        Statistically significant: {chi2_test.get('significant', False)}")
-    except Exception as e:
-        print(f"        ✗ Error: {e}")
+    # Show validation summary
+    chi2_test = consecutive_pairs_results.get('overall_chi_square_test', {})
+    print(f"        Chi-square p-value: {chi2_test.get('p_value', 1.0):.6f}")
+    print(f"        Statistically significant: {chi2_test.get('significant', False)}")
 
     # 2. Odd/Even Distribution Validation
     print("\n  [2/7] Odd/Even Distribution Analysis (chi-square + binomial tests)...")
-    try:
-        odd_even_results = analyze_odd_even_patterns(draw_list, MAX_NUMBER)
-        OUTPUT_FILE_ODD_EVEN = "data/lotto_odd_even_validated.json"
-        write_json_file(OUTPUT_FILE_ODD_EVEN, odd_even_results,
-                       "Scipy-validated odd/even distribution analysis with per-number affinity scores")
-        print(f"        ✓ Saved to {OUTPUT_FILE_ODD_EVEN}")
+    odd_even_results = analyze_odd_even_patterns(draw_list, MAX_NUMBER)
+    OUTPUT_FILE_ODD_EVEN = "data/lotto_odd_even_validated.json"
+    write_json_file(OUTPUT_FILE_ODD_EVEN, odd_even_results,
+                   "Scipy-validated odd/even distribution analysis with per-number affinity scores")
+    print(f"        ✓ Saved to {OUTPUT_FILE_ODD_EVEN}")
 
-        overall_test = odd_even_results.get('overall_distribution_test', {})
-        print(f"        Chi-square p-value: {overall_test.get('p_value', 1.0):.6f}")
-        print(f"        Significant deviations: {odd_even_results.get('num_significant_deviations', 0)}/47 numbers")
-    except Exception as e:
-        print(f"        ✗ Error: {e}")
+    overall_test = odd_even_results.get('overall_distribution_test', {})
+    print(f"        Chi-square p-value: {overall_test.get('p_value', 1.0):.6f}")
+    print(f"        Significant deviations: {odd_even_results.get('num_significant_deviations', 0)}/47 numbers")
 
     # 3. Range Spread Validation
     print("\n  [3/7] Range Spread Analysis (Levene test + t-tests + correlation)...")
-    try:
-        range_spread_results = analyze_range_spread(draw_list, MAX_NUMBER)
-        OUTPUT_FILE_RANGE_SPREAD = "data/lotto_range_spread_validated.json"
-        write_json_file(OUTPUT_FILE_RANGE_SPREAD, range_spread_results,
-                       "Scipy-validated range spread analysis with Levene variance tests")
-        print(f"        ✓ Saved to {OUTPUT_FILE_RANGE_SPREAD}")
+    range_spread_results = analyze_range_spread(draw_list, MAX_NUMBER)
+    OUTPUT_FILE_RANGE_SPREAD = "data/lotto_range_spread_validated.json"
+    write_json_file(OUTPUT_FILE_RANGE_SPREAD, range_spread_results,
+                   "Scipy-validated range spread analysis with Levene variance tests")
+    print(f"        ✓ Saved to {OUTPUT_FILE_RANGE_SPREAD}")
 
-        levene = range_spread_results.get('levene_analysis', {})
-        print(f"        Levene p-value: {levene.get('p_value', 1.0):.6f}")
-        print(f"        Significant contributions: {range_spread_results.get('num_significant_contributions', 0)}/47 numbers")
-    except Exception as e:
-        print(f"        ✗ Error: {e}")
+    levene = range_spread_results.get('levene_analysis', {})
+    print(f"        Levene p-value: {levene.get('p_value', 1.0):.6f}")
+    print(f"        Significant contributions: {range_spread_results.get('num_significant_contributions', 0)}/47 numbers")
 
     # 4. Sum Contribution Validation
     print("\n  [4/7] Sum Contribution Analysis (t-tests + ANOVA + effect sizes)...")
-    try:
-        sum_contribution_results = analyze_sum_contribution(draw_list, MAX_NUMBER)
-        OUTPUT_FILE_SUM_CONTRIBUTION = "data/lotto_sum_contribution_validated.json"
-        write_json_file(OUTPUT_FILE_SUM_CONTRIBUTION, sum_contribution_results,
-                       "Scipy-validated sum contribution analysis with independent t-tests")
-        print(f"        ✓ Saved to {OUTPUT_FILE_SUM_CONTRIBUTION}")
+    sum_contribution_results = analyze_sum_contribution(draw_list, MAX_NUMBER)
+    OUTPUT_FILE_SUM_CONTRIBUTION = "data/lotto_sum_contribution_validated.json"
+    write_json_file(OUTPUT_FILE_SUM_CONTRIBUTION, sum_contribution_results,
+                   "Scipy-validated sum contribution analysis with independent t-tests")
+    print(f"        ✓ Saved to {OUTPUT_FILE_SUM_CONTRIBUTION}")
 
-        anova = sum_contribution_results.get('anova_analysis', {})
-        print(f"        ANOVA p-value: {anova.get('p_value', 1.0):.6f}")
-        print(f"        Significant contributions: {sum_contribution_results.get('num_significant_contributions', 0)}/47 numbers")
-    except Exception as e:
-        print(f"        ✗ Error: {e}")
+    anova = sum_contribution_results.get('anova_analysis', {})
+    print(f"        ANOVA p-value: {anova.get('p_value', 1.0):.6f}")
+    print(f"        Significant contributions: {sum_contribution_results.get('num_significant_contributions', 0)}/47 numbers")
 
     # 5. Freshness Pattern Validation
     print("\n  [5/7] Freshness Pattern Analysis (chi-square goodness-of-fit)...")
-    try:
-        freshness_pattern_results = analyze_freshness_patterns(final_freshness_data)
-        OUTPUT_FILE_FRESHNESS_PATTERNS = "data/lotto_freshness_patterns_validated.json"
-        write_json_file(OUTPUT_FILE_FRESHNESS_PATTERNS, freshness_pattern_results,
-                       "Scipy-validated freshness pattern distribution with chi-square tests")
-        print(f"        ✓ Saved to {OUTPUT_FILE_FRESHNESS_PATTERNS}")
+    freshness_pattern_results = analyze_freshness_patterns(final_freshness_data)
+    OUTPUT_FILE_FRESHNESS_PATTERNS = "data/lotto_freshness_patterns_validated.json"
+    write_json_file(OUTPUT_FILE_FRESHNESS_PATTERNS, freshness_pattern_results,
+                   "Scipy-validated freshness pattern distribution with chi-square tests")
+    print(f"        ✓ Saved to {OUTPUT_FILE_FRESHNESS_PATTERNS}")
 
-        pattern_test = freshness_pattern_results.get('pattern_distribution_test', {})
-        print(f"        Chi-square p-value: {pattern_test.get('p_value', 1.0):.6f}")
-        print(f"        Cramér's V: {pattern_test.get('cramers_v', 0.0):.4f}")
-    except Exception as e:
-        print(f"        ✗ Error: {e}")
+    pattern_test = freshness_pattern_results.get('pattern_distribution_test', {})
+    print(f"        Chi-square p-value: {pattern_test.get('p_value', 1.0):.6f}")
+    print(f"        Cramér's V: {pattern_test.get('cramers_v', 0.0):.4f}")
 
     # 6. HMC Categorization Validation
     print("\n  [6/7] HMC Categorization Analysis (ANOVA + pairwise t-tests)...")
-    try:
-        hmc_categorization_results = analyze_hmc_categorization(final_periods)
-        OUTPUT_FILE_HMC_CATEGORIZATION = "data/lotto_hmc_categorization_validated.json"
-        write_json_file(OUTPUT_FILE_HMC_CATEGORIZATION, hmc_categorization_results,
-                       "Scipy-validated HMC categorization with ANOVA and Bonferroni-corrected tests")
-        print(f"        ✓ Saved to {OUTPUT_FILE_HMC_CATEGORIZATION}")
+    hmc_categorization_results = analyze_hmc_categorization(final_periods)
+    OUTPUT_FILE_HMC_CATEGORIZATION = "data/lotto_hmc_categorization_validated.json"
+    write_json_file(OUTPUT_FILE_HMC_CATEGORIZATION, hmc_categorization_results,
+                   "Scipy-validated HMC categorization with ANOVA and Bonferroni-corrected tests")
+    print(f"        ✓ Saved to {OUTPUT_FILE_HMC_CATEGORIZATION}")
 
-        anova_test = hmc_categorization_results.get('anova_test', {})
-        print(f"        ANOVA p-value: {anova_test.get('p_value', 1.0):.6f}")
-        print(f"        Effect size (η²): {anova_test.get('eta_squared', 0.0):.4f}")
-        print(f"        Categories valid: {hmc_categorization_results.get('categorization_valid', False)}")
-    except Exception as e:
-        print(f"        ✗ Error: {e}")
+    anova_test = hmc_categorization_results.get('anova_test', {})
+    print(f"        ANOVA p-value: {anova_test.get('p_value', 1.0):.6f}")
+    print(f"        Effect size (η²): {anova_test.get('eta_squared', 0.0):.4f}")
+    print(f"        Categories valid: {hmc_categorization_results.get('categorization_valid', False)}")
 
     # 7. Long-term Pattern Validation
     print("\n  [7/7] Long-term Pattern Analysis (chi-square + Pearson correlation)...")
-    try:
-        long_term_pattern_results = generate_long_term_pattern_analysis(draw_history_log)
-        OUTPUT_FILE_LONG_TERM = "data/lotto_long_term_patterns.json"
-        write_json_file(OUTPUT_FILE_LONG_TERM, long_term_pattern_results,
-                       "Scipy-validated long-term pattern analysis with chi-square and correlation tests")
-        print(f"        ✓ Saved to {OUTPUT_FILE_LONG_TERM}")
+    long_term_pattern_results = generate_long_term_pattern_analysis(draw_history_log)
+    OUTPUT_FILE_LONG_TERM = "data/lotto_long_term_patterns.json"
+    write_json_file(OUTPUT_FILE_LONG_TERM, long_term_pattern_results,
+                   "Scipy-validated long-term pattern analysis with chi-square and correlation tests")
+    print(f"        ✓ Saved to {OUTPUT_FILE_LONG_TERM}")
 
-        hmc_pattern = long_term_pattern_results.get('hmc_pattern_analysis', {})
-        print(f"        HMC pattern chi-square p-value: {hmc_pattern.get('p_value', 1.0):.6f}")
-        print(f"        Statistically significant: {hmc_pattern.get('significant', False)}")
-    except Exception as e:
-        print(f"        ✗ Error: {e}")
+    hmc_pattern = long_term_pattern_results.get('hmc_pattern_analysis', {})
+    print(f"        HMC pattern chi-square p-value: {hmc_pattern.get('p_value', 1.0):.6f}")
+    print(f"        Statistically significant: {hmc_pattern.get('significant', False)}")
 
     print("\n" + "=" * 70)
     print("✓ Phase 10 Complete: All scipy validation files generated")
@@ -521,40 +500,36 @@ def main():
     print("=" * 70)
     print("Generating lotto_statistics_analysis.json from draw history...")
 
-    try:
-        # Get recent count keys dynamically
-        recent_keys = get_dynamic_recent_count_keys(draw_history_log)
-        print(f"  ✓ Found {len(recent_keys)} recent count windows: {recent_keys}")
+    # Get recent count keys dynamically
+    recent_keys = get_dynamic_recent_count_keys(draw_history_log)
+    print(f"  ✓ Found {len(recent_keys)} recent count windows: {recent_keys}")
 
-        # Run all statistics analyses
-        hmc_stats = analyze_hmc_distribution(draw_history_log)
-        days_stats = analyze_days_since_last_hit(draw_history_log)
-        recent_stats = analyze_recent_counts(draw_history_log, recent_keys)
-        freshness_stats = analyze_stats_freshness_patterns(draw_history_log)
-        bonus_stats = analyze_bonus_patterns(draw_history_log)
+    # Run all statistics analyses
+    hmc_stats = analyze_hmc_distribution(draw_history_log)
+    days_stats = analyze_days_since_last_hit(draw_history_log)
+    recent_stats = analyze_recent_counts(draw_history_log, recent_keys)
+    freshness_stats = analyze_stats_freshness_patterns(draw_history_log)
+    bonus_stats = analyze_bonus_patterns(draw_history_log)
 
-        # Combine results
-        statistics_results = {
-            'hmc_distribution': hmc_stats,
-            'days_since_last_hit': days_stats,
-            'recent_counts': recent_stats,
-            'freshness_patterns': freshness_stats,
-            'bonus_patterns': bonus_stats,
-            'metadata': {
-                'total_draws': len(draw_history_log),
-                'recent_count_windows': recent_keys,
-                'analysis_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            }
+    # Combine results
+    statistics_results = {
+        'hmc_distribution': hmc_stats,
+        'days_since_last_hit': days_stats,
+        'recent_counts': recent_stats,
+        'freshness_patterns': freshness_stats,
+        'bonus_patterns': bonus_stats,
+        'metadata': {
+            'total_draws': len(draw_history_log),
+            'recent_count_windows': recent_keys,
+            'analysis_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
+    }
 
-        # Save statistics file
-        OUTPUT_FILE_STATISTICS = "data/lotto_statistics_analysis.json"
-        write_json_file(OUTPUT_FILE_STATISTICS, statistics_results,
-                       "Comprehensive statistical analysis of draw history patterns")
-        print(f"  ✓ Saved to {OUTPUT_FILE_STATISTICS}")
-
-    except Exception as e:
-        print(f"  ✗ Error generating statistics analysis: {e}")
+    # Save statistics file
+    OUTPUT_FILE_STATISTICS = "data/lotto_statistics_analysis.json"
+    write_json_file(OUTPUT_FILE_STATISTICS, statistics_results,
+                   "Comprehensive statistical analysis of draw history patterns")
+    print(f"  ✓ Saved to {OUTPUT_FILE_STATISTICS}")
 
     # ===== WINDOW SATURATION ANALYSIS (PHASE 12) =====
     print("\n" + "=" * 70)
@@ -562,19 +537,67 @@ def main():
     print("=" * 70)
     print("Generating data-driven window saturation penalties...")
 
-    try:
-        stats_file = "data/lotto_statistics_analysis.json"
-        odds_file = OUTPUT_FILE_MAIN
-        output_file = "data/lotto_window_saturation_calculated.json"
+    stats_file = "data/lotto_statistics_analysis.json"
+    odds_file = OUTPUT_FILE_MAIN
+    output_file = "data/lotto_window_saturation_calculated.json"
 
-        generate_window_saturation_data(stats_file, odds_file, output_file)
-        print(f"  ✓ Window saturation analysis complete")
-
-    except Exception as e:
-        print(f"  ✗ Error generating window saturation analysis: {e}")
+    generate_window_saturation_data(stats_file, odds_file, output_file)
+    print(f"  ✓ Window saturation analysis complete")
 
     print("\n" + "=" * 70)
     print("✓ All Analysis Phases Complete!")
+    print("=" * 70)
+
+    # ===== VERIFICATION: CHECK ALL JSON FILES WERE GENERATED =====
+    print("\n" + "=" * 70)
+    print("VERIFICATION: Checking all JSON files were generated")
+    print("=" * 70)
+
+    import os
+    from pathlib import Path
+
+    expected_files = [
+        "data/lotto_odds_results.json",
+        "data/lotto_trigger_periods.json",
+        "data/lotto_draw_history.json",
+        "data/lotto_7_number_freshness_results.json",
+        "data/lotto_distribution_stats.json",
+        "data/lotto_bonus_analysis.json",
+        "data/lotto_bonus_to_main_patterns.json",
+        "data/lotto_consecutive_pairs_validated.json",
+        "data/lotto_odd_even_validated.json",
+        "data/lotto_range_spread_validated.json",
+        "data/lotto_sum_contribution_validated.json",
+        "data/lotto_freshness_patterns_validated.json",
+        "data/lotto_hmc_categorization_validated.json",
+        "data/lotto_long_term_patterns.json",
+        "data/lotto_statistics_analysis.json",
+        "data/lotto_window_saturation_calculated.json"
+    ]
+
+    missing_files = []
+    generated_files = []
+
+    for file_path in expected_files:
+        if Path(file_path).exists():
+            size = Path(file_path).stat().st_size
+            generated_files.append(f"  ✓ {file_path} ({size:,} bytes)")
+        else:
+            missing_files.append(f"  ✗ {file_path} - MISSING!")
+
+    print(f"\nGenerated {len(generated_files)}/{len(expected_files)} JSON files:")
+    for f in generated_files:
+        print(f)
+
+    if missing_files:
+        print(f"\n⚠️  WARNING: {len(missing_files)} files are MISSING:")
+        for f in missing_files:
+            print(f)
+        print("\n❌ INCOMPLETE: Not all JSON files were generated!")
+        print("   Please check the error messages above for details.")
+    else:
+        print(f"\n✅ SUCCESS: All {len(expected_files)} JSON files generated successfully!")
+
     print("=" * 70)
 
 
