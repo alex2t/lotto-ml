@@ -1,7 +1,10 @@
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Tuple
-from ..config import TRAINING_DATA, MAX_NUMBER, SCENARIOS, HMC_METHOD, HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD
+from ..config import (
+    TRAINING_DATA, MAX_NUMBER, SCENARIOS, HMC_METHOD,
+    HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD, VALIDATION_SPLIT_RATIO
+)
 from .frequency_analyzer import (
     calculate_frequency,
     get_hot_cold,
@@ -336,11 +339,23 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         draw_history_log[draw_date]["recent_bonus_numbers"] = recent_bonus_numbers[:]
 
     # Final categories (using current HMC method)
+    # IMPORTANT: Calculate using only TRAINING data (80%) to prevent look-ahead bias
+    # Validation data (last 20%) should NOT influence category assignments used in ML training
+    available_draws = len(all_draws) - TRAINING_DATA
+    train_size = int(available_draws * VALIDATION_SPLIT_RATIO)
+    train_end_index = TRAINING_DATA + train_size
+
+    print(f"\n  Calculating final categories WITHOUT look-ahead bias:")
+    print(f"    Total draws: {len(all_draws)}")
+    print(f"    Training cutoff: draw {train_end_index} ({VALIDATION_SPLIT_RATIO*100:.0f}% of available data)")
+    print(f"    Validation draws excluded: {len(all_draws) - train_end_index}")
+
     if HMC_METHOD == "recency":
         # Use RECENCY-BASED categorization for final output
-        days_since_final = calculate_days_since_last_hit(all_draws)
+        # Use ONLY draws up to training cutoff (excludes validation data)
+        days_since_final = calculate_days_since_last_hit(all_draws[:train_end_index])
         final_categories = get_hot_cold_by_recency(days_since_final, HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD)
-        print(f"  Final categories (recency): Hot={len(final_categories['hot_numbers'])}, "
+        print(f"  Final categories (recency, train-only): Hot={len(final_categories['hot_numbers'])}, "
               f"Medium={len(final_categories['medium_numbers'])}, "
               f"Cold={len(final_categories['cold_numbers'])}")
     else:
