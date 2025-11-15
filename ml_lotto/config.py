@@ -2,17 +2,19 @@
 """
 Configuration settings for lottery analysis
 
-VERSION: 3.14 (win_bias_ratio Fix + Re-enabled)
-- FIXED: win_bias_ratio calculation bug (was dividing rate by count instead of rate by rate)
-  * Old values: 0.005-0.015 (meaningless - wrong units)
-  * New values: 0.5-1.5 (correct - ratio centered around 1.0)
-  * Now measures how well a number performs vs its category average
-  * Values >1.0 = outperforms category, <1.0 = underperforms category
-  * Re-enabled in MODEL_2_CONFIG, MODEL_3_CONFIG, and MODEL_4_CONFIG
-- PREVIOUS (v3.13):
+VERSION: 3.15 (win_bias_ratio Removal - Redundant Feature)
+- REMOVED: win_bias_ratio feature (fundamentally redundant)
+  * Comparing to category avg → Low variance (~1.0), no signal
+  * Comparing to overall avg → High correlation with total_count (0.95+)
+  * Either way, provides no unique information
+  * Already captured by: total_count (absolute), category (relative), lt_category_alignment
+  * Removed from MODEL_2_CONFIG, MODEL_3_CONFIG, MODEL_4_CONFIG
+  * Calculation code kept but commented out for reference
+- PREVIOUS (v3.13-3.14):
   * FRESHNESS_PATTERN_WEIGHTS with interaction features
   * LONG_TERM_PATTERN_WEIGHTS with corrected recency data
   * ADVANCED_PATTERN_FEATURES with volatility and trend analysis
+  * Attempted win_bias_ratio fix (ultimately determined to be redundant)
 """
 
 TOTAL_DRAWS = 600
@@ -201,9 +203,6 @@ MODEL_2_CONFIG = {
         # Bonus-to-Main pattern (70% transition rate)
         'was_recent_bonus',             # Recent bonus balls appear in main 6
 
-        # Historical bias correction
-        'win_bias_ratio',               # FIXED v3.14: Category performance ratio (now correctly calculated)
-
         # Pattern consistency
        # 'consecutive_pair_affinity',
 
@@ -260,7 +259,6 @@ MODEL_3_CONFIG = {
         'has_consecutive_partner',
         #'consecutive_pair_affinity',
         'series_recent',
-        'win_bias_ratio',                 # FIXED v3.14: Category performance ratio (now correctly calculated)
         'odd_even_json',                  # Replaced odd_even_affinity with JSON version
         'sum_contribution_json',          # Replaced sum_contribution_score with JSON version
         'range_spread_json',              # Replaced range_spread_affinity with JSON version
@@ -327,9 +325,8 @@ MODEL_4_CONFIG = {
         # Advanced pattern features (volatility and trend)
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
 
-        # Bonus & bias
-        'was_recent_bonus',
-        'win_bias_ratio'                # FIXED v3.14: Category performance ratio (now correctly calculated)
+        # Bonus
+        'was_recent_bonus'
     ],
 
     'diversity_penalty': 0.0,

@@ -181,29 +181,28 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             **categories
         }
 
-        # ============ Calculate win_bias_ratio per-draw ============
-        # CRITICAL FIX: Use categories from PRECEDING draws only (no look-ahead bias)
-        bias_analysis_window = 100
-        preceding_for_bias = all_draws[max(0, i - bias_analysis_window): i]
+        # ============ DEPRECATED: win_bias_ratio calculation ============
+        # REMOVED in v3.15: Feature was fundamentally redundant
+        # - Comparing to category avg → Low variance, no signal
+        # - Comparing to overall avg → High correlation with total_count (0.95+)
+        # - Already captured by: total_count, category, lt_category_alignment
+        # Keeping this in JSON for backward compatibility, but set to default 1.0
+        win_bias_ratios = {num: 1.0 for num in range(1, MAX_NUMBER + 1)}
 
-        # Calculate categories from ONLY preceding draws to avoid look-ahead bias
-        if HMC_METHOD == "recency":
-            preceding_days_since = calculate_days_since_last_hit(preceding_for_bias)
-            preceding_categories = get_hot_cold_by_recency(
-                preceding_days_since,
-                HMC_HOT_THRESHOLD,
-                HMC_COLD_THRESHOLD
-            )
-        else:
-            # For frequency method, calculate from preceding draws
-            preceding_freq = calculate_frequency(preceding_for_bias)
-            preceding_categories = get_hot_cold(preceding_freq)
-
-        win_bias_ratios = calculate_win_bias_ratio_for_draw(
-            preceding_for_bias,
-            preceding_categories,  # Now uses only past data
-            MAX_NUMBER
-        )
+        # Original calculation code (kept for reference):
+        # bias_analysis_window = 100
+        # preceding_for_bias = all_draws[max(0, i - bias_analysis_window): i]
+        # if HMC_METHOD == "recency":
+        #     preceding_days_since = calculate_days_since_last_hit(preceding_for_bias)
+        #     preceding_categories = get_hot_cold_by_recency(
+        #         preceding_days_since, HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD
+        #     )
+        # else:
+        #     preceding_freq = calculate_frequency(preceding_for_bias)
+        #     preceding_categories = get_hot_cold(preceding_freq)
+        # win_bias_ratios = calculate_win_bias_ratio_for_draw(
+        #     preceding_for_bias, preceding_categories, MAX_NUMBER
+        # )
         
         # Determine the set of last 10 bonus numbers for checking
         recent_bonus_set = set(recent_bonus_numbers)
