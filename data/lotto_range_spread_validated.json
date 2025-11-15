@@ -19,7 +19,7 @@
         "range_of_ranges": 35,
         "normality_test": {
             "shapiro_statistic": 0.9606583642781489,
-            "p_value": 5.638047918963676e-09,
+            "p_value": 5.638047918963697e-09,
             "is_normal": false
         }
     },
@@ -87,7 +87,7 @@
         "6": {
             "contribution_score": 0.6210350860148327,
             "statistically_validated": false,
-            "p_value": 0.05344830053452015,
+            "p_value": 0.053448300534520155,
             "t_statistic": 1.9369360258702226,
             "cohens_d": 0.2808405435915219,
             "mean_with": 36.018181818181816,
@@ -123,7 +123,7 @@
         "9": {
             "contribution_score": 0.5483859845598115,
             "statistically_validated": false,
-            "p_value": 0.49736559620595255,
+            "p_value": 0.49736559620595266,
             "t_statistic": 0.6792529625705368,
             "cohens_d": 0.1084299094582215,
             "mean_with": 35.0,
@@ -219,7 +219,7 @@
         "17": {
             "contribution_score": 0.3141659583238049,
             "statistically_validated": true,
-            "p_value": 0.00728518677323422,
+            "p_value": 0.007285186773234219,
             "t_statistic": -2.6971687746055135,
             "cohens_d": -0.42225306531352946,
             "mean_with": 31.717391304347824,
@@ -255,7 +255,7 @@
         "20": {
             "contribution_score": 0.3994234629360284,
             "statistically_validated": false,
-            "p_value": 0.10155615987852196,
+            "p_value": 0.10155615987852191,
             "t_statistic": -1.6410846357331517,
             "cohens_d": -0.23439952869832528,
             "mean_with": 32.91228070175438,
@@ -363,7 +363,7 @@
         "29": {
             "contribution_score": 0.39316453345603786,
             "statistically_validated": false,
-            "p_value": 0.08192574167903825,
+            "p_value": 0.08192574167903827,
             "t_statistic": -1.7439544696460005,
             "cohens_d": -0.2490926408397807,
             "mean_with": 32.824561403508774,
@@ -483,7 +483,7 @@
         "39": {
             "contribution_score": 0.558956621014907,
             "statistically_validated": false,
-            "p_value": 0.35279845202618143,
+            "p_value": 0.3527984520261813,
             "t_statistic": 0.9302448757365521,
             "cohens_d": 0.1359284167451067,
             "mean_with": 35.148148148148145,
