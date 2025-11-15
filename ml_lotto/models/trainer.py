@@ -132,15 +132,25 @@ def analyze_feature_importance(
         DataFrame with feature importance scores, or None if not applicable
     """
     try:
-        classifier = pipeline.named_steps['classifier']
+        # Get the calibrated classifier from pipeline
+        calibrated_clf = pipeline.named_steps['clf']
+
+        # Extract the base estimator from CalibratedClassifierCV
+        # After fitting, calibrated_classifiers_ contains the fitted models
+        if hasattr(calibrated_clf, 'calibrated_classifiers_'):
+            # Use the first calibrated classifier (they should be similar across folds)
+            base_estimator = calibrated_clf.calibrated_classifiers_[0].estimator
+        else:
+            # Fallback to the original estimator
+            base_estimator = calibrated_clf.estimator
 
         # Extract importance based on model type
-        if hasattr(classifier, 'coef_'):
+        if hasattr(base_estimator, 'coef_'):
             # Linear models (Logistic Regression)
-            importances = classifier.coef_[0]
-        elif hasattr(classifier, 'feature_importances_'):
+            importances = base_estimator.coef_[0]
+        elif hasattr(base_estimator, 'feature_importances_'):
             # Tree-based models (XGBoost, Random Forest)
-            importances = classifier.feature_importances_
+            importances = base_estimator.feature_importances_
         else:
             return None
 
@@ -169,6 +179,8 @@ def analyze_feature_importance(
 
     except Exception as e:
         print(f"  ⚠️  Could not analyze feature importance: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
