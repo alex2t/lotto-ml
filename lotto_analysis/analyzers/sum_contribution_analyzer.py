@@ -10,9 +10,10 @@ Statistical Methods:
 - One-sample t-test against expected mean
 - Cohen's d for effect size
 - ANOVA for overall variance analysis
+- FDR correction for multiple hypothesis testing (v3.11)
 
 Author: Statistical Analysis Module
-Version: 1.0 (Scipy Edition)
+Version: 3.11 (Multiple Testing Correction Edition)
 """
 
 import json
@@ -22,6 +23,15 @@ from typing import Dict, Any, List
 from collections import defaultdict
 from scipy import stats
 import numpy as np
+
+# Try to import statsmodels for FDR correction
+try:
+    from statsmodels.stats.multitest import multipletests
+    STATSMODELS_AVAILABLE = True
+except ImportError:
+    STATSMODELS_AVAILABLE = False
+    print("⚠️  statsmodels not available - multiple testing correction disabled")
+    print("   Install with: pip install statsmodels")
 
 
 def calculate_draw_sums(draw_history: List[Dict[str, Any]]) -> List[int]:
@@ -315,13 +325,53 @@ def analyze_sum_contribution(
     print("  Performing ANOVA on number ranges...")
     anova_results = perform_anova_analysis(draw_history, max_number)
 
+    # CRITICAL FIX v3.11: Apply multiple hypothesis testing correction (FDR)
+    if STATSMODELS_AVAILABLE and len(per_number_contribution) > 0:
+        print("  Applying FDR correction for multiple hypothesis testing...")
+
+        # Collect p-values in order
+        numbers = sorted(per_number_contribution.keys())
+        p_values = [per_number_contribution[num]['p_value'] for num in numbers]
+
+        # Apply Benjamini-Hochberg FDR correction
+        rejected, p_adjusted, _, _ = multipletests(
+            p_values,
+            method='fdr_bh',
+            alpha=0.05
+        )
+
+        # Update results with corrected p-values
+        num_significant_before = sum(
+            1 for data in per_number_contribution.values()
+            if data['statistically_validated']
+        )
+
+        for i, num in enumerate(numbers):
+            per_number_contribution[num]['p_value_adjusted'] = float(p_adjusted[i])
+            per_number_contribution[num]['statistically_validated'] = bool(rejected[i])
+
+        num_significant_after = sum(
+            1 for data in per_number_contribution.values()
+            if data['statistically_validated']
+        )
+
+        print(f"    Before FDR: {num_significant_before} significant results")
+        print(f"    After FDR:  {num_significant_after} significant results")
+        print(f"    Correction reduced false positives by {num_significant_before - num_significant_after}")
+
+        fdr_applied = True
+    else:
+        if not STATSMODELS_AVAILABLE:
+            print("  ⚠️  Skipping FDR correction (statsmodels not installed)")
+        fdr_applied = False
+
     # Extract validated scores
     validated_scores = {
         num: data['contribution_score']
         for num, data in per_number_contribution.items()
     }
 
-    # Count significant contributions
+    # Count significant contributions (after FDR correction if applied)
     num_significant = sum(
         1 for data in per_number_contribution.values()
         if data['statistically_validated']
@@ -333,10 +383,12 @@ def analyze_sum_contribution(
             'statistical_methods': [
                 'independent_t_test',
                 'one_way_anova',
-                'cohens_d_effect_size'
+                'cohens_d_effect_size',
+                'fdr_correction' if fdr_applied else 'no_fdr_correction'
             ],
             'total_draws': len(draw_history),
-            'significance_level': 0.05
+            'significance_level': 0.05,
+            'fdr_correction_applied': fdr_applied
         },
         'overall_distribution': overall_stats,
         'per_number_contribution': per_number_contribution,

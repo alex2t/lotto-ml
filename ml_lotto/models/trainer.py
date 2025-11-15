@@ -2,10 +2,17 @@
 trainer.py
 ==========
 Handles ML model training with configurable algorithms and features.
+
+VERSION: 3.11 (Feature Importance & Calibration Edition)
+- Added feature importance analysis
+- Added probability calibration validation
+- Enhanced model evaluation metrics
 """
 
 import pandas as pd
-from typing import Dict, Any, List, Tuple
+import numpy as np
+from typing import Dict, Any, List, Tuple, Optional
+from sklearn.calibration import calibration_curve
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW, VALIDATION_SPLIT_RATIO
 from ml_lotto.models.pipelines import create_model_pipeline
 from ml_lotto.features.extractor import expand_feature_selection, get_all_feature_names
@@ -106,6 +113,127 @@ def build_training_dataset(
     return train_df
 
 
+def analyze_feature_importance(
+    pipeline: Any,
+    feature_names: List[str],
+    model_name: str,
+    top_n: int = 10
+) -> Optional[pd.DataFrame]:
+    """
+    Analyze and display feature importance after training.
+
+    Args:
+        pipeline: Trained sklearn pipeline
+        feature_names: List of feature names used in training
+        model_name: Name of the model for display
+        top_n: Number of top features to display
+
+    Returns:
+        DataFrame with feature importance scores, or None if not applicable
+    """
+    try:
+        # Get the calibrated classifier from pipeline
+        calibrated_clf = pipeline.named_steps['clf']
+
+        # Extract the base estimator from CalibratedClassifierCV
+        # After fitting, calibrated_classifiers_ contains the fitted models
+        if hasattr(calibrated_clf, 'calibrated_classifiers_'):
+            # Use the first calibrated classifier (they should be similar across folds)
+            base_estimator = calibrated_clf.calibrated_classifiers_[0].estimator
+        else:
+            # Fallback to the original estimator
+            base_estimator = calibrated_clf.estimator
+
+        # Extract importance based on model type
+        if hasattr(base_estimator, 'coef_'):
+            # Linear models (Logistic Regression)
+            importances = base_estimator.coef_[0]
+        elif hasattr(base_estimator, 'feature_importances_'):
+            # Tree-based models (XGBoost, Random Forest)
+            importances = base_estimator.feature_importances_
+        else:
+            return None
+
+        # Create importance dataframe
+        importance_df = pd.DataFrame({
+            'feature': feature_names,
+            'importance': importances,
+            'abs_importance': np.abs(importances)
+        }).sort_values('abs_importance', ascending=False)
+
+        print(f"\n  📊 Feature Importance Analysis:")
+        print(f"  Top {top_n} Most Important Features:")
+        for idx, row in importance_df.head(top_n).iterrows():
+            print(f"    {row['feature']:30s} : {row['abs_importance']:8.4f}")
+
+        # Identify low-importance features
+        threshold = 0.01
+        low_importance = importance_df[importance_df['abs_importance'] < threshold]
+        if len(low_importance) > 0:
+            print(f"\n  ⚠️  {len(low_importance)} features with importance < {threshold}:")
+            print(f"      {', '.join(low_importance['feature'].tolist()[:5])}")
+            if len(low_importance) > 5:
+                print(f"      ... and {len(low_importance) - 5} more")
+
+        return importance_df
+
+    except Exception as e:
+        print(f"  ⚠️  Could not analyze feature importance: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+def validate_calibration(
+    pipeline: Any,
+    X_val: np.ndarray,
+    y_val: np.ndarray,
+    model_name: str
+) -> float:
+    """
+    Validate probability calibration quality.
+
+    Args:
+        pipeline: Trained sklearn pipeline
+        X_val: Validation features
+        y_val: Validation labels
+        model_name: Name of the model for display
+
+    Returns:
+        Mean calibration error
+    """
+    try:
+        # Get predicted probabilities
+        y_pred_proba = pipeline.predict_proba(X_val)[:, 1]
+
+        # Calculate calibration curve
+        prob_true, prob_pred = calibration_curve(
+            y_val,
+            y_pred_proba,
+            n_bins=10,
+            strategy='quantile'
+        )
+
+        # Calculate calibration error
+        calibration_error = np.mean(np.abs(prob_true - prob_pred))
+
+        print(f"\n  🎯 Calibration Analysis:")
+        print(f"     Mean Calibration Error: {calibration_error:.4f}")
+
+        if calibration_error > 0.1:
+            print(f"     ⚠️  High calibration error - consider different calibration method")
+        elif calibration_error > 0.05:
+            print(f"     ⚡ Moderate calibration - acceptable but could improve")
+        else:
+            print(f"     ✅ Good calibration")
+
+        return calibration_error
+
+    except Exception as e:
+        print(f"  ⚠️  Could not validate calibration: {e}")
+        return -1.0
+
+
 def train_model(
     model_config: Dict[str, Any],
     train_df: pd.DataFrame,
@@ -183,6 +311,21 @@ def train_model(
         # Check for potential overfitting
         if train_accuracy - val_accuracy > 0.05:
             print(f"  ⚠️  Warning: Possible overfitting detected (diff: {train_accuracy - val_accuracy:.4f})")
+
+        # Feature Importance Analysis (NEW v3.11)
+        analyze_feature_importance(
+            pipeline,
+            selected_features,
+            model_config['name']
+        )
+
+        # Calibration Validation (NEW v3.11)
+        validate_calibration(
+            pipeline,
+            X_val,
+            y_val,
+            model_config['name']
+        )
 
     return pipeline, selected_features
 
