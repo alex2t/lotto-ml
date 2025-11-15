@@ -47,6 +47,7 @@ from analysis.bonus_analysis import (
     analyze_bonus_patterns
 )
 from lotto_analysis.analyzers.window_saturation_analyzer import generate_window_saturation_data
+from lotto_analysis.analyzers.recency_zone_analyzer import generate_recency_zones_data
 
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis,
@@ -557,6 +558,18 @@ def main():
                    "Advanced pattern features: volatility, trend, and temporal analysis")
     print(f"  ✓ Saved to {OUTPUT_FILE_ADVANCED}")
 
+    # ===== RECENCY ZONE ANALYSIS (PHASE 14) =====
+    print("\n" + "=" * 70)
+    print("Phase 14: Recency Zone Analysis (Data-Driven)")
+    print("=" * 70)
+    print("Generating data-driven recency zone scoring to replace hard-coded thresholds...")
+
+    draw_history_file = OUTPUT_FILE_HISTORY
+    output_file_recency = "data/lotto_recency_zones_calculated.json"
+
+    generate_recency_zones_data(draw_history_file, output_file_recency)
+    print(f"  ✓ Recency zone analysis complete")
+
     print("\n" + "=" * 70)
     print("✓ All Analysis Phases Complete!")
     print("=" * 70)
@@ -586,7 +599,8 @@ def main():
         "data/lotto_long_term_patterns.json",
         "data/lotto_statistics_analysis.json",
         "data/lotto_window_saturation_calculated.json",
-        "data/lotto_advanced_patterns.json"
+        "data/lotto_advanced_patterns.json",
+        "data/lotto_recency_zones_calculated.json"
     ]
 
     missing_files = []
