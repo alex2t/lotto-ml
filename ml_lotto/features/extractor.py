@@ -51,6 +51,7 @@ def extract_features_from_hmc_json(
     odd_even_json_data: Dict[int, float] = None,
     sum_contribution_json_data: Dict[int, float] = None,
     long_term_features: Dict[int, Dict[str, float]] = None,
+    advanced_pattern_features: Dict[int, Dict[str, float]] = None,
     consecutive_pairs_validated: Dict[str, Any] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
@@ -75,6 +76,7 @@ def extract_features_from_hmc_json(
         odd_even_json_data: NEW - Odd/even affinity from JSON
         sum_contribution_json_data: NEW - Sum contribution from JSON
         long_term_features: NEW - Long-term pattern analysis features
+        advanced_pattern_features: NEW - Volatility and trend features (v3.13)
 
     Returns:
         Dictionary mapping number (1-47) -> feature dictionary
@@ -154,6 +156,13 @@ def extract_features_from_hmc_json(
     else:
         print(f"  ✓ Loaded long-term pattern features")
 
+    # Load advanced pattern features (v3.13)
+    if advanced_pattern_features is None:
+        advanced_pattern_features = {}
+        print(f"  ⚠️  No advanced pattern features provided")
+    else:
+        print(f"  ✓ Loaded advanced pattern features (volatility, trend)")
+
     # Calculate window saturation scores (NEW v3.10)
     print("  Calculating window_saturation_penalty feature...")
     window_saturation_data = {}
@@ -204,6 +213,9 @@ def extract_features_from_hmc_json(
         # Get long-term features for this number
         lt_feat = long_term_features.get(num, {}) if long_term_features else {}
 
+        # Get advanced pattern features for this number (v3.13)
+        adv_feat = advanced_pattern_features.get(num, {}) if advanced_pattern_features else {}
+
         # Calculate NEW interaction features for defaults
         recent_4_count = recent_fields.get('recent_4', 0)
         freshness_momentum_default = recent_4_count * freshness_weight_score
@@ -235,6 +247,7 @@ def extract_features_from_hmc_json(
             **fresh_feat,
             **recent_fields,
             **lt_feat,  # Add long-term pattern features
+            **adv_feat,  # NEW v3.13: Add advanced pattern features
         }
         
         if num_key not in hmc_data:
@@ -280,6 +293,9 @@ def extract_features_from_hmc_json(
         # Get long-term features for this number
         lt_feat = long_term_features.get(num, {}) if long_term_features else {}
 
+        # Get advanced pattern features for this number (v3.13)
+        adv_feat = advanced_pattern_features.get(num, {}) if advanced_pattern_features else {}
+
         # Calculate NEW interaction features for better freshness discrimination
         # These replace redundant one-hot encoded weights with meaningful interactions
         recent_4_count = recent_fields.get('recent_4', 0)
@@ -321,6 +337,7 @@ def extract_features_from_hmc_json(
             **fresh_feat,
             **recent_fields,
             **lt_feat,  # Add long-term pattern features
+            **adv_feat,  # NEW v3.13: Add advanced pattern features
         }
     
     return features
@@ -338,7 +355,8 @@ def get_all_feature_names(features_dict: Dict[int, Dict[str, Any]]) -> List[str]
 def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List[str]:
     """Expand feature specification into actual feature list."""
 
-    recent_features = sorted([f for f in all_features if f.startswith('recent_')],
+    # Filter to only include recent_<number> features, exclude others like recent_vs_baseline
+    recent_features = sorted([f for f in all_features if f.startswith('recent_') and f.split('_')[1].isdigit()],
                              key=lambda x: int(x.split('_')[1]))
 
     # DEPRECATED: One-hot encoded freshness weights (kept for backwards compatibility)
@@ -352,8 +370,19 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'freshness_category_interaction'  # weight * category_performance
     ]
 
-    long_term_pattern_features = ['lt_hot_weight', 'lt_medium_weight', 'lt_cold_weight',
-                                   'lt_category_alignment', 'lt_recency_weight']
+    # REMOVED v3.13: lt_hot/medium/cold_weight (redundant with days_since_last + category)
+    # Category IS defined by recency in HMC system (perfect multicollinearity)
+    long_term_pattern_features = ['lt_category_alignment', 'lt_recency_weight']
+
+    # NEW v3.13: Advanced pattern features (volatility and trend)
+    advanced_pattern_features_list = [
+        'appearance_volatility',     # Coefficient of variation of gaps
+        'gap_consistency_score',     # 1/(1+volatility), how consistent
+        'max_gap_ratio',             # Max gap / avg gap
+        'appearance_trend',          # Recent vs older frequency change
+        'appearance_acceleration',   # Very recent vs recent change
+        'recent_vs_baseline'         # Recent frequency vs historical baseline
+    ]
 
     new_json_features = ['bonus_hit_contribution', 'freshness_weight_score',
                          'pair_frequency_score', 'range_spread_json',
@@ -366,8 +395,9 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'RECENT_LONG': recent_features[-1:] if recent_features else [],
         'BONUS_AWARE': ['days_since_bonus'],
         'FRESHNESS_PATTERN': freshness_weights_features_old,  # Old, kept for compatibility
-        FRESHNESS_PATTERN_WEIGHTS: freshness_interaction_features,  # NEW: Use interaction features
-        LONG_TERM_PATTERN_WEIGHTS: long_term_pattern_features,
+        FRESHNESS_PATTERN_WEIGHTS: freshness_interaction_features,  # NEW v3.12: Use interaction features
+        LONG_TERM_PATTERN_WEIGHTS: long_term_pattern_features,  # UPDATED v3.13: Removed redundant features
+        'ADVANCED_PATTERN_FEATURES': advanced_pattern_features_list,  # NEW v3.13: Volatility and trend
         'NEW_JSON_FEATURES': new_json_features
     }
 
