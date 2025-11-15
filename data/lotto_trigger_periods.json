@@ -4,7 +4,7 @@
         "last_seen": "2025/11/05",
         "category": "hot",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 2,
             "last_24": 7
@@ -83,7 +83,7 @@
         "last_seen": "2025/10/25",
         "category": "cold",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 1,
             "last_24": 2
@@ -153,7 +153,7 @@
     "5": {
         "total_count": 79,
         "last_seen": "2025/10/04",
-        "category": "medium",
+        "category": "hot",
         "recent": {
             "last_4": 0,
             "last_5": 0,
@@ -200,7 +200,7 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 3,
+            "last_9": 2,
             "last_24": 5
         },
         "series": {
@@ -239,12 +239,12 @@
     "7": {
         "total_count": 69,
         "last_seen": "2025/09/20",
-        "category": "medium",
+        "category": "cold",
         "recent": {
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_24": 5
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -275,10 +275,10 @@
     "8": {
         "total_count": 75,
         "last_seen": "2025/11/01",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 1,
-            "last_5": 2,
+            "last_5": 1,
             "last_9": 2,
             "last_24": 4
         },
@@ -340,7 +340,7 @@
     "10": {
         "total_count": 76,
         "last_seen": "2025/09/13",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 0,
             "last_5": 0,
@@ -383,12 +383,12 @@
     "11": {
         "total_count": 72,
         "last_seen": "2025/11/01",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_24": 4
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -419,11 +419,11 @@
     "12": {
         "total_count": 89,
         "last_seen": "2025/11/05",
-        "category": "medium",
+        "category": "hot",
         "recent": {
             "last_4": 2,
             "last_5": 2,
-            "last_9": 3,
+            "last_9": 2,
             "last_24": 7
         },
         "series": {
@@ -460,14 +460,14 @@
         }
     },
     "13": {
-        "total_count": 78,
-        "last_seen": "2025/11/01",
+        "total_count": 79,
+        "last_seen": "2025/11/11",
         "category": "medium",
         "recent": {
-            "last_4": 1,
-            "last_5": 1,
-            "last_9": 3,
-            "last_24": 5
+            "last_4": 2,
+            "last_5": 2,
+            "last_9": 4,
+            "last_24": 6
         },
         "series": {
             "series": {
@@ -480,8 +480,8 @@
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/10/01",
-                        "end_date": "2025/11/01",
+                        "start_date": "2025/10/11",
+                        "end_date": "2025/11/11",
                         "count": 3
                     }
                 ],
@@ -494,23 +494,23 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2024/06/05",
-                        "end_date": "2024/06/19",
-                        "count": 7
+                        "start_date": "2025/09/17",
+                        "end_date": "2025/10/01",
+                        "count": 8
                     }
                 ]
             }
         }
     },
     "14": {
-        "total_count": 72,
-        "last_seen": "2025/10/18",
+        "total_count": 73,
+        "last_seen": "2025/11/11",
         "category": "hot",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
-            "last_9": 1,
-            "last_24": 2
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 2,
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -566,8 +566,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/25",
-                        "end_date": "2025/11/08",
+                        "start_date": "2025/10/29",
+                        "end_date": "2025/11/11",
                         "count": 7
                     }
                 ]
@@ -577,10 +577,10 @@
     "16": {
         "total_count": 67,
         "last_seen": "2025/10/22",
-        "category": "medium",
+        "category": "cold",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 3,
             "last_24": 6
         },
@@ -661,7 +661,7 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_24": 2
+            "last_24": 1
         },
         "series": {
             "series": {
@@ -704,7 +704,7 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_24": 5
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -746,7 +746,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
+            "last_9": 1,
             "last_24": 4
         },
         "series": {
@@ -780,7 +780,7 @@
         "last_seen": "2025/10/29",
         "category": "cold",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 2,
             "last_24": 5
@@ -954,7 +954,7 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 1,
+            "last_9": 0,
             "last_24": 2
         },
         "series": {
@@ -996,9 +996,9 @@
         "category": "hot",
         "recent": {
             "last_4": 1,
-            "last_5": 2,
+            "last_5": 1,
             "last_9": 2,
-            "last_24": 4
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -1029,7 +1029,7 @@
     "27": {
         "total_count": 85,
         "last_seen": "2025/11/08",
-        "category": "medium",
+        "category": "hot",
         "recent": {
             "last_4": 1,
             "last_5": 1,
@@ -1075,7 +1075,7 @@
         "category": "medium",
         "recent": {
             "last_4": 1,
-            "last_5": 2,
+            "last_5": 1,
             "last_9": 3,
             "last_24": 4
         },
@@ -1149,14 +1149,14 @@
         }
     },
     "30": {
-        "total_count": 77,
-        "last_seen": "2025/09/24",
+        "total_count": 78,
+        "last_seen": "2025/11/11",
         "category": "hot",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
-            "last_9": 0,
-            "last_24": 3
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 1,
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -1235,7 +1235,7 @@
             "last_4": 2,
             "last_5": 2,
             "last_9": 2,
-            "last_24": 5
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -1262,8 +1262,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/25",
-                        "end_date": "2025/11/08",
+                        "start_date": "2025/10/29",
+                        "end_date": "2025/11/11",
                         "count": 10
                     }
                 ]
@@ -1273,7 +1273,7 @@
     "33": {
         "total_count": 64,
         "last_seen": "2025/09/20",
-        "category": "medium",
+        "category": "cold",
         "recent": {
             "last_4": 0,
             "last_5": 0,
@@ -1309,10 +1309,10 @@
     "34": {
         "total_count": 70,
         "last_seen": "2025/10/22",
-        "category": "cold",
+        "category": "hot",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 1,
             "last_24": 1
         },
@@ -1354,7 +1354,7 @@
         "last_seen": "2025/11/08",
         "category": "medium",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 4,
             "last_24": 4
@@ -1370,8 +1370,8 @@
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/10/08",
-                        "end_date": "2025/11/08",
+                        "start_date": "2025/10/11",
+                        "end_date": "2025/11/11",
                         "count": 5
                     }
                 ],
@@ -1393,13 +1393,13 @@
         }
     },
     "36": {
-        "total_count": 65,
-        "last_seen": "2025/10/25",
+        "total_count": 66,
+        "last_seen": "2025/11/11",
         "category": "medium",
         "recent": {
             "last_4": 1,
-            "last_5": 1,
-            "last_9": 2,
+            "last_5": 2,
+            "last_9": 3,
             "last_24": 4
         },
         "series": {
@@ -1429,14 +1429,14 @@
         }
     },
     "37": {
-        "total_count": 75,
-        "last_seen": "2025/10/08",
+        "total_count": 76,
+        "last_seen": "2025/11/11",
         "category": "medium",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
+            "last_4": 1,
+            "last_5": 1,
             "last_9": 1,
-            "last_24": 3
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -1549,8 +1549,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/25",
-                        "end_date": "2025/11/08",
+                        "start_date": "2025/10/29",
+                        "end_date": "2025/11/11",
                         "count": 10
                     }
                 ]
@@ -1601,14 +1601,14 @@
         }
     },
     "41": {
-        "total_count": 78,
-        "last_seen": "2025/10/22",
+        "total_count": 79,
+        "last_seen": "2025/11/11",
         "category": "hot",
         "recent": {
-            "last_4": 0,
+            "last_4": 1,
             "last_5": 1,
-            "last_9": 1,
-            "last_24": 2
+            "last_9": 2,
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -1648,8 +1648,8 @@
         "last_seen": "2025/10/25",
         "category": "hot",
         "recent": {
-            "last_4": 1,
-            "last_5": 2,
+            "last_4": 0,
+            "last_5": 1,
             "last_9": 2,
             "last_24": 5
         },
@@ -1691,7 +1691,7 @@
         "last_seen": "2025/10/25",
         "category": "cold",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 2,
             "last_24": 4
@@ -1736,7 +1736,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 3,
+            "last_9": 2,
             "last_24": 4
         },
         "series": {
@@ -1807,8 +1807,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/25",
-                        "end_date": "2025/11/08",
+                        "start_date": "2025/10/29",
+                        "end_date": "2025/11/11",
                         "count": 10
                     }
                 ]
@@ -1816,14 +1816,14 @@
         }
     },
     "46": {
-        "total_count": 77,
-        "last_seen": "2025/11/05",
+        "total_count": 78,
+        "last_seen": "2025/11/11",
         "category": "hot",
         "recent": {
-            "last_4": 1,
-            "last_5": 1,
+            "last_4": 2,
+            "last_5": 2,
             "last_9": 3,
-            "last_24": 5
+            "last_24": 6
         },
         "series": {
             "series": {
@@ -1843,9 +1843,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/08",
-                        "end_date": "2025/10/22",
-                        "count": 7
+                        "start_date": "2025/10/29",
+                        "end_date": "2025/11/11",
+                        "count": 8
                     }
                 ]
             }
