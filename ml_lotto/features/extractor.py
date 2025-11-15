@@ -19,7 +19,7 @@ import pandas as pd
 from typing import Dict, Any, List, Tuple
 from ml_lotto.config import MAX_NUMBER, FRESHNESS_PATTERN_WEIGHTS, LONG_TERM_PATTERN_WEIGHTS
 
-from ml_lotto.features.timing import calculate_recency_zone_score
+from ml_lotto.features.timing import calculate_recency_zone_score, load_recency_zones
 from ml_lotto.features.patterns import (
     calculate_has_consecutive_partner,
     calculate_consecutive_pair_affinity
@@ -84,10 +84,17 @@ def extract_features_from_hmc_json(
     features = {}
     current_timestamp = pd.Timestamp.now()
     ml_feature_names = [ml_key for data_key, ml_key in dynamic_recent_keys]
-    
+
     if freshness_features is None:
         freshness_features = {}
-    
+
+    # Load recency zones for data-driven recency scoring
+    recency_zones_json = load_recency_zones()
+    if recency_zones_json:
+        print("  ✓ Loaded recency zones (data-driven)")
+    else:
+        print("  ⚠️  Using fallback recency zones (hard-coded)")
+
     print("  Calculating Priority 2 features...")
     has_consecutive_partner_data = calculate_has_consecutive_partner(
         hmc_data,
@@ -226,7 +233,7 @@ def extract_features_from_hmc_json(
             'total_count': 0,
             'category': 'cold',
             'days_since_last': 999,
-            'recency_zone_score': calculate_recency_zone_score(999),
+            'recency_zone_score': calculate_recency_zone_score(999, category='cold', recency_zones_json=recency_zones_json),
             'series_total': 0,
             'series_recent': 0,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
@@ -315,7 +322,7 @@ def extract_features_from_hmc_json(
             'total_count': total_count,
             'category': category,
             'days_since_last': days_since,
-            'recency_zone_score': calculate_recency_zone_score(days_since),
+            'recency_zone_score': calculate_recency_zone_score(days_since, category=category, recency_zones_json=recency_zones_json),
             'series_total': series_total,
             'series_recent': series_recent,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
