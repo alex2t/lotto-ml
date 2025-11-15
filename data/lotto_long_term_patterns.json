@@ -184,7 +184,7 @@
             }
         },
         "overall_chi2": 188.09947643979058,
-        "p_value": 2.3670552573947627e-30,
+        "p_value": 2.367055257394762e-30,
         "significant": true,
         "total_draws_analyzed": 407,
         "num_patterns": 19,
