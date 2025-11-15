@@ -21,7 +21,7 @@
         "range_of_ranges": 35,
         "normality_test": {
             "shapiro_statistic": 0.9611395824334462,
-            "p_value": 6.468421346602158e-09,
+            "p_value": 6.468421346602181e-09,
             "is_normal": false
         }
     },
@@ -29,7 +29,7 @@
         "1": {
             "contribution_score": 0.8198790317662762,
             "statistically_validated": true,
-            "p_value": 5.554967024614352e-07,
+            "p_value": 5.554967024614353e-07,
             "t_statistic": 5.087547077190383,
             "cohens_d": 0.7552867252476845,
             "mean_with": 38.78846153846154,
@@ -37,7 +37,7 @@
             "mean_difference": 5.136776145203115,
             "appearances": 52,
             "effect_size": "medium",
-            "p_value_adjusted": 1.3054172507843728e-05
+            "p_value_adjusted": 1.305417250784373e-05
         },
         "2": {
             "contribution_score": 0.7709908058288748,
@@ -68,7 +68,7 @@
         "4": {
             "contribution_score": 0.5569372028317416,
             "statistically_validated": false,
-            "p_value": 0.401631523646812,
+            "p_value": 0.40163152364681187,
             "t_statistic": 0.8395915875847738,
             "cohens_d": 0.12901086612844895,
             "mean_with": 35.104166666666664,
@@ -81,7 +81,7 @@
         "5": {
             "contribution_score": 0.6585752997975075,
             "statistically_validated": true,
-            "p_value": 0.013135880120512092,
+            "p_value": 0.013135880120512094,
             "t_statistic": 2.491029785983835,
             "cohens_d": 0.36682328077807974,
             "mean_with": 36.528301886792455,
@@ -89,12 +89,12 @@
             "mean_difference": 2.5536539994685086,
             "appearances": 53,
             "effect_size": "small",
-            "p_value_adjusted": 0.04115909104427122
+            "p_value_adjusted": 0.04115909104427123
         },
         "6": {
             "contribution_score": 0.6221689022413459,
             "statistically_validated": false,
-            "p_value": 0.05128584649926044,
+            "p_value": 0.05128584649926043,
             "t_statistic": 1.9548565165686704,
             "cohens_d": 0.28338461619852334,
             "mean_with": 36.018181818181816,
@@ -102,7 +102,7 @@
             "mean_difference": 1.9785217615245898,
             "appearances": 55,
             "effect_size": "small",
-            "p_value_adjusted": 0.12052173927326204
+            "p_value_adjusted": 0.120521739273262
         },
         "7": {
             "contribution_score": 0.5434291087259272,
@@ -328,7 +328,7 @@
         "24": {
             "contribution_score": 0.3591875628892411,
             "statistically_validated": false,
-            "p_value": 0.02611960604480919,
+            "p_value": 0.026119606044809198,
             "t_statistic": -2.232604887397618,
             "cohens_d": -0.32616957049872275,
             "mean_with": 32.333333333333336,
@@ -336,12 +336,12 @@
             "mean_difference": -2.274011299435024,
             "appearances": 54,
             "effect_size": "small",
-            "p_value_adjusted": 0.06820119356144622
+            "p_value_adjusted": 0.06820119356144624
         },
         "25": {
             "contribution_score": 0.330207711348795,
             "statistically_validated": true,
-            "p_value": 0.0066311555779356175,
+            "p_value": 0.006631155577935618,
             "t_statistic": -2.7288812712800468,
             "cohens_d": -0.395590655968161,
             "mean_with": 31.927272727272726,
@@ -349,7 +349,7 @@
             "mean_difference": -2.7497810970898833,
             "appearances": 55,
             "effect_size": "small",
-            "p_value_adjusted": 0.028333119287543094
+            "p_value_adjusted": 0.028333119287543097
         },
         "26": {
             "contribution_score": 0.34524203474188303,
@@ -458,7 +458,7 @@
         "34": {
             "contribution_score": 0.4118641587063624,
             "statistically_validated": false,
-            "p_value": 0.22820671028731893,
+            "p_value": 0.22820671028731895,
             "t_statistic": -1.2068133353939665,
             "cohens_d": -0.19660972428899903,
             "mean_with": 33.07142857142857,
@@ -635,7 +635,7 @@
             "mean_difference": 5.4752984389348,
             "appearances": 45,
             "effect_size": "large",
-            "p_value_adjusted": 1.3054172507843728e-05
+            "p_value_adjusted": 1.305417250784373e-05
         }
     },
     "levene_analysis": {
