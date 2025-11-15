@@ -4,14 +4,15 @@ extractor.py
 ============
 Main orchestrator for feature extraction from HMC JSON data.
 
-VERSION: 3.8 (Long-Term Pattern Analysis Edition)
-- Added long-term pattern analysis features
-- Integrated LONG_TERM_PATTERN_WEIGHTS
-- Added bonus_hit_contribution feature
-- Added freshness_weight_score feature
-- Added pair_frequency_score feature
-- Added range_spread_json feature
-- Added odd_even_json and sum_contribution_json features
+VERSION: 3.12 (Freshness Interaction Features Edition)
+- FIXED: Added interaction features to replace redundant one-hot freshness encoding
+  * freshness_momentum: recent_4 * validated_weight (captures momentum with pattern strength)
+  * freshness_timing: bin * (1 / days_since) (combines freshness with recency)
+  * freshness_category_interaction: weight * category_performance (HMC alignment)
+- UPDATED: FRESHNESS_PATTERN_WEIGHTS now expands to interaction features instead of c0/c1/c2_weight
+- Kept long-term pattern analysis features (now with corrected recency data)
+- Kept bonus_hit_contribution, freshness_weight_score, pair_frequency_score
+- Kept range_spread_json, odd_even_json, sum_contribution_json features
 """
 
 import pandas as pd
@@ -203,6 +204,12 @@ def extract_features_from_hmc_json(
         # Get long-term features for this number
         lt_feat = long_term_features.get(num, {}) if long_term_features else {}
 
+        # Calculate NEW interaction features for defaults
+        recent_4_count = recent_fields.get('recent_4', 0)
+        freshness_momentum_default = recent_4_count * freshness_weight_score
+        freshness_timing_default = current_freshness_bin * (1.0 / 1000.0)  # days_since = 999
+        freshness_category_interaction_default = freshness_weight_score * 0.280  # cold category
+
         default_features = {
             'total_count': 0,
             'category': 'cold',
@@ -221,6 +228,10 @@ def extract_features_from_hmc_json(
             'range_spread_json': range_spread_json_data.get(num, 0.5),
             'odd_even_json': odd_even_json_data.get(num, 0.5),
             'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
+            # NEW v3.12: Interaction features
+            'freshness_momentum': freshness_momentum_default,
+            'freshness_timing': freshness_timing_default,
+            'freshness_category_interaction': freshness_category_interaction_default,
             **fresh_feat,
             **recent_fields,
             **lt_feat,  # Add long-term pattern features
@@ -269,6 +280,21 @@ def extract_features_from_hmc_json(
         # Get long-term features for this number
         lt_feat = long_term_features.get(num, {}) if long_term_features else {}
 
+        # Calculate NEW interaction features for better freshness discrimination
+        # These replace redundant one-hot encoded weights with meaningful interactions
+        recent_4_count = recent_fields.get('recent_4', 0)
+
+        # Freshness momentum: recent count weighted by validated pattern probability
+        freshness_momentum = recent_4_count * freshness_weight_score
+
+        # Freshness timing: combines freshness bin with recency (higher = fresher + more recent)
+        freshness_timing = current_freshness_bin * (1.0 / (days_since + 1))
+
+        # Category alignment: freshness pattern aligned with HMC category performance
+        category_weight_map = {'hot': 0.487, 'medium': 0.234, 'cold': 0.280}  # From lt analysis
+        category_weight = category_weight_map.get(category, 0.33)
+        freshness_category_interaction = freshness_weight_score * category_weight
+
         features[num] = {
             'total_count': total_count,
             'category': category,
@@ -288,6 +314,10 @@ def extract_features_from_hmc_json(
             'odd_even_json': odd_even_json_data.get(num, 0.5),
             'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
             'window_saturation_penalty': window_saturation_data.get(num, 0.0),  # NEW v3.10
+            # NEW v3.12: Interaction features for better freshness discrimination
+            'freshness_momentum': freshness_momentum,
+            'freshness_timing': freshness_timing,
+            'freshness_category_interaction': freshness_category_interaction,
             **fresh_feat,
             **recent_fields,
             **lt_feat,  # Add long-term pattern features
@@ -311,7 +341,16 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
     recent_features = sorted([f for f in all_features if f.startswith('recent_')],
                              key=lambda x: int(x.split('_')[1]))
 
-    freshness_weights_features = sorted([f for f in all_features if f.startswith('freshness_c') and f.endswith('_weight')])
+    # DEPRECATED: One-hot encoded freshness weights (kept for backwards compatibility)
+    freshness_weights_features_old = sorted([f for f in all_features if f.startswith('freshness_c') and f.endswith('_weight')])
+
+    # NEW v3.12: Interaction features that provide better discrimination
+    freshness_interaction_features = [
+        'current_freshness_bin',        # Raw bin indicator (0/1/2)
+        'freshness_momentum',           # recent_4 * validated_weight
+        'freshness_timing',             # bin * (1 / days_since)
+        'freshness_category_interaction'  # weight * category_performance
+    ]
 
     long_term_pattern_features = ['lt_hot_weight', 'lt_medium_weight', 'lt_cold_weight',
                                    'lt_category_alignment', 'lt_recency_weight']
@@ -326,8 +365,8 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'RECENT_SHORT': recent_features[:1] if recent_features else [],
         'RECENT_LONG': recent_features[-1:] if recent_features else [],
         'BONUS_AWARE': ['days_since_bonus'],
-        'FRESHNESS_PATTERN': freshness_weights_features,
-        FRESHNESS_PATTERN_WEIGHTS: freshness_weights_features,
+        'FRESHNESS_PATTERN': freshness_weights_features_old,  # Old, kept for compatibility
+        FRESHNESS_PATTERN_WEIGHTS: freshness_interaction_features,  # NEW: Use interaction features
         LONG_TERM_PATTERN_WEIGHTS: long_term_pattern_features,
         'NEW_JSON_FEATURES': new_json_features
     }

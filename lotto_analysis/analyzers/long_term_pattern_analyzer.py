@@ -253,7 +253,9 @@ def analyze_recency_correlations(
                 continue  # Skip bonus numbers
 
             category = detail.get('category', 'unknown')
-            days_since = detail.get('days_since_last', 999)
+            # FIXED: Use days_since_last_hit (historical value at draw time)
+            # instead of days_since_last (calculated from current date)
+            days_since = detail.get('days_since_last_hit', 999)
 
             # Find which recency bin this falls into
             for bin_name, min_days, max_days in recency_bins:
@@ -358,7 +360,8 @@ def calculate_category_performance_by_recency(
                 continue
 
             category = detail.get('category', 'unknown')
-            days_since = detail.get('days_since_last', 999)
+            # FIXED: Use days_since_last_hit (historical value at draw time)
+            days_since = detail.get('days_since_last_hit', 999)
 
             for bin_name, min_days, max_days in recency_bins:
                 if min_days <= days_since <= max_days:
