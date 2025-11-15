@@ -145,15 +145,17 @@ MODEL_1_CONFIG = {
     'features': [
         FRESHNESS_PATTERN_WEIGHTS,    # Statistically validated freshness (interaction features)
         'days_since_last',              # Core timing
-        #'recency_zone_score',           # Optimal window detection
+        'recency_zone_score',           # Optimal window detection
         'total_count',                  # Historical frequency
         'recent_4',                     # NEW - immediate hot streak
-        'was_recent_bonus',             # Proven 71% pattern
+        #'was_recent_bonus',             # Proven 71% pattern
         #'has_consecutive_partner',      # 57% consecutive pattern
         #'odd_even_json',                # Realism constraint
         #'pair_frequency_score',         # Pattern affinity
         'bonus_hit_contribution',       # JSON feature
         'window_saturation_penalty',
+        'range_spread_json',
+        'sum_contribution_json',
         LONG_TERM_PATTERN_WEIGHTS,    # UPDATED v3.13: lt_category_alignment, lt_recency_weight (removed redundant hot/medium/cold)
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
     ],
@@ -209,6 +211,7 @@ MODEL_2_CONFIG = {
         # Realism constraints (ensure valid 6-ball combinations)
         'sum_contribution_json',
         'range_spread_json',
+        
 
         # Validated freshness patterns (interaction features)
         FRESHNESS_PATTERN_WEIGHTS,
@@ -217,7 +220,7 @@ MODEL_2_CONFIG = {
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
     ],
 
-    'diversity_penalty': 0.00,
+    'diversity_penalty': 0.10,
 
     'algorithm_params': {
         'penalty': 'l2',
@@ -303,7 +306,7 @@ MODEL_4_CONFIG = {
         # Core timing
         'total_count',
         'days_since_last',
-        'recency_zone_score',
+        #'recency_zone_score',
 
         # Momentum
         'recent_4',
