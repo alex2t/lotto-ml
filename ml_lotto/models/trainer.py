@@ -6,26 +6,49 @@ Handles ML model training with configurable algorithms and features.
 
 import pandas as pd
 from typing import Dict, Any, List, Tuple
-from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW
+from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW, VALIDATION_SPLIT_RATIO
 from ml_lotto.models.pipelines import create_model_pipeline
 from ml_lotto.features.extractor import expand_feature_selection, get_all_feature_names
+
+
+def calculate_train_val_split(total_draws: int, split_ratio: float = VALIDATION_SPLIT_RATIO) -> Tuple[int, int]:
+    """
+    Calculate train/validation split indices to prevent data leakage.
+
+    Args:
+        total_draws: Total number of draws available
+        split_ratio: Ratio of data to use for training (default: 0.80)
+
+    Returns:
+        Tuple of (train_end_index, val_start_index)
+        - train_end_index: Last index for training (exclusive)
+        - val_start_index: First index for validation
+    """
+    available_draws = total_draws - TRAINING_START_DRAW
+    train_size = int(available_draws * split_ratio)
+    train_end_index = TRAINING_START_DRAW + train_size
+    val_start_index = train_end_index
+
+    return train_end_index, val_start_index
 
 
 def build_training_dataset(
     all_draws: List[Dict[str, Any]],
     features_dict: Dict[int, Dict[str, Any]],
     all_feature_names: List[str],
-    exclude_bonus: bool = False
+    exclude_bonus: bool = False,
+    start_index: int = TRAINING_START_DRAW,
+    end_index: int = None
 ) -> pd.DataFrame:
     """
-    Build training dataset by combining features and labels.
+    Build training dataset by combining features and labels with proper train/validation split.
 
     INPUT SOURCES:
         all_draws (from lotto_draw_history.json) → LABELS (y = did number win?)
         features_dict (from lotto_trigger_periods.json) → FEATURES (X = number statistics)
 
     TRAINING PROCESS:
-        For each historical draw #100 onwards:
+        For each historical draw in specified range:
             For each number 1-47:
                 X (features) ← [total_count, days_since_last, ..., days_since_bonus]
                 y (label)    ← 1 if number won that draw, 0 if not
@@ -35,15 +58,22 @@ def build_training_dataset(
         features_dict: Feature values for each number
         all_feature_names: List of all available feature names
         exclude_bonus: If True, only main 6 numbers are labeled as hits (for Model 2)
+        start_index: First draw index to include (default: TRAINING_START_DRAW)
+        end_index: Last draw index to include (exclusive). If None, uses all available draws.
 
     Returns:
         DataFrame with all features + 'hit' column (label)
     """
-    print(f"\nBuilding training dataset (exclude_bonus={exclude_bonus})...")
+    if end_index is None:
+        end_index = len(all_draws)
+
+    dataset_type = "training" if end_index < len(all_draws) else "full"
+    print(f"\nBuilding {dataset_type} dataset (exclude_bonus={exclude_bonus})...")
+    print(f"  Draw range: {start_index} to {end_index-1} ({end_index - start_index} draws)")
     records = []
 
     # Build training data by combining FEATURES + LABELS
-    for draw_idx in range(TRAINING_START_DRAW, len(all_draws)):
+    for draw_idx in range(start_index, end_index):
         # CRITICAL CHANGE: Different labeling strategy based on exclude_bonus
         if exclude_bonus:
             # Model 2: ONLY the first 6 numbers (main balls, exclude bonus)
@@ -81,10 +111,11 @@ def train_model(
     train_df: pd.DataFrame,
     all_feature_names: List[str],
     model_index: int,
-    exclude_bonus: bool = False
+    exclude_bonus: bool = False,
+    val_df: pd.DataFrame = None
 ) -> Tuple[Any, List[str]]:
     """
-    Train a single model based on its configuration.
+    Train a single model based on its configuration with optional validation evaluation.
 
     Args:
         model_config: Model configuration dictionary
@@ -92,6 +123,7 @@ def train_model(
         all_feature_names: All available feature names
         model_index: Model number (for display)
         exclude_bonus: If True, model is trained on main 6 only
+        val_df: Optional validation DataFrame for evaluation
 
     Returns:
         Tuple of (trained_pipeline, selected_features)
@@ -102,36 +134,56 @@ def train_model(
 
     if exclude_bonus:
         print(f"  ⭐ SPECIAL TRAINING: Optimized for MAIN 6 BALLS (jackpot focus)")
-    
+
     # Expand feature selection
     selected_features = expand_feature_selection(
         model_config['features'],
         all_feature_names
     )
-    
+
     if not selected_features:
         raise ValueError(f"No features selected for Model {model_index}")
-    
+
     print(f"  Selected features ({len(selected_features)}): {selected_features}")
     print(f"  HMC Configuration: {model_config['hot_count']}H-{model_config['medium_count']}M-"
           f"{model_config['cold_count']}C+{model_config['generic_count']}G")
     print(f"  Diversity Penalty: {model_config['diversity_penalty']*100:.0f}%")
-    
+
     # Prepare training data
-    X = train_df[selected_features].values
-    y = train_df['hit'].values
-    
+    X_train = train_df[selected_features].values
+    y_train = train_df['hit'].values
+
     # Calculate class imbalance for XGBoost
     scale_pos_weight = None
     if model_config['algorithm'] == 'xgboost':
-        scale_pos_weight = (len(y) - sum(y)) / sum(y)
-    
+        scale_pos_weight = (len(y_train) - sum(y_train)) / sum(y_train)
+
     # Create and train pipeline
     pipeline = create_model_pipeline(model_config, scale_pos_weight)
-    pipeline.fit(X, y)
-    
+    pipeline.fit(X_train, y_train)
+
     print(f"  ✓ Training complete")
-    
+
+    # Evaluate on validation set if provided
+    if val_df is not None and len(val_df) > 0:
+        X_val = val_df[selected_features].values
+        y_val = val_df['hit'].values
+
+        # Calculate validation accuracy
+        val_predictions = pipeline.predict(X_val)
+        val_accuracy = (val_predictions == y_val).sum() / len(y_val)
+
+        # Calculate train accuracy for comparison
+        train_predictions = pipeline.predict(X_train)
+        train_accuracy = (train_predictions == y_train).sum() / len(y_train)
+
+        print(f"  📊 Train Accuracy: {train_accuracy:.4f}")
+        print(f"  📊 Validation Accuracy: {val_accuracy:.4f}")
+
+        # Check for potential overfitting
+        if train_accuracy - val_accuracy > 0.05:
+            print(f"  ⚠️  Warning: Possible overfitting detected (diff: {train_accuracy - val_accuracy:.4f})")
+
     return pipeline, selected_features
 
 
@@ -141,7 +193,7 @@ def train_all_models(
     features_dict: Dict[int, Dict[str, Any]]
 ) -> Tuple[Dict[str, Any], Dict[str, List[str]]]:
     """
-    Train all configured models with specialized training strategies.
+    Train all configured models with specialized training strategies and proper validation.
 
     Args:
         model_configs: List of model configuration dictionaries
@@ -164,28 +216,65 @@ def train_all_models(
     print("  Features (X) ← lotto_trigger_periods.json + custom calculations")
     print("  Labels (y)   ← lotto_draw_history.json")
 
+    # Calculate train/validation split to prevent data leakage
+    train_end_idx, val_start_idx = calculate_train_val_split(len(all_draws))
+    total_available = len(all_draws) - TRAINING_START_DRAW
+    train_size = train_end_idx - TRAINING_START_DRAW
+    val_size = len(all_draws) - val_start_idx
+
+    print(f"\n📊 TRAIN/VALIDATION SPLIT:")
+    print(f"  Total available draws: {total_available}")
+    print(f"  Training draws: {train_size} ({train_size/total_available*100:.1f}%)")
+    print(f"  Validation draws: {val_size} ({val_size/total_available*100:.1f}%)")
+    print(f"  Split ratio: {VALIDATION_SPLIT_RATIO:.2f}")
+    print(f"  ✓ Validation set held out to prevent data leakage")
+
     # Get all available feature names
     all_feature_names = get_all_feature_names(features_dict)
     print(f"  Available features: {all_feature_names}\n")
 
-    # Build TWO different training datasets
-    print("\n1. Building standard training dataset (Models 1 & 3)...")
+    # Build FOUR datasets: train/val for standard models and train/val for model2
+    print("\n1. Building standard TRAINING dataset (Models 1, 3, 4)...")
     train_df_standard = build_training_dataset(
         all_draws,
         features_dict,
         all_feature_names,
-        exclude_bonus=False  # All 7 positions
+        exclude_bonus=False,  # All 7 positions
+        start_index=TRAINING_START_DRAW,
+        end_index=train_end_idx
     )
 
-    print("\n2. Building specialized training dataset (Model 2)...")
+    print("\n2. Building standard VALIDATION dataset (Models 1, 3, 4)...")
+    val_df_standard = build_training_dataset(
+        all_draws,
+        features_dict,
+        all_feature_names,
+        exclude_bonus=False,  # All 7 positions
+        start_index=val_start_idx,
+        end_index=len(all_draws)
+    )
+
+    print("\n3. Building specialized TRAINING dataset (Model 2)...")
     train_df_model2 = build_training_dataset(
         all_draws,
         features_dict,
         all_feature_names,
-        exclude_bonus=True  # Main 6 only ⭐
+        exclude_bonus=True,  # Main 6 only ⭐
+        start_index=TRAINING_START_DRAW,
+        end_index=train_end_idx
     )
 
-    # Train each model
+    print("\n4. Building specialized VALIDATION dataset (Model 2)...")
+    val_df_model2 = build_training_dataset(
+        all_draws,
+        features_dict,
+        all_feature_names,
+        exclude_bonus=True,  # Main 6 only ⭐
+        start_index=val_start_idx,
+        end_index=len(all_draws)
+    )
+
+    # Train each model with proper train/validation split
     models = {}
     model_features = {}
 
@@ -195,9 +284,11 @@ def train_all_models(
         # Use specialized dataset for Model 2
         if idx == 2:
             train_df_to_use = train_df_model2
+            val_df_to_use = val_df_model2
             exclude_bonus = True
         else:
             train_df_to_use = train_df_standard
+            val_df_to_use = val_df_standard
             exclude_bonus = False
 
         pipeline, selected_features = train_model(
@@ -205,7 +296,8 @@ def train_all_models(
             train_df_to_use,
             all_feature_names,
             idx,
-            exclude_bonus=exclude_bonus
+            exclude_bonus=exclude_bonus,
+            val_df=val_df_to_use
         )
 
         models[model_name] = {
@@ -213,5 +305,9 @@ def train_all_models(
             'config': model_config
         }
         model_features[model_name] = selected_features
+
+    print("\n" + "="*70)
+    print("✓ ALL MODELS TRAINED WITH PROPER VALIDATION")
+    print("="*70)
 
     return models, model_features

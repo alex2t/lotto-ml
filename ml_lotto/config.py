@@ -12,6 +12,10 @@ TRAINING_DATA = 100
 NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA
 TRAINING_START_DRAW = TRAINING_DATA
 
+# Train/Validation Split Configuration
+# Prevents data leakage by holding out recent draws for validation
+VALIDATION_SPLIT_RATIO = 0.80  # 80% train, 20% validation
+
 DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
 HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'
 ODDS_JSON_INPUT = 'data/lotto_odds_results.json'
