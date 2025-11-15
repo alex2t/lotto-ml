@@ -220,11 +220,7 @@ MODEL_2_CONFIG = {
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
     ],
 
-<<<<<<< HEAD
-    'diversity_penalty': 0.10,
-=======
     'diversity_penalty': 0.15,
->>>>>>> claude/analyze-hardcoded-values-01PK9tQG9eYiMaws8Sxufz1D
 
     'algorithm_params': {
         'penalty': 'l2',
