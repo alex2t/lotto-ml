@@ -287,10 +287,18 @@ def print_model_picks_detailed(model_name, model_desc, picks, bonus, bonus_to_ma
 def main():
     """Main execution function with bonus ball prediction."""
     start_time = time.time()
-    
+
+    # Initialize random seed for variation across runs (based on current time)
+    import numpy as np
+    import random
+    seed = int(time.time() * 1000) % (2**32)  # Use current time as seed
+    np.random.seed(seed)
+    random.seed(seed)
+
     print("=" * 70)
     print("INTELLIGENT LOTTO SYSTEM V3.9: SPECIALIZED MODEL ARCHITECTURE")
     print("=" * 70)
+    print(f"Random Seed: {seed} (time-based for variation)")
     print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model + 1 bonus-to-main model")
     print("NEW: Specialized model objectives with different training strategies")
     print("  Model 1: Momentum specialist (6 main + bonus)")
