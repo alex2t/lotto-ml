@@ -71,7 +71,7 @@
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 4.75,
             "days_since_last_bonus": 73,
-            "most_common_category": "cold",
+            "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_6_10": 2,
@@ -187,7 +187,7 @@
             "avg_draws_to_transition": 3.57,
             "days_since_last_bonus": 38,
             "most_common_category": "hot",
-            "most_common_freshness": 1,
+            "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_1_3": 5,
                 "draw_6_10": 1,
@@ -337,7 +337,7 @@
             "avg_draws_to_transition": 4.33,
             "days_since_last_bonus": 122,
             "most_common_category": "hot",
-            "most_common_freshness": 1,
+            "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_1_3": 4,
                 "draw_6_10": 2
@@ -350,7 +350,7 @@
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 3.0,
             "days_since_last_bonus": 185,
-            "most_common_category": "medium",
+            "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_4_5": 1,
@@ -523,7 +523,7 @@
             "transition_rate": 0.75,
             "avg_draws_to_transition": 5.0,
             "days_since_last_bonus": 518,
-            "most_common_category": "cold",
+            "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_1_3": 2,
@@ -537,7 +537,7 @@
             "transition_rate": 0.7143,
             "avg_draws_to_transition": 4.8,
             "days_since_last_bonus": 119,
-            "most_common_category": "cold",
+            "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_6_10": 2,
@@ -568,7 +568,7 @@
             "avg_draws_to_transition": 3.0,
             "days_since_last_bonus": 308,
             "most_common_category": "hot",
-            "most_common_freshness": 1,
+            "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_1_3": 4,
                 "draw_4_5": 2
@@ -717,22 +717,22 @@
     },
     "freshness_transition_weights": {
         "C0": {
-            "total": 187,
-            "transitioned": 139,
-            "rate": 0.7433,
-            "weight": 0.97
+            "total": 207,
+            "transitioned": 155,
+            "rate": 0.7488,
+            "weight": 0.99
         },
         "C1": {
-            "total": 152,
-            "transitioned": 117,
-            "rate": 0.7697,
+            "total": 141,
+            "transitioned": 107,
+            "rate": 0.7589,
             "weight": 1.0
         },
         "C2+": {
-            "total": 58,
-            "transitioned": 38,
-            "rate": 0.6552,
-            "weight": 0.85
+            "total": 49,
+            "transitioned": 32,
+            "rate": 0.6531,
+            "weight": 0.86
         }
     },
     "timing_decay_weights": {
@@ -829,9 +829,9 @@
             "cold": 1.1
         },
         "freshness_multipliers": {
-            "C0": 0.97,
+            "C0": 0.99,
             "C1": 1.0,
-            "C2+": 0.85
+            "C2+": 0.86
         },
         "timing_peak": [
             2,

@@ -10,11 +10,12 @@ Statistical Methods:
 - Independent samples t-test for range contribution
 - Correlation analysis for number position effects
 - Cohen's d for effect size
+- FDR correction for multiple hypothesis testing (v3.11)
 
 Range spread measures how spread out the numbers are in a draw (max - min).
 
 Author: Statistical Analysis Module
-Version: 1.0 (Scipy Edition)
+Version: 3.11 (Multiple Testing Correction Edition)
 """
 
 import json
@@ -24,6 +25,13 @@ from typing import Dict, Any, List
 from collections import defaultdict
 from scipy import stats
 import numpy as np
+
+# Try to import statsmodels for FDR correction
+try:
+    from statsmodels.stats.multitest import multipletests
+    STATSMODELS_AVAILABLE = True
+except ImportError:
+    STATSMODELS_AVAILABLE = False
 
 
 def calculate_draw_ranges(draw_history: List[Dict[str, Any]]) -> List[int]:
@@ -384,13 +392,52 @@ def analyze_range_spread(
     print("  Calculating correlation with number position...")
     correlation_results = calculate_correlation_with_position(draw_history, max_number)
 
+    # CRITICAL FIX v3.11: Apply multiple hypothesis testing correction (FDR)
+    if STATSMODELS_AVAILABLE and len(per_number_contribution) > 0:
+        print("  Applying FDR correction for multiple hypothesis testing...")
+
+        # Collect p-values in order
+        numbers = sorted(per_number_contribution.keys())
+        p_values = [per_number_contribution[num]['p_value'] for num in numbers]
+
+        # Apply Benjamini-Hochberg FDR correction
+        rejected, p_adjusted, _, _ = multipletests(
+            p_values,
+            method='fdr_bh',
+            alpha=0.05
+        )
+
+        # Update results with corrected p-values
+        num_significant_before = sum(
+            1 for data in per_number_contribution.values()
+            if data['statistically_validated']
+        )
+
+        for i, num in enumerate(numbers):
+            per_number_contribution[num]['p_value_adjusted'] = float(p_adjusted[i])
+            per_number_contribution[num]['statistically_validated'] = bool(rejected[i])
+
+        num_significant_after = sum(
+            1 for data in per_number_contribution.values()
+            if data['statistically_validated']
+        )
+
+        print(f"    Before FDR: {num_significant_before} significant results")
+        print(f"    After FDR:  {num_significant_after} significant results")
+
+        fdr_applied = True
+    else:
+        if not STATSMODELS_AVAILABLE:
+            print("  ⚠️  Skipping FDR correction (statsmodels not installed)")
+        fdr_applied = False
+
     # Extract validated scores
     validated_scores = {
         num: data['contribution_score']
         for num, data in per_number_contribution.items()
     }
 
-    # Count significant contributions
+    # Count significant contributions (after FDR correction)
     num_significant = sum(
         1 for data in per_number_contribution.values()
         if data['statistically_validated']
@@ -403,10 +450,12 @@ def analyze_range_spread(
                 'independent_t_test',
                 'levene_variance_test',
                 'pearson_correlation',
-                'cohens_d_effect_size'
+                'cohens_d_effect_size',
+                'fdr_correction' if fdr_applied else 'no_fdr_correction'
             ],
             'total_draws': len(draw_history),
-            'significance_level': 0.05
+            'significance_level': 0.05,
+            'fdr_correction_applied': fdr_applied
         },
         'overall_distribution': overall_stats,
         'per_number_contribution': per_number_contribution,
