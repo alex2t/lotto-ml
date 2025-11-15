@@ -179,11 +179,26 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         }
 
         # ============ Calculate win_bias_ratio per-draw ============
+        # CRITICAL FIX: Use categories from PRECEDING draws only (no look-ahead bias)
         bias_analysis_window = 100
         preceding_for_bias = all_draws[max(0, i - bias_analysis_window): i]
+
+        # Calculate categories from ONLY preceding draws to avoid look-ahead bias
+        if HMC_METHOD == "recency":
+            preceding_days_since = calculate_days_since_last_hit(preceding_for_bias)
+            preceding_categories = get_hot_cold_by_recency(
+                preceding_days_since,
+                HMC_HOT_THRESHOLD,
+                HMC_COLD_THRESHOLD
+            )
+        else:
+            # For frequency method, calculate from preceding draws
+            preceding_freq = calculate_frequency(preceding_for_bias)
+            preceding_categories = get_hot_cold(preceding_freq)
+
         win_bias_ratios = calculate_win_bias_ratio_for_draw(
             preceding_for_bias,
-            categories,
+            preceding_categories,  # Now uses only past data
             MAX_NUMBER
         )
         
@@ -250,10 +265,12 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
             days_since_last_hit = get_days_difference(draw_date, last_hit_date)
             
             # 3. Recent Counts
+            # CRITICAL FIX: Only count MAIN 6 numbers (exclude bonus ball)
             recent_counts = {}
             for w in HISTORY_WINDOWS_DATA:
                 window_draws = preceding_draws[-w:]
-                count = sum(1 for draw in window_draws if number in draw["numbers"])
+                # Only count if number appears in MAIN 6 (not bonus position)
+                count = sum(1 for draw in window_draws if number in draw["numbers"][:6])
                 recent_counts[f"last_{w - 1}"] = count 
             
             # 4. Determine if Bonus

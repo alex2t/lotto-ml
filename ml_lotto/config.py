@@ -39,11 +39,13 @@ MAX_NUMBER = 47
 HOT_COUNT = 15
 COLD_COUNT = 15
 
+# CRITICAL FIX: Synchronized with lotto_analysis/config/config.py
+# These must match for feature extraction to align with data generation
 SCENARIOS = [
-    {"window": 5,  "targets": [3]},
-    {"window": 7,  "targets": [4]},
+    {"window": 5,  "targets": [2]},
+    {"window": 6,  "targets": [3]},
     {"window": 10, "targets": [4]},
-    {"window": 15, "targets": [5]}
+    {"window": 25, "targets": [8]}
 ]
 
 ACTUAL_HISTORY_WINDOWS = [s["window"] for s in SCENARIOS]
