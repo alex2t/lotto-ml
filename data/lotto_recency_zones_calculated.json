@@ -1,0 +1,223 @@
+{
+  "metadata": {
+    "analysis_type": "recency_zone_optimization",
+    "description": "Data-driven recency zone scoring to replace hard-coded thresholds",
+    "version": "1.0",
+    "generated_date": "2025-11-15 17:28:23",
+    "total_draws": 408,
+    "calculation_method": "empirical_win_rate",
+    "bins": [
+      "0-14",
+      "15-30",
+      "31-60",
+      "61-120",
+      "121+"
+    ],
+    "data_source": "/home/user/lotto-ml/data/lotto_draw_history.json"
+  },
+  "recency_zones_by_category": {
+    "hot": {
+      "0-14": {
+        "wins": 1160,
+        "win_rate": 0.9991,
+        "win_percentage": 99.91,
+        "score": 1.0
+      },
+      "15-30": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "31-60": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "61-120": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "121+": {
+        "wins": 1,
+        "win_rate": 0.0009,
+        "win_percentage": 0.09,
+        "score": 0.0009
+      }
+    },
+    "medium": {
+      "0-14": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "15-30": {
+        "wins": 595,
+        "win_rate": 1.0,
+        "win_percentage": 100.0,
+        "score": 1.0
+      },
+      "31-60": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "61-120": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "121+": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      }
+    },
+    "cold": {
+      "0-14": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "15-30": {
+        "wins": 0,
+        "win_rate": 0.0,
+        "win_percentage": 0.0,
+        "score": 0.0
+      },
+      "31-60": {
+        "wins": 517,
+        "win_rate": 0.7536,
+        "win_percentage": 75.36,
+        "score": 1.0
+      },
+      "61-120": {
+        "wins": 154,
+        "win_rate": 0.2245,
+        "win_percentage": 22.45,
+        "score": 0.2979
+      },
+      "121+": {
+        "wins": 15,
+        "win_rate": 0.0219,
+        "win_percentage": 2.19,
+        "score": 0.029
+      }
+    }
+  },
+  "recency_zones_combined": {
+    "0-14": {
+      "wins": 1160,
+      "win_rate": 0.475,
+      "win_percentage": 47.5,
+      "score": 1.0
+    },
+    "15-30": {
+      "wins": 595,
+      "win_rate": 0.2437,
+      "win_percentage": 24.37,
+      "score": 0.5129
+    },
+    "31-60": {
+      "wins": 517,
+      "win_rate": 0.2117,
+      "win_percentage": 21.17,
+      "score": 0.4457
+    },
+    "61-120": {
+      "wins": 154,
+      "win_rate": 0.0631,
+      "win_percentage": 6.31,
+      "score": 0.1328
+    },
+    "121+": {
+      "wins": 16,
+      "win_rate": 0.0066,
+      "win_percentage": 0.66,
+      "score": 0.0138
+    }
+  },
+  "totals": {
+    "hot": 1161,
+    "medium": 595,
+    "cold": 686,
+    "combined": 2442
+  },
+  "statistical_validation": {
+    "test": "Basic comparison",
+    "method": "mean_differences",
+    "category_stats": {
+      "hot": {
+        "mean": 6.15,
+        "median": 7,
+        "std": 47.74,
+        "n": 1165
+      },
+      "medium": {
+        "mean": 20.66,
+        "median": 21,
+        "std": 29.87,
+        "n": 596
+      },
+      "cold": {
+        "mean": 56.0,
+        "median": 45,
+        "std": 74.92,
+        "n": 687
+      }
+    },
+    "significant": true,
+    "interpretation": "Hot numbers have shorter recency (mean=6.15d) than cold (mean=56.0d)"
+  },
+  "comparison_with_hardcoded": {
+    "0-14": {
+      "calculated_score": 1.0,
+      "hardcoded_score": 1.0,
+      "difference": 0.0,
+      "percent_difference": 0.0,
+      "alignment": "good"
+    },
+    "15-30": {
+      "calculated_score": 0.5129,
+      "hardcoded_score": 0.78,
+      "difference": -0.2671,
+      "percent_difference": -34.24,
+      "alignment": "needs_adjustment"
+    },
+    "31-60": {
+      "calculated_score": 0.4457,
+      "hardcoded_score": 0.54,
+      "difference": -0.0943,
+      "percent_difference": -17.46,
+      "alignment": "good"
+    },
+    "61-120": {
+      "calculated_score": 0.1328,
+      "hardcoded_score": 0.18,
+      "difference": -0.0472,
+      "percent_difference": -26.22,
+      "alignment": "good"
+    },
+    "121+": {
+      "calculated_score": 0.0138,
+      "hardcoded_score": 0.01,
+      "difference": 0.0038,
+      "percent_difference": 38.0,
+      "alignment": "good"
+    }
+  },
+  "usage_notes": {
+    "category_aware": "Use recency_zones_by_category for category-specific scoring",
+    "category_agnostic": "Use recency_zones_combined for simplified scoring",
+    "fallback": "System will fallback to hard-coded values if JSON not available",
+    "score_interpretation": "Scores are normalized 0-1, where 1.0 = highest win rate"
+  }
+}
