@@ -16,6 +16,7 @@ This document explains each script in the `analysis/` folder, their purpose, usa
    - [bonus_analysis.py](#bonus_analysispy)
    - [correlation_matrix_analyzer.py](#correlation_matrix_analyzerpy)
    - [gap_pattern_analyzer.py](#gap_pattern_analyzerpy)
+   - [feature_interaction_explorer.py](#feature_interaction_explorerpy)
 3. [Running Scripts from Different Locations](#running-scripts-from-different-locations)
 4. [Dependencies](#dependencies)
 
@@ -677,6 +678,7 @@ TOP 10 NUMBER PAIRS THAT ATTRACT (appear together more than expected)
 --------------------------------------------------------------------------------
 Pair         Observed   Expected   Lift     Phi      Sig?
 --------------------------------------------------------------------------------
+| `feature_interaction_explorer.py` | Discovery | Feature interaction and composite feature discovery | Root or analysis |
 19-32        18         8.0        1.811    0.149    ✓
 3-43         15         8.0        1.663    0.115    ✓
 7-10         14         8.0        1.632    0.107    ✓
@@ -896,6 +898,170 @@ Cold         5.84         4.00       6.14         800
 - **Survival Analysis**: Probability of appearance given current gap
 
 **Dependencies**:
+
+
+### feature_interaction_explorer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Discovers non-linear feature interactions and combinations that are most predictive of lottery wins. Identifies which features work synergistically or antagonistically when combined.
+
+**Key Features**:
+- Pairwise feature interaction analysis (all numeric feature combinations)
+- Threshold detection (sharp changes in win probability at specific values)
+- Triple interactions (category × freshness × recency)
+- Interaction strength calculation (synergistic vs antagonistic)
+- Composite feature generation for ML models
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/feature_interaction_explorer.py
+```
+
+**Analysis Methods**:
+
+1. **Pairwise Interactions**
+   - Splits each feature into high/low (based on median)
+   - Calculates win rates for 4 quadrants: (high,high), (high,low), (low,high), (low,low)
+   - Computes interaction strength: deviation from expected
+   - Identifies synergistic (both high = better) vs antagonistic (both high = worse) effects
+
+2. **Threshold Effects**
+   - Bins numeric features into 10 ranges
+   - Calculates win rate per bin
+   - Detects sharp changes (>20% change between adjacent bins)
+   - Identifies optimal cutoff values
+
+3. **Triple Interactions**
+   - Analyzes category × freshness_bin × recency combinations
+   - Calculates lift over baseline win rate
+   - Identifies most/least favorable combinations
+
+4. **Composite Feature Generation**
+   - Creates binary indicators for strong interactions
+   - Suggests threshold-based features
+   - Recommends triple interaction features
+
+**Output Files**:
+- `data/lotto_feature_interactions.json` (full analysis with all interactions)
+- `data/lotto_interaction_summary.csv` (top 50 interactions, Excel-ready)
+- `data/lotto_composite_features.json` (recommended composite features for ML)
+
+**Console Output**:
+```
+================================================================================
+FEATURE INTERACTION ANALYSIS
+================================================================================
+
+OVERALL STATISTICS:
+  Pairwise interactions analyzed: 21
+  Strong interactions found: 20
+  Triple interactions analyzed: 10
+  Composite features recommended: 10
+
+--------------------------------------------------------------------------------
+TOP 10 PAIRWISE FEATURE INTERACTIONS
+--------------------------------------------------------------------------------
+Feature 1            Feature 2            Strength   Type            High+High Rate
+--------------------------------------------------------------------------------
+total_count          recent_4             3.0000     synergistic     0.8571
+total_count          recent_14            3.0000     synergistic     0.8571
+total_count          freshness_bin        3.0000     synergistic     0.8571
+
+--------------------------------------------------------------------------------
+TOP 10 TRIPLE INTERACTIONS (Category × Freshness × Recency)
+--------------------------------------------------------------------------------
+Category     Freshness    Recency         Win Rate     Lift       Samples
+--------------------------------------------------------------------------------
+medium       1            recent          0.8925       1.041      186
+hot          2            very_recent     0.8853       1.033      279
+hot          0            recent          0.8710       1.016      62
+
+--------------------------------------------------------------------------------
+RECOMMENDED COMPOSITE FEATURES (Top 10)
+--------------------------------------------------------------------------------
+
+1. total_count_x_recent_4_interaction
+   Type: pairwise_interaction
+   Description: Binary interaction: both total_count and recent_4 are high
+   Win rate when true: 0.8571
+   Interaction strength: 3.0000
+
+2. triple_medium_1_recent
+   Type: triple_interaction
+   Description: Combination: medium category, freshness 1, recent recency
+   Win rate: 0.8925
+   Lift: 1.041x
+```
+
+**Key Findings from Analysis**:
+
+- **Strongest Pairwise Interactions**:
+  - `total_count × recent_4`: Win rate 0.857 when both high (synergistic)
+  - `total_count × recent_14`: Win rate 0.857 when both high (synergistic)
+  - `recent_4 × freshness_bin`: Win rate 0.857 when both high (synergistic)
+  - All top interactions are synergistic (both high = better performance)
+
+- **Best Triple Combination**:
+  - Medium category + Freshness bin 1 + Recent recency = 1.041x lift
+  - Hot category + Freshness bin 2 + Very recent = 1.033x lift
+  - These combinations outperform individual features
+
+- **Interaction Types**:
+  - Most interactions are **synergistic** (both features high works better)
+  - Very few antagonistic interactions found
+  - Suggests features generally complement each other
+
+**Use Cases**:
+
+1. **Feature Engineering for ML Models**:
+   - Add `total_count_x_recent_4_interaction` binary feature
+   - Add `is_medium_fresh_recent` triple interaction feature
+   - Use recommended composite features from output
+
+2. **Model Improvement**:
+   - XGBoost/Random Forest will discover these automatically
+   - Linear models (Logistic Regression) benefit from explicit interactions
+   - Add top 5-10 composite features to improve linear model accuracy
+
+3. **Feature Selection**:
+   - Prioritize features with strong interactions
+   - total_count, recent_4, recent_14 appear in many top interactions
+
+4. **Threshold-Based Rules**:
+   - Create binary features at detected thresholds
+   - Example: `total_count > 25` if threshold detected at 25
+
+**Interpretation**:
+
+- **Interaction Strength**: Measures deviation from expected win rate
+  - >0.2: Very strong interaction
+  - >0.1: Strong interaction (actionable)
+  - <0.05: Weak interaction (ignore)
+
+- **Synergistic Effect**: Both features high = better than sum of parts
+  - Example: High total_count alone = 0.6 win rate
+  - High recent_4 alone = 0.6 win rate
+  - Both high together = 0.857 win rate (not 0.6, much higher!)
+
+- **Lift**: How much better than baseline
+  - >1.2: Strong positive effect (prioritize)
+  - 0.8-1.2: Moderate effect
+  - <0.8: Negative effect (avoid)
+
+**Statistical Methods**:
+- **Quadrant Analysis**: 2×2 contingency tables for pairwise interactions
+- **Binning**: Equal-width bins for threshold detection
+- **Lift Calculation**: (observed rate) / (baseline rate)
+- **Interaction Strength**: |observed - expected| / expected
+
+**Dependencies**:
+- Requires `data/lotto_draw_history.json`
+- Uses standard library only (no external dependencies)
+
+---
+
 - Requires `data/lotto_draw_history.json`
 - Uses standard library only (no external dependencies)
 
@@ -912,6 +1078,7 @@ Most scripts in the `analysis/` folder have been updated to support running from
 - `generate_bonus_to_main_json.py`
 - `bonus_to_main_analysis.py`
 - `bonus_analysis.py`
+- `feature_interaction_explorer.py`
 - `trend_analyzer.py`
 - `gap_pattern_analyzer.py`
 - `correlation_matrix_analyzer.py`
@@ -965,7 +1132,7 @@ python <script_name>.py
 
 ## Summary
 
-The `analysis/` folder contains 8 specialized scripts:
+The `analysis/` folder contains 9 specialized scripts:
 
 | Script | Category | Purpose | Run Location |
 |--------|----------|---------|--------------|
