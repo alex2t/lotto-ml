@@ -21,9 +21,9 @@ Usage:
         python feature_stability_scorer.py
 
 Output:
-    - data/lotto_feature_stability.json (full stability analysis)
-    - data/lotto_feature_stability_rankings.csv (ranked features)
-    - data/lotto_core_feature_set.json (recommended stable features)
+    - data/analysis/lotto_feature_stability.json (full stability analysis)
+    - data/analysis/lotto_feature_stability_rankings.csv (ranked features)
+    - data/analysis/lotto_core_feature_set.json (recommended stable features)
     - Console output with key findings
 """
 
@@ -381,7 +381,7 @@ def save_outputs(stability_scores: Dict, correlation_stability: Dict,
         'feature_win_rates_over_time': feature_win_rates
     }
 
-    for path in ['../data/lotto_feature_stability.json', 'data/lotto_feature_stability.json']:
+    for path in ['../data/analysis/lotto_feature_stability.json', 'data/analysis/lotto_feature_stability.json']:
         try:
             with open(path, 'w') as f:
                 json.dump(output_data, f, indent=2)
@@ -391,7 +391,7 @@ def save_outputs(stability_scores: Dict, correlation_stability: Dict,
             continue
 
     # CSV rankings
-    for path in ['../data/lotto_feature_stability_rankings.csv', 'data/lotto_feature_stability_rankings.csv']:
+    for path in ['../data/analysis/lotto_feature_stability_rankings.csv', 'data/analysis/lotto_feature_stability_rankings.csv']:
         try:
             with open(path, 'w') as f:
                 f.write("Rank,Feature,Stability_Score,Mean_Win_Rate,CV,Trend,Corr_Stability,Category\n")
@@ -422,7 +422,7 @@ def save_outputs(stability_scores: Dict, correlation_stability: Dict,
             continue
 
     # Core feature set JSON
-    for path in ['../data/lotto_core_feature_set.json', 'data/lotto_core_feature_set.json']:
+    for path in ['../data/analysis/lotto_core_feature_set.json', 'data/analysis/lotto_core_feature_set.json']:
         try:
             with open(path, 'w') as f:
                 json.dump({

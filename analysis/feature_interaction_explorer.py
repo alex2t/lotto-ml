@@ -20,9 +20,9 @@ Usage:
         python feature_interaction_explorer.py
 
 Output:
-    - data/lotto_feature_interactions.json (full interaction analysis)
-    - data/lotto_interaction_summary.csv (top interactions, Excel-ready)
-    - data/lotto_composite_features.json (recommended composite features)
+    - data/analysis/lotto_feature_interactions.json (full interaction analysis)
+    - data/analysis/lotto_interaction_summary.csv (top interactions, Excel-ready)
+    - data/analysis/lotto_composite_features.json (recommended composite features)
     - Console output with key findings
 """
 
@@ -441,7 +441,7 @@ def save_outputs(interactions: List, threshold_effects: Dict,
         'recommended_composite_features': composite_features
     }
 
-    for path in ['../data/lotto_feature_interactions.json', 'data/lotto_feature_interactions.json']:
+    for path in ['../data/analysis/lotto_feature_interactions.json', 'data/analysis/lotto_feature_interactions.json']:
         try:
             with open(path, 'w') as f:
                 json.dump(output_data, f, indent=2)
@@ -451,7 +451,7 @@ def save_outputs(interactions: List, threshold_effects: Dict,
             continue
 
     # CSV summary of interactions
-    for path in ['../data/lotto_interaction_summary.csv', 'data/lotto_interaction_summary.csv']:
+    for path in ['../data/analysis/lotto_interaction_summary.csv', 'data/analysis/lotto_interaction_summary.csv']:
         try:
             with open(path, 'w') as f:
                 f.write("Feature_1,Feature_2,Interaction_Strength,Type,WinRate_High_High,"
@@ -467,7 +467,7 @@ def save_outputs(interactions: List, threshold_effects: Dict,
             continue
 
     # Composite features JSON
-    for path in ['../data/lotto_composite_features.json', 'data/lotto_composite_features.json']:
+    for path in ['../data/analysis/lotto_composite_features.json', 'data/analysis/lotto_composite_features.json']:
         try:
             with open(path, 'w') as f:
                 json.dump({

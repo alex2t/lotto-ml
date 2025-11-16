@@ -21,8 +21,8 @@ Usage:
         python correlation_matrix_analyzer.py
 
 Output:
-    - data/lotto_correlation_matrix.json (full correlation data)
-    - data/lotto_correlation_summary.csv (top correlations)
+    - data/analysis/lotto_correlation_matrix.json (full correlation data)
+    - data/analysis/lotto_correlation_summary.csv (top correlations)
     - Console output with key findings
 """
 
@@ -360,7 +360,7 @@ def generate_summary_insights(correlations: List[Dict[str, Any]],
 def save_csv_summary(correlations: List[Dict[str, Any]]):
     """Save CSV summary of top correlations."""
     # Try both paths
-    for path in ['../data/lotto_correlation_summary.csv', 'data/lotto_correlation_summary.csv']:
+    for path in ['../data/analysis/lotto_correlation_summary.csv', 'data/analysis/lotto_correlation_summary.csv']:
         try:
             with open(path, 'w') as f:
                 # Header
@@ -496,7 +496,7 @@ def main():
     }
 
     # Save JSON (try both paths)
-    for path in ['../data/lotto_correlation_matrix.json', 'data/lotto_correlation_matrix.json']:
+    for path in ['../data/analysis/lotto_correlation_matrix.json', 'data/analysis/lotto_correlation_matrix.json']:
         try:
             with open(path, 'w') as f:
                 json.dump(output_data, f, indent=2)
