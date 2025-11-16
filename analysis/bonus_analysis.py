@@ -492,7 +492,7 @@ def save_results(results: Dict, output_file: str = None):
     """Save analysis results to JSON file."""
     if output_file is None:
         # Try relative path from analysis folder first, then root
-        for path in ['../data/lotto_statistics_analysis.json', 'data/lotto_statistics_analysis.json']:
+        for path in ['../data/analysis/lotto_statistics_analysis.json', 'data/analysis/lotto_statistics_analysis.json']:
             output_file = path
             break
 

@@ -21,9 +21,9 @@ Usage:
         python gap_pattern_analyzer.py
 
 Output:
-    - data/lotto_gap_analysis.json (full gap analysis data)
-    - data/lotto_gap_summary.csv (per-number statistics)
-    - data/lotto_due_numbers.csv (current "due" rankings)
+    - data/analysis/lotto_gap_analysis.json (full gap analysis data)
+    - data/analysis/lotto_gap_summary.csv (per-number statistics)
+    - data/analysis/lotto_due_numbers.csv (current "due" rankings)
     - Console output with key findings
 """
 
@@ -406,7 +406,7 @@ def save_outputs(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
     }
 
     # Save JSON
-    for path in ['../data/lotto_gap_analysis.json', 'data/lotto_gap_analysis.json']:
+    for path in ['../data/analysis/lotto_gap_analysis.json', 'data/analysis/lotto_gap_analysis.json']:
         try:
             with open(path, 'w') as f:
                 json.dump(output_data, f, indent=2)
@@ -416,7 +416,7 @@ def save_outputs(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
             continue
 
     # Save gap statistics CSV
-    for path in ['../data/lotto_gap_summary.csv', 'data/lotto_gap_summary.csv']:
+    for path in ['../data/analysis/lotto_gap_summary.csv', 'data/analysis/lotto_gap_summary.csv']:
         try:
             with open(path, 'w') as f:
                 f.write("Number,Mean_Gap,Median_Gap,Std_Gap,CV,Min,Max,P90,Consistency_Score,Total_Gaps\n")
@@ -431,7 +431,7 @@ def save_outputs(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
             continue
 
     # Save due numbers CSV
-    for path in ['../data/lotto_due_numbers.csv', 'data/lotto_due_numbers.csv']:
+    for path in ['../data/analysis/lotto_due_numbers.csv', 'data/analysis/lotto_due_numbers.csv']:
         try:
             with open(path, 'w') as f:
                 f.write("Rank,Number,Current_Gap,Mean_Gap,Z_Score,Due_Probability,Overdue_By\n")

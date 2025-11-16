@@ -335,11 +335,11 @@ def main():
 
     # Save to file (try both paths)
     try:
-        output_file = '../data/bonus_to_main_analysis.json'
+        output_file = '../data/analysis/bonus_to_main_analysis.json'
         with open(output_file, 'w') as f:
             json.dump(output, f, indent=2)
     except FileNotFoundError:
-        output_file = 'data/bonus_to_main_analysis.json'
+        output_file = 'data/analysis/bonus_to_main_analysis.json'
         with open(output_file, 'w') as f:
             json.dump(output, f, indent=2)
 

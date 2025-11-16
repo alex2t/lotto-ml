@@ -579,15 +579,27 @@ def main():
     
     # Save HMC imbalance time series
     for window in ANALYSIS_WINDOWS:
-        filename = f'trend_analysis_hmc_imbalance_{window}draws.csv'
-        analyses['hmc_imbalance'][window].to_csv(filename, index=False)
-        print(f"✓ Saved: {filename}")
-    
+        # Try both paths (from analysis folder and from root)
+        for base_path in ['../data/analysis/', 'data/analysis/']:
+            try:
+                filename = f'{base_path}trend_analysis_hmc_imbalance_{window}draws.csv'
+                analyses['hmc_imbalance'][window].to_csv(filename, index=False)
+                print(f"✓ Saved: {filename}")
+                break
+            except:
+                continue
+
     # Save recommendations
     if recommendations:
         rec_df = pd.DataFrame(recommendations)
-        rec_df.to_csv('feature_recommendations.csv', index=False)
-        print("✓ Saved: feature_recommendations.csv")
+        # Try both paths (from analysis folder and from root)
+        for path in ['../data/analysis/feature_recommendations.csv', 'data/analysis/feature_recommendations.csv']:
+            try:
+                rec_df.to_csv(path, index=False)
+                print(f"✓ Saved: {path}")
+                break
+            except:
+                continue
     
     print("\n" + "=" * 80)
     print("✓ Analysis Complete!")

@@ -435,11 +435,11 @@ def main():
 
     # Save to file (try both paths)
     try:
-        output_file = '../data/lotto_bonus_to_main_patterns.json'
+        output_file = '../data/analysis/lotto_bonus_to_main_patterns.json'
         with open(output_file, 'w') as f:
             json.dump(output, f, indent=2)
     except FileNotFoundError:
-        output_file = 'data/lotto_bonus_to_main_patterns.json'
+        output_file = 'data/analysis/lotto_bonus_to_main_patterns.json'
         with open(output_file, 'w') as f:
             json.dump(output, f, indent=2)
 
