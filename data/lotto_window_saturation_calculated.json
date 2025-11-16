@@ -1,11 +1,13 @@
 {
     "description": "Data-driven window saturation penalty configuration",
-    "version": "1.0",
-    "generated_date": "2025-11-16 12:58:08",
+    "version": "2.0",
+    "scipy_optimized": false,
+    "generated_date": "2025-11-16 17:16:31",
     "data_source": {
         "statistics": "data/lotto_statistics_analysis.json",
         "odds": "data/lotto_odds_results.json",
-        "method": "calculated from actual historical saturation rates"
+        "draw_history": "data/lotto_draw_history.json",
+        "method": "calculated from actual historical saturation rates + scipy optimization"
     },
     "saturation_rates_by_category": {
         "last_4": {
@@ -87,7 +89,7 @@
         "medium_mean": 2.726510067114094,
         "cold_mean": 0.0723589001447178
     },
-    "penalty_configuration": {
+    "penalty_configuration_manual": {
         "penalty_thresholds": {
             "at_or_exceeding": {
                 "description": "Recent count >= target (already saturated)",
@@ -155,12 +157,15 @@
         "source": "calculated from lotto_statistics_analysis.json",
         "statistical_validation": "derived from actual historical saturation rates"
     },
+    "penalty_configuration_optimized": null,
+    "recommended_configuration": "manual",
     "advanced_settings": {
         "enable_dynamic_scaling": true,
         "use_category_adjustments": true,
         "apply_window_weights": true,
         "combine_multiple_scenarios": "max",
         "penalty_cap": 1.0,
-        "minimum_penalty_threshold": 0.05
+        "minimum_penalty_threshold": 0.05,
+        "use_optimized_penalties": false
     }
 }
