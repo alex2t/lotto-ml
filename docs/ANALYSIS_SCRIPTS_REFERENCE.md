@@ -14,6 +14,10 @@ This document explains each script in the `analysis/` folder, their purpose, usa
    - [generate_bonus_to_main_json.py](#generate_bonus_to_main_jsonpy)
    - [bonus_to_main_analysis.py](#bonus_to_main_analysispy)
    - [bonus_analysis.py](#bonus_analysispy)
+   - [correlation_matrix_analyzer.py](#correlation_matrix_analyzerpy)
+   - [gap_pattern_analyzer.py](#gap_pattern_analyzerpy)
+   - [feature_interaction_explorer.py](#feature_interaction_explorerpy)
+   - [feature_stability_scorer.py](#feature_stability_scorerpy)
 3. [Running Scripts from Different Locations](#running-scripts-from-different-locations)
 4. [Dependencies](#dependencies)
 
@@ -606,6 +610,631 @@ Bonus Hit Contribution Stats:
 
 ---
 
+### correlation_matrix_analyzer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Discovers which lottery numbers frequently appear together (positive correlation) or avoid each other (negative correlation). This is a comprehensive correlation analysis tool using multiple statistical methods.
+
+**Key Features**:
+- Number co-occurrence matrix (all pairs analyzed)
+- Positive correlations (numbers that "attract" each other)
+- Negative correlations (numbers that "repel" each other)
+- HMC category correlations (hot-hot, hot-cold, etc.)
+- Temporal autocorrelations (does appearing in draw N predict N+1?)
+- Multiple correlation metrics:
+  - **Lift**: observed/expected ratio
+  - **PMI**: Pointwise Mutual Information
+  - **Phi coefficient**: correlation coefficient for binary variables
+  - **Chi-square**: statistical significance testing
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/correlation_matrix_analyzer.py
+```
+
+**Analysis Methods**:
+
+1. **Co-occurrence Matrix**
+   - Analyzes all possible number pairs (1,081 pairs from 47 numbers)
+   - Counts how often each pair appears together in the same draw
+   - Compares to expected random frequency
+
+2. **Correlation Metrics**
+   - **Lift**: How much more/less likely pairs appear together vs random
+   - **Phi Coefficient**: Correlation strength (-1 to +1)
+   - **Chi-Square**: Statistical significance (p < 0.05 threshold)
+
+3. **HMC Category Analysis**
+   - Hot-Hot, Hot-Medium, Hot-Cold pairs
+   - Medium-Medium, Medium-Cold pairs
+   - Cold-Cold pairs
+   - Reveals category interaction patterns
+
+4. **Temporal Autocorrelation**
+   - For each number: P(appear in draw N+1 | appeared in draw N)
+   - Identifies "hot streak" numbers vs "cool down" numbers
+   - Autocorrelation coefficient calculation
+
+**Output Files**:
+- `data/lotto_correlation_matrix.json` (full correlation data with all metrics)
+- `data/lotto_correlation_summary.csv` (top 100 correlations, importable to Excel)
+
+**Console Output**:
+```
+================================================================================
+LOTTERY NUMBER CORRELATION ANALYSIS
+================================================================================
+
+OVERALL STATISTICS:
+  Total number pairs analyzed: 1080
+  Statistically significant: 52 (4.81%)
+  Attraction pairs (lift > 1): 334
+  Repulsion pairs (lift < 1): 745
+  Neutral pairs: 1
+
+--------------------------------------------------------------------------------
+TOP 10 NUMBER PAIRS THAT ATTRACT (appear together more than expected)
+--------------------------------------------------------------------------------
+Pair         Observed   Expected   Lift     Phi      Sig?
+--------------------------------------------------------------------------------
+| `feature_interaction_explorer.py` | Discovery | Feature interaction and composite feature discovery | Root or analysis |
+19-32        18         8.0        1.811    0.149    ✓
+3-43         15         8.0        1.663    0.115    ✓
+7-10         14         8.0        1.632    0.107    ✓
+20-31        13         8.0        1.631    0.102    ✓
+11-19        15         8.0        1.582    0.104    ✓
+2-5          16         8.0        1.566    0.106    ✓
+28-32        15         8.0        1.559    0.101    ✓
+28-29        15         8.0        1.559    0.101    ✓
+
+--------------------------------------------------------------------------------
+TOP 10 NUMBER PAIRS THAT REPEL (appear together less than expected)
+--------------------------------------------------------------------------------
+Pair         Observed   Expected   Lift     Phi      Sig?
+--------------------------------------------------------------------------------
+5-28         1          8.0        0.111    -0.155   ✓
+2-31         1          8.0        0.122    -0.145   ✓
+15-16        1          8.0        0.163    -0.116   ✓
+2-4          2          8.0        0.225    -0.134   ✓
+24-43        2          8.0        0.226    -0.133   ✓
+16-32        2          8.0        0.230    -0.131   ✓
+
+--------------------------------------------------------------------------------
+HMC CATEGORY CORRELATIONS
+--------------------------------------------------------------------------------
+  cold-hot             :  27.00% (2336 occurrences)
+  hot-medium           :  23.32% (2018 occurrences)
+  hot-hot              :  22.31% (1930 occurrences)
+  cold-medium          :  14.05% (1216 occurrences)
+  cold-cold            :   7.70% (666 occurrences)
+  medium-medium        :   5.62% (486 occurrences)
+
+--------------------------------------------------------------------------------
+TEMPORAL AUTOCORRELATION (Top 10 numbers)
+--------------------------------------------------------------------------------
+Number   Autocorr     P(appear|appeared)   P(appear|not)
+--------------------------------------------------------------------------------
+22       -0.0948      0.0781               0.1729
+20       -0.0878      0.0896               0.1773
+13       -0.0867      0.0986               0.1853
+37       -0.0780      0.0820               0.1600
+33       0.0732       0.1837               0.1105
+
+================================================================================
+INTERPRETATION GUIDE
+================================================================================
+Lift > 1.0:  Numbers appear together MORE than random chance
+Lift < 1.0:  Numbers appear together LESS than random chance
+Lift ≈ 1.0:  Numbers appear together at random chance
+
+Phi coefficient: Ranges from -1 (perfect negative) to +1 (perfect positive)
+Chi-square > 3.84: Statistically significant at p < 0.05
+
+Autocorrelation > 0: Number more likely to appear again in next draw
+Autocorrelation < 0: Number less likely to appear again in next draw
+================================================================================
+```
+
+**Key Insights**:
+
+- **Attraction Pairs**: Numbers that appear together more than random chance (lift > 1.0)
+  - Example: 19-32 appears together 1.81x more than expected
+  - Could indicate physical or algorithmic biases in lottery drawing
+
+- **Repulsion Pairs**: Numbers that avoid each other (lift < 1.0)
+  - Example: 5-28 appears together only 0.11x as often as expected
+  - Statistically significant anti-correlation
+
+- **Category Patterns**:
+  - Cold-Hot pairs are most common (27%)
+  - Hot-Hot pairs are second (22.31%)
+  - Medium-Medium pairs are rare (5.62%)
+  - Suggests draws tend to mix categories rather than cluster
+
+- **Temporal Patterns**:
+  - Negative autocorrelation: Numbers that appeared are LESS likely to appear next draw
+  - Positive autocorrelation: Numbers that appeared are MORE likely to appear next draw
+  - Most numbers show weak temporal correlation (near 0)
+
+**Use Cases**:
+
+1. **Feature Engineering**: Create "companion number" features
+   - Add "has_strong_companion" binary feature
+   - Add "companion_count" numeric feature
+
+2. **Number Selection**: Prefer high-correlation pairs when building combinations
+
+3. **Validation**: Test if correlations are stable over time or change
+
+4. **Pattern Detection**: Identify unusual correlation patterns that may indicate non-randomness
+
+**Statistical Methods**:
+
+- **Lift Ratio**: Simple, intuitive measure of association
+- **PMI (Pointwise Mutual Information)**: Information-theoretic measure
+- **Phi Coefficient**: Pearson correlation for binary variables
+- **Chi-Square Test**: Statistical significance at α = 0.05 (chi² > 3.84)
+
+**Dependencies**:
+- Requires `data/lotto_draw_history.json`
+- Uses standard library only (no external dependencies)
+
+
+
+### gap_pattern_analyzer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Analyzes time gaps between consecutive appearances of lottery numbers to identify "due" numbers and understand gap patterns. Complements existing timing features by providing deep gap distribution analysis.
+
+**Key Features**:
+- Distribution of gap lengths for each number (draws between appearances)
+- Gap consistency analysis (coefficient of variation)
+- "Due" number identification based on historical patterns
+- Predictive power testing (do long gaps predict imminent appearance?)
+- Category-specific gap patterns (hot vs medium vs cold)
+- Statistical analysis using z-scores and percentiles
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/gap_pattern_analyzer.py
+```
+
+**Analysis Methods**:
+
+1. **Gap Distribution Statistics**
+   - Mean, median, standard deviation for each number
+   - Min, max, range of gaps
+   - Percentiles (25th, 75th, 90th)
+   - Coefficient of Variation (CV = std/mean) for consistency
+
+2. **Due Score Calculation**
+   - Z-score: (current_gap - mean) / std
+   - Percentile position in historical distribution
+   - Due probability estimation
+   - Overdue amount calculation
+
+3. **Predictive Power Analysis**
+   - Tests if long gaps (>mean) predict appearance
+   - Compares P(appear soon | long gap) vs P(appear soon | normal gap)
+   - Calculates predictive lift ratio
+
+4. **Category Gap Patterns**
+   - Separate analysis for hot/medium/cold categories
+   - Identifies if category affects gap behavior
+
+**Output Files**:
+- `data/lotto_gap_analysis.json` (full gap analysis with all statistics)
+- `data/lotto_gap_summary.csv` (per-number statistics, Excel-ready)
+- `data/lotto_due_numbers.csv` (ranked list of "due" numbers)
+
+**Console Output**:
+```
+================================================================================
+GAP PATTERN ANALYSIS
+================================================================================
+
+OVERALL GAP STATISTICS:
+  Average mean gap across all numbers: 5.70 draws
+  Most consistent number (lowest CV): #20 (CV = 0.840)
+  Most volatile number (highest CV): #28 (CV = 1.356)
+
+--------------------------------------------------------------------------------
+TOP 10 MOST CONSISTENT NUMBERS (Lowest Coefficient of Variation)
+--------------------------------------------------------------------------------
+Number   Mean Gap     Std Dev      CV       Consistency
+--------------------------------------------------------------------------------
+20       4.77         4.01         0.840    0.543
+37       5.65         4.77         0.844    0.542
+
+--------------------------------------------------------------------------------
+TOP 20 'DUE' NUMBERS (Most Overdue Based on Historical Patterns)
+--------------------------------------------------------------------------------
+Rank   Number   Current    Mean       Z-Score    Due Prob   Status
+--------------------------------------------------------------------------------
+1      #38      23         4.72       3.87       0.8865     ⚠️ VERY OVERDUE
+2      #29      21         4.75       3.16       0.8161     ⚠️ VERY OVERDUE
+
+--------------------------------------------------------------------------------
+PREDICTIVE POWER OF GAP LENGTH
+--------------------------------------------------------------------------------
+
+Does a long gap predict imminent appearance?
+  P(appear in next 5 draws | gap > mean):  0.5489
+  P(appear in next 5 draws | gap ≤ mean):  0.5604
+  Predictive lift: 0.979x
+  Interpretation: Not predictive
+  ✗ Long gaps do NOT significantly predict appearance
+
+--------------------------------------------------------------------------------
+GAP PATTERNS BY HMC CATEGORY
+--------------------------------------------------------------------------------
+Category     Mean Gap     Median     Std Dev      Observations
+--------------------------------------------------------------------------------
+Hot          5.55         4.00       6.12         1346
+Medium       5.43         4.00       5.70         691
+Cold         5.84         4.00       6.14         800
+```
+
+**Key Insights from Analysis**:
+
+- **Gap Consistency**: Number #20 most consistent (CV = 0.840), #28 most volatile (CV = 1.356)
+- **Current "Due" Numbers**: #38 and #29 are VERY OVERDUE (z-score > 3)
+- **Predictive Power**: Long gaps do NOT predict imminent appearance (lottery is truly random)
+- **Category Patterns**: All categories have similar mean gaps (~5.5 draws)
+
+**Use Cases**:
+
+1. **Feature Engineering**: Add gap-based features (`current_gap_z_score`, `gap_consistency`)
+2. **Number Selection**: Identify "due" numbers (z-score > 1)
+3. **Validation**: Confirms lottery randomness (no gambler's fallacy effect)
+4. **Pattern Monitoring**: Track gap pattern changes over time
+
+**Statistical Methods**:
+- **Coefficient of Variation (CV)**: Measures gap consistency (std_dev / mean)
+- **Z-Score**: Standardized measure of how overdue ((current - mean) / std)
+- **Survival Analysis**: Probability of appearance given current gap
+
+**Dependencies**:
+
+
+### feature_interaction_explorer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Discovers non-linear feature interactions and combinations that are most predictive of lottery wins. Identifies which features work synergistically or antagonistically when combined.
+
+**Key Features**:
+- Pairwise feature interaction analysis (all numeric feature combinations)
+- Threshold detection (sharp changes in win probability at specific values)
+- Triple interactions (category × freshness × recency)
+- Interaction strength calculation (synergistic vs antagonistic)
+- Composite feature generation for ML models
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/feature_interaction_explorer.py
+```
+
+**Analysis Methods**:
+
+1. **Pairwise Interactions**
+   - Splits each feature into high/low (based on median)
+   - Calculates win rates for 4 quadrants: (high,high), (high,low), (low,high), (low,low)
+   - Computes interaction strength: deviation from expected
+   - Identifies synergistic (both high = better) vs antagonistic (both high = worse) effects
+
+2. **Threshold Effects**
+   - Bins numeric features into 10 ranges
+   - Calculates win rate per bin
+   - Detects sharp changes (>20% change between adjacent bins)
+   - Identifies optimal cutoff values
+
+3. **Triple Interactions**
+   - Analyzes category × freshness_bin × recency combinations
+   - Calculates lift over baseline win rate
+   - Identifies most/least favorable combinations
+
+4. **Composite Feature Generation**
+   - Creates binary indicators for strong interactions
+   - Suggests threshold-based features
+   - Recommends triple interaction features
+
+**Output Files**:
+- `data/lotto_feature_interactions.json` (full analysis with all interactions)
+- `data/lotto_interaction_summary.csv` (top 50 interactions, Excel-ready)
+- `data/lotto_composite_features.json` (recommended composite features for ML)
+
+**Console Output**:
+```
+================================================================================
+FEATURE INTERACTION ANALYSIS
+================================================================================
+
+OVERALL STATISTICS:
+  Pairwise interactions analyzed: 21
+  Strong interactions found: 20
+  Triple interactions analyzed: 10
+  Composite features recommended: 10
+
+--------------------------------------------------------------------------------
+TOP 10 PAIRWISE FEATURE INTERACTIONS
+--------------------------------------------------------------------------------
+Feature 1            Feature 2            Strength   Type            High+High Rate
+--------------------------------------------------------------------------------
+total_count          recent_4             3.0000     synergistic     0.8571
+total_count          recent_14            3.0000     synergistic     0.8571
+total_count          freshness_bin        3.0000     synergistic     0.8571
+
+--------------------------------------------------------------------------------
+TOP 10 TRIPLE INTERACTIONS (Category × Freshness × Recency)
+--------------------------------------------------------------------------------
+Category     Freshness    Recency         Win Rate     Lift       Samples
+--------------------------------------------------------------------------------
+medium       1            recent          0.8925       1.041      186
+hot          2            very_recent     0.8853       1.033      279
+hot          0            recent          0.8710       1.016      62
+
+--------------------------------------------------------------------------------
+RECOMMENDED COMPOSITE FEATURES (Top 10)
+--------------------------------------------------------------------------------
+
+1. total_count_x_recent_4_interaction
+   Type: pairwise_interaction
+   Description: Binary interaction: both total_count and recent_4 are high
+   Win rate when true: 0.8571
+   Interaction strength: 3.0000
+
+2. triple_medium_1_recent
+   Type: triple_interaction
+   Description: Combination: medium category, freshness 1, recent recency
+   Win rate: 0.8925
+   Lift: 1.041x
+```
+
+**Key Findings from Analysis**:
+
+- **Strongest Pairwise Interactions**:
+  - `total_count × recent_4`: Win rate 0.857 when both high (synergistic)
+  - `total_count × recent_14`: Win rate 0.857 when both high (synergistic)
+  - `recent_4 × freshness_bin`: Win rate 0.857 when both high (synergistic)
+  - All top interactions are synergistic (both high = better performance)
+
+- **Best Triple Combination**:
+  - Medium category + Freshness bin 1 + Recent recency = 1.041x lift
+  - Hot category + Freshness bin 2 + Very recent = 1.033x lift
+  - These combinations outperform individual features
+
+- **Interaction Types**:
+  - Most interactions are **synergistic** (both features high works better)
+  - Very few antagonistic interactions found
+  - Suggests features generally complement each other
+
+**Use Cases**:
+
+1. **Feature Engineering for ML Models**:
+   - Add `total_count_x_recent_4_interaction` binary feature
+   - Add `is_medium_fresh_recent` triple interaction feature
+   - Use recommended composite features from output
+
+2. **Model Improvement**:
+   - XGBoost/Random Forest will discover these automatically
+   - Linear models (Logistic Regression) benefit from explicit interactions
+   - Add top 5-10 composite features to improve linear model accuracy
+
+3. **Feature Selection**:
+   - Prioritize features with strong interactions
+   - total_count, recent_4, recent_14 appear in many top interactions
+
+4. **Threshold-Based Rules**:
+   - Create binary features at detected thresholds
+   - Example: `total_count > 25` if threshold detected at 25
+
+**Interpretation**:
+
+- **Interaction Strength**: Measures deviation from expected win rate
+  - >0.2: Very strong interaction
+  - >0.1: Strong interaction (actionable)
+  - <0.05: Weak interaction (ignore)
+
+- **Synergistic Effect**: Both features high = better than sum of parts
+  - Example: High total_count alone = 0.6 win rate
+  - High recent_4 alone = 0.6 win rate
+  - Both high together = 0.857 win rate (not 0.6, much higher!)
+
+- **Lift**: How much better than baseline
+  - >1.2: Strong positive effect (prioritize)
+  - 0.8-1.2: Moderate effect
+  - <0.8: Negative effect (avoid)
+
+**Statistical Methods**:
+- **Quadrant Analysis**: 2×2 contingency tables for pairwise interactions
+- **Binning**: Equal-width bins for threshold detection
+- **Lift Calculation**: (observed rate) / (baseline rate)
+- **Interaction Strength**: |observed - expected| / expected
+
+**Dependencies**:
+- Requires `data/lotto_draw_history.json`
+- Uses standard library only (no external dependencies)
+
+---
+
+### feature_stability_scorer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Measures which features are most stable and reliable over time. This analysis helps identify core features that consistently predict lottery wins, which are crucial for building robust ML models that don't degrade over time.
+
+**Key Features**:
+- Feature importance over rolling windows (sliding window analysis)
+- Stability score calculation (based on coefficient of variation)
+- Feature correlation stability tracking
+- Noisy vs stable feature classification
+- Core feature set recommendations for production models
+- Trend detection (improving, stable, declining features)
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/feature_stability_scorer.py
+```
+
+**Analysis Methods**:
+
+1. **Rolling Window Analysis**
+   - Analyzes feature win rates over sliding windows (size: 50 draws, step: 25 draws)
+   - Tracks how feature predictiveness changes over time
+   - Identifies features with consistent vs erratic performance
+
+2. **Stability Metrics**
+   - **Coefficient of Variation (CV)**: std_dev / mean win rate
+   - **Stability Score**: 1 / (1 + CV) - ranges from 0 (unstable) to 1 (perfectly stable)
+   - **Trend Direction**: Linear regression slope (improving/stable/declining)
+   - **Win Rate Range**: Max - min win rate across windows
+
+3. **Correlation Stability**
+   - Tracks how feature correlations change over time windows
+   - Calculates correlation stability score
+   - Identifies features with stable relationships to outcomes
+
+4. **Feature Classification**
+   - **Stable features**: Stability score > 0.5 (recommended for production)
+   - **Noisy features**: Stability score < 0.5 (use with caution)
+   - **Core feature set**: Top features by composite score (stability × win rate)
+
+**Output Files**:
+- `data/lotto_feature_stability.json` (full stability analysis with all metrics)
+- `data/lotto_feature_stability_rankings.csv` (feature rankings, Excel-ready)
+- `data/lotto_core_feature_set.json` (recommended core features for robust models)
+
+**Console Output**:
+```
+================================================================================
+FEATURE STABILITY ANALYSIS
+================================================================================
+
+OVERALL STATISTICS:
+  Total features analyzed: 7
+  Stable features (stability > 0.5): 7
+  Noisy features (stability < 0.5): 0
+  Core feature set size: 7
+
+--------------------------------------------------------------------------------
+TOP 10 MOST STABLE FEATURES
+--------------------------------------------------------------------------------
+Rank   Feature              Stability    Mean Win Rate   CV       Trend
+--------------------------------------------------------------------------------
+1      total_count          1.000        0.8571          0.000    stable
+2      recent_14            1.000        0.8571          0.000    stable
+3      bonus_hit_contribution 1.000        0.8571          0.000    stable
+4      recent_4             0.988        0.8545          0.013    stable
+5      freshness_bin        0.988        0.8545          0.013    stable
+
+--------------------------------------------------------------------------------
+CORRELATION STABILITY SCORES
+--------------------------------------------------------------------------------
+Feature              Correlation Stability     Interpretation
+--------------------------------------------------------------------------------
+total_count          1.000                     Very stable
+recent_14            1.000                     Very stable
+recent_4             0.994                     Very stable
+recent_9             0.994                     Very stable
+
+--------------------------------------------------------------------------------
+RECOMMENDED CORE FEATURE SET
+--------------------------------------------------------------------------------
+Rank   Feature              Composite    Stability    Win Rate     Trend
+--------------------------------------------------------------------------------
+1      total_count          1.893        1.000        0.8571       stable
+2      recent_9             1.893        0.987        0.8614       stable
+3      recent_14            1.893        1.000        0.8571       stable
+```
+
+**Key Findings from Analysis**:
+
+- **Most Stable Features**:
+  - `total_count`, `recent_14`, `bonus_hit_contribution` (perfect stability = 1.000)
+  - All features show stability > 0.98 (excellent for production use)
+
+- **Feature Trends**:
+  - Most features show "stable" trends (consistent performance over time)
+  - `days_since_last` shows slight "declining" trend (losing predictive power)
+
+- **Correlation Stability**:
+  - Very stable correlations (>0.87) across all analyzed features
+  - Indicates feature relationships are consistent over time
+
+- **Core Feature Set**:
+  - Top 7 features all have composite scores > 1.7
+  - `total_count`, `recent_9`, `recent_14` are top performers
+  - All recommended features have both high win rates and high stability
+
+**Use Cases**:
+
+1. **Production ML Models**:
+   - Use only features from "Core Feature Set" for robust models
+   - Prioritize features with stability > 0.7
+   - Avoid noisy features (CV > 1.0) in production
+
+2. **Model Monitoring**:
+   - Track feature stability over time to detect degradation
+   - Set alerts if stability drops below thresholds
+   - Re-train when core features show declining trends
+
+3. **Feature Selection**:
+   - Choose stable features over high-performing but volatile ones
+   - Balance win rate with stability for production use
+   - Remove features with declining trends
+
+4. **Model Validation**:
+   - Test if model performance matches feature stability
+   - Use rolling windows to validate temporal consistency
+   - Identify when models need retraining
+
+**Interpretation Guide**:
+
+**Stability Score**: `1 / (1 + CV)` where `CV = std_dev / mean`
+- **> 0.7**: Very stable - highly recommended for production
+- **0.5-0.7**: Stable - good for robust models
+- **0.3-0.5**: Moderately stable - use with caution
+- **< 0.3**: Unstable - avoid in production models
+
+**Coefficient of Variation (CV)**: `std_dev / mean`
+- **< 0.2**: Very consistent performance
+- **0.2-0.5**: Moderately consistent
+- **> 0.5**: Highly variable (risky for production)
+
+**Trend Direction**:
+- **Improving**: Feature becoming more predictive over time (add to models)
+- **Stable**: Feature maintains consistent predictiveness (ideal)
+- **Declining**: Feature losing predictive power (consider removing)
+
+**Correlation Stability**: How consistent feature correlations are over time
+- **> 0.8**: Very stable relationships with other features (reliable)
+- **0.6-0.8**: Stable relationships (acceptable)
+- **< 0.6**: Unstable relationships (investigate further)
+
+**Composite Score**: `stability_score × mean_win_rate`
+- Used to rank features for core set recommendation
+- Balances both stability and predictive power
+- Higher is better for production models
+
+**Statistical Methods**:
+- **Rolling Window Analysis**: Sliding windows (size 50, step 25)
+- **Coefficient of Variation**: Normalized stability measure
+- **Linear Regression**: Trend slope calculation
+- **Correlation Tracking**: Feature correlation over time windows
+
+**Dependencies**:
+- Requires `data/lotto_draw_history.json`
+- Uses standard library only (no external dependencies)
+
+---
+
 ## Running Scripts from Different Locations
 
 Most scripts in the `analysis/` folder have been updated to support running from multiple locations:
@@ -615,7 +1244,11 @@ Most scripts in the `analysis/` folder have been updated to support running from
 - `generate_bonus_to_main_json.py`
 - `bonus_to_main_analysis.py`
 - `bonus_analysis.py`
+- `feature_interaction_explorer.py`
+- `feature_stability_scorer.py`
 - `trend_analyzer.py`
+- `gap_pattern_analyzer.py`
+- `correlation_matrix_analyzer.py`
 
 ### Scripts that must run from project root:
 - `ensemble.py` (requires `quickpick.py` in current directory)
@@ -666,7 +1299,7 @@ python <script_name>.py
 
 ## Summary
 
-The `analysis/` folder contains 6 specialized scripts:
+The `analysis/` folder contains 10 specialized scripts:
 
 | Script | Category | Purpose | Run Location |
 |--------|----------|---------|--------------|
@@ -676,5 +1309,9 @@ The `analysis/` folder contains 6 specialized scripts:
 | `generate_bonus_to_main_json.py` | Generation | Create bonus-to-main JSON | Root or analysis |
 | `bonus_to_main_analysis.py` | Discovery | Analyze bonus transitions | Root or analysis |
 | `bonus_analysis.py` | Discovery | Comprehensive bonus analysis | Root or analysis |
+| `correlation_matrix_analyzer.py` | Discovery | Number correlation analysis | Root or analysis |
+| `gap_pattern_analyzer.py` | Discovery | Gap pattern and "due" number analysis | Root or analysis |
+| `feature_interaction_explorer.py` | Discovery | Feature interaction and composite feature discovery | Root or analysis |
+| `feature_stability_scorer.py` | Discovery | Feature stability and core feature set recommendation | Root or analysis |
 
 All scripts have been updated to work correctly from their new location in the `analysis/` folder, with automatic path detection and fallback mechanisms.
