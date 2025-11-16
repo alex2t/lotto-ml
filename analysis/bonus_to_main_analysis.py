@@ -22,10 +22,17 @@ from typing import Dict, List, Tuple
 def load_draw_history():
     """Load draw history JSON."""
     try:
-        with open('data/lotto_draw_history.json', 'r') as f:
-            return json.load(f)
+        # Try relative path from analysis folder first
+        try:
+            with open('../data/lotto_draw_history.json', 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            # Fallback to root directory path
+            with open('data/lotto_draw_history.json', 'r') as f:
+                return json.load(f)
     except FileNotFoundError:
         print("ERROR: data/lotto_draw_history.json not found")
+        print("Run this script from either the project root or the analysis folder")
         sys.exit(1)
 
 def analyze_bonus_to_main_pattern(draw_history):
@@ -326,9 +333,15 @@ def main():
         }
     }
 
-    output_file = 'data/bonus_to_main_analysis.json'
-    with open(output_file, 'w') as f:
-        json.dump(output, f, indent=2)
+    # Save to file (try both paths)
+    try:
+        output_file = '../data/bonus_to_main_analysis.json'
+        with open(output_file, 'w') as f:
+            json.dump(output, f, indent=2)
+    except FileNotFoundError:
+        output_file = 'data/bonus_to_main_analysis.json'
+        with open(output_file, 'w') as f:
+            json.dump(output, f, indent=2)
 
     print("\n" + "="*70)
     print("ANALYSIS COMPLETE")

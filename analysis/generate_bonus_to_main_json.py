@@ -21,10 +21,17 @@ from typing import Dict, List
 def load_draw_history():
     """Load draw history JSON."""
     try:
-        with open('data/lotto_draw_history.json', 'r') as f:
-            return json.load(f)
+        # Try relative path from analysis folder first
+        try:
+            with open('../data/lotto_draw_history.json', 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            # Fallback to root directory path
+            with open('data/lotto_draw_history.json', 'r') as f:
+                return json.load(f)
     except FileNotFoundError:
         print("ERROR: data/lotto_draw_history.json not found")
+        print("Run this script from either the project root or the analysis folder")
         sys.exit(1)
 
 def calculate_per_number_profiles(draw_history, max_number=47):
@@ -426,10 +433,15 @@ def main():
         }
     }
 
-    # Save to file
-    output_file = 'data/lotto_bonus_to_main_patterns.json'
-    with open(output_file, 'w') as f:
-        json.dump(output, f, indent=2)
+    # Save to file (try both paths)
+    try:
+        output_file = '../data/lotto_bonus_to_main_patterns.json'
+        with open(output_file, 'w') as f:
+            json.dump(output, f, indent=2)
+    except FileNotFoundError:
+        output_file = 'data/lotto_bonus_to_main_patterns.json'
+        with open(output_file, 'w') as f:
+            json.dump(output, f, indent=2)
 
     print("\n" + "="*70)
     print("GENERATION COMPLETE")
