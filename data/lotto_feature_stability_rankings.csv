@@ -1,8 +1,0 @@
-Rank,Feature,Stability_Score,Mean_Win_Rate,CV,Trend,Corr_Stability,Category
-1,total_count,1.000,0.8571,0.000,stable,1.000,stable
-2,recent_14,1.000,0.8571,0.000,stable,1.000,stable
-3,bonus_hit_contribution,1.000,0.8571,0.000,stable,0.500,stable
-4,recent_4,0.988,0.8545,0.013,stable,0.994,stable
-5,freshness_bin,0.988,0.8545,0.013,stable,0.500,stable
-6,recent_9,0.987,0.8614,0.013,stable,0.994,stable
-7,days_since_last,0.984,0.8562,0.016,declining,0.871,stable
