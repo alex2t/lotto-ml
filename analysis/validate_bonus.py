@@ -13,8 +13,14 @@ This script will:
 
 import json
 import pandas as pd
-from ml_lotto.data import load_draw_history_with_bias_ratios  # ✓ Correct
-from ml_lotto.feature_extractor import calculate_was_recent_bonus
+import sys
+from pathlib import Path
+
+# Add parent directory to path to import ml_lotto modules
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from ml_lotto.data.loader import load_draw_history_with_bias_ratios
+from ml_lotto.features.bonus import calculate_was_recent_bonus
 from ml_lotto.config import DRAW_HISTORY_JSON, MAX_NUMBER
 
 def validate_bonus_feature():

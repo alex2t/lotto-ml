@@ -5,13 +5,29 @@ ensemble.py
 Simple ensemble voting system - runs quickpick multiple times and aggregates results.
 
 Usage:
-    python ensemble.py --runs 15
+    From project root:
+        python analysis/ensemble.py --runs 15
+
+    From analysis folder:
+        python ensemble.py --runs 15
+
+Note: This script must be run from the project root directory where quickpick.py is located.
 """
 
 import re
 import argparse
+import os
+import sys
 from collections import Counter
 from pathlib import Path
+
+# Ensure we're running from project root
+if not Path('quickpick.py').exists():
+    print("ERROR: This script must be run from the project root directory.")
+    print("Current directory:", os.getcwd())
+    print("\nUsage from project root:")
+    print("  python analysis/ensemble.py --runs 15")
+    sys.exit(1)
 
 
 def extract_numbers_from_file(filepath: str = 'lottery_picks.txt') -> dict:
