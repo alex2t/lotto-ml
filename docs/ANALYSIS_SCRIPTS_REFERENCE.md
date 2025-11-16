@@ -17,6 +17,7 @@ This document explains each script in the `analysis/` folder, their purpose, usa
    - [correlation_matrix_analyzer.py](#correlation_matrix_analyzerpy)
    - [gap_pattern_analyzer.py](#gap_pattern_analyzerpy)
    - [feature_interaction_explorer.py](#feature_interaction_explorerpy)
+   - [feature_stability_scorer.py](#feature_stability_scorerpy)
 3. [Running Scripts from Different Locations](#running-scripts-from-different-locations)
 4. [Dependencies](#dependencies)
 
@@ -1062,10 +1063,175 @@ RECOMMENDED COMPOSITE FEATURES (Top 10)
 
 ---
 
+### feature_stability_scorer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Measures which features are most stable and reliable over time. This analysis helps identify core features that consistently predict lottery wins, which are crucial for building robust ML models that don't degrade over time.
+
+**Key Features**:
+- Feature importance over rolling windows (sliding window analysis)
+- Stability score calculation (based on coefficient of variation)
+- Feature correlation stability tracking
+- Noisy vs stable feature classification
+- Core feature set recommendations for production models
+- Trend detection (improving, stable, declining features)
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/feature_stability_scorer.py
+```
+
+**Analysis Methods**:
+
+1. **Rolling Window Analysis**
+   - Analyzes feature win rates over sliding windows (size: 50 draws, step: 25 draws)
+   - Tracks how feature predictiveness changes over time
+   - Identifies features with consistent vs erratic performance
+
+2. **Stability Metrics**
+   - **Coefficient of Variation (CV)**: std_dev / mean win rate
+   - **Stability Score**: 1 / (1 + CV) - ranges from 0 (unstable) to 1 (perfectly stable)
+   - **Trend Direction**: Linear regression slope (improving/stable/declining)
+   - **Win Rate Range**: Max - min win rate across windows
+
+3. **Correlation Stability**
+   - Tracks how feature correlations change over time windows
+   - Calculates correlation stability score
+   - Identifies features with stable relationships to outcomes
+
+4. **Feature Classification**
+   - **Stable features**: Stability score > 0.5 (recommended for production)
+   - **Noisy features**: Stability score < 0.5 (use with caution)
+   - **Core feature set**: Top features by composite score (stability × win rate)
+
+**Output Files**:
+- `data/lotto_feature_stability.json` (full stability analysis with all metrics)
+- `data/lotto_feature_stability_rankings.csv` (feature rankings, Excel-ready)
+- `data/lotto_core_feature_set.json` (recommended core features for robust models)
+
+**Console Output**:
+```
+================================================================================
+FEATURE STABILITY ANALYSIS
+================================================================================
+
+OVERALL STATISTICS:
+  Total features analyzed: 7
+  Stable features (stability > 0.5): 7
+  Noisy features (stability < 0.5): 0
+  Core feature set size: 7
+
+--------------------------------------------------------------------------------
+TOP 10 MOST STABLE FEATURES
+--------------------------------------------------------------------------------
+Rank   Feature              Stability    Mean Win Rate   CV       Trend
+--------------------------------------------------------------------------------
+1      total_count          1.000        0.8571          0.000    stable
+2      recent_14            1.000        0.8571          0.000    stable
+3      bonus_hit_contribution 1.000        0.8571          0.000    stable
+4      recent_4             0.988        0.8545          0.013    stable
+5      freshness_bin        0.988        0.8545          0.013    stable
+
+--------------------------------------------------------------------------------
+CORRELATION STABILITY SCORES
+--------------------------------------------------------------------------------
+Feature              Correlation Stability     Interpretation
+--------------------------------------------------------------------------------
+total_count          1.000                     Very stable
+recent_14            1.000                     Very stable
+recent_4             0.994                     Very stable
+recent_9             0.994                     Very stable
+
+--------------------------------------------------------------------------------
+RECOMMENDED CORE FEATURE SET
+--------------------------------------------------------------------------------
+Rank   Feature              Composite    Stability    Win Rate     Trend
+--------------------------------------------------------------------------------
+1      total_count          1.893        1.000        0.8571       stable
+2      recent_9             1.893        0.987        0.8614       stable
+3      recent_14            1.893        1.000        0.8571       stable
+```
+
+**Key Findings from Analysis**:
+
+- **Most Stable Features**:
+  - `total_count`, `recent_14`, `bonus_hit_contribution` (perfect stability = 1.000)
+  - All features show stability > 0.98 (excellent for production use)
+
+- **Feature Trends**:
+  - Most features show "stable" trends (consistent performance over time)
+  - `days_since_last` shows slight "declining" trend (losing predictive power)
+
+- **Correlation Stability**:
+  - Very stable correlations (>0.87) across all analyzed features
+  - Indicates feature relationships are consistent over time
+
+- **Core Feature Set**:
+  - Top 7 features all have composite scores > 1.7
+  - `total_count`, `recent_9`, `recent_14` are top performers
+  - All recommended features have both high win rates and high stability
+
+**Use Cases**:
+
+1. **Production ML Models**:
+   - Use only features from "Core Feature Set" for robust models
+   - Prioritize features with stability > 0.7
+   - Avoid noisy features (CV > 1.0) in production
+
+2. **Model Monitoring**:
+   - Track feature stability over time to detect degradation
+   - Set alerts if stability drops below thresholds
+   - Re-train when core features show declining trends
+
+3. **Feature Selection**:
+   - Choose stable features over high-performing but volatile ones
+   - Balance win rate with stability for production use
+   - Remove features with declining trends
+
+4. **Model Validation**:
+   - Test if model performance matches feature stability
+   - Use rolling windows to validate temporal consistency
+   - Identify when models need retraining
+
+**Interpretation Guide**:
+
+**Stability Score**: `1 / (1 + CV)` where `CV = std_dev / mean`
+- **> 0.7**: Very stable - highly recommended for production
+- **0.5-0.7**: Stable - good for robust models
+- **0.3-0.5**: Moderately stable - use with caution
+- **< 0.3**: Unstable - avoid in production models
+
+**Coefficient of Variation (CV)**: `std_dev / mean`
+- **< 0.2**: Very consistent performance
+- **0.2-0.5**: Moderately consistent
+- **> 0.5**: Highly variable (risky for production)
+
+**Trend Direction**:
+- **Improving**: Feature becoming more predictive over time (add to models)
+- **Stable**: Feature maintains consistent predictiveness (ideal)
+- **Declining**: Feature losing predictive power (consider removing)
+
+**Correlation Stability**: How consistent feature correlations are over time
+- **> 0.8**: Very stable relationships with other features (reliable)
+- **0.6-0.8**: Stable relationships (acceptable)
+- **< 0.6**: Unstable relationships (investigate further)
+
+**Composite Score**: `stability_score × mean_win_rate`
+- Used to rank features for core set recommendation
+- Balances both stability and predictive power
+- Higher is better for production models
+
+**Statistical Methods**:
+- **Rolling Window Analysis**: Sliding windows (size 50, step 25)
+- **Coefficient of Variation**: Normalized stability measure
+- **Linear Regression**: Trend slope calculation
+- **Correlation Tracking**: Feature correlation over time windows
+
+**Dependencies**:
 - Requires `data/lotto_draw_history.json`
 - Uses standard library only (no external dependencies)
-
----
 
 ---
 
@@ -1079,6 +1245,7 @@ Most scripts in the `analysis/` folder have been updated to support running from
 - `bonus_to_main_analysis.py`
 - `bonus_analysis.py`
 - `feature_interaction_explorer.py`
+- `feature_stability_scorer.py`
 - `trend_analyzer.py`
 - `gap_pattern_analyzer.py`
 - `correlation_matrix_analyzer.py`
@@ -1132,7 +1299,7 @@ python <script_name>.py
 
 ## Summary
 
-The `analysis/` folder contains 9 specialized scripts:
+The `analysis/` folder contains 10 specialized scripts:
 
 | Script | Category | Purpose | Run Location |
 |--------|----------|---------|--------------|
@@ -1141,8 +1308,10 @@ The `analysis/` folder contains 9 specialized scripts:
 | `trend_analyzer.py` | Discovery | Find long-term trends | Root or analysis |
 | `generate_bonus_to_main_json.py` | Generation | Create bonus-to-main JSON | Root or analysis |
 | `bonus_to_main_analysis.py` | Discovery | Analyze bonus transitions | Root or analysis |
-| `gap_pattern_analyzer.py` | Discovery | Gap pattern and "due" number analysis | Root or analysis |
 | `bonus_analysis.py` | Discovery | Comprehensive bonus analysis | Root or analysis |
 | `correlation_matrix_analyzer.py` | Discovery | Number correlation analysis | Root or analysis |
+| `gap_pattern_analyzer.py` | Discovery | Gap pattern and "due" number analysis | Root or analysis |
+| `feature_interaction_explorer.py` | Discovery | Feature interaction and composite feature discovery | Root or analysis |
+| `feature_stability_scorer.py` | Discovery | Feature stability and core feature set recommendation | Root or analysis |
 
 All scripts have been updated to work correctly from their new location in the `analysis/` folder, with automatic path detection and fallback mechanisms.
