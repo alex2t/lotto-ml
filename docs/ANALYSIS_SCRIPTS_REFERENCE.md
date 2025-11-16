@@ -14,6 +14,7 @@ This document explains each script in the `analysis/` folder, their purpose, usa
    - [generate_bonus_to_main_json.py](#generate_bonus_to_main_jsonpy)
    - [bonus_to_main_analysis.py](#bonus_to_main_analysispy)
    - [bonus_analysis.py](#bonus_analysispy)
+   - [correlation_matrix_analyzer.py](#correlation_matrix_analyzerpy)
 3. [Running Scripts from Different Locations](#running-scripts-from-different-locations)
 4. [Dependencies](#dependencies)
 
@@ -606,6 +607,178 @@ Bonus Hit Contribution Stats:
 
 ---
 
+### correlation_matrix_analyzer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Discovers which lottery numbers frequently appear together (positive correlation) or avoid each other (negative correlation). This is a comprehensive correlation analysis tool using multiple statistical methods.
+
+**Key Features**:
+- Number co-occurrence matrix (all pairs analyzed)
+- Positive correlations (numbers that "attract" each other)
+- Negative correlations (numbers that "repel" each other)
+- HMC category correlations (hot-hot, hot-cold, etc.)
+- Temporal autocorrelations (does appearing in draw N predict N+1?)
+- Multiple correlation metrics:
+  - **Lift**: observed/expected ratio
+  - **PMI**: Pointwise Mutual Information
+  - **Phi coefficient**: correlation coefficient for binary variables
+  - **Chi-square**: statistical significance testing
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/correlation_matrix_analyzer.py
+```
+
+**Analysis Methods**:
+
+1. **Co-occurrence Matrix**
+   - Analyzes all possible number pairs (1,081 pairs from 47 numbers)
+   - Counts how often each pair appears together in the same draw
+   - Compares to expected random frequency
+
+2. **Correlation Metrics**
+   - **Lift**: How much more/less likely pairs appear together vs random
+   - **Phi Coefficient**: Correlation strength (-1 to +1)
+   - **Chi-Square**: Statistical significance (p < 0.05 threshold)
+
+3. **HMC Category Analysis**
+   - Hot-Hot, Hot-Medium, Hot-Cold pairs
+   - Medium-Medium, Medium-Cold pairs
+   - Cold-Cold pairs
+   - Reveals category interaction patterns
+
+4. **Temporal Autocorrelation**
+   - For each number: P(appear in draw N+1 | appeared in draw N)
+   - Identifies "hot streak" numbers vs "cool down" numbers
+   - Autocorrelation coefficient calculation
+
+**Output Files**:
+- `data/lotto_correlation_matrix.json` (full correlation data with all metrics)
+- `data/lotto_correlation_summary.csv` (top 100 correlations, importable to Excel)
+
+**Console Output**:
+```
+================================================================================
+LOTTERY NUMBER CORRELATION ANALYSIS
+================================================================================
+
+OVERALL STATISTICS:
+  Total number pairs analyzed: 1080
+  Statistically significant: 52 (4.81%)
+  Attraction pairs (lift > 1): 334
+  Repulsion pairs (lift < 1): 745
+  Neutral pairs: 1
+
+--------------------------------------------------------------------------------
+TOP 10 NUMBER PAIRS THAT ATTRACT (appear together more than expected)
+--------------------------------------------------------------------------------
+Pair         Observed   Expected   Lift     Phi      Sig?
+--------------------------------------------------------------------------------
+19-32        18         8.0        1.811    0.149    ✓
+3-43         15         8.0        1.663    0.115    ✓
+7-10         14         8.0        1.632    0.107    ✓
+20-31        13         8.0        1.631    0.102    ✓
+11-19        15         8.0        1.582    0.104    ✓
+2-5          16         8.0        1.566    0.106    ✓
+28-32        15         8.0        1.559    0.101    ✓
+28-29        15         8.0        1.559    0.101    ✓
+
+--------------------------------------------------------------------------------
+TOP 10 NUMBER PAIRS THAT REPEL (appear together less than expected)
+--------------------------------------------------------------------------------
+Pair         Observed   Expected   Lift     Phi      Sig?
+--------------------------------------------------------------------------------
+5-28         1          8.0        0.111    -0.155   ✓
+2-31         1          8.0        0.122    -0.145   ✓
+15-16        1          8.0        0.163    -0.116   ✓
+2-4          2          8.0        0.225    -0.134   ✓
+24-43        2          8.0        0.226    -0.133   ✓
+16-32        2          8.0        0.230    -0.131   ✓
+
+--------------------------------------------------------------------------------
+HMC CATEGORY CORRELATIONS
+--------------------------------------------------------------------------------
+  cold-hot             :  27.00% (2336 occurrences)
+  hot-medium           :  23.32% (2018 occurrences)
+  hot-hot              :  22.31% (1930 occurrences)
+  cold-medium          :  14.05% (1216 occurrences)
+  cold-cold            :   7.70% (666 occurrences)
+  medium-medium        :   5.62% (486 occurrences)
+
+--------------------------------------------------------------------------------
+TEMPORAL AUTOCORRELATION (Top 10 numbers)
+--------------------------------------------------------------------------------
+Number   Autocorr     P(appear|appeared)   P(appear|not)
+--------------------------------------------------------------------------------
+22       -0.0948      0.0781               0.1729
+20       -0.0878      0.0896               0.1773
+13       -0.0867      0.0986               0.1853
+37       -0.0780      0.0820               0.1600
+33       0.0732       0.1837               0.1105
+
+================================================================================
+INTERPRETATION GUIDE
+================================================================================
+Lift > 1.0:  Numbers appear together MORE than random chance
+Lift < 1.0:  Numbers appear together LESS than random chance
+Lift ≈ 1.0:  Numbers appear together at random chance
+
+Phi coefficient: Ranges from -1 (perfect negative) to +1 (perfect positive)
+Chi-square > 3.84: Statistically significant at p < 0.05
+
+Autocorrelation > 0: Number more likely to appear again in next draw
+Autocorrelation < 0: Number less likely to appear again in next draw
+================================================================================
+```
+
+**Key Insights**:
+
+- **Attraction Pairs**: Numbers that appear together more than random chance (lift > 1.0)
+  - Example: 19-32 appears together 1.81x more than expected
+  - Could indicate physical or algorithmic biases in lottery drawing
+
+- **Repulsion Pairs**: Numbers that avoid each other (lift < 1.0)
+  - Example: 5-28 appears together only 0.11x as often as expected
+  - Statistically significant anti-correlation
+
+- **Category Patterns**:
+  - Cold-Hot pairs are most common (27%)
+  - Hot-Hot pairs are second (22.31%)
+  - Medium-Medium pairs are rare (5.62%)
+  - Suggests draws tend to mix categories rather than cluster
+
+- **Temporal Patterns**:
+  - Negative autocorrelation: Numbers that appeared are LESS likely to appear next draw
+  - Positive autocorrelation: Numbers that appeared are MORE likely to appear next draw
+  - Most numbers show weak temporal correlation (near 0)
+
+**Use Cases**:
+
+1. **Feature Engineering**: Create "companion number" features
+   - Add "has_strong_companion" binary feature
+   - Add "companion_count" numeric feature
+
+2. **Number Selection**: Prefer high-correlation pairs when building combinations
+
+3. **Validation**: Test if correlations are stable over time or change
+
+4. **Pattern Detection**: Identify unusual correlation patterns that may indicate non-randomness
+
+**Statistical Methods**:
+
+- **Lift Ratio**: Simple, intuitive measure of association
+- **PMI (Pointwise Mutual Information)**: Information-theoretic measure
+- **Phi Coefficient**: Pearson correlation for binary variables
+- **Chi-Square Test**: Statistical significance at α = 0.05 (chi² > 3.84)
+
+**Dependencies**:
+- Requires `data/lotto_draw_history.json`
+- Uses standard library only (no external dependencies)
+
+---
+
 ## Running Scripts from Different Locations
 
 Most scripts in the `analysis/` folder have been updated to support running from multiple locations:
@@ -616,6 +789,7 @@ Most scripts in the `analysis/` folder have been updated to support running from
 - `bonus_to_main_analysis.py`
 - `bonus_analysis.py`
 - `trend_analyzer.py`
+- `correlation_matrix_analyzer.py`
 
 ### Scripts that must run from project root:
 - `ensemble.py` (requires `quickpick.py` in current directory)
@@ -666,7 +840,7 @@ python <script_name>.py
 
 ## Summary
 
-The `analysis/` folder contains 6 specialized scripts:
+The `analysis/` folder contains 7 specialized scripts:
 
 | Script | Category | Purpose | Run Location |
 |--------|----------|---------|--------------|
@@ -676,5 +850,6 @@ The `analysis/` folder contains 6 specialized scripts:
 | `generate_bonus_to_main_json.py` | Generation | Create bonus-to-main JSON | Root or analysis |
 | `bonus_to_main_analysis.py` | Discovery | Analyze bonus transitions | Root or analysis |
 | `bonus_analysis.py` | Discovery | Comprehensive bonus analysis | Root or analysis |
+| `correlation_matrix_analyzer.py` | Discovery | Number correlation analysis | Root or analysis |
 
 All scripts have been updated to work correctly from their new location in the `analysis/` folder, with automatic path detection and fallback mechanisms.
