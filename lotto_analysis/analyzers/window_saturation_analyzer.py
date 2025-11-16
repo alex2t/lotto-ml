@@ -248,12 +248,13 @@ def calculate_dynamic_penalties(saturation_rates: Dict[str, Any],
 def validate_category_differences(saturation_rates: Dict[str, Any]) -> Dict[str, Any]:
     """
     Use scipy to validate that category differences are statistically significant.
+    Performs BOTH parametric (ANOVA) and non-parametric (Kruskal-Wallis) tests.
 
     Args:
         saturation_rates: Calculated saturation rates
 
     Returns:
-        Statistical validation results
+        Statistical validation results with both parametric and non-parametric tests
     """
     # Collect saturation probabilities by category
     hot_probs = []
@@ -273,20 +274,70 @@ def validate_category_differences(saturation_rates: Dict[str, Any]) -> Dict[str,
     med_mean = sum(medium_probs) / len(medium_probs) if medium_probs else 0
     cold_mean = sum(cold_probs) / len(cold_probs) if cold_probs else 0
 
-    # Perform ANOVA if scipy available
+    # Perform statistical tests if scipy available
     if HAS_SCIPY and len(hot_probs) >= 2 and len(medium_probs) >= 2 and len(cold_probs) >= 2:
+        # Test normality
+        normality_tests = {}
+        for category, probs in [('hot', hot_probs), ('medium', medium_probs), ('cold', cold_probs)]:
+            if len(probs) >= 3:
+                shapiro_stat, shapiro_p = stats.shapiro(probs)
+                normality_tests[category] = {
+                    'shapiro_statistic': float(shapiro_stat),
+                    'p_value': float(shapiro_p),
+                    'is_normal': bool(shapiro_p > 0.05)
+                }
+            else:
+                normality_tests[category] = {'is_normal': False, 'p_value': 1.0}
+
+        all_normal = all(test['is_normal'] for test in normality_tests.values())
+
+        # PARAMETRIC TEST: One-way ANOVA
         f_statistic, p_value = stats.f_oneway(hot_probs, medium_probs, cold_probs)
 
+        # NON-PARAMETRIC TEST: Kruskal-Wallis
+        h_statistic, kw_p_value = stats.kruskal(hot_probs, medium_probs, cold_probs)
+
+        recommended_test = 'parametric' if all_normal else 'non_parametric'
+
         return {
-            'test': 'One-way ANOVA',
-            'f_statistic': float(f_statistic),
-            'p_value': float(p_value),
-            'significant': bool(p_value < 0.05),
-            'interpretation': 'Category saturation rates are significantly different' if p_value < 0.05
-                            else 'Category differences not significant',
+            # Normality assessment
+            'normality_tests': normality_tests,
+            'assumptions_met': all_normal,
+            'recommended_test': recommended_test,
+
+            # PARAMETRIC TEST (ANOVA)
+            'parametric_test': {
+                'test_name': 'One-way ANOVA',
+                'f_statistic': float(f_statistic),
+                'p_value': float(p_value),
+                'significant': bool(p_value < 0.05),
+                'interpretation': 'Category saturation rates are significantly different' if p_value < 0.05
+                                else 'Category differences not significant',
+                'use_when': 'Data is normally distributed'
+            },
+
+            # NON-PARAMETRIC TEST (Kruskal-Wallis)
+            'non_parametric_test': {
+                'test_name': 'Kruskal-Wallis H-test',
+                'h_statistic': float(h_statistic),
+                'p_value': float(kw_p_value),
+                'significant': bool(kw_p_value < 0.05),
+                'interpretation': 'Category saturation rates are significantly different' if kw_p_value < 0.05
+                                else 'Category differences not significant',
+                'use_when': 'No normality assumption required'
+            },
+
+            # Summary statistics
             'hot_mean': float(hot_mean),
             'medium_mean': float(med_mean),
-            'cold_mean': float(cold_mean)
+            'cold_mean': float(cold_mean),
+
+            # Backward compatibility
+            'test': 'Dual testing (ANOVA + Kruskal-Wallis)',
+            'f_statistic': float(f_statistic),
+            'p_value': float(kw_p_value) if not all_normal else float(p_value),
+            'significant': bool(kw_p_value < 0.05) if not all_normal else bool(p_value < 0.05),
+            'interpretation': f'Using {recommended_test} test: Category saturation rates are {"significantly" if (kw_p_value < 0.05 if not all_normal else p_value < 0.05) else "not significantly"} different'
         }
     else:
         # Basic validation without scipy

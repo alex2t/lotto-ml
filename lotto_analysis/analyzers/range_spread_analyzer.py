@@ -315,15 +315,60 @@ def calculate_correlation_with_position(
     if len(correlations) >= 3:
         mean_corr = np.mean(correlations)
 
-        # One-sample t-test: is correlation significantly different from 0?
+        # PARAMETRIC: One-sample t-test (assumes normality)
         t_stat, p_value = stats.ttest_1samp(correlations, 0.0)
 
+        # NON-PARAMETRIC: Wilcoxon signed-rank test (alternative to one-sample t-test)
+        # Tests if median is significantly different from 0
+        try:
+            w_stat, w_p_value = stats.wilcoxon(correlations, alternative='two-sided')
+        except:
+            w_stat, w_p_value = 0.0, 1.0
+
+        # Test normality of correlations
+        if len(correlations) >= 3:
+            shapiro_stat, shapiro_p = stats.shapiro(correlations)
+            is_normal = bool(shapiro_p > 0.05)
+        else:
+            is_normal = False
+            shapiro_p = 1.0
+
+        recommended_test = 'parametric' if is_normal else 'non_parametric'
+
         return {
+            # Normality assessment
+            'normality_test': {
+                'shapiro_p_value': float(shapiro_p),
+                'is_normal': is_normal
+            },
+            'recommended_test': recommended_test,
+
+            # PARAMETRIC TEST (t-test)
+            'parametric_test': {
+                'test_name': 'One-sample t-test',
+                'mean_correlation': float(mean_corr),
+                't_statistic': float(t_stat),
+                'p_value': float(p_value),
+                'significant': bool(p_value < 0.05),
+                'use_when': 'Correlations are normally distributed'
+            },
+
+            # NON-PARAMETRIC TEST (Wilcoxon)
+            'non_parametric_test': {
+                'test_name': 'Wilcoxon signed-rank test',
+                'median_correlation': float(np.median(correlations)),
+                'w_statistic': float(w_stat),
+                'p_value': float(w_p_value),
+                'significant': bool(w_p_value < 0.05),
+                'use_when': 'No normality assumption required'
+            },
+
+            # Backward compatibility
             'mean_correlation': float(mean_corr),
             't_statistic': float(t_stat),
-            'p_value': float(p_value),
-            'significant': bool(p_value < 0.05),
-            'interpretation': _interpret_correlation(mean_corr, p_value)
+            'p_value': float(w_p_value) if not is_normal else float(p_value),
+            'significant': bool(w_p_value < 0.05) if not is_normal else bool(p_value < 0.05),
+            'interpretation': _interpret_correlation(mean_corr, w_p_value if not is_normal else p_value)
         }
     else:
         return {
@@ -447,12 +492,15 @@ def analyze_range_spread(
         'metadata': {
             'analysis_type': 'range_spread_validation',
             'statistical_methods': [
+                'shapiro_wilk_normality_test',
                 'independent_t_test',
                 'levene_variance_test',
                 'pearson_correlation',
+                'wilcoxon_signed_rank_test',
                 'cohens_d_effect_size',
                 'fdr_correction' if fdr_applied else 'no_fdr_correction'
             ],
+            'dual_testing_approach': 'Parametric tests with non-parametric alternatives (Wilcoxon)',
             'total_draws': len(draw_history),
             'significance_level': 0.05,
             'fdr_correction_applied': fdr_applied

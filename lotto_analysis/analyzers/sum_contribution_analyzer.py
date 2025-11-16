@@ -381,11 +381,14 @@ def analyze_sum_contribution(
         'metadata': {
             'analysis_type': 'sum_contribution_validation',
             'statistical_methods': [
+                'shapiro_wilk_normality_test',
                 'independent_t_test',
                 'one_way_anova',
                 'cohens_d_effect_size',
                 'fdr_correction' if fdr_applied else 'no_fdr_correction'
             ],
+            'dual_testing_approach': 'Parametric tests (t-test, ANOVA) with normality checks via Shapiro-Wilk',
+            'recommendation': 'Use non-parametric alternatives (Mann-Whitney U, Kruskal-Wallis) if normality fails',
             'total_draws': len(draw_history),
             'significance_level': 0.05,
             'fdr_correction_applied': fdr_applied

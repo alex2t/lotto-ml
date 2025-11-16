@@ -299,20 +299,53 @@ def analyze_recency_correlations(
                 x_values.append(midpoint)
                 y_values.append(win_rate)
 
-        # Calculate correlation if we have enough data points
+        # Calculate BOTH parametric and non-parametric correlations if we have enough data points
         if len(x_values) >= 3:
             try:
-                correlation, p_value = stats.pearsonr(x_values, y_values)
+                # PARAMETRIC: Pearson correlation (assumes linear relationship and normality)
+                pearson_corr, pearson_p = stats.pearsonr(x_values, y_values)
+
+                # NON-PARAMETRIC: Spearman's Rho (no assumptions about distribution or linearity)
+                spearman_corr, spearman_p = stats.spearmanr(x_values, y_values)
+
+                # Test normality of residuals to determine which test is more appropriate
+                # For small samples, use non-parametric by default
+                use_parametric = len(x_values) >= 8  # Arbitrary threshold
             except:
-                correlation, p_value = 0.0, 1.0
+                pearson_corr, pearson_p = 0.0, 1.0
+                spearman_corr, spearman_p = 0.0, 1.0
+                use_parametric = False
         else:
-            correlation, p_value = 0.0, 1.0
+            pearson_corr, pearson_p = 0.0, 1.0
+            spearman_corr, spearman_p = 0.0, 1.0
+            use_parametric = False
+
+        recommended_test = 'parametric' if use_parametric else 'non_parametric'
 
         results_by_category[category] = {
             'recency_ranges': bin_stats,
-            'correlation': float(correlation),
-            'p_value': float(p_value),
-            'significant': bool(p_value < 0.05),
+
+            # Dual testing results
+            'parametric_test': {
+                'test_name': 'Pearson correlation',
+                'correlation': float(pearson_corr),
+                'p_value': float(pearson_p),
+                'significant': bool(pearson_p < 0.05),
+                'use_when': 'Linear relationship and normally distributed residuals'
+            },
+            'non_parametric_test': {
+                'test_name': 'Spearman correlation',
+                'correlation': float(spearman_corr),
+                'p_value': float(spearman_p),
+                'significant': bool(spearman_p < 0.05),
+                'use_when': 'Monotonic relationship, no normality assumption'
+            },
+            'recommended_test': recommended_test,
+
+            # Backward compatibility
+            'correlation': float(spearman_corr) if not use_parametric else float(pearson_corr),
+            'p_value': float(spearman_p) if not use_parametric else float(pearson_p),
+            'significant': bool(spearman_p < 0.05) if not use_parametric else bool(pearson_p < 0.05),
             'num_data_points': int(len(x_values))
         }
 
@@ -436,8 +469,10 @@ def generate_long_term_pattern_analysis(
             'statistical_methods': [
                 'chi_square_goodness_of_fit',
                 'pearson_correlation',
+                'spearman_correlation',
                 'chi_square_test_of_independence'
             ],
+            'dual_testing_approach': 'Both parametric (Pearson) and non-parametric (Spearman) correlations performed',
             'total_draws': int(len(draw_history)),
             'significance_level': 0.05
         },

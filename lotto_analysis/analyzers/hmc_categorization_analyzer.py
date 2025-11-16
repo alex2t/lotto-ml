@@ -46,6 +46,7 @@ def calculate_days_since_date(date_str: str) -> int:
 def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Perform one-way ANOVA to test if HMC categories are statistically distinct.
+    ALSO performs non-parametric Kruskal-Wallis test as alternative.
 
     Tests the null hypothesis that Hot, Medium, and Cold categories have the
     same mean hit frequency (days since last hit).
@@ -54,7 +55,7 @@ def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
         hmc_data: Per-number HMC data
 
     Returns:
-        Dictionary with ANOVA results
+        Dictionary with ANOVA and Kruskal-Wallis results
     """
     # Separate numbers by category
     hot_frequencies = []
@@ -80,17 +81,40 @@ def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
         except (ValueError, AttributeError):
             continue
 
-    # Need at least 2 values per category for ANOVA
+    # Need at least 2 values per category for statistical tests
     if len(hot_frequencies) < 2 or len(medium_frequencies) < 2 or len(cold_frequencies) < 2:
         return {
             'significant': False,
             'f_statistic': 0.0,
             'p_value': 1.0,
-            'error': 'Insufficient data for ANOVA'
+            'error': 'Insufficient data for statistical tests'
         }
 
-    # Perform one-way ANOVA
+    # Test normality of each group using Shapiro-Wilk test
+    normality_tests = {}
+    for category, frequencies in [('hot', hot_frequencies), ('medium', medium_frequencies), ('cold', cold_frequencies)]:
+        if len(frequencies) >= 3:
+            shapiro_stat, shapiro_p = stats.shapiro(frequencies)
+            normality_tests[category] = {
+                'shapiro_statistic': float(shapiro_stat),
+                'p_value': float(shapiro_p),
+                'is_normal': bool(shapiro_p > 0.05)
+            }
+        else:
+            normality_tests[category] = {
+                'shapiro_statistic': 0.0,
+                'p_value': 1.0,
+                'is_normal': False
+            }
+
+    # Check if ALL groups meet normality assumption
+    all_normal = all(test['is_normal'] for test in normality_tests.values())
+
+    # PARAMETRIC TEST: One-way ANOVA
     f_statistic, p_value = stats.f_oneway(hot_frequencies, medium_frequencies, cold_frequencies)
+
+    # NON-PARAMETRIC TEST: Kruskal-Wallis (alternative to ANOVA, no normality assumption)
+    h_statistic, kw_p_value = stats.kruskal(hot_frequencies, medium_frequencies, cold_frequencies)
 
     # Calculate effect size (eta-squared)
     all_values = hot_frequencies + medium_frequencies + cold_frequencies
@@ -136,27 +160,61 @@ def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
         }
     }
 
+    # Determine recommended test based on normality
+    recommended_test = 'parametric' if all_normal else 'non_parametric'
+
     return {
-        'significant': bool(p_value < 0.05),
-        'f_statistic': float(f_statistic),
-        'p_value': float(p_value),
-        'eta_squared': float(eta_squared),
-        'degrees_of_freedom_between': 2,
-        'degrees_of_freedom_within': n_total - 3,
+        # Normality assessment
+        'normality_tests': normality_tests,
+        'assumptions_met': all_normal,
+        'recommended_test': recommended_test,
+
+        # PARAMETRIC TEST (ANOVA)
+        'parametric_test': {
+            'test_name': 'One-way ANOVA',
+            'significant': bool(p_value < 0.05),
+            'f_statistic': float(f_statistic),
+            'p_value': float(p_value),
+            'eta_squared': float(eta_squared),
+            'degrees_of_freedom_between': 2,
+            'degrees_of_freedom_within': n_total - 3,
+            'interpretation': _interpret_anova(p_value, eta_squared),
+            'use_when': 'Data is normally distributed (Shapiro-Wilk p > 0.05)'
+        },
+
+        # NON-PARAMETRIC TEST (Kruskal-Wallis)
+        'non_parametric_test': {
+            'test_name': 'Kruskal-Wallis H-test',
+            'significant': bool(kw_p_value < 0.05),
+            'h_statistic': float(h_statistic),
+            'p_value': float(kw_p_value),
+            'degrees_of_freedom': 2,
+            'interpretation': _interpret_kruskal(kw_p_value),
+            'use_when': 'No normality assumption required, robust to outliers'
+        },
+
+        # Common statistics
         'category_statistics': category_stats,
-        'interpretation': _interpret_anova(p_value, eta_squared)
+
+        # Backward compatibility
+        'significant': bool(kw_p_value < 0.05) if not all_normal else bool(p_value < 0.05),
+        'f_statistic': float(f_statistic),
+        'p_value': float(kw_p_value) if not all_normal else float(p_value),
+        'eta_squared': float(eta_squared)
     }
 
 
 def calculate_pairwise_comparisons(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Perform pairwise t-tests between categories with Bonferroni correction.
+    Perform pairwise comparisons between categories:
+    - PARAMETRIC: t-tests with Bonferroni correction
+    - NON-PARAMETRIC: Mann-Whitney U tests with Bonferroni correction
 
     Args:
         hmc_data: Per-number HMC data
 
     Returns:
-        Dictionary with pairwise comparison results
+        Dictionary with both parametric and non-parametric pairwise comparison results
     """
     # Separate numbers by category
     hot_frequencies = []
@@ -185,42 +243,104 @@ def calculate_pairwise_comparisons(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
     if len(hot_frequencies) < 2 or len(medium_frequencies) < 2 or len(cold_frequencies) < 2:
         return {'error': 'Insufficient data for pairwise comparisons'}
 
+    # Test normality for all groups
+    normality_tests = {}
+    for category, frequencies in [('hot', hot_frequencies), ('medium', medium_frequencies), ('cold', cold_frequencies)]:
+        if len(frequencies) >= 3:
+            shapiro_stat, shapiro_p = stats.shapiro(frequencies)
+            normality_tests[category] = bool(shapiro_p > 0.05)
+        else:
+            normality_tests[category] = False
+
+    all_normal = all(normality_tests.values())
+
     # Bonferroni correction: 3 comparisons, so alpha = 0.05/3 = 0.0167
     alpha_corrected = 0.05 / 3
 
-    comparisons = {}
+    parametric_comparisons = {}
+    non_parametric_comparisons = {}
 
     # Hot vs Medium
+    # Parametric: t-test
     t_stat_hm, p_value_hm = stats.ttest_ind(hot_frequencies, medium_frequencies)
-    comparisons['hot_vs_medium'] = {
+    parametric_comparisons['hot_vs_medium'] = {
         't_statistic': float(t_stat_hm),
         'p_value': float(p_value_hm),
         'significant': bool(p_value_hm < alpha_corrected),
         'mean_difference': float(np.mean(hot_frequencies) - np.mean(medium_frequencies))
     }
+    # Non-parametric: Mann-Whitney U test
+    u_stat_hm, u_p_value_hm = stats.mannwhitneyu(hot_frequencies, medium_frequencies, alternative='two-sided')
+    non_parametric_comparisons['hot_vs_medium'] = {
+        'u_statistic': float(u_stat_hm),
+        'p_value': float(u_p_value_hm),
+        'significant': bool(u_p_value_hm < alpha_corrected),
+        'median_difference': float(np.median(hot_frequencies) - np.median(medium_frequencies))
+    }
 
     # Hot vs Cold
+    # Parametric: t-test
     t_stat_hc, p_value_hc = stats.ttest_ind(hot_frequencies, cold_frequencies)
-    comparisons['hot_vs_cold'] = {
+    parametric_comparisons['hot_vs_cold'] = {
         't_statistic': float(t_stat_hc),
         'p_value': float(p_value_hc),
         'significant': bool(p_value_hc < alpha_corrected),
         'mean_difference': float(np.mean(hot_frequencies) - np.mean(cold_frequencies))
     }
+    # Non-parametric: Mann-Whitney U test
+    u_stat_hc, u_p_value_hc = stats.mannwhitneyu(hot_frequencies, cold_frequencies, alternative='two-sided')
+    non_parametric_comparisons['hot_vs_cold'] = {
+        'u_statistic': float(u_stat_hc),
+        'p_value': float(u_p_value_hc),
+        'significant': bool(u_p_value_hc < alpha_corrected),
+        'median_difference': float(np.median(hot_frequencies) - np.median(cold_frequencies))
+    }
 
     # Medium vs Cold
+    # Parametric: t-test
     t_stat_mc, p_value_mc = stats.ttest_ind(medium_frequencies, cold_frequencies)
-    comparisons['medium_vs_cold'] = {
+    parametric_comparisons['medium_vs_cold'] = {
         't_statistic': float(t_stat_mc),
         'p_value': float(p_value_mc),
         'significant': bool(p_value_mc < alpha_corrected),
         'mean_difference': float(np.mean(medium_frequencies) - np.mean(cold_frequencies))
     }
+    # Non-parametric: Mann-Whitney U test
+    u_stat_mc, u_p_value_mc = stats.mannwhitneyu(medium_frequencies, cold_frequencies, alternative='two-sided')
+    non_parametric_comparisons['medium_vs_cold'] = {
+        'u_statistic': float(u_stat_mc),
+        'p_value': float(u_p_value_mc),
+        'significant': bool(u_p_value_mc < alpha_corrected),
+        'median_difference': float(np.median(medium_frequencies) - np.median(cold_frequencies))
+    }
+
+    # Determine recommended comparisons based on normality
+    recommended_test = 'parametric' if all_normal else 'non_parametric'
 
     return {
         'bonferroni_corrected_alpha': alpha_corrected,
-        'comparisons': comparisons,
-        'all_significant': all(c['significant'] for c in comparisons.values())
+        'normality_met': all_normal,
+        'recommended_test': recommended_test,
+
+        # PARAMETRIC COMPARISONS (t-tests)
+        'parametric_comparisons': {
+            'test_name': 'Independent t-tests (Bonferroni corrected)',
+            'comparisons': parametric_comparisons,
+            'all_significant': all(c['significant'] for c in parametric_comparisons.values()),
+            'use_when': 'Data is normally distributed'
+        },
+
+        # NON-PARAMETRIC COMPARISONS (Mann-Whitney U)
+        'non_parametric_comparisons': {
+            'test_name': 'Mann-Whitney U tests (Bonferroni corrected)',
+            'comparisons': non_parametric_comparisons,
+            'all_significant': all(c['significant'] for c in non_parametric_comparisons.values()),
+            'use_when': 'No normality assumption required'
+        },
+
+        # Backward compatibility
+        'comparisons': non_parametric_comparisons if not all_normal else parametric_comparisons,
+        'all_significant': all(c['significant'] for c in (non_parametric_comparisons if not all_normal else parametric_comparisons).values())
     }
 
 
@@ -369,6 +489,18 @@ def _interpret_anova(p_value: float, eta_squared: float) -> str:
         return "Significant with large effect (categories strongly distinct)"
 
 
+def _interpret_kruskal(p_value: float) -> str:
+    """Interpret Kruskal-Wallis test results."""
+    if p_value >= 0.05:
+        return "Categories are NOT statistically distinct (median distributions similar)"
+    elif p_value < 0.001:
+        return "Categories are highly significantly distinct (very strong evidence)"
+    elif p_value < 0.01:
+        return "Categories are strongly distinct (strong evidence)"
+    else:
+        return "Categories are significantly distinct (moderate evidence)"
+
+
 def _interpret_distribution(p_value: float) -> str:
     """Interpret category distribution test."""
     if p_value >= 0.05:
@@ -410,11 +542,15 @@ def analyze_hmc_categorization(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
         'metadata': {
             'analysis_type': 'hmc_categorization_validation',
             'statistical_methods': [
+                'shapiro_wilk_normality_test',
                 'one_way_anova',
+                'kruskal_wallis_test',
                 'independent_t_test',
+                'mann_whitney_u_test',
                 'bonferroni_correction',
                 'chi_square_goodness_of_fit'
             ],
+            'dual_testing_approach': 'Both parametric and non-parametric tests performed',
             'significance_level': 0.05,
             'total_numbers': sum(distribution_test.get('category_counts', {}).values())
         },
