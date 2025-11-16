@@ -4,194 +4,196 @@
         "statistical_methods": [
             "chi_square_goodness_of_fit",
             "pearson_correlation",
+            "spearman_correlation",
             "chi_square_test_of_independence"
         ],
-        "total_draws": 409,
+        "dual_testing_approach": "Both parametric (Pearson) and non-parametric (Spearman) correlations performed",
+        "total_draws": 412,
         "significance_level": 0.05
     },
     "hmc_pattern_analysis": {
         "pattern_distribution": {
             "3-2-2": {
                 "count": 45,
-                "percentage": 11.00244498777506,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 30.40583881578948,
+                "percentage": 10.922330097087379,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 29.78702570379437,
                 "hot_count": 3,
                 "medium_count": 2,
                 "cold_count": 2
             },
             "5-0-2": {
                 "count": 12,
-                "percentage": 2.93398533007335,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 3.335526315789473,
+                "percentage": 2.912621359223301,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 3.438188494492044,
                 "hot_count": 5,
                 "medium_count": 0,
                 "cold_count": 2
             },
             "2-3-2": {
                 "count": 32,
-                "percentage": 7.823960880195599,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 6.877192982456142,
+                "percentage": 7.766990291262135,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 6.642322861417109,
                 "hot_count": 2,
                 "medium_count": 3,
                 "cold_count": 2
             },
             "2-2-3": {
-                "count": 29,
-                "percentage": 7.090464547677261,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 3.8225054824561413,
+                "count": 30,
+                "percentage": 7.281553398058252,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 4.554467564259486,
                 "hot_count": 2,
                 "medium_count": 2,
                 "cold_count": 3
             },
             "2-4-1": {
-                "count": 8,
-                "percentage": 1.9559902200488997,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 7.3771929824561395,
+                "count": 9,
+                "percentage": 2.1844660194174756,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 6.34516523867809,
                 "hot_count": 2,
                 "medium_count": 4,
                 "cold_count": 1
             },
             "3-1-3": {
                 "count": 36,
-                "percentage": 8.80195599022005,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 12.335526315789476,
+                "percentage": 8.737864077669903,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 11.996328029375766,
                 "hot_count": 3,
                 "medium_count": 1,
                 "cold_count": 3
             },
             "5-1-1": {
-                "count": 28,
-                "percentage": 6.845965770171149,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 3.0021929824561413,
+                "count": 29,
+                "percentage": 7.038834951456311,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 3.6578267373861015,
                 "hot_count": 5,
                 "medium_count": 1,
                 "cold_count": 1
             },
             "3-3-1": {
                 "count": 17,
-                "percentage": 4.156479217603912,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 0.5100054824561401,
+                "percentage": 4.12621359223301,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 0.5570515435876512,
                 "hot_count": 3,
                 "medium_count": 3,
                 "cold_count": 1
             },
             "4-1-2": {
                 "count": 51,
-                "percentage": 12.469437652811736,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 46.90583881578948,
+                "percentage": 12.37864077669903,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 46.06609547123623,
                 "hot_count": 4,
                 "medium_count": 1,
                 "cold_count": 2
             },
             "4-2-1": {
                 "count": 40,
-                "percentage": 9.7799511002445,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 19.377192982456144,
+                "percentage": 9.70873786407767,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 18.92139262885897,
                 "hot_count": 4,
                 "medium_count": 2,
                 "cold_count": 1
             },
             "6-1-0": {
                 "count": 7,
-                "percentage": 1.7114914425427872,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 8.635005482456139,
+                "percentage": 1.6990291262135921,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 8.774105807153543,
                 "hot_count": 6,
                 "medium_count": 1,
                 "cold_count": 0
             },
             "1-2-4": {
                 "count": 7,
-                "percentage": 1.7114914425427872,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 8.635005482456139,
+                "percentage": 1.6990291262135921,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 8.774105807153543,
                 "hot_count": 1,
                 "medium_count": 2,
                 "cold_count": 4
             },
             "6-0-1": {
                 "count": 8,
-                "percentage": 1.9559902200488997,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 7.3771929824561395,
+                "percentage": 1.9417475728155338,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 7.510539915680674,
                 "hot_count": 6,
                 "medium_count": 0,
                 "cold_count": 1
             },
             "3-0-4": {
                 "count": 12,
-                "percentage": 2.93398533007335,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 3.335526315789473,
+                "percentage": 2.912621359223301,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 3.438188494492044,
                 "hot_count": 3,
                 "medium_count": 0,
                 "cold_count": 4
             },
             "2-1-4": {
                 "count": 12,
-                "percentage": 2.93398533007335,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 3.335526315789473,
+                "percentage": 2.912621359223301,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 3.438188494492044,
                 "hot_count": 2,
                 "medium_count": 1,
                 "cold_count": 4
             },
             "5-2-0": {
                 "count": 13,
-                "percentage": 3.1784841075794623,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 2.5725054824561395,
+                "percentage": 3.1553398058252426,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 2.665578675370597,
                 "hot_count": 5,
                 "medium_count": 2,
                 "cold_count": 0
             },
             "1-3-3": {
                 "count": 6,
-                "percentage": 1.466992665036675,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 9.991776315789473,
+                "percentage": 1.4563106796116505,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 10.135862913096696,
                 "hot_count": 1,
                 "medium_count": 3,
                 "cold_count": 3
             },
             "4-3-0": {
                 "count": 9,
-                "percentage": 2.2004889975550124,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 6.218338815789473,
+                "percentage": 2.1844660194174756,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 6.34516523867809,
                 "hot_count": 4,
                 "medium_count": 3,
                 "cold_count": 0
             },
             "4-0-3": {
                 "count": 12,
-                "percentage": 2.93398533007335,
-                "expected": 20.210526315789473,
-                "chi2_contribution": 3.335526315789473,
+                "percentage": 2.912621359223301,
+                "expected": 20.36842105263158,
+                "chi2_contribution": 3.438188494492044,
                 "hot_count": 4,
                 "medium_count": 0,
                 "cold_count": 3
             }
         },
-        "overall_chi2": 187.38541666666669,
-        "p_value": 3.282466031845799e-30,
+        "overall_chi2": 186.48578811369507,
+        "p_value": 4.954758958727495e-30,
         "significant": true,
-        "total_draws_analyzed": 409,
+        "total_draws_analyzed": 412,
         "num_patterns": 19,
         "category_weights": {
-            "hot": 0.48660714285714285,
-            "medium": 0.23288690476190474,
-            "cold": 0.2805059523809524
+            "hot": 0.48615725359911405,
+            "medium": 0.2336655592469546,
+            "cold": 0.2801771871539313
         }
     },
     "recency_correlation_analysis": {
@@ -199,18 +201,18 @@
             "hot": {
                 "recency_ranges": {
                     "0-7 days": {
-                        "wins": 675,
-                        "win_rate": 675.0,
+                        "wins": 677,
+                        "win_rate": 677.0,
                         "midpoint_days": 3.5
                     },
                     "8-14 days": {
-                        "wins": 486,
-                        "win_rate": 486.0,
+                        "wins": 490,
+                        "win_rate": 490.0,
                         "midpoint_days": 11.0
                     },
                     "15-21 days": {
-                        "wins": 1,
-                        "win_rate": 1.0,
+                        "wins": 2,
+                        "win_rate": 2.0,
                         "midpoint_days": 18.0
                     },
                     "121+ days": {
@@ -219,24 +221,54 @@
                         "midpoint_days": 151.0
                     }
                 },
-                "correlation": -0.6276947496683767,
-                "p_value": 0.3723052503316233,
-                "significant": false,
+                "parametric_test": {
+                    "test_name": "Pearson correlation",
+                    "correlation": -0.6289309192956739,
+                    "p_value": 0.3710690807043262,
+                    "significant": false,
+                    "use_when": "Linear relationship and normally distributed residuals"
+                },
+                "non_parametric_test": {
+                    "test_name": "Spearman correlation",
+                    "correlation": -1.0,
+                    "p_value": 0.0,
+                    "significant": true,
+                    "use_when": "Monotonic relationship, no normality assumption"
+                },
+                "recommended_test": "non_parametric",
+                "correlation": -1.0,
+                "p_value": 0.0,
+                "significant": true,
                 "num_data_points": 4
             },
             "medium": {
                 "recency_ranges": {
                     "15-21 days": {
-                        "wins": 356,
-                        "win_rate": 356.0,
+                        "wins": 360,
+                        "win_rate": 360.0,
                         "midpoint_days": 18.0
                     },
                     "22-30 days": {
-                        "wins": 239,
-                        "win_rate": 239.0,
+                        "wins": 242,
+                        "win_rate": 242.0,
                         "midpoint_days": 26.0
                     }
                 },
+                "parametric_test": {
+                    "test_name": "Pearson correlation",
+                    "correlation": 0.0,
+                    "p_value": 1.0,
+                    "significant": false,
+                    "use_when": "Linear relationship and normally distributed residuals"
+                },
+                "non_parametric_test": {
+                    "test_name": "Spearman correlation",
+                    "correlation": 0.0,
+                    "p_value": 1.0,
+                    "significant": false,
+                    "use_when": "Monotonic relationship, no normality assumption"
+                },
+                "recommended_test": "non_parametric",
                 "correlation": 0.0,
                 "p_value": 1.0,
                 "significant": false,
@@ -245,18 +277,18 @@
             "cold": {
                 "recency_ranges": {
                     "31-45 days": {
-                        "wins": 374,
-                        "win_rate": 374.0,
+                        "wins": 376,
+                        "win_rate": 376.0,
                         "midpoint_days": 38.0
                     },
                     "46-60 days": {
-                        "wins": 147,
-                        "win_rate": 147.0,
+                        "wins": 148,
+                        "win_rate": 148.0,
                         "midpoint_days": 53.0
                     },
                     "61-90 days": {
-                        "wins": 119,
-                        "win_rate": 119.0,
+                        "wins": 120,
+                        "win_rate": 120.0,
                         "midpoint_days": 75.5
                     },
                     "91-120 days": {
@@ -270,9 +302,24 @@
                         "midpoint_days": 151.0
                     }
                 },
-                "correlation": -0.8321774443387653,
-                "p_value": 0.0804197869883215,
-                "significant": false,
+                "parametric_test": {
+                    "test_name": "Pearson correlation",
+                    "correlation": -0.8326778296383848,
+                    "p_value": 0.08006674267001336,
+                    "significant": false,
+                    "use_when": "Linear relationship and normally distributed residuals"
+                },
+                "non_parametric_test": {
+                    "test_name": "Spearman correlation",
+                    "correlation": -0.9999999999999999,
+                    "p_value": 1.4042654220543672e-24,
+                    "significant": true,
+                    "use_when": "Monotonic relationship, no normality assumption"
+                },
+                "recommended_test": "non_parametric",
+                "correlation": -0.9999999999999999,
+                "p_value": 1.4042654220543672e-24,
+                "significant": true,
                 "num_data_points": 5
             }
         },
@@ -327,7 +374,7 @@
     "category_performance_by_recency": {
         "0-7 days": {
             "counts": {
-                "hot": 675,
+                "hot": 677,
                 "medium": 0,
                 "cold": 0
             },
@@ -336,14 +383,14 @@
                 "medium": 0.0,
                 "cold": 0.0
             },
-            "chi2": 1350.0,
-            "p_value": 7.09945017032626e-294,
+            "chi2": 1354.0000000000002,
+            "p_value": 9.60806099625166e-295,
             "significant": true,
-            "total": 675
+            "total": 677
         },
         "8-14 days": {
             "counts": {
-                "hot": 486,
+                "hot": 490,
                 "medium": 0,
                 "cold": 0
             },
@@ -352,31 +399,31 @@
                 "medium": 0.0,
                 "cold": 0.0
             },
-            "chi2": 972.0,
-            "p_value": 8.568046109606276e-212,
+            "chi2": 979.9999999999999,
+            "p_value": 1.5692923852558416e-213,
             "significant": true,
-            "total": 486
+            "total": 490
         },
         "15-21 days": {
             "counts": {
-                "hot": 1,
-                "medium": 356,
+                "hot": 2,
+                "medium": 360,
                 "cold": 0
             },
             "percentages": {
-                "hot": 0.2801120448179272,
-                "medium": 99.71988795518207,
+                "hot": 0.5524861878453038,
+                "medium": 99.4475138121547,
                 "cold": 0.0
             },
-            "chi2": 708.0168067226891,
-            "p_value": 1.8034490308832317e-154,
+            "chi2": 712.0662983425414,
+            "p_value": 2.381046847354179e-155,
             "significant": true,
-            "total": 357
+            "total": 362
         },
         "22-30 days": {
             "counts": {
                 "hot": 0,
-                "medium": 239,
+                "medium": 242,
                 "cold": 0
             },
             "percentages": {
@@ -384,58 +431,58 @@
                 "medium": 100.0,
                 "cold": 0.0
             },
-            "chi2": 477.99999999999994,
-            "p_value": 1.5981547323014326e-104,
+            "chi2": 483.99999999999994,
+            "p_value": 7.956743891951561e-106,
             "significant": true,
-            "total": 239
+            "total": 242
         },
         "31-45 days": {
             "counts": {
                 "hot": 0,
                 "medium": 0,
-                "cold": 374
+                "cold": 376
             },
             "percentages": {
                 "hot": 0.0,
                 "medium": 0.0,
                 "cold": 100.0
             },
-            "chi2": 747.9999999999999,
-            "p_value": 3.7485539715485074e-163,
+            "chi2": 752.0000000000001,
+            "p_value": 5.073116134671653e-164,
             "significant": true,
-            "total": 374
+            "total": 376
         },
         "46-60 days": {
             "counts": {
                 "hot": 0,
                 "medium": 0,
-                "cold": 147
+                "cold": 148
             },
             "percentages": {
                 "hot": 0.0,
                 "medium": 0.0,
                 "cold": 100.0
             },
-            "chi2": 294.0,
-            "p_value": 1.4411565509640708e-64,
+            "chi2": 295.99999999999994,
+            "p_value": 5.301718666092502e-65,
             "significant": true,
-            "total": 147
+            "total": 148
         },
         "61-90 days": {
             "counts": {
                 "hot": 0,
                 "medium": 0,
-                "cold": 119
+                "cold": 120
             },
             "percentages": {
                 "hot": 0.0,
                 "medium": 0.0,
                 "cold": 100.0
             },
-            "chi2": 238.00000000000006,
-            "p_value": 2.0842828425816865e-52,
+            "chi2": 240.0,
+            "p_value": 7.667648073722046e-53,
             "significant": true,
-            "total": 119
+            "total": 120
         },
         "91-120 days": {
             "counts": {
