@@ -535,15 +535,16 @@ def main():
 
     # ===== WINDOW SATURATION ANALYSIS (PHASE 12) =====
     print("\n" + "=" * 70)
-    print("Phase 12: Window Saturation Analysis")
+    print("Phase 12: Window Saturation Analysis (Scipy Optimization)")
     print("=" * 70)
     print("Generating data-driven window saturation penalties...")
 
     stats_file = "data/lotto_statistics_analysis.json"
     odds_file = OUTPUT_FILE_MAIN
     output_file = "data/lotto_window_saturation_calculated.json"
+    draw_history_file = OUTPUT_FILE_HISTORY  # Enable scipy optimization
 
-    generate_window_saturation_data(stats_file, odds_file, output_file)
+    generate_window_saturation_data(stats_file, odds_file, output_file, draw_history_file)
     print(f"  ✓ Window saturation analysis complete")
 
     # ===== ADVANCED PATTERN ANALYSIS (PHASE 13) =====
