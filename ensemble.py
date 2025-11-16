@@ -46,20 +46,28 @@ def extract_numbers_from_file(filepath: str = 'lottery_picks.txt') -> dict:
                 results[model_key] = {'main': [], 'bonus': None}
 
             # Look ahead for main numbers
+            main_found = False
+            bonus_found = False
             for j in range(i, min(i+10, len(lines))):
-                if 'Main Numbers (6):' in lines[j]:
+                if not main_found and 'Main Numbers (6):' in lines[j]:
                     # Extract numbers like: "Main Numbers (6): [6, 10, 20, 21, 35, 42]"
                     match = re.search(r'\[([0-9, ]+)\]', lines[j])
                     if match:
                         numbers_str = match.group(1)
                         numbers = [int(n.strip()) for n in numbers_str.split(',')]
                         results[model_key]['main'] = numbers
+                        main_found = True
 
                 # Look for bonus
-                if 'Bonus Ball:' in lines[j] and 'None' not in lines[j]:
+                if not bonus_found and 'Bonus Ball:' in lines[j] and 'None' not in lines[j]:
                     match = re.search(r'Bonus Ball:\s*(\d+)', lines[j])
                     if match:
                         results[model_key]['bonus'] = int(match.group(1))
+                        bonus_found = True
+
+                # Break early if we found both
+                if main_found and (bonus_found or 'Bonus Ball: None' in lines[j]):
+                    break
 
     except FileNotFoundError:
         print(f"Error: {filepath} not found")
