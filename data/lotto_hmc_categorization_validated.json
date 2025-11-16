@@ -12,35 +12,35 @@
     },
     "anova_test": {
         "significant": false,
-        "f_statistic": 1.6734492180518301,
-        "p_value": 0.1993173553597641,
-        "eta_squared": 0.07068886340296227,
+        "f_statistic": 0.7418268644920358,
+        "p_value": 0.482104630243567,
+        "eta_squared": 0.03261949310019099,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
-                "count": 23,
-                "mean_days_since": 21.347826086956523,
-                "std_dev": 21.265868290530666,
-                "median": 10.0,
-                "min": 4.0,
-                "max": 70.0
+                "count": 26,
+                "mean_days_since": 16.153846153846153,
+                "std_dev": 19.81452458716546,
+                "median": 8.0,
+                "min": 1.0,
+                "max": 71.0
             },
             "medium": {
-                "count": 11,
-                "mean_days_since": 15.636363636363637,
-                "std_dev": 17.293193616407162,
-                "median": 10.0,
-                "min": 4.0,
-                "max": 63.0
+                "count": 9,
+                "mean_days_since": 18.444444444444443,
+                "std_dev": 18.709029311478933,
+                "median": 15.0,
+                "min": 1.0,
+                "max": 64.0
             },
             "cold": {
-                "count": 13,
-                "mean_days_since": 29.692307692307693,
-                "std_dev": 16.059185405786803,
-                "median": 24.0,
-                "min": 7.0,
-                "max": 56.0
+                "count": 12,
+                "mean_days_since": 24.25,
+                "std_dev": 17.47790813362036,
+                "median": 20.0,
+                "min": 5.0,
+                "max": 57.0
             }
         },
         "interpretation": "Categories are NOT statistically distinct (may need redefinition)"
@@ -49,62 +49,62 @@
         "bonferroni_corrected_alpha": 0.016666666666666666,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": 0.7747827782371719,
-                "p_value": 0.4441556410382498,
+                "t_statistic": -0.3029184569094869,
+                "p_value": 0.7638533754952597,
                 "significant": false,
-                "mean_difference": 5.711462450592887
+                "mean_difference": -2.2905982905982896
             },
             "hot_vs_cold": {
-                "t_statistic": -1.2277727540755021,
-                "p_value": 0.2279648151926381,
+                "t_statistic": -1.2126339696640787,
+                "p_value": 0.2331676918635379,
                 "significant": false,
-                "mean_difference": -8.34448160535117
+                "mean_difference": -8.096153846153847
             },
             "medium_vs_cold": {
-                "t_statistic": -2.0629667938785077,
-                "p_value": 0.051114729392307566,
+                "t_statistic": -0.7311657076075156,
+                "p_value": 0.47359948549014685,
                 "significant": false,
-                "mean_difference": -14.055944055944057
+                "mean_difference": -5.805555555555557
             }
         },
         "all_significant": false
     },
     "category_distribution": {
-        "significant": false,
-        "chi2_stat": 5.276595744680851,
-        "p_value": 0.07148283898110923,
+        "significant": true,
+        "chi2_stat": 10.510638297872342,
+        "p_value": 0.005219680170748771,
         "category_counts": {
-            "hot": 23,
-            "medium": 11,
-            "cold": 13
+            "hot": 26,
+            "medium": 9,
+            "cold": 12
         },
         "category_percentages": {
-            "hot": 48.93617021276596,
-            "medium": 23.404255319148938,
-            "cold": 27.659574468085108
+            "hot": 55.319148936170215,
+            "medium": 19.148936170212767,
+            "cold": 25.53191489361702
         },
-        "interpretation": "Category sizes are balanced (approximately equal)"
+        "interpretation": "Category sizes are imbalanced (some over/under-represented)"
     },
     "threshold_validation": {
         "hot_medium_overlap": true,
         "medium_cold_overlap": true,
         "categories_distinct": false,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 10.0,
-            "medium_cold_cutoff": 23.004600000000007
+            "hot_medium_cutoff": 8.0,
+            "medium_cold_cutoff": 18.0
         },
         "current_ranges": {
             "hot": {
-                "min": 4.0,
-                "max": 70.0
+                "min": 1.0,
+                "max": 71.0
             },
             "medium": {
-                "min": 4.0,
-                "max": 63.0
+                "min": 1.0,
+                "max": 64.0
             },
             "cold": {
-                "min": 7.0,
-                "max": 56.0
+                "min": 5.0,
+                "max": 57.0
             }
         }
     },

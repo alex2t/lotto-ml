@@ -7,22 +7,22 @@
             "temporal"
         ],
         "total_numbers": 47,
-        "total_draws": 408
+        "total_draws": 409
     },
     "summary_statistics": {
         "volatility": {
-            "mean": 1.082417880724428,
-            "std": 0.4955357093449272,
+            "mean": 1.0817322496928221,
+            "std": 0.49572017322829015,
             "min": 0.6668799723159711,
             "max": 2.5594331169376363
         },
         "trend": {
-            "mean": 0.10638758404715852,
-            "std": 0.5117087700450443,
+            "mean": 0.1158607350096712,
+            "std": 0.5626505488793305,
             "min": -0.6363636363636364,
-            "max": 1.6,
-            "trending_up_count": 19,
-            "trending_down_count": 15
+            "max": 2.0,
+            "trending_up_count": 16,
+            "trending_down_count": 14
         }
     },
     "per_number_features": {
@@ -35,24 +35,24 @@
             "std_gap_days": 23.465763587530386,
             "appearance_trend": 0.6,
             "appearance_acceleration": 0.4999999999999999,
-            "recent_vs_baseline": 1.2553846153846155,
+            "recent_vs_baseline": 1.2584615384615385,
             "recent_count": 8,
             "older_count": 5,
             "very_recent_count": 6
         },
         "2": {
-            "appearance_volatility": 0.8091164141702379,
-            "gap_consistency_score": 0.5527560261834538,
-            "max_gap_ratio": 4.443207126948775,
-            "appearance_count": 58,
-            "avg_gap_days": 23.63157894736842,
-            "std_gap_days": 19.120698419075623,
-            "appearance_trend": -0.2857142857142857,
-            "appearance_acceleration": 0.1999999999999999,
-            "recent_vs_baseline": 0.703448275862069,
-            "recent_count": 5,
+            "appearance_volatility": 0.8222663907895317,
+            "gap_consistency_score": 0.5487671863205088,
+            "max_gap_ratio": 4.276685393258426,
+            "appearance_count": 59,
+            "avg_gap_days": 24.551724137931036,
+            "std_gap_days": 20.188057594556778,
+            "appearance_trend": -0.14285714285714285,
+            "appearance_acceleration": 0.3333333333333334,
+            "recent_vs_baseline": 0.831864406779661,
+            "recent_count": 6,
             "older_count": 7,
-            "very_recent_count": 3
+            "very_recent_count": 4
         },
         "3": {
             "appearance_volatility": 1.0152761917875774,
@@ -63,7 +63,7 @@
             "std_gap_days": 28.639249243341247,
             "appearance_trend": 0.25,
             "appearance_acceleration": -0.20000000000000004,
-            "recent_vs_baseline": 0.8326530612244898,
+            "recent_vs_baseline": 0.8346938775510204,
             "recent_count": 5,
             "older_count": 4,
             "very_recent_count": 2
@@ -75,26 +75,26 @@
             "appearance_count": 48,
             "avg_gap_days": 29.72340425531915,
             "std_gap_days": 23.596521676288567,
-            "appearance_trend": 0.4,
+            "appearance_trend": 0.75,
             "appearance_acceleration": -0.4285714285714286,
-            "recent_vs_baseline": 1.1900000000000002,
+            "recent_vs_baseline": 1.1929166666666668,
             "recent_count": 7,
-            "older_count": 5,
+            "older_count": 4,
             "very_recent_count": 2
         },
         "5": {
-            "appearance_volatility": 1.0085114270451179,
-            "gap_consistency_score": 0.49788116041300307,
-            "max_gap_ratio": 4.202020202020202,
-            "appearance_count": 53,
-            "avg_gap_days": 26.653846153846153,
-            "std_gap_days": 26.880708420856408,
-            "appearance_trend": -0.1,
-            "appearance_acceleration": 0.11111111111111122,
-            "recent_vs_baseline": 1.3856603773584903,
-            "recent_count": 9,
+            "appearance_volatility": 0.9912503945337704,
+            "gap_consistency_score": 0.5021970128644414,
+            "max_gap_ratio": 4.1568627450980395,
+            "appearance_count": 54,
+            "avg_gap_days": 26.943396226415093,
+            "std_gap_days": 26.707652139513662,
+            "appearance_trend": 0.0,
+            "appearance_acceleration": 0.1999999999999999,
+            "recent_vs_baseline": 1.5148148148148148,
+            "recent_count": 10,
             "older_count": 10,
-            "very_recent_count": 5
+            "very_recent_count": 6
         },
         "6": {
             "appearance_volatility": 0.968976273771785,
@@ -105,7 +105,7 @@
             "std_gap_days": 24.116742813875536,
             "appearance_trend": 0.8333333333333334,
             "appearance_acceleration": -0.09090909090909087,
-            "recent_vs_baseline": 1.6320000000000001,
+            "recent_vs_baseline": 1.636,
             "recent_count": 11,
             "older_count": 6,
             "very_recent_count": 5
@@ -117,12 +117,12 @@
             "appearance_count": 47,
             "avg_gap_days": 29.282608695652176,
             "std_gap_days": 23.013855036249137,
-            "appearance_trend": 1.0,
-            "appearance_acceleration": 0.3333333333333334,
-            "recent_vs_baseline": 1.0417021276595746,
+            "appearance_trend": 2.0,
+            "appearance_acceleration": 0.0,
+            "recent_vs_baseline": 1.044255319148936,
             "recent_count": 6,
-            "older_count": 3,
-            "very_recent_count": 4
+            "older_count": 2,
+            "very_recent_count": 3
         },
         "8": {
             "appearance_volatility": 0.9520530344886542,
@@ -133,7 +133,7 @@
             "std_gap_days": 23.869329650394118,
             "appearance_trend": -0.6,
             "appearance_acceleration": 0.4999999999999999,
-            "recent_vs_baseline": 0.5726315789473684,
+            "recent_vs_baseline": 0.5740350877192982,
             "recent_count": 4,
             "older_count": 10,
             "very_recent_count": 3
@@ -145,12 +145,12 @@
             "appearance_count": 44,
             "avg_gap_days": 32.395348837209305,
             "std_gap_days": 27.479497249119373,
-            "appearance_trend": 0.6666666666666666,
-            "appearance_acceleration": 0.1999999999999999,
-            "recent_vs_baseline": 0.9272727272727272,
-            "recent_count": 5,
-            "older_count": 3,
-            "very_recent_count": 3
+            "appearance_trend": 0.0,
+            "appearance_acceleration": 0.0,
+            "recent_vs_baseline": 0.7436363636363637,
+            "recent_count": 4,
+            "older_count": 4,
+            "very_recent_count": 2
         },
         "10": {
             "appearance_volatility": 0.7341174918696687,
@@ -161,7 +161,7 @@
             "std_gap_days": 19.67434878210712,
             "appearance_trend": -0.3333333333333333,
             "appearance_acceleration": -0.5,
-            "recent_vs_baseline": 0.64,
+            "recent_vs_baseline": 0.6415686274509804,
             "recent_count": 4,
             "older_count": 6,
             "very_recent_count": 1
@@ -173,25 +173,25 @@
             "appearance_count": 51,
             "avg_gap_days": 28.14,
             "std_gap_days": 28.952381594611523,
-            "appearance_trend": 0.16666666666666666,
-            "appearance_acceleration": -0.4285714285714286,
-            "recent_vs_baseline": 1.12,
-            "recent_count": 7,
-            "older_count": 6,
+            "appearance_trend": -0.14285714285714285,
+            "appearance_acceleration": -0.3333333333333333,
+            "recent_vs_baseline": 0.9623529411764705,
+            "recent_count": 6,
+            "older_count": 7,
             "very_recent_count": 2
         },
         "12": {
-            "appearance_volatility": 0.8963980560862955,
-            "gap_consistency_score": 0.5273154529929001,
-            "max_gap_ratio": 4.3159379407616365,
-            "appearance_count": 61,
-            "avg_gap_days": 23.633333333333333,
-            "std_gap_days": 21.18487405883945,
-            "appearance_trend": 0.6666666666666666,
+            "appearance_volatility": 0.9005493331977779,
+            "gap_consistency_score": 0.5261636635958539,
+            "max_gap_ratio": 4.357142857142857,
+            "appearance_count": 62,
+            "avg_gap_days": 23.40983606557377,
+            "std_gap_days": 21.08171225912175,
+            "appearance_trend": 0.42857142857142855,
             "appearance_acceleration": 0.1999999999999999,
-            "recent_vs_baseline": 1.337704918032787,
+            "recent_vs_baseline": 1.3193548387096774,
             "recent_count": 10,
-            "older_count": 6,
+            "older_count": 7,
             "very_recent_count": 6
         },
         "13": {
@@ -203,7 +203,7 @@
             "std_gap_days": 21.649885658958006,
             "appearance_trend": 0.14285714285714285,
             "appearance_acceleration": 0.25000000000000006,
-            "recent_vs_baseline": 1.0529032258064517,
+            "recent_vs_baseline": 1.0554838709677419,
             "recent_count": 8,
             "older_count": 7,
             "very_recent_count": 5
@@ -217,7 +217,7 @@
             "std_gap_days": 24.94512094028672,
             "appearance_trend": -0.6363636363636364,
             "appearance_acceleration": 0.4999999999999999,
-            "recent_vs_baseline": 0.6528,
+            "recent_vs_baseline": 0.6544000000000001,
             "recent_count": 4,
             "older_count": 11,
             "very_recent_count": 3
@@ -231,7 +231,7 @@
             "std_gap_days": 36.20977550409465,
             "appearance_trend": 0.3333333333333333,
             "appearance_acceleration": 0.0,
-            "recent_vs_baseline": 0.9600000000000001,
+            "recent_vs_baseline": 0.9623529411764706,
             "recent_count": 4,
             "older_count": 3,
             "very_recent_count": 2
@@ -245,7 +245,7 @@
             "std_gap_days": 29.491948854882057,
             "appearance_trend": -0.16666666666666666,
             "appearance_acceleration": 0.6,
-            "recent_vs_baseline": 0.8680851063829789,
+            "recent_vs_baseline": 0.8702127659574468,
             "recent_count": 5,
             "older_count": 6,
             "very_recent_count": 4
@@ -258,11 +258,11 @@
             "avg_gap_days": 31.355555555555554,
             "std_gap_days": 27.253668911465894,
             "appearance_trend": -0.2,
-            "appearance_acceleration": 0.0,
-            "recent_vs_baseline": 0.7095652173913044,
+            "appearance_acceleration": -0.5,
+            "recent_vs_baseline": 0.711304347826087,
             "recent_count": 4,
             "older_count": 5,
-            "very_recent_count": 2
+            "very_recent_count": 1
         },
         "18": {
             "appearance_volatility": 1.016729241652694,
@@ -273,7 +273,7 @@
             "std_gap_days": 30.78147779103531,
             "appearance_trend": -0.5,
             "appearance_acceleration": -1.0,
-            "recent_vs_baseline": 0.7960975609756098,
+            "recent_vs_baseline": 0.7980487804878048,
             "recent_count": 4,
             "older_count": 8,
             "very_recent_count": 0
@@ -287,7 +287,7 @@
             "std_gap_days": 29.666034450192363,
             "appearance_trend": 0.5,
             "appearance_acceleration": -0.11111111111111106,
-            "recent_vs_baseline": 1.44,
+            "recent_vs_baseline": 1.4435294117647057,
             "recent_count": 9,
             "older_count": 6,
             "very_recent_count": 4
@@ -299,11 +299,11 @@
             "appearance_count": 57,
             "avg_gap_days": 36.339285714285715,
             "std_gap_days": 91.41218986892642,
-            "appearance_trend": -0.5,
+            "appearance_trend": -0.42857142857142855,
             "appearance_acceleration": 0.4999999999999999,
-            "recent_vs_baseline": 0.5726315789473684,
+            "recent_vs_baseline": 0.5740350877192982,
             "recent_count": 4,
-            "older_count": 8,
+            "older_count": 7,
             "very_recent_count": 3
         },
         "21": {
@@ -314,11 +314,11 @@
             "avg_gap_days": 22.901639344262296,
             "std_gap_days": 22.560450610277712,
             "appearance_trend": 1.25,
-            "appearance_acceleration": 0.11111111111111122,
-            "recent_vs_baseline": 1.1845161290322581,
+            "appearance_acceleration": -0.11111111111111106,
+            "recent_vs_baseline": 1.1874193548387095,
             "recent_count": 9,
             "older_count": 4,
-            "very_recent_count": 5
+            "very_recent_count": 4
         },
         "22": {
             "appearance_volatility": 2.1916468032587355,
@@ -329,7 +329,7 @@
             "std_gap_days": 82.30851327793918,
             "appearance_trend": 0.4,
             "appearance_acceleration": 0.14285714285714277,
-            "recent_vs_baseline": 1.0385454545454547,
+            "recent_vs_baseline": 1.041090909090909,
             "recent_count": 7,
             "older_count": 5,
             "very_recent_count": 4
@@ -341,40 +341,40 @@
             "appearance_count": 36,
             "avg_gap_days": 39.714285714285715,
             "std_gap_days": 36.09398163411847,
-            "appearance_trend": 0.75,
-            "appearance_acceleration": -0.7142857142857143,
-            "recent_vs_baseline": 1.5866666666666667,
-            "recent_count": 7,
-            "older_count": 4,
+            "appearance_trend": 0.2,
+            "appearance_acceleration": -0.6666666666666666,
+            "recent_vs_baseline": 1.3633333333333333,
+            "recent_count": 6,
+            "older_count": 5,
             "very_recent_count": 1
         },
         "24": {
-            "appearance_volatility": 0.7709285293772182,
-            "gap_consistency_score": 0.5646755266581366,
-            "max_gap_ratio": 3.6886446886446884,
-            "appearance_count": 54,
-            "avg_gap_days": 25.754716981132077,
-            "std_gap_days": 19.855046086790622,
-            "appearance_trend": 0.3333333333333333,
-            "appearance_acceleration": -0.75,
-            "recent_vs_baseline": 1.208888888888889,
-            "recent_count": 8,
-            "older_count": 6,
-            "very_recent_count": 1
+            "appearance_volatility": 0.7606751903914531,
+            "gap_consistency_score": 0.5679639296659077,
+            "max_gap_ratio": 3.628005657708628,
+            "appearance_count": 55,
+            "avg_gap_days": 26.185185185185187,
+            "std_gap_days": 19.9184207261762,
+            "appearance_trend": 0.8,
+            "appearance_acceleration": -0.5555555555555556,
+            "recent_vs_baseline": 1.3385454545454545,
+            "recent_count": 9,
+            "older_count": 5,
+            "very_recent_count": 2
         },
         "25": {
-            "appearance_volatility": 0.8922789302418573,
-            "gap_consistency_score": 0.5284633169128967,
-            "max_gap_ratio": 4.739568345323741,
-            "appearance_count": 55,
-            "avg_gap_days": 25.74074074074074,
-            "std_gap_days": 22.967920611781143,
-            "appearance_trend": -0.5,
-            "appearance_acceleration": 0.0,
-            "recent_vs_baseline": 0.5934545454545455,
-            "recent_count": 4,
-            "older_count": 8,
-            "very_recent_count": 2
+            "appearance_volatility": 0.8788071791230049,
+            "gap_consistency_score": 0.5322525968134648,
+            "max_gap_ratio": 4.6988795518207285,
+            "appearance_count": 56,
+            "avg_gap_days": 25.963636363636365,
+            "std_gap_days": 22.817030032502746,
+            "appearance_trend": -0.2857142857142857,
+            "appearance_acceleration": 0.1999999999999999,
+            "recent_vs_baseline": 0.7303571428571429,
+            "recent_count": 5,
+            "older_count": 7,
+            "very_recent_count": 3
         },
         "26": {
             "appearance_volatility": 0.718789281170274,
@@ -385,7 +385,7 @@
             "std_gap_days": 17.831018308329252,
             "appearance_trend": -0.3333333333333333,
             "appearance_acceleration": 0.0,
-            "recent_vs_baseline": 0.8441379310344828,
+            "recent_vs_baseline": 0.8462068965517242,
             "recent_count": 6,
             "older_count": 9,
             "very_recent_count": 3
@@ -399,7 +399,7 @@
             "std_gap_days": 18.363418612038455,
             "appearance_trend": 0.2,
             "appearance_acceleration": 0.6666666666666669,
-            "recent_vs_baseline": 0.8441379310344828,
+            "recent_vs_baseline": 0.8462068965517242,
             "recent_count": 6,
             "older_count": 5,
             "very_recent_count": 5
@@ -413,7 +413,7 @@
             "std_gap_days": 28.338812391359582,
             "appearance_trend": -0.45454545454545453,
             "appearance_acceleration": 0.3333333333333334,
-            "recent_vs_baseline": 0.8298305084745762,
+            "recent_vs_baseline": 0.831864406779661,
             "recent_count": 6,
             "older_count": 11,
             "very_recent_count": 4
@@ -426,11 +426,11 @@
             "avg_gap_days": 23.0,
             "std_gap_days": 20.028551049510725,
             "appearance_trend": -0.16666666666666666,
-            "appearance_acceleration": 0.1999999999999999,
-            "recent_vs_baseline": 0.7157894736842105,
+            "appearance_acceleration": -0.20000000000000004,
+            "recent_vs_baseline": 0.7175438596491228,
             "recent_count": 5,
             "older_count": 6,
-            "very_recent_count": 3
+            "very_recent_count": 2
         },
         "30": {
             "appearance_volatility": 0.7158823801461792,
@@ -441,7 +441,7 @@
             "std_gap_days": 18.17039641243757,
             "appearance_trend": -0.36363636363636365,
             "appearance_acceleration": 0.14285714285714277,
-            "recent_vs_baseline": 1.02,
+            "recent_vs_baseline": 1.0225000000000002,
             "recent_count": 7,
             "older_count": 11,
             "very_recent_count": 4
@@ -455,7 +455,7 @@
             "std_gap_days": 22.202223468568302,
             "appearance_trend": -0.5714285714285714,
             "appearance_acceleration": -0.3333333333333333,
-            "recent_vs_baseline": 0.5828571428571429,
+            "recent_vs_baseline": 0.5842857142857143,
             "recent_count": 3,
             "older_count": 7,
             "very_recent_count": 1
@@ -469,7 +469,7 @@
             "std_gap_days": 83.22065633365051,
             "appearance_trend": 0.14285714285714285,
             "appearance_acceleration": -0.25000000000000006,
-            "recent_vs_baseline": 1.186909090909091,
+            "recent_vs_baseline": 1.1898181818181817,
             "recent_count": 8,
             "older_count": 7,
             "very_recent_count": 3
@@ -483,7 +483,7 @@
             "std_gap_days": 37.7377712906517,
             "appearance_trend": -0.14285714285714285,
             "appearance_acceleration": -0.6666666666666666,
-            "recent_vs_baseline": 1.224,
+            "recent_vs_baseline": 1.2269999999999999,
             "recent_count": 6,
             "older_count": 7,
             "very_recent_count": 1
@@ -497,7 +497,7 @@
             "std_gap_days": 30.679611283115136,
             "appearance_trend": -0.4,
             "appearance_acceleration": -0.3333333333333333,
-            "recent_vs_baseline": 0.5828571428571429,
+            "recent_vs_baseline": 0.5842857142857143,
             "recent_count": 3,
             "older_count": 5,
             "very_recent_count": 1
@@ -511,7 +511,7 @@
             "std_gap_days": 76.06785778427886,
             "appearance_trend": -0.3333333333333333,
             "appearance_acceleration": 0.4999999999999999,
-            "recent_vs_baseline": 0.47304347826086957,
+            "recent_vs_baseline": 0.47420289855072467,
             "recent_count": 4,
             "older_count": 6,
             "very_recent_count": 3
@@ -525,7 +525,7 @@
             "std_gap_days": 86.16934098299573,
             "appearance_trend": 0.4,
             "appearance_acceleration": 0.14285714285714277,
-            "recent_vs_baseline": 1.0777358490566038,
+            "recent_vs_baseline": 1.0803773584905663,
             "recent_count": 7,
             "older_count": 5,
             "very_recent_count": 4
@@ -539,7 +539,7 @@
             "std_gap_days": 20.828086440267644,
             "appearance_trend": 0.0,
             "appearance_acceleration": 0.6,
-            "recent_vs_baseline": 0.7555555555555555,
+            "recent_vs_baseline": 0.7574074074074074,
             "recent_count": 5,
             "older_count": 5,
             "very_recent_count": 4
@@ -553,7 +553,7 @@
             "std_gap_days": 19.251027006794377,
             "appearance_trend": -0.5714285714285714,
             "appearance_acceleration": -0.3333333333333333,
-            "recent_vs_baseline": 0.4294736842105263,
+            "recent_vs_baseline": 0.43052631578947365,
             "recent_count": 3,
             "older_count": 7,
             "very_recent_count": 1
@@ -567,7 +567,7 @@
             "std_gap_days": 24.470716146778482,
             "appearance_trend": 1.6,
             "appearance_acceleration": 0.07692307692307698,
-            "recent_vs_baseline": 1.9644444444444444,
+            "recent_vs_baseline": 1.9692592592592593,
             "recent_count": 13,
             "older_count": 5,
             "very_recent_count": 7
@@ -581,7 +581,7 @@
             "std_gap_days": 84.5831615895847,
             "appearance_trend": 0.5714285714285714,
             "appearance_acceleration": 0.09090909090909087,
-            "recent_vs_baseline": 1.5747368421052632,
+            "recent_vs_baseline": 1.57859649122807,
             "recent_count": 11,
             "older_count": 7,
             "very_recent_count": 6
@@ -595,7 +595,7 @@
             "std_gap_days": 29.22943721661435,
             "appearance_trend": 0.4,
             "appearance_acceleration": -0.14285714285714296,
-            "recent_vs_baseline": 1.12,
+            "recent_vs_baseline": 1.1227450980392157,
             "recent_count": 7,
             "older_count": 5,
             "very_recent_count": 3
@@ -607,11 +607,11 @@
             "appearance_count": 61,
             "avg_gap_days": 21.583333333333332,
             "std_gap_days": 18.798308139002533,
-            "appearance_trend": 0.2857142857142857,
-            "appearance_acceleration": -0.3333333333333333,
-            "recent_vs_baseline": 1.2039344262295082,
-            "recent_count": 9,
-            "older_count": 7,
+            "appearance_trend": 0.0,
+            "appearance_acceleration": -0.25000000000000006,
+            "recent_vs_baseline": 1.0727868852459017,
+            "recent_count": 8,
+            "older_count": 8,
             "very_recent_count": 3
         },
         "43": {
@@ -621,26 +621,26 @@
             "appearance_count": 53,
             "avg_gap_days": 26.98076923076923,
             "std_gap_days": 24.848378978714535,
-            "appearance_trend": 0.4,
-            "appearance_acceleration": 0.14285714285714277,
-            "recent_vs_baseline": 1.0777358490566038,
-            "recent_count": 7,
-            "older_count": 5,
+            "appearance_trend": 0.0,
+            "appearance_acceleration": 0.3333333333333334,
+            "recent_vs_baseline": 0.9260377358490567,
+            "recent_count": 6,
+            "older_count": 6,
             "very_recent_count": 4
         },
         "44": {
-            "appearance_volatility": 0.9396349302224396,
-            "gap_consistency_score": 0.5155609359361861,
-            "max_gap_ratio": 3.639586410635155,
-            "appearance_count": 45,
-            "avg_gap_days": 30.772727272727273,
-            "std_gap_days": 28.915129443663254,
-            "appearance_trend": 0.2,
-            "appearance_acceleration": 0.0,
-            "recent_vs_baseline": 1.088,
-            "recent_count": 6,
-            "older_count": 5,
-            "very_recent_count": 3
+            "appearance_volatility": 0.9310951406221447,
+            "gap_consistency_score": 0.5178408763836607,
+            "max_gap_ratio": 3.646888567293777,
+            "appearance_count": 46,
+            "avg_gap_days": 30.711111111111112,
+            "std_gap_days": 28.594966318662312,
+            "appearance_trend": 0.75,
+            "appearance_acceleration": 0.14285714285714277,
+            "recent_vs_baseline": 1.2447826086956522,
+            "recent_count": 7,
+            "older_count": 4,
+            "very_recent_count": 4
         },
         "45": {
             "appearance_volatility": 0.816141994448295,
@@ -651,7 +651,7 @@
             "std_gap_days": 19.366081224196833,
             "appearance_trend": 0.0,
             "appearance_acceleration": 0.7142857142857141,
-            "recent_vs_baseline": 0.9520000000000001,
+            "recent_vs_baseline": 0.9543333333333334,
             "recent_count": 7,
             "older_count": 7,
             "very_recent_count": 6
@@ -665,7 +665,7 @@
             "std_gap_days": 25.2394361229103,
             "appearance_trend": 0.0,
             "appearance_acceleration": -0.14285714285714296,
-            "recent_vs_baseline": 1.2417391304347827,
+            "recent_vs_baseline": 1.2447826086956522,
             "recent_count": 7,
             "older_count": 7,
             "very_recent_count": 3
@@ -679,7 +679,7 @@
             "std_gap_days": 27.708218117368528,
             "appearance_trend": -0.3333333333333333,
             "appearance_acceleration": -1.0,
-            "recent_vs_baseline": 1.088,
+            "recent_vs_baseline": 1.0906666666666667,
             "recent_count": 6,
             "older_count": 9,
             "very_recent_count": 0
