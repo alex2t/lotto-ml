@@ -15,6 +15,7 @@ This document explains each script in the `analysis/` folder, their purpose, usa
    - [bonus_to_main_analysis.py](#bonus_to_main_analysispy)
    - [bonus_analysis.py](#bonus_analysispy)
    - [correlation_matrix_analyzer.py](#correlation_matrix_analyzerpy)
+   - [gap_pattern_analyzer.py](#gap_pattern_analyzerpy)
 3. [Running Scripts from Different Locations](#running-scripts-from-different-locations)
 4. [Dependencies](#dependencies)
 
@@ -777,6 +778,129 @@ Autocorrelation < 0: Number less likely to appear again in next draw
 - Requires `data/lotto_draw_history.json`
 - Uses standard library only (no external dependencies)
 
+
+
+### gap_pattern_analyzer.py
+
+**Category**: Pattern Discovery
+
+**Purpose**: Analyzes time gaps between consecutive appearances of lottery numbers to identify "due" numbers and understand gap patterns. Complements existing timing features by providing deep gap distribution analysis.
+
+**Key Features**:
+- Distribution of gap lengths for each number (draws between appearances)
+- Gap consistency analysis (coefficient of variation)
+- "Due" number identification based on historical patterns
+- Predictive power testing (do long gaps predict imminent appearance?)
+- Category-specific gap patterns (hot vs medium vs cold)
+- Statistical analysis using z-scores and percentiles
+
+**Usage**:
+```bash
+# Can be run from project root or analysis folder
+python analysis/gap_pattern_analyzer.py
+```
+
+**Analysis Methods**:
+
+1. **Gap Distribution Statistics**
+   - Mean, median, standard deviation for each number
+   - Min, max, range of gaps
+   - Percentiles (25th, 75th, 90th)
+   - Coefficient of Variation (CV = std/mean) for consistency
+
+2. **Due Score Calculation**
+   - Z-score: (current_gap - mean) / std
+   - Percentile position in historical distribution
+   - Due probability estimation
+   - Overdue amount calculation
+
+3. **Predictive Power Analysis**
+   - Tests if long gaps (>mean) predict appearance
+   - Compares P(appear soon | long gap) vs P(appear soon | normal gap)
+   - Calculates predictive lift ratio
+
+4. **Category Gap Patterns**
+   - Separate analysis for hot/medium/cold categories
+   - Identifies if category affects gap behavior
+
+**Output Files**:
+- `data/lotto_gap_analysis.json` (full gap analysis with all statistics)
+- `data/lotto_gap_summary.csv` (per-number statistics, Excel-ready)
+- `data/lotto_due_numbers.csv` (ranked list of "due" numbers)
+
+**Console Output**:
+```
+================================================================================
+GAP PATTERN ANALYSIS
+================================================================================
+
+OVERALL GAP STATISTICS:
+  Average mean gap across all numbers: 5.70 draws
+  Most consistent number (lowest CV): #20 (CV = 0.840)
+  Most volatile number (highest CV): #28 (CV = 1.356)
+
+--------------------------------------------------------------------------------
+TOP 10 MOST CONSISTENT NUMBERS (Lowest Coefficient of Variation)
+--------------------------------------------------------------------------------
+Number   Mean Gap     Std Dev      CV       Consistency
+--------------------------------------------------------------------------------
+20       4.77         4.01         0.840    0.543
+37       5.65         4.77         0.844    0.542
+
+--------------------------------------------------------------------------------
+TOP 20 'DUE' NUMBERS (Most Overdue Based on Historical Patterns)
+--------------------------------------------------------------------------------
+Rank   Number   Current    Mean       Z-Score    Due Prob   Status
+--------------------------------------------------------------------------------
+1      #38      23         4.72       3.87       0.8865     ⚠️ VERY OVERDUE
+2      #29      21         4.75       3.16       0.8161     ⚠️ VERY OVERDUE
+
+--------------------------------------------------------------------------------
+PREDICTIVE POWER OF GAP LENGTH
+--------------------------------------------------------------------------------
+
+Does a long gap predict imminent appearance?
+  P(appear in next 5 draws | gap > mean):  0.5489
+  P(appear in next 5 draws | gap ≤ mean):  0.5604
+  Predictive lift: 0.979x
+  Interpretation: Not predictive
+  ✗ Long gaps do NOT significantly predict appearance
+
+--------------------------------------------------------------------------------
+GAP PATTERNS BY HMC CATEGORY
+--------------------------------------------------------------------------------
+Category     Mean Gap     Median     Std Dev      Observations
+--------------------------------------------------------------------------------
+Hot          5.55         4.00       6.12         1346
+Medium       5.43         4.00       5.70         691
+Cold         5.84         4.00       6.14         800
+```
+
+**Key Insights from Analysis**:
+
+- **Gap Consistency**: Number #20 most consistent (CV = 0.840), #28 most volatile (CV = 1.356)
+- **Current "Due" Numbers**: #38 and #29 are VERY OVERDUE (z-score > 3)
+- **Predictive Power**: Long gaps do NOT predict imminent appearance (lottery is truly random)
+- **Category Patterns**: All categories have similar mean gaps (~5.5 draws)
+
+**Use Cases**:
+
+1. **Feature Engineering**: Add gap-based features (`current_gap_z_score`, `gap_consistency`)
+2. **Number Selection**: Identify "due" numbers (z-score > 1)
+3. **Validation**: Confirms lottery randomness (no gambler's fallacy effect)
+4. **Pattern Monitoring**: Track gap pattern changes over time
+
+**Statistical Methods**:
+- **Coefficient of Variation (CV)**: Measures gap consistency (std_dev / mean)
+- **Z-Score**: Standardized measure of how overdue ((current - mean) / std)
+- **Survival Analysis**: Probability of appearance given current gap
+
+**Dependencies**:
+- Requires `data/lotto_draw_history.json`
+- Uses standard library only (no external dependencies)
+
+---
+
 ---
 
 ## Running Scripts from Different Locations
@@ -789,6 +913,7 @@ Most scripts in the `analysis/` folder have been updated to support running from
 - `bonus_to_main_analysis.py`
 - `bonus_analysis.py`
 - `trend_analyzer.py`
+- `gap_pattern_analyzer.py`
 - `correlation_matrix_analyzer.py`
 
 ### Scripts that must run from project root:
@@ -840,7 +965,7 @@ python <script_name>.py
 
 ## Summary
 
-The `analysis/` folder contains 7 specialized scripts:
+The `analysis/` folder contains 8 specialized scripts:
 
 | Script | Category | Purpose | Run Location |
 |--------|----------|---------|--------------|
@@ -849,6 +974,7 @@ The `analysis/` folder contains 7 specialized scripts:
 | `trend_analyzer.py` | Discovery | Find long-term trends | Root or analysis |
 | `generate_bonus_to_main_json.py` | Generation | Create bonus-to-main JSON | Root or analysis |
 | `bonus_to_main_analysis.py` | Discovery | Analyze bonus transitions | Root or analysis |
+| `gap_pattern_analyzer.py` | Discovery | Gap pattern and "due" number analysis | Root or analysis |
 | `bonus_analysis.py` | Discovery | Comprehensive bonus analysis | Root or analysis |
 | `correlation_matrix_analyzer.py` | Discovery | Number correlation analysis | Root or analysis |
 
