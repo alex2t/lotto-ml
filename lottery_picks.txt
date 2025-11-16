@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-16 18:06:21
+LOTTERY PICKS - GENERATED 2025-11-16 22:17:29
 ======================================================================
 SPECIALIZED MODEL ARCHITECTURE V3.9
 Model 1: 6 main (2 pre-assigned + 4 selected) + 1 bonus
@@ -16,10 +16,10 @@ Bonus Ball: 41
 Complete: [6, 10, 35, 37, 41, 42] + BONUS 41
 Description: Captures immediate patterns with bonus and recent-bonus pre-assignment
 
-Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [0H-3M-2C+1G | C0=2, C1=3, C_GE_2=1]
-Main Numbers (6): [8, 13, 19, 22, 28, 43]
+Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [2H-1M-1C+2G | C0=2, C1=3, C_GE_2=1]
+Main Numbers (6): [13, 28, 29, 31, 38, 45]
 Bonus Ball: None (jackpot optimizer - main 6 only)
-Complete: [8, 13, 19, 22, 28, 43] (6 main only)
+Complete: [13, 28, 29, 31, 38, 45] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes
 
 Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]

@@ -203,9 +203,9 @@ MODEL_2_CONFIG = {
     'description': 'Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes',
     'algorithm': 'logistic_regression',
 
-    'hot_count': 0,
-    'medium_count': 3,
-    'cold_count': 2,
+    'hot_count': 2,
+    'medium_count': 1,
+    'cold_count': 1,
     'generic_count': 1,
 
     'features': [

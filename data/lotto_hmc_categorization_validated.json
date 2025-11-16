@@ -2,200 +2,108 @@
     "metadata": {
         "analysis_type": "hmc_categorization_validation",
         "statistical_methods": [
-            "shapiro_wilk_normality_test",
             "one_way_anova",
-            "kruskal_wallis_test",
             "independent_t_test",
-            "mann_whitney_u_test",
             "bonferroni_correction",
             "chi_square_goodness_of_fit"
         ],
-        "dual_testing_approach": "Both parametric and non-parametric tests performed",
         "significance_level": 0.05,
         "total_numbers": 47
     },
     "anova_test": {
-        "normality_tests": {
-            "hot": {
-                "shapiro_statistic": 0.9060046414794358,
-                "p_value": 0.05351469751812732,
-                "is_normal": true
-            },
-            "medium": {
-                "shapiro_statistic": 0.7324845364987114,
-                "p_value": 0.0005655792345049035,
-                "is_normal": false
-            },
-            "cold": {
-                "shapiro_statistic": 0.8777718225559092,
-                "p_value": 0.08207649983133287,
-                "is_normal": true
-            }
-        },
-        "assumptions_met": false,
-        "recommended_test": "non_parametric",
-        "parametric_test": {
-            "test_name": "One-way ANOVA",
-            "significant": false,
-            "f_statistic": 0.24476764277236054,
-            "p_value": 0.7839452929392137,
-            "eta_squared": 0.011003380511906084,
-            "degrees_of_freedom_between": 2,
-            "degrees_of_freedom_within": 44,
-            "interpretation": "Categories are NOT statistically distinct (may need redefinition)",
-            "use_when": "Data is normally distributed (Shapiro-Wilk p > 0.05)"
-        },
-        "non_parametric_test": {
-            "test_name": "Kruskal-Wallis H-test",
-            "significant": false,
-            "h_statistic": 0.09508349877378104,
-            "p_value": 0.953570661311106,
-            "degrees_of_freedom": 2,
-            "interpretation": "Categories are NOT statistically distinct (median distributions similar)",
-            "use_when": "No normality assumption required, robust to outliers"
-        },
+        "significant": false,
+        "f_statistic": 0.7418268644920358,
+        "p_value": 0.482104630243567,
+        "eta_squared": 0.03261949310019099,
+        "degrees_of_freedom_between": 2,
+        "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
-                "count": 20,
-                "mean_days_since": 5.65,
-                "std_dev": 15.380353154524599,
-                "median": 3.0,
-                "min": -11.0,
-                "max": 43.0
+                "count": 26,
+                "mean_days_since": 16.153846153846153,
+                "std_dev": 19.81452458716546,
+                "median": 8.0,
+                "min": 1.0,
+                "max": 71.0
             },
             "medium": {
-                "count": 15,
-                "mean_days_since": 10.133333333333333,
-                "std_dev": 24.804569471503967,
-                "median": 5.0,
-                "min": -11.0,
-                "max": 71.0
+                "count": 9,
+                "mean_days_since": 18.444444444444443,
+                "std_dev": 18.709029311478933,
+                "median": 15.0,
+                "min": 1.0,
+                "max": 64.0
             },
             "cold": {
                 "count": 12,
-                "mean_days_since": 9.25,
-                "std_dev": 20.538766007014857,
-                "median": 5.0,
-                "min": -11.0,
+                "mean_days_since": 24.25,
+                "std_dev": 17.47790813362036,
+                "median": 20.0,
+                "min": 5.0,
                 "max": 57.0
             }
         },
-        "significant": false,
-        "f_statistic": 0.24476764277236054,
-        "p_value": 0.953570661311106,
-        "eta_squared": 0.011003380511906084
+        "interpretation": "Categories are NOT statistically distinct (may need redefinition)"
     },
     "pairwise_comparisons": {
         "bonferroni_corrected_alpha": 0.016666666666666666,
-        "normality_met": false,
-        "recommended_test": "non_parametric",
-        "parametric_comparisons": {
-            "test_name": "Independent t-tests (Bonferroni corrected)",
-            "comparisons": {
-                "hot_vs_medium": {
-                    "t_statistic": -0.658584787368204,
-                    "p_value": 0.514731499328137,
-                    "significant": false,
-                    "mean_difference": -4.4833333333333325
-                },
-                "hot_vs_cold": {
-                    "t_statistic": -0.5649945234935493,
-                    "p_value": 0.576278521986956,
-                    "significant": false,
-                    "mean_difference": -3.5999999999999996
-                },
-                "medium_vs_cold": {
-                    "t_statistic": 0.09905485896363278,
-                    "p_value": 0.9218847133316569,
-                    "significant": false,
-                    "mean_difference": 0.8833333333333329
-                }
-            },
-            "all_significant": false,
-            "use_when": "Data is normally distributed"
-        },
-        "non_parametric_comparisons": {
-            "test_name": "Mann-Whitney U tests (Bonferroni corrected)",
-            "comparisons": {
-                "hot_vs_medium": {
-                    "u_statistic": 143.5,
-                    "p_value": 0.8407082228221755,
-                    "significant": false,
-                    "median_difference": -2.0
-                },
-                "hot_vs_cold": {
-                    "u_statistic": 113.0,
-                    "p_value": 0.7991385841922347,
-                    "significant": false,
-                    "median_difference": -2.0
-                },
-                "medium_vs_cold": {
-                    "u_statistic": 87.5,
-                    "p_value": 0.9219125669860558,
-                    "significant": false,
-                    "median_difference": 0.0
-                }
-            },
-            "all_significant": false,
-            "use_when": "No normality assumption required"
-        },
         "comparisons": {
             "hot_vs_medium": {
-                "u_statistic": 143.5,
-                "p_value": 0.8407082228221755,
+                "t_statistic": -0.3029184569094869,
+                "p_value": 0.7638533754952597,
                 "significant": false,
-                "median_difference": -2.0
+                "mean_difference": -2.2905982905982896
             },
             "hot_vs_cold": {
-                "u_statistic": 113.0,
-                "p_value": 0.7991385841922347,
+                "t_statistic": -1.2126339696640787,
+                "p_value": 0.2331676918635379,
                 "significant": false,
-                "median_difference": -2.0
+                "mean_difference": -8.096153846153847
             },
             "medium_vs_cold": {
-                "u_statistic": 87.5,
-                "p_value": 0.9219125669860558,
+                "t_statistic": -0.7311657076075156,
+                "p_value": 0.47359948549014685,
                 "significant": false,
-                "median_difference": 0.0
+                "mean_difference": -5.805555555555557
             }
         },
         "all_significant": false
     },
     "category_distribution": {
-        "significant": false,
-        "chi2_stat": 2.0851063829787235,
-        "p_value": 0.3525533955409414,
+        "significant": true,
+        "chi2_stat": 10.510638297872342,
+        "p_value": 0.005219680170748771,
         "category_counts": {
-            "hot": 20,
-            "medium": 15,
+            "hot": 26,
+            "medium": 9,
             "cold": 12
         },
         "category_percentages": {
-            "hot": 42.5531914893617,
-            "medium": 31.914893617021278,
+            "hot": 55.319148936170215,
+            "medium": 19.148936170212767,
             "cold": 25.53191489361702
         },
-        "interpretation": "Category sizes are balanced (approximately equal)"
+        "interpretation": "Category sizes are imbalanced (some over/under-represented)"
     },
     "threshold_validation": {
         "hot_medium_overlap": true,
         "medium_cold_overlap": true,
         "categories_distinct": false,
         "suggested_thresholds": {
-            "hot_medium_cutoff": -5.0,
-            "medium_cold_cutoff": 10.004600000000007
+            "hot_medium_cutoff": 8.0,
+            "medium_cold_cutoff": 18.0
         },
         "current_ranges": {
             "hot": {
-                "min": -11.0,
-                "max": 43.0
-            },
-            "medium": {
-                "min": -11.0,
+                "min": 1.0,
                 "max": 71.0
             },
+            "medium": {
+                "min": 1.0,
+                "max": 64.0
+            },
             "cold": {
-                "min": -11.0,
+                "min": 5.0,
                 "max": 57.0
             }
         }

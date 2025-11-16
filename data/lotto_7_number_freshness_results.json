@@ -2,12 +2,12 @@
     "window_size_W": 5,
     "c_max_threshold": 2,
     "recent_count_key": "last_4",
-    "total_draws_analyzed": 412,
+    "total_draws_analyzed": 409,
     "distribution_analysis_7_numbers": [
         {
             "pattern": "C0=3, C1=3, C_GE_2=1",
             "draws_matched": 53,
-            "percentage": 12.86,
+            "percentage": 12.96,
             "C0": 3,
             "C1": 3,
             "C_GE_2": 1
@@ -15,39 +15,39 @@
         {
             "pattern": "C0=4, C1=2, C_GE_2=1",
             "draws_matched": 52,
-            "percentage": 12.62,
+            "percentage": 12.71,
             "C0": 4,
             "C1": 2,
             "C_GE_2": 1
         },
         {
-            "pattern": "C0=4, C1=3, C_GE_2=0",
-            "draws_matched": 39,
-            "percentage": 9.47,
-            "C0": 4,
-            "C1": 3,
-            "C_GE_2": 0
-        },
-        {
             "pattern": "C0=5, C1=1, C_GE_2=1",
             "draws_matched": 39,
-            "percentage": 9.47,
+            "percentage": 9.54,
             "C0": 5,
             "C1": 1,
             "C_GE_2": 1
         },
         {
+            "pattern": "C0=4, C1=3, C_GE_2=0",
+            "draws_matched": 38,
+            "percentage": 9.29,
+            "C0": 4,
+            "C1": 3,
+            "C_GE_2": 0
+        },
+        {
             "pattern": "C0=5, C1=2, C_GE_2=0",
             "draws_matched": 34,
-            "percentage": 8.25,
+            "percentage": 8.31,
             "C0": 5,
             "C1": 2,
             "C_GE_2": 0
         },
         {
             "pattern": "C0=3, C1=4, C_GE_2=0",
-            "draws_matched": 33,
-            "percentage": 8.01,
+            "draws_matched": 32,
+            "percentage": 7.82,
             "C0": 3,
             "C1": 4,
             "C_GE_2": 0
@@ -55,7 +55,7 @@
         {
             "pattern": "C0=3, C1=2, C_GE_2=2",
             "draws_matched": 27,
-            "percentage": 6.55,
+            "percentage": 6.6,
             "C0": 3,
             "C1": 2,
             "C_GE_2": 2
@@ -63,7 +63,7 @@
         {
             "pattern": "C0=2, C1=4, C_GE_2=1",
             "draws_matched": 26,
-            "percentage": 6.31,
+            "percentage": 6.36,
             "C0": 2,
             "C1": 4,
             "C_GE_2": 1
@@ -71,7 +71,7 @@
         {
             "pattern": "C0=4, C1=1, C_GE_2=2",
             "draws_matched": 19,
-            "percentage": 4.61,
+            "percentage": 4.65,
             "C0": 4,
             "C1": 1,
             "C_GE_2": 2
@@ -79,7 +79,7 @@
         {
             "pattern": "C0=2, C1=3, C_GE_2=2",
             "draws_matched": 15,
-            "percentage": 3.64,
+            "percentage": 3.67,
             "C0": 2,
             "C1": 3,
             "C_GE_2": 2
@@ -87,7 +87,7 @@
         {
             "pattern": "C0=6, C1=1, C_GE_2=0",
             "draws_matched": 15,
-            "percentage": 3.64,
+            "percentage": 3.67,
             "C0": 6,
             "C1": 1,
             "C_GE_2": 0
@@ -95,7 +95,7 @@
         {
             "pattern": "C0=2, C1=5, C_GE_2=0",
             "draws_matched": 10,
-            "percentage": 2.43,
+            "percentage": 2.44,
             "C0": 2,
             "C1": 5,
             "C_GE_2": 0
@@ -103,7 +103,7 @@
         {
             "pattern": "C0=2, C1=2, C_GE_2=3",
             "draws_matched": 9,
-            "percentage": 2.18,
+            "percentage": 2.2,
             "C0": 2,
             "C1": 2,
             "C_GE_2": 3
@@ -111,23 +111,15 @@
         {
             "pattern": "C0=3, C1=1, C_GE_2=3",
             "draws_matched": 8,
-            "percentage": 1.94,
+            "percentage": 1.96,
             "C0": 3,
             "C1": 1,
             "C_GE_2": 3
         },
         {
-            "pattern": "C0=1, C1=5, C_GE_2=1",
-            "draws_matched": 5,
-            "percentage": 1.21,
-            "C0": 1,
-            "C1": 5,
-            "C_GE_2": 1
-        },
-        {
             "pattern": "C0=6, C1=0, C_GE_2=1",
             "draws_matched": 5,
-            "percentage": 1.21,
+            "percentage": 1.22,
             "C0": 6,
             "C1": 0,
             "C_GE_2": 1
@@ -135,15 +127,23 @@
         {
             "pattern": "C0=1, C1=4, C_GE_2=2",
             "draws_matched": 5,
-            "percentage": 1.21,
+            "percentage": 1.22,
             "C0": 1,
             "C1": 4,
             "C_GE_2": 2
         },
         {
+            "pattern": "C0=1, C1=5, C_GE_2=1",
+            "draws_matched": 4,
+            "percentage": 0.98,
+            "C0": 1,
+            "C1": 5,
+            "C_GE_2": 1
+        },
+        {
             "pattern": "C0=1, C1=6, C_GE_2=0",
             "draws_matched": 4,
-            "percentage": 0.97,
+            "percentage": 0.98,
             "C0": 1,
             "C1": 6,
             "C_GE_2": 0
