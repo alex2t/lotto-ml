@@ -17,8 +17,19 @@ from typing import Dict, List, Any, Tuple
 from datetime import datetime
 
 
-def load_draw_history(filename: str = 'data/lotto_draw_history.json') -> Dict[str, Any]:
+def load_draw_history(filename: str = None) -> Dict[str, Any]:
     """Load draw history JSON file."""
+    if filename is None:
+        # Try relative path from analysis folder first, then root
+        for path in ['../data/lotto_draw_history.json', 'data/lotto_draw_history.json']:
+            if Path(path).exists():
+                filename = path
+                break
+        else:
+            print("ERROR: data/lotto_draw_history.json not found.")
+            print("Run this script from either the project root or the analysis folder")
+            sys.exit(1)
+
     try:
         with open(filename, 'r') as f:
             return json.load(f)
@@ -477,8 +488,14 @@ def print_results(results: Dict):
     print("\n" + "=" * 80)
 
 
-def save_results(results: Dict, output_file: str = 'data/lotto_statistics_analysis.json'):
+def save_results(results: Dict, output_file: str = None):
     """Save analysis results to JSON file."""
+    if output_file is None:
+        # Try relative path from analysis folder first, then root
+        for path in ['../data/lotto_statistics_analysis.json', 'data/lotto_statistics_analysis.json']:
+            output_file = path
+            break
+
     try:
         with open(output_file, 'w') as f:
             json.dump(results, f, indent=4)
