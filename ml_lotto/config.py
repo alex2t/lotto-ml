@@ -2,19 +2,16 @@
 """
 Configuration settings for lottery analysis
 
-VERSION: 3.15 (win_bias_ratio Removal - Redundant Feature)
-- REMOVED: win_bias_ratio feature (fundamentally redundant)
-  * Comparing to category avg → Low variance (~1.0), no signal
-  * Comparing to overall avg → High correlation with total_count (0.95+)
-  * Either way, provides no unique information
-  * Already captured by: total_count (absolute), category (relative), lt_category_alignment
-  * Removed from MODEL_2_CONFIG, MODEL_3_CONFIG, MODEL_4_CONFIG
-  * Calculation code kept but commented out for reference
-- PREVIOUS (v3.13-3.14):
-  * FRESHNESS_PATTERN_WEIGHTS with interaction features
-  * LONG_TERM_PATTERN_WEIGHTS with corrected recency data
-  * ADVANCED_PATTERN_FEATURES with volatility and trend analysis
-  * Attempted win_bias_ratio fix (ultimately determined to be redundant)
+VERSION: 3.16 (Pairwise & Triple Interaction Features for Model 1)
+- NEW: Pairwise interaction features added to MODEL_1_CONFIG
+  * Up to 10 binary synergistic interactions (strength ≥ 3.0)
+  * Win rate of 0.857 when both features are high
+  * Dynamically loaded from data/analysis/lotto_feature_interactions.json
+  * NO hard-coded data - generated fresh every time drawpick.py runs
+- NEW KEYWORDS: 'PAIRWISE_INTERACTIONS', 'TRIPLE_INTERACTIONS', 'ALL_INTERACTIONS'
+- Model 1 uses pairwise interactions for enhanced momentum capture
+- Models 2 & 3 unchanged (as requested)
+- PREVIOUS (v3.15): Removed redundant win_bias_ratio feature
 """
 
 # ============================================================================
@@ -155,7 +152,7 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
 
 MODEL_1_CONFIG = {
     'name': 'Short-Term Momentum + Pre-Assignment Specialist',
-    'description': 'Captures immediate patterns with bonus and recent-bonus pre-assignment',
+    'description': 'Captures immediate patterns with bonus and recent-bonus pre-assignment + pairwise interactions',
     'algorithm': 'logistic_regression',
 
     'hot_count': 1,
@@ -179,6 +176,7 @@ MODEL_1_CONFIG = {
         'sum_contribution_json',
         LONG_TERM_PATTERN_WEIGHTS,    # UPDATED v3.13: lt_category_alignment, lt_recency_weight (removed redundant hot/medium/cold)
         ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
+        'PAIRWISE_INTERACTIONS',       # NEW v3.16: Synergistic feature interactions (dynamically loaded from JSON)
     ],
 
     'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers

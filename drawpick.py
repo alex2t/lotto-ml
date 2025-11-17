@@ -571,6 +571,64 @@ def main():
     generate_recency_zones_data(draw_history_file, output_file_recency)
     print(f"  ✓ Recency zone analysis complete")
 
+    # ===== FEATURE INTERACTION ANALYSIS (PHASE 15) =====
+    print("\n" + "=" * 70)
+    print("Phase 15: Feature Interaction Analysis (Pairwise + Triple)")
+    print("=" * 70)
+    print("Discovering non-linear feature interactions for ML prediction...")
+    print("This generates interaction features for Model 1 enhancement")
+
+    # Run the feature_interaction_explorer.py script
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent / 'analysis'))
+
+    try:
+        from feature_interaction_explorer import (
+            load_draw_history,
+            build_feature_matrix,
+            analyze_pairwise_interactions,
+            analyze_threshold_effects,
+            analyze_triple_interactions,
+            generate_composite_features,
+            save_outputs
+        )
+
+        print("\n  Loading draw history for interaction analysis...")
+        full_history, sorted_draws = load_draw_history()
+        print(f"  ✓ Loaded {len(sorted_draws)} draws")
+
+        print("  Building feature matrix...")
+        records = build_feature_matrix(sorted_draws)
+        print(f"  ✓ Built matrix with {len(records)} records")
+
+        print("  Analyzing pairwise interactions...")
+        interactions = analyze_pairwise_interactions(records)
+        print(f"  ✓ Analyzed {len(interactions)} feature pairs")
+
+        print("  Detecting threshold effects...")
+        threshold_effects = analyze_threshold_effects(records)
+        print(f"  ✓ Analyzed thresholds for {len(threshold_effects)} features")
+
+        print("  Analyzing triple interactions...")
+        triple_interactions = analyze_triple_interactions(records)
+        print(f"  ✓ Found {len(triple_interactions)} triple interaction patterns")
+
+        print("  Generating composite feature recommendations...")
+        composite_features = generate_composite_features(
+            interactions, threshold_effects, triple_interactions
+        )
+        print(f"  ✓ Generated {len(composite_features)} composite feature recommendations")
+
+        print("  Saving interaction analysis outputs...")
+        save_outputs(interactions, threshold_effects, triple_interactions, composite_features)
+        print("  ✓ Interaction analysis complete")
+
+    except Exception as e:
+        print(f"  ⚠️  Warning: Feature interaction analysis failed: {e}")
+        print("  System will continue without interaction features")
+        import traceback
+        traceback.print_exc()
+
     print("\n" + "=" * 70)
     print("✓ All Analysis Phases Complete!")
     print("=" * 70)
@@ -601,7 +659,10 @@ def main():
         "data/lotto_statistics_analysis.json",
         "data/lotto_window_saturation_calculated.json",
         "data/lotto_advanced_patterns.json",
-        "data/lotto_recency_zones_calculated.json"
+        "data/lotto_recency_zones_calculated.json",
+        "data/analysis/lotto_feature_interactions.json",
+        "data/analysis/lotto_interaction_summary.csv",
+        "data/analysis/lotto_composite_features.json"
     ]
 
     missing_files = []
