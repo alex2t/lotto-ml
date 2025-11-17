@@ -154,13 +154,13 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
 
 MODEL_1_CONFIG = {
     'name': 'Short-Term Momentum Specialist (ML-Optimized)',
-    'description': 'Optimized feature set with pairwise & triple interactions - selects 5 numbers via ML',
+    'description': 'Optimized feature set with pairwise & triple interactions - selects 6 numbers via ML',
     'algorithm': 'logistic_regression',
 
-    # Updated: 5 ML-selected numbers (no pre-assignment)
+    # 6 ML-selected numbers (system always selects 6)
     'hot_count': 2,
     'medium_count': 2,
-    'cold_count': 1,
+    'cold_count': 2,
     'generic_count': 0,
 
     'features': [
