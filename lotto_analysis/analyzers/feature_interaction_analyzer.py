@@ -133,7 +133,7 @@ def analyze_feature_pair(records: List[Dict[str, Any]],
     Analyze interaction between two features.
 
     Strategy:
-    1. Split each feature into high/low based on median
+    1. Split each feature into high/low based on 75th percentile
     2. Calculate win rates for 4 quadrants
     3. Compute interaction strength
 
@@ -149,9 +149,10 @@ def analyze_feature_pair(records: List[Dict[str, Any]],
     values1 = [r['features'][feat1] for r in records]
     values2 = [r['features'][feat2] for r in records]
 
-    # Calculate medians
-    median1 = sorted(values1)[len(values1) // 2]
-    median2 = sorted(values2)[len(values2) // 2]
+    # Calculate 75th percentile as threshold (NOT median - median=0 for many features)
+    # 75th percentile ensures we split at a discriminative point
+    median1 = sorted(values1)[int(len(values1) * 0.75)]
+    median2 = sorted(values2)[int(len(values2) * 0.75)]
 
     # Count wins in each quadrant
     quadrants = {
@@ -200,8 +201,8 @@ def analyze_feature_pair(records: List[Dict[str, Any]],
     return {
         'feature_1': feat1,
         'feature_2': feat2,
-        'median_1': round(median1, 2),
-        'median_2': round(median2, 2),
+        'median_1': round(median1, 2),  # Actually 75th percentile (kept key name for compatibility)
+        'median_2': round(median2, 2),  # Actually 75th percentile (kept key name for compatibility)
         'win_rate_high_high': round(win_rates[('high', 'high')], 4),
         'win_rate_high_low': round(win_rates[('high', 'low')], 4),
         'win_rate_low_high': round(win_rates[('low', 'high')], 4),
