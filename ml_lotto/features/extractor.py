@@ -314,7 +314,8 @@ def extract_features_from_hmc_json(
         freshness_momentum = recent_4_count * freshness_weight_score
 
         # Freshness timing: combines freshness bin with recency (higher = fresher + more recent)
-        freshness_timing = current_freshness_bin * (1.0 / (days_since + 1))
+        # Use max() to prevent division by zero if days_since is negative or -1
+        freshness_timing = current_freshness_bin * (1.0 / max(days_since + 1, 1))
 
         # Category alignment: freshness pattern aligned with HMC category performance
         category_weight_map = {'hot': 0.487, 'medium': 0.234, 'cold': 0.280}  # From lt analysis
