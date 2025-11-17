@@ -296,7 +296,7 @@ def main():
     import random
 
     print("=" * 70)
-    print("INTELLIGENT LOTTO SYSTEM V3.9: SPECIALIZED MODEL ARCHITECTURE")
+    print("INTELLIGENT LOTTO SYSTEM V3.16: INTERACTION FEATURES EDITION")
     print("=" * 70)
 
     if ENSEMBLE_MODE:
@@ -310,10 +310,10 @@ def main():
         random.seed(RANDOM_SEED_BASE)
 
     print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model + 1 bonus-to-main model")
-    print("NEW: Specialized model objectives with different training strategies")
-    print("  Model 1: Momentum specialist (6 main + bonus)")
+    print("V3.16 FEATURES: Pairwise & triple interaction features for Model 1")
+    print("  Model 1: ML-Optimized (5 main + 1 bonus) - PAIRWISE & TRIPLE INTERACTIONS")
     print("  Model 2: Jackpot optimizer - MAIN 6 ONLY (NO BONUS)")
-    print("  Model 3: Complexity explorer (6 main + bonus)")
+    print("  Model 3: Complexity explorer (6 main + 1 bonus)")
     print("  Model 4: Pool generator (configurable candidate pool)")
     
     try:
@@ -709,10 +709,12 @@ def main():
             traceback.print_exc()
             sys.exit(1)
         
-        print("\nStep 8: Creating pre-assigned number combinations (bonus + bonus-to-main)...")
-        # ONLY Model 1 gets pre-assigned numbers (momentum specialist)
-        # Models 2 & 3 select all 6 numbers via ML
-        # Model 4 is a pool generator - doesn't pick specific numbers
+        print("\nStep 8: Preparing models for number selection...")
+        # ALL models (1, 2, 3) select their numbers via ML
+        # Model 1: Optimized with pairwise & triple interactions - selects 5 numbers
+        # Model 2: Jackpot optimizer - selects 6 numbers (no bonus)
+        # Model 3: Complexity explorer - selects 6 numbers
+        # Model 4: Pool generator - doesn't pick specific numbers
 
         # Filter out Model 4 (pool generator) from pick generation
         pick_models = {}
@@ -722,18 +724,14 @@ def main():
                 pick_models[model_name] = model_data
                 pick_probabilities[model_name] = all_probabilities[model_name]
 
+        # No pre-assignment for any model - all numbers selected via ML
         pre_assigned_numbers = {}
         for model_idx in range(1, len(pick_models) + 1):
+            pre_assigned_numbers[model_idx] = []
             if model_idx == 1:
-                # Model 1: Pre-assign bonus + recent-bonus
-                bonus_num = bonus_assignments.get(model_idx)
-                bonus_to_main_num = bonus_to_main_assignments.get(model_idx)
-                pre_assigned_numbers[model_idx] = [bonus_num, bonus_to_main_num]
-                print(f"  Model {model_idx}: Pre-assigned [Bonus: {bonus_num}, Bonus-to-Main: {bonus_to_main_num}]")
+                print(f"  Model {model_idx}: ML selects 5 numbers (optimized feature set)")
             else:
-                # Models 2 & 3: No pre-assignment - select all 6 numbers
-                pre_assigned_numbers[model_idx] = []
-                print(f"  Model {model_idx}: No pre-assignment (selects all 6 numbers)")
+                print(f"  Model {model_idx}: ML selects 6 numbers")
 
         print("\nStep 9: Selecting optimal MAIN NUMBERS per model (Models 1-3 only, Model 4 generates pool)...")
         try:
@@ -773,20 +771,23 @@ def main():
             print("\n" + "=" * 70)
             print("FINAL RECOMMENDED PICKS")
             print("=" * 70)
-            print("SPECIALIZED MODEL ARCHITECTURE:")
-            print("  Model 1: 6 main numbers (2 pre-assigned + 4 ML-selected) + 1 bonus")
+            print("V3.16 MODEL ARCHITECTURE (Interaction Features Edition):")
+            print("  Model 1: 5 main numbers (ML-optimized) + 1 bonus - PAIRWISE & TRIPLE INTERACTIONS")
             print("  Model 2: 6 main numbers ONLY (jackpot optimizer - NO BONUS)")
-            print("  Model 3: 6 main numbers (6 ML-selected) + 1 bonus")
+            print("  Model 3: 6 main numbers (complexity explorer) + 1 bonus")
             print("  Model 4: Candidate pool generator (configurable pool size)")
             print("=" * 70)
 
             for line in lines:
                 print(f"\nLine {line['model_index']}: {line['model_name']} [{line['config_str']}]")
                 print(f"Description: {line['description']}")
-                if line.get('pre_assigned'):
-                    print(f"Pre-assigned (exempt): {sorted(line['pre_assigned'])}")
-                    print(f"ML-selected: {sorted(line['selected'])}")
-                print(f"Main Numbers (6): {sorted(line['numbers'])}")
+
+                # Show number count based on model
+                num_count = len(line['numbers'])
+                if line['model_index'] == 1:
+                    print(f"Main Numbers (5): {sorted(line['numbers'])}")
+                else:
+                    print(f"Main Numbers (6): {sorted(line['numbers'])}")
 
                 # Model 2 does not have a bonus ball
                 if line['bonus_for_draw'] is not None:
@@ -810,18 +811,20 @@ def main():
                     f.write("=" * 70 + "\n")
                     f.write("LOTTERY PICKS - GENERATED " + time.strftime("%Y-%m-%d %H:%M:%S") + "\n")
                     f.write("=" * 70 + "\n")
-                    f.write("SPECIALIZED MODEL ARCHITECTURE V3.9\n")
-                    f.write("Model 1: 6 main (2 pre-assigned + 4 selected) + 1 bonus\n")
+                    f.write("INTERACTION FEATURES EDITION V3.16\n")
+                    f.write("Model 1: 5 main (ML-optimized with interactions) + 1 bonus\n")
                     f.write("Model 2: 6 main ONLY (jackpot optimizer - NO BONUS)\n")
-                    f.write("Model 3: 6 main (6 selected) + 1 bonus\n")
+                    f.write("Model 3: 6 main (complexity explorer) + 1 bonus\n")
                     f.write("Model 4: Candidate pool generator (configurable pool size)\n")
                     f.write("=" * 70 + "\n\n")
                     for line in lines:
                         f.write(f"Line {line['model_index']}: {line['model_name']} [{line['config_str']}]\n")
-                        if line.get('pre_assigned'):
-                            f.write(f"Pre-assigned (exempt): {sorted(line['pre_assigned'])}\n")
-                            f.write(f"ML-selected: {sorted(line['selected'])}\n")
-                        f.write(f"Main Numbers (6): {sorted(line['numbers'])}\n")
+
+                        # Show number count based on model
+                        if line['model_index'] == 1:
+                            f.write(f"Main Numbers (5): {sorted(line['numbers'])}\n")
+                        else:
+                            f.write(f"Main Numbers (6): {sorted(line['numbers'])}\n")
 
                         # Model 2 does not have a bonus ball
                         if line['bonus_for_draw'] is not None:

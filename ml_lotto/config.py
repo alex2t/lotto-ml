@@ -2,16 +2,18 @@
 """
 Configuration settings for lottery analysis
 
-VERSION: 3.16 (Pairwise & Triple Interaction Features for Model 1)
-- NEW: Pairwise interaction features added to MODEL_1_CONFIG
-  * Up to 10 binary synergistic interactions (strength ≥ 3.0)
-  * Win rate of 0.857 when both features are high
-  * Dynamically loaded from data/analysis/lotto_feature_interactions.json
-  * NO hard-coded data - generated fresh every time drawpick.py runs
-- NEW KEYWORDS: 'PAIRWISE_INTERACTIONS', 'TRIPLE_INTERACTIONS', 'ALL_INTERACTIONS'
-- Model 1 uses pairwise interactions for enhanced momentum capture
-- Models 2 & 3 unchanged (as requested)
-- PREVIOUS (v3.15): Removed redundant win_bias_ratio feature
+VERSION: 3.16b (ML-Optimized Model 1 with Interaction Features)
+- UPDATED: Model 1 now selects 5 numbers via ML (no pre-assignment)
+  * Removed pre-assigned bonus and bonus-to-main numbers
+  * Changed hot_count: 2, medium_count: 2, cold_count: 1 (total: 5 numbers)
+  * Optimized feature set: removed redundant features (total_count, recent_14, lt features)
+  * Kept high-importance features: appearance_volatility (0.38), current_freshness_bin (0.32), etc.
+- NEW: Triple interactions added to Model 1
+  * PAIRWISE_INTERACTIONS: 10 synergistic binary features
+  * TRIPLE_INTERACTIONS: 3 category × freshness × recency combinations
+  * Total: ~25 features (down from 30, reduced redundancy)
+- Models 2 & 3: Unchanged
+- Result: Interaction features now have room to show their value
 """
 
 # ============================================================================
@@ -151,33 +153,44 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
 }
 
 MODEL_1_CONFIG = {
-    'name': 'Short-Term Momentum + Pre-Assignment Specialist',
-    'description': 'Captures immediate patterns with bonus and recent-bonus pre-assignment + pairwise interactions',
+    'name': 'Short-Term Momentum Specialist (ML-Optimized)',
+    'description': 'Optimized feature set with pairwise & triple interactions - selects 5 numbers via ML',
     'algorithm': 'logistic_regression',
 
-    'hot_count': 1,
+    # Updated: 5 ML-selected numbers (no pre-assignment)
+    'hot_count': 2,
     'medium_count': 2,
     'cold_count': 1,
     'generic_count': 0,
 
     'features': [
-        FRESHNESS_PATTERN_WEIGHTS,    # Statistically validated freshness (interaction features)
-        'days_since_last',              # Core timing
+        # Core timing signals (3 features)
+        'days_since_last',              # When number last appeared
         'recency_zone_score',           # Optimal window detection
-        'total_count',                  # Historical frequency
-        'recent_4',                     # NEW - immediate hot streak
-        #'was_recent_bonus',             # Proven 71% pattern
-        #'has_consecutive_partner',      # 57% consecutive pattern
-        #'odd_even_json',                # Realism constraint
-        #'pair_frequency_score',         # Pattern affinity
-        'bonus_hit_contribution',       # JSON feature
-        'window_saturation_penalty',
-        'range_spread_json',
-        'sum_contribution_json',
-        LONG_TERM_PATTERN_WEIGHTS,    # UPDATED v3.13: lt_category_alignment, lt_recency_weight (removed redundant hot/medium/cold)
-        ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
-        'PAIRWISE_INTERACTIONS',       # NEW v3.16: Synergistic feature interactions (dynamically loaded from JSON)
+        'recent_4',                     # Immediate momentum
+
+        # Unique pattern signals (5 features - HIGH importance, no redundancy)
+        'appearance_volatility',        # Temporal consistency (0.3829 importance!)
+        'current_freshness_bin',        # Freshness state (0.3152 importance!)
+        'max_gap_ratio',                # Gap distribution (0.1971 importance!)
+        'gap_consistency_score',        # Consistency metric (0.1611 importance!)
+        'freshness_momentum',           # Recent × freshness (0.1580 importance!)
+
+        # Bonus contribution
+        'bonus_hit_contribution',       # Bonus transition signal
+
+        # Pairwise interactions (10 features - now with room to shine!)
+        'PAIRWISE_INTERACTIONS',
+
+        # Triple interactions (3 features - NEW!)
+        'TRIPLE_INTERACTIONS',
+
+        # Essential constraints (3 features)
+        'window_saturation_penalty',    # Avoid over-saturated windows
+        'range_spread_json',            # Range distribution
+        'sum_contribution_json',        # Sum contribution
     ],
+    # Total: ~25 features (down from 30, less redundancy)
 
     'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers
 
@@ -186,7 +199,7 @@ MODEL_1_CONFIG = {
         'solver': 'liblinear',
         'max_iter': 1000,
         'class_weight': 'balanced',
-        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
+        'random_state': 42,
         'C': 1.0
     },
 
