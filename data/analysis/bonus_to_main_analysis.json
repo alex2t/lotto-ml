@@ -1,0 +1,1135 @@
+{
+  "analysis_summary": {
+    "total_bonuses": 399,
+    "appeared_as_main": 296,
+    "transition_rate": 74.19,
+    "validation": "74% matches claimed ~80% rate"
+  },
+  "timing_distribution": {
+    "8": 19,
+    "10": 15,
+    "3": 35,
+    "2": 49,
+    "1": 46,
+    "4": 33,
+    "6": 22,
+    "7": 28,
+    "5": 33,
+    "9": 16
+  },
+  "category_distribution": {
+    "medium": {
+      "appeared": 67,
+      "total": 95
+    },
+    "hot": {
+      "appeared": 139,
+      "total": 188
+    },
+    "cold": {
+      "appeared": 90,
+      "total": 116
+    }
+  },
+  "freshness_distribution": {
+    "0": {
+      "appeared": 157,
+      "total": 209
+    },
+    "1": {
+      "appeared": 107,
+      "total": 141
+    },
+    "2": {
+      "appeared": 32,
+      "total": 49
+    }
+  },
+  "recommended_features": {
+    "Core Features": [
+      "was_bonus_in_last_10",
+      "draws_since_bonus",
+      "bonus_category",
+      "bonus_freshness_bin"
+    ],
+    "Historical Features": [
+      "days_since_last_main_hit",
+      "total_main_appearances",
+      "total_bonus_appearances",
+      "bonus_to_main_ratio"
+    ],
+    "Recent Activity": [
+      "recent_4_count",
+      "recent_9_count",
+      "recent_14_count",
+      "recent_activity_trend"
+    ],
+    "Pattern Features": [
+      "current_hmc_category",
+      "freshness_weight",
+      "win_bias_ratio",
+      "consecutive_partner_exists"
+    ],
+    "Bonus-Specific": [
+      "bonus_hit_contribution",
+      "bonus_timing_zone_weight",
+      "recent_bonus_exclusion_factor"
+    ]
+  },
+  "transition_data": {
+    "transitioned": [
+      {
+        "number": 9,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 28,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 8,
+        "transitioned": 1
+      },
+      {
+        "number": 1,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 31,
+        "recent_4": 0,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 10,
+        "transitioned": 1
+      },
+      {
+        "number": 16,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 74,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 23,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 36,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 4,
+        "recent_4": 2,
+        "recent_9": 3,
+        "recent_14": 0,
+        "appearance_draw": 2,
+        "transitioned": 1
+      },
+      {
+        "number": 23,
+        "category": "hot",
+        "freshness_bin": 0,
+        "days_since_last": 7,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 1,
+        "transitioned": 1
+      },
+      {
+        "number": 22,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 21,
+        "recent_4": 0,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 2,
+        "transitioned": 1
+      },
+      {
+        "number": 32,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 4,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 4,
+        "transitioned": 1
+      },
+      {
+        "number": 46,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 49,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 6,
+        "transitioned": 1
+      },
+      {
+        "number": 27,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 2,
+        "transitioned": 1
+      },
+      {
+        "number": 7,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 4,
+        "recent_4": 2,
+        "recent_9": 3,
+        "recent_14": 0,
+        "appearance_draw": 4,
+        "transitioned": 1
+      },
+      {
+        "number": 26,
+        "category": "medium",
+        "freshness_bin": 1,
+        "days_since_last": 18,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 6,
+        "transitioned": 1
+      },
+      {
+        "number": 44,
+        "category": "medium",
+        "freshness_bin": 1,
+        "days_since_last": 17,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 7,
+        "transitioned": 1
+      },
+      {
+        "number": 15,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 56,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 4,
+        "transitioned": 1
+      },
+      {
+        "number": 5,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 35,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 8,
+        "transitioned": 1
+      },
+      {
+        "number": 3,
+        "category": "medium",
+        "freshness_bin": 1,
+        "days_since_last": 17,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 5,
+        "transitioned": 1
+      },
+      {
+        "number": 39,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 11,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 40,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 35,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 34,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 144,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 10,
+        "transitioned": 1
+      },
+      {
+        "number": 41,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 10,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 2,
+        "transitioned": 1
+      },
+      {
+        "number": 31,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 9,
+        "transitioned": 1
+      },
+      {
+        "number": 11,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 70,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 4,
+        "transitioned": 1
+      },
+      {
+        "number": 37,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 4,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 8,
+        "transitioned": 1
+      },
+      {
+        "number": 15,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 31,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 2,
+        "transitioned": 1
+      },
+      {
+        "number": 47,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": -705,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 1,
+        "transitioned": 1
+      },
+      {
+        "number": 2,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 4,
+        "transitioned": 1
+      },
+      {
+        "number": 46,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 39,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 5,
+        "transitioned": 1
+      },
+      {
+        "number": 26,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 38,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 1,
+        "transitioned": 1
+      },
+      {
+        "number": 47,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 4,
+        "recent_4": 2,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 5,
+        "transitioned": 1
+      },
+      {
+        "number": 31,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 4,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 1,
+        "transitioned": 1
+      },
+      {
+        "number": 45,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 42,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 34,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 7,
+        "transitioned": 1
+      },
+      {
+        "number": 1,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 6,
+        "transitioned": 1
+      },
+      {
+        "number": 38,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 70,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 5,
+        "transitioned": 1
+      },
+      {
+        "number": 2,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 32,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 7,
+        "transitioned": 1
+      },
+      {
+        "number": 40,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 11,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 9,
+        "transitioned": 1
+      },
+      {
+        "number": 32,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 32,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 9,
+        "transitioned": 1
+      },
+      {
+        "number": 26,
+        "category": "hot",
+        "freshness_bin": 0,
+        "days_since_last": 14,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 8,
+        "transitioned": 1
+      },
+      {
+        "number": 39,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 49,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 4,
+        "transitioned": 1
+      },
+      {
+        "number": 39,
+        "category": "hot",
+        "freshness_bin": 0,
+        "days_since_last": 4,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 2,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 11,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 46,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 28,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 40,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 1,
+        "transitioned": 1
+      },
+      {
+        "number": 41,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 25,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 9,
+        "transitioned": 1
+      },
+      {
+        "number": 4,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 35,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 10,
+        "transitioned": 1
+      },
+      {
+        "number": 12,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "appearance_draw": 5,
+        "transitioned": 1
+      },
+      {
+        "number": 47,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 32,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 3,
+        "transitioned": 1
+      },
+      {
+        "number": 38,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "appearance_draw": 4,
+        "transitioned": 1
+      },
+      {
+        "number": 34,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 46,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 2,
+        "transitioned": 1
+      },
+      {
+        "number": 27,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 56,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "appearance_draw": 1,
+        "transitioned": 1
+      }
+    ],
+    "no_transition": [
+      {
+        "number": 3,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 31,
+        "category": "medium",
+        "freshness_bin": 1,
+        "days_since_last": 17,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 15,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 21,
+        "recent_4": 0,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 12,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 35,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 40,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 21,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 40,
+        "category": "hot",
+        "freshness_bin": 0,
+        "days_since_last": 7,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 42,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 77,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 33,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 14,
+        "recent_4": 2,
+        "recent_9": 4,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 26,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 12,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 10,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 32,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 10,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 11,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 4,
+        "recent_4": 2,
+        "recent_9": 3,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 11,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 7,
+        "recent_4": 2,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 26,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 44,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 66,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 23,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 47,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 14,
+        "recent_4": 2,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 42,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 45,
+        "category": "medium",
+        "freshness_bin": 1,
+        "days_since_last": 18,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 19,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 21,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 46,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 7,
+        "recent_4": 2,
+        "recent_9": 3,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 19,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 17,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 46,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 28,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 40,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 28,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 5,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 56,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 3,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 25,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 10,
+        "recent_4": 2,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 34,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 49,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 13,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 52,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 13,
+        "category": "hot",
+        "freshness_bin": 0,
+        "days_since_last": 4,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 24,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 4,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 10,
+        "category": "hot",
+        "freshness_bin": 2,
+        "days_since_last": 14,
+        "recent_4": 2,
+        "recent_9": 3,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 45,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 3,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 34,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 31,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 30,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 25,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 47,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 25,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 20,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 38,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 19,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 24,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 18,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 32,
+        "recent_4": 0,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 19,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 18,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 33,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 33,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 7,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 43,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 2,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 9,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 42,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 47,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 3,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 15,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 56,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 47,
+        "category": "medium",
+        "freshness_bin": 0,
+        "days_since_last": 25,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 1,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 12,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 42,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_14": 0,
+        "transitioned": 0
+      },
+      {
+        "number": 47,
+        "category": "hot",
+        "freshness_bin": 1,
+        "days_since_last": 14,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_14": 0,
+        "transitioned": 0
+      }
+    ]
+  }
+}

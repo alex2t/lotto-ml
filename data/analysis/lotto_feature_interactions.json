@@ -1,0 +1,793 @@
+{
+  "metadata": {
+    "analysis_type": "feature_interaction_exploration",
+    "total_pairwise_interactions": 21,
+    "total_triple_interactions": 10,
+    "total_composite_features": 10
+  },
+  "pairwise_interactions": [
+    {
+      "feature_1": "total_count",
+      "feature_2": "recent_4",
+      "median_1": 0,
+      "median_2": 0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "total_count",
+      "feature_2": "recent_14",
+      "median_1": 0,
+      "median_2": 0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "total_count",
+      "feature_2": "freshness_bin",
+      "median_1": 0,
+      "median_2": 0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "total_count",
+      "feature_2": "bonus_hit_contribution",
+      "median_1": 0,
+      "median_2": 0.0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_4",
+      "feature_2": "recent_14",
+      "median_1": 0,
+      "median_2": 0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_4",
+      "feature_2": "freshness_bin",
+      "median_1": 0,
+      "median_2": 0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_4",
+      "feature_2": "bonus_hit_contribution",
+      "median_1": 0,
+      "median_2": 0.0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_14",
+      "feature_2": "freshness_bin",
+      "median_1": 0,
+      "median_2": 0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_14",
+      "feature_2": "bonus_hit_contribution",
+      "median_1": 0,
+      "median_2": 0.0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "freshness_bin",
+      "feature_2": "bonus_hit_contribution",
+      "median_1": 0,
+      "median_2": 0.0,
+      "win_rate_high_high": 0.8571,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2863,
+        "high_low": 0,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "total_count",
+      "feature_2": "recent_9",
+      "median_1": 0,
+      "median_2": 1,
+      "win_rate_high_high": 0.8604,
+      "win_rate_high_low": 0.8477,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 1.0148,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2134,
+        "high_low": 729,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_4",
+      "feature_2": "recent_9",
+      "median_1": 0,
+      "median_2": 1,
+      "win_rate_high_high": 0.8604,
+      "win_rate_high_low": 0.8477,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 1.0148,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2134,
+        "high_low": 729,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_9",
+      "feature_2": "recent_14",
+      "median_1": 1,
+      "median_2": 0,
+      "win_rate_high_high": 0.8604,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0.8477,
+      "win_rate_low_low": 0,
+      "interaction_strength": 1.0148,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2134,
+        "high_low": 0,
+        "low_high": 729,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_9",
+      "feature_2": "freshness_bin",
+      "median_1": 1,
+      "median_2": 0,
+      "win_rate_high_high": 0.8604,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0.8477,
+      "win_rate_low_low": 0,
+      "interaction_strength": 1.0148,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2134,
+        "high_low": 0,
+        "low_high": 729,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "recent_9",
+      "feature_2": "bonus_hit_contribution",
+      "median_1": 1,
+      "median_2": 0.0,
+      "win_rate_high_high": 0.8604,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0.8477,
+      "win_rate_low_low": 0,
+      "interaction_strength": 1.0148,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 2134,
+        "high_low": 0,
+        "low_high": 729,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "total_count",
+      "feature_2": "days_since_last",
+      "median_1": 0,
+      "median_2": 17,
+      "win_rate_high_high": 0.8569,
+      "win_rate_high_low": 0.8575,
+      "win_rate_low_high": 0,
+      "win_rate_low_low": 0,
+      "interaction_strength": 0.9993,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 1502,
+        "high_low": 1361,
+        "low_high": 0,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "days_since_last",
+      "feature_2": "recent_4",
+      "median_1": 17,
+      "median_2": 0,
+      "win_rate_high_high": 0.8569,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0.8575,
+      "win_rate_low_low": 0,
+      "interaction_strength": 0.9993,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 1502,
+        "high_low": 0,
+        "low_high": 1361,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "days_since_last",
+      "feature_2": "recent_14",
+      "median_1": 17,
+      "median_2": 0,
+      "win_rate_high_high": 0.8569,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0.8575,
+      "win_rate_low_low": 0,
+      "interaction_strength": 0.9993,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 1502,
+        "high_low": 0,
+        "low_high": 1361,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "days_since_last",
+      "feature_2": "freshness_bin",
+      "median_1": 17,
+      "median_2": 0,
+      "win_rate_high_high": 0.8569,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0.8575,
+      "win_rate_low_low": 0,
+      "interaction_strength": 0.9993,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 1502,
+        "high_low": 0,
+        "low_high": 1361,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "days_since_last",
+      "feature_2": "bonus_hit_contribution",
+      "median_1": 17,
+      "median_2": 0.0,
+      "win_rate_high_high": 0.8569,
+      "win_rate_high_low": 0,
+      "win_rate_low_high": 0.8575,
+      "win_rate_low_low": 0,
+      "interaction_strength": 0.9993,
+      "interaction_type": "synergistic",
+      "sample_sizes": {
+        "high_high": 1502,
+        "high_low": 0,
+        "low_high": 1361,
+        "low_low": 0
+      }
+    },
+    {
+      "feature_1": "days_since_last",
+      "feature_2": "recent_9",
+      "median_1": 17,
+      "median_2": 1,
+      "win_rate_high_high": 0.8647,
+      "win_rate_high_low": 0.8466,
+      "win_rate_low_high": 0.8575,
+      "win_rate_low_low": 0.8571,
+      "interaction_strength": 0.0096,
+      "interaction_type": "neutral",
+      "sample_sizes": {
+        "high_high": 850,
+        "high_low": 652,
+        "low_high": 1284,
+        "low_low": 77
+      }
+    }
+  ],
+  "threshold_effects": {
+    "total_count": {
+      "bins": [
+        {
+          "bin_index": 0,
+          "range": [
+            0,
+            1
+          ],
+          "win_rate": 0.8571,
+          "sample_size": 2863
+        }
+      ],
+      "thresholds": []
+    },
+    "days_since_last": {
+      "bins": [
+        {
+          "bin_index": 0,
+          "range": [
+            -723.0,
+            -566.2
+          ],
+          "win_rate": 0.8571,
+          "sample_size": 7
+        },
+        {
+          "bin_index": 4,
+          "range": [
+            -95.8,
+            61.0
+          ],
+          "win_rate": 0.857,
+          "sample_size": 2658
+        },
+        {
+          "bin_index": 5,
+          "range": [
+            61.0,
+            217.8
+          ],
+          "win_rate": 0.8534,
+          "sample_size": 191
+        },
+        {
+          "bin_index": 9,
+          "range": [
+            688.2,
+            845.0
+          ],
+          "win_rate": 1.0,
+          "sample_size": 7
+        }
+      ],
+      "thresholds": []
+    },
+    "recent_4": {
+      "bins": [
+        {
+          "bin_index": 0,
+          "range": [
+            0.0,
+            0.4
+          ],
+          "win_rate": 0.8516,
+          "sample_size": 1456
+        },
+        {
+          "bin_index": 2,
+          "range": [
+            0.8,
+            1.2
+          ],
+          "win_rate": 0.858,
+          "sample_size": 1014
+        },
+        {
+          "bin_index": 5,
+          "range": [
+            2.0,
+            2.4
+          ],
+          "win_rate": 0.8646,
+          "sample_size": 325
+        },
+        {
+          "bin_index": 7,
+          "range": [
+            2.8,
+            3.2
+          ],
+          "win_rate": 0.9206,
+          "sample_size": 63
+        },
+        {
+          "bin_index": 9,
+          "range": [
+            3.6,
+            4.0
+          ],
+          "win_rate": 1.0,
+          "sample_size": 5
+        }
+      ],
+      "thresholds": []
+    },
+    "recent_9": {
+      "bins": [
+        {
+          "bin_index": 0,
+          "range": [
+            0.0,
+            0.6
+          ],
+          "win_rate": 0.8477,
+          "sample_size": 729
+        },
+        {
+          "bin_index": 1,
+          "range": [
+            0.6,
+            1.2
+          ],
+          "win_rate": 0.8521,
+          "sample_size": 1082
+        },
+        {
+          "bin_index": 3,
+          "range": [
+            1.8,
+            2.4
+          ],
+          "win_rate": 0.8643,
+          "sample_size": 663
+        },
+        {
+          "bin_index": 5,
+          "range": [
+            3.0,
+            3.6
+          ],
+          "win_rate": 0.8711,
+          "sample_size": 287
+        },
+        {
+          "bin_index": 6,
+          "range": [
+            3.6,
+            4.2
+          ],
+          "win_rate": 0.9,
+          "sample_size": 80
+        },
+        {
+          "bin_index": 8,
+          "range": [
+            4.8,
+            5.4
+          ],
+          "win_rate": 0.85,
+          "sample_size": 20
+        },
+        {
+          "bin_index": 9,
+          "range": [
+            5.4,
+            6.0
+          ],
+          "win_rate": 1.0,
+          "sample_size": 2
+        }
+      ],
+      "thresholds": []
+    },
+    "recent_14": {
+      "bins": [
+        {
+          "bin_index": 0,
+          "range": [
+            0,
+            1
+          ],
+          "win_rate": 0.8571,
+          "sample_size": 2863
+        }
+      ],
+      "thresholds": []
+    },
+    "freshness_bin": {
+      "bins": [
+        {
+          "bin_index": 0,
+          "range": [
+            0.0,
+            0.2
+          ],
+          "win_rate": 0.8516,
+          "sample_size": 1456
+        },
+        {
+          "bin_index": 5,
+          "range": [
+            1.0,
+            1.2
+          ],
+          "win_rate": 0.858,
+          "sample_size": 1014
+        },
+        {
+          "bin_index": 9,
+          "range": [
+            1.8,
+            2.0
+          ],
+          "win_rate": 0.8753,
+          "sample_size": 393
+        }
+      ],
+      "thresholds": []
+    }
+  },
+  "triple_interactions": [
+    {
+      "category": "medium",
+      "freshness_bin": 1,
+      "recency": "recent",
+      "win_rate": 0.8901,
+      "lift_over_baseline": 1.038,
+      "sample_size": 182,
+      "wins": 162
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 2,
+      "recency": "very_recent",
+      "win_rate": 0.8853,
+      "lift_over_baseline": 1.033,
+      "sample_size": 279,
+      "wins": 247
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 0,
+      "recency": "recent",
+      "win_rate": 0.871,
+      "lift_over_baseline": 1.016,
+      "sample_size": 62,
+      "wins": 54
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 1,
+      "recency": "very_recent",
+      "win_rate": 0.8618,
+      "lift_over_baseline": 1.005,
+      "sample_size": 427,
+      "wins": 368
+    },
+    {
+      "category": "medium",
+      "freshness_bin": 0,
+      "recency": "recent",
+      "win_rate": 0.8584,
+      "lift_over_baseline": 1.001,
+      "sample_size": 226,
+      "wins": 194
+    },
+    {
+      "category": "cold",
+      "freshness_bin": 0,
+      "recency": "old",
+      "win_rate": 0.8532,
+      "lift_over_baseline": 0.995,
+      "sample_size": 804,
+      "wins": 686
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 2,
+      "recency": "recent",
+      "win_rate": 0.8496,
+      "lift_over_baseline": 0.991,
+      "sample_size": 113,
+      "wins": 96
+    },
+    {
+      "category": "medium",
+      "freshness_bin": 0,
+      "recency": "old",
+      "win_rate": 0.8415,
+      "lift_over_baseline": 0.982,
+      "sample_size": 284,
+      "wins": 239
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 0,
+      "recency": "very_recent",
+      "win_rate": 0.8421,
+      "lift_over_baseline": 0.982,
+      "sample_size": 76,
+      "wins": 64
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 1,
+      "recency": "recent",
+      "win_rate": 0.8383,
+      "lift_over_baseline": 0.978,
+      "sample_size": 402,
+      "wins": 337
+    }
+  ],
+  "recommended_composite_features": [
+    {
+      "composite_name": "total_count_x_recent_4_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if total_count >= 0 else 0) * (1 if recent_4 >= 0 else 0)",
+      "description": "Binary interaction: both total_count and recent_4 are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "total_count_x_recent_14_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if total_count >= 0 else 0) * (1 if recent_14 >= 0 else 0)",
+      "description": "Binary interaction: both total_count and recent_14 are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "total_count_x_freshness_bin_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if total_count >= 0 else 0) * (1 if freshness_bin >= 0 else 0)",
+      "description": "Binary interaction: both total_count and freshness_bin are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "total_count_x_bonus_hit_contribution_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if total_count >= 0 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
+      "description": "Binary interaction: both total_count and bonus_hit_contribution are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "recent_4_x_recent_14_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if recent_4 >= 0 else 0) * (1 if recent_14 >= 0 else 0)",
+      "description": "Binary interaction: both recent_4 and recent_14 are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "recent_4_x_freshness_bin_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if recent_4 >= 0 else 0) * (1 if freshness_bin >= 0 else 0)",
+      "description": "Binary interaction: both recent_4 and freshness_bin are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "recent_4_x_bonus_hit_contribution_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if recent_4 >= 0 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
+      "description": "Binary interaction: both recent_4 and bonus_hit_contribution are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "recent_14_x_freshness_bin_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if recent_14 >= 0 else 0) * (1 if freshness_bin >= 0 else 0)",
+      "description": "Binary interaction: both recent_14 and freshness_bin are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "recent_14_x_bonus_hit_contribution_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if recent_14 >= 0 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
+      "description": "Binary interaction: both recent_14 and bonus_hit_contribution are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    },
+    {
+      "composite_name": "freshness_bin_x_bonus_hit_contribution_interaction",
+      "type": "pairwise_interaction",
+      "formula": "(1 if freshness_bin >= 0 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
+      "description": "Binary interaction: both freshness_bin and bonus_hit_contribution are high",
+      "expected_win_rate_when_true": 0.8571,
+      "interaction_strength": 3.0,
+      "interaction_type": "synergistic"
+    }
+  ]
+}
