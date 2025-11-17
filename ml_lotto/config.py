@@ -164,34 +164,29 @@ MODEL_1_CONFIG = {
     'generic_count': 0,
 
     'features': [
-        # Core timing signals (3 features)
-        'days_since_last',              # When number last appeared
+        # Unique pattern signals NOT in interactions (6 features)
+        'appearance_volatility',        # Temporal consistency (HIGH importance 0.54!)
+        'max_gap_ratio',                # Gap distribution (HIGH importance 0.52!)
+        'gap_consistency_score',        # Consistency metric (0.16)
+        'freshness_momentum',           # Recent × freshness (0.16)
+        'days_since_last',              # Core timing
         'recency_zone_score',           # Optimal window detection
-        'recent_4',                     # Immediate momentum
 
-        # Unique pattern signals (5 features - HIGH importance, no redundancy)
-        'appearance_volatility',        # Temporal consistency (0.3829 importance!)
-        'current_freshness_bin',        # Freshness state (0.3152 importance!)
-        'max_gap_ratio',                # Gap distribution (0.1971 importance!)
-        'gap_consistency_score',        # Consistency metric (0.1611 importance!)
-        'freshness_momentum',           # Recent × freshness (0.1580 importance!)
-
-        # Bonus contribution
-        'bonus_hit_contribution',       # Bonus transition signal
-
-        # Pairwise interactions (10 features - now with room to shine!)
+        # Pairwise interactions (10 features - capture base feature relationships)
+        # These encode: total_count, recent_4, recent_14, freshness_bin, bonus_hit_contribution
         'PAIRWISE_INTERACTIONS',
 
-        # Triple interactions (3 features - NEW!)
+        # Triple interactions (3 features - capture category × freshness × recency)
         'TRIPLE_INTERACTIONS',
 
-        # CRITICAL constraints (4 features - MUST HAVE for valid draws!)
+        # CRITICAL constraints (4 features - MUST enforce for valid draws!)
         'odd_even_json',                # 80% of draws are 3 odd + 3 even
         'window_saturation_penalty',    # Avoid over-saturated windows
         'range_spread_json',            # Range distribution
         'sum_contribution_json',        # Sum contribution
     ],
-    # Total: ~26 features (critical constraints included)
+    # Total: 23 features (removed redundant base features captured by interactions)
+    # Removed: recent_4, current_freshness_bin, bonus_hit_contribution (redundant with interactions)
 
     'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers
 
