@@ -185,12 +185,13 @@ MODEL_1_CONFIG = {
         # Triple interactions (3 features - NEW!)
         'TRIPLE_INTERACTIONS',
 
-        # Essential constraints (3 features)
+        # CRITICAL constraints (4 features - MUST HAVE for valid draws!)
+        'odd_even_json',                # 80% of draws are 3 odd + 3 even
         'window_saturation_penalty',    # Avoid over-saturated windows
         'range_spread_json',            # Range distribution
         'sum_contribution_json',        # Sum contribution
     ],
-    # Total: ~25 features (down from 30, less redundancy)
+    # Total: ~26 features (critical constraints included)
 
     'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers
 
