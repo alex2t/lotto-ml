@@ -164,19 +164,19 @@ MODEL_1_CONFIG = {
     'generic_count': 0,
 
     'features': [
-        # Unique pattern signals NOT in interactions (6 features)
-        'appearance_volatility',        # Temporal consistency (HIGH importance 0.54!)
-        'max_gap_ratio',                # Gap distribution (HIGH importance 0.52!)
+        # Reduced pattern signals - REMOVED dominant features to let interactions shine!
+        # REMOVED: 'appearance_volatility' (0.6440 - too dominant)
+        # REMOVED: 'max_gap_ratio' (0.6856 - too dominant)
         'gap_consistency_score',        # Consistency metric (0.16)
-        'freshness_momentum',           # Recent × freshness (0.16)
+        'freshness_momentum',           # Recent × freshness (0.28)
         'days_since_last',              # Core timing
         'recency_zone_score',           # Optimal window detection
 
-        # Pairwise interactions (10 features - capture base feature relationships)
+        # Pairwise interactions (10 features - NOW THE MAIN SIGNAL!)
         # These encode: total_count, recent_4, recent_14, freshness_bin, bonus_hit_contribution
         'PAIRWISE_INTERACTIONS',
 
-        # Triple interactions (3 features - capture category × freshness × recency)
+        # Triple interactions (3 features - category × freshness × recency)
         'TRIPLE_INTERACTIONS',
 
         # CRITICAL constraints (4 features - MUST enforce for valid draws!)
@@ -185,8 +185,8 @@ MODEL_1_CONFIG = {
         'range_spread_json',            # Range distribution
         'sum_contribution_json',        # Sum contribution
     ],
-    # Total: 23 features (removed redundant base features captured by interactions)
-    # Removed: recent_4, current_freshness_bin, bonus_hit_contribution (redundant with interactions)
+    # Total: 21 features (REMOVED 2 dominant features: appearance_volatility, max_gap_ratio)
+    # This allows interaction features to drive the selection instead of being overpowered
 
     'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers
 
