@@ -6,8 +6,9 @@ Orchestrates all analysis phases and generates output files
 
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
 from lotto_analysis.config import (
-    CSV_FILE, TOTAL_DRAWS, TRAINING_DATA, NUM_DRAWS, 
+    CSV_FILE, TOTAL_DRAWS, TRAINING_DATA, NUM_DRAWS,
     OUTPUT_FILE_MAIN, OUTPUT_FILE_PERIODS, OUTPUT_FILE_HISTORY,
     OUTPUT_FILE_7_NUMBERS, OUTPUT_FILE_DISTRIBUTIONS,
     SCENARIOS, MAX_NUMBER,
@@ -48,6 +49,12 @@ from analysis.bonus_analysis import (
 )
 from lotto_analysis.analyzers.window_saturation_analyzer import generate_window_saturation_data
 from lotto_analysis.analyzers.recency_zone_analyzer import generate_recency_zones_data
+
+# Import feature interaction analyzer (Phase 15)
+from lotto_analysis.analyzers.feature_interaction_analyzer import (
+    generate_feature_interaction_analysis,
+    save_feature_interaction_outputs
+)
 
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis,
@@ -578,49 +585,17 @@ def main():
     print("Discovering non-linear feature interactions for ML prediction...")
     print("This generates interaction features for Model 1 enhancement")
 
-    # Run the feature_interaction_explorer.py script
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent / 'analysis'))
-
     try:
-        from feature_interaction_explorer import (
-            load_draw_history,
-            build_feature_matrix,
-            analyze_pairwise_interactions,
-            analyze_threshold_effects,
-            analyze_triple_interactions,
-            generate_composite_features,
-            save_outputs
-        )
+        print("\n  Generating feature interaction analysis...")
+        interaction_analysis = generate_feature_interaction_analysis(draw_history_log)
 
-        print("\n  Loading draw history for interaction analysis...")
-        full_history, sorted_draws = load_draw_history()
-        print(f"  ✓ Loaded {len(sorted_draws)} draws")
-
-        print("  Building feature matrix...")
-        records = build_feature_matrix(sorted_draws)
-        print(f"  ✓ Built matrix with {len(records)} records")
-
-        print("  Analyzing pairwise interactions...")
-        interactions = analyze_pairwise_interactions(records)
-        print(f"  ✓ Analyzed {len(interactions)} feature pairs")
-
-        print("  Detecting threshold effects...")
-        threshold_effects = analyze_threshold_effects(records)
-        print(f"  ✓ Analyzed thresholds for {len(threshold_effects)} features")
-
-        print("  Analyzing triple interactions...")
-        triple_interactions = analyze_triple_interactions(records)
-        print(f"  ✓ Found {len(triple_interactions)} triple interaction patterns")
-
-        print("  Generating composite feature recommendations...")
-        composite_features = generate_composite_features(
-            interactions, threshold_effects, triple_interactions
-        )
-        print(f"  ✓ Generated {len(composite_features)} composite feature recommendations")
+        print(f"  ✓ Analyzed {interaction_analysis['metadata']['total_draws']} draws")
+        print(f"  ✓ Found {interaction_analysis['metadata']['total_pairwise_interactions']} pairwise interactions")
+        print(f"  ✓ Found {interaction_analysis['metadata']['total_triple_interactions']} triple interactions")
+        print(f"  ✓ Generated {interaction_analysis['metadata']['total_composite_features']} composite features")
 
         print("  Saving interaction analysis outputs...")
-        save_outputs(interactions, threshold_effects, triple_interactions, composite_features)
+        save_feature_interaction_outputs(interaction_analysis, output_dir="data/analysis")
         print("  ✓ Interaction analysis complete")
 
     except Exception as e:

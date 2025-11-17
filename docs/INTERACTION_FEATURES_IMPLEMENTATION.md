@@ -24,14 +24,21 @@ This document describes the implementation of pairwise and triple interaction fe
 
 ### 1. Dynamic Interaction Analysis (Phase 15 in `drawpick.py`)
 
-**File Modified**: `drawpick.py` (lines 574-630)
+**File Modified**: `drawpick.py` (lines 581-605)
+**File Created**: `lotto_analysis/analyzers/feature_interaction_analyzer.py`
 
-Added Phase 15 that runs the feature interaction explorer automatically:
+Added Phase 15 that runs the feature interaction analyzer:
 - Analyzes pairwise feature interactions
 - Detects threshold effects
 - Identifies triple interactions (category × freshness × recency)
 - Generates composite feature recommendations
 - Saves to `data/analysis/` directory
+
+**Architecture**:
+- Follows proper separation of concerns
+- `analysis/` folder: For exploratory testing and discovering patterns
+- `lotto_analysis/analyzers/`: For production data generation (NEW analyzer added here)
+- `ml_lotto/`: For ML models
 
 **Output Files**:
 - `data/analysis/lotto_feature_interactions.json` - Full analysis with all interactions
@@ -432,19 +439,26 @@ A test script `test_interactions.py` has been created that validates:
 ## Files Modified/Created
 
 ### Modified Files
-1. `drawpick.py` - Added Phase 15 for interaction analysis
+1. `drawpick.py` - Added Phase 15 for interaction analysis (fixed Path import, proper analyzer integration)
 2. `ml_lotto/features/extractor.py` - Added interaction feature calculation
 3. `ml_lotto/config.py` - Added PAIRWISE_INTERACTIONS to Model 1
 
 ### Created Files
-1. `ml_lotto/features/interactions.py` - New interaction calculator module
-2. `test_interactions.py` - Test script for validation
-3. `docs/INTERACTION_FEATURES_IMPLEMENTATION.md` - This document
+1. `lotto_analysis/analyzers/feature_interaction_analyzer.py` - **NEW production analyzer** (follows proper architecture)
+2. `ml_lotto/features/interactions.py` - Interaction calculator module (loads from JSON)
+3. `test_interactions.py` - Test script for validation
+4. `docs/INTERACTION_FEATURES_IMPLEMENTATION.md` - This document
 
 ### Generated Files (by `drawpick.py`)
 1. `data/analysis/lotto_feature_interactions.json` - Full interaction analysis
 2. `data/analysis/lotto_interaction_summary.csv` - Top 50 interactions
 3. `data/analysis/lotto_composite_features.json` - Composite feature recommendations
+
+### Architecture Note
+- **Proper Separation of Concerns**:
+  - `analysis/` folder: Exploratory testing only
+  - `lotto_analysis/analyzers/`: Production data generation ← **NEW analyzer here**
+  - `ml_lotto/`: ML models and feature loading
 
 ---
 
