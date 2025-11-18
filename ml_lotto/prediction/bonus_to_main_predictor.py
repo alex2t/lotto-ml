@@ -17,7 +17,7 @@ def generate_bonus_to_main_predictions(
     current_bonus_window: List[Any],
     category_dict: Dict,
     num_predictions: int = 3
-) -> List[int]:
+) -> Tuple[List[int], List[Dict[str, Any]]]:
     """
     Generate predictions for numbers from recent bonus window that will appear as main.
 
@@ -30,7 +30,9 @@ def generate_bonus_to_main_predictions(
         num_predictions: Number of predictions to generate (default 3)
 
     Returns:
-        List of predicted numbers
+        Tuple of (selected_numbers, all_predictions_data)
+        - selected_numbers: List of predicted numbers (length = num_predictions)
+        - all_predictions_data: List of dicts with number, probability, category for top 6
     """
     if not current_bonus_window:
         print("\n⚠️  No numbers in current bonus window")
@@ -132,7 +134,18 @@ def generate_bonus_to_main_predictions(
               f"[{pred['category']:6s}] "
               f"({pred['draws_since_bonus']} draws ago)")
 
-    return selected
+    # Prepare top 6 predictions data for file output
+    top_6_data = []
+    for i, pred in enumerate(predictions[:6]):
+        top_6_data.append({
+            'number': pred['number'],
+            'probability': pred['probability'],
+            'category': pred['category'],
+            'draws_since_bonus': pred['draws_since_bonus'],
+            'rank': i + 1
+        })
+
+    return selected, top_6_data
 
 
 def assign_bonus_to_main_to_models(
