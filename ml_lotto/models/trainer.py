@@ -118,7 +118,7 @@ def analyze_feature_importance(
     feature_names: List[str],
     model_name: str,
     top_n: int = 10
-) -> Optional[pd.DataFrame]:
+) -> Optional[List[Dict[str, Any]]]:
     """
     Analyze and display feature importance after training.
 
@@ -129,7 +129,8 @@ def analyze_feature_importance(
         top_n: Number of top features to display
 
     Returns:
-        DataFrame with feature importance scores, or None if not applicable
+        List of dicts with top N feature importance data, or None if not applicable
+        Format: [{'feature': name, 'importance': value, 'abs_importance': value}, ...]
     """
     try:
         # Get the calibrated classifier from pipeline
@@ -175,7 +176,16 @@ def analyze_feature_importance(
             if len(low_importance) > 5:
                 print(f"      ... and {len(low_importance) - 5} more")
 
-        return importance_df
+        # Return top N as list of dicts for file output
+        top_features = []
+        for idx, row in importance_df.head(top_n).iterrows():
+            top_features.append({
+                'feature': row['feature'],
+                'importance': float(row['importance']),
+                'abs_importance': float(row['abs_importance'])
+            })
+
+        return top_features
 
     except Exception as e:
         print(f"  ⚠️  Could not analyze feature importance: {e}")
@@ -241,7 +251,7 @@ def train_model(
     model_index: int,
     exclude_bonus: bool = False,
     val_df: pd.DataFrame = None
-) -> Tuple[Any, List[str]]:
+) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]]]:
     """
     Train a single model based on its configuration with optional validation evaluation.
 
@@ -254,7 +264,7 @@ def train_model(
         val_df: Optional validation DataFrame for evaluation
 
     Returns:
-        Tuple of (trained_pipeline, selected_features)
+        Tuple of (trained_pipeline, selected_features, feature_importance_data)
     """
     print(f"\n→ Model {model_index}: {model_config['name']}")
     print(f"  Description: {model_config['description']}")
@@ -292,6 +302,8 @@ def train_model(
 
     print(f"  ✓ Training complete")
 
+    feature_importance_data = None
+
     # Evaluate on validation set if provided
     if val_df is not None and len(val_df) > 0:
         X_val = val_df[selected_features].values
@@ -313,7 +325,7 @@ def train_model(
             print(f"  ⚠️  Warning: Possible overfitting detected (diff: {train_accuracy - val_accuracy:.4f})")
 
         # Feature Importance Analysis (NEW v3.11)
-        analyze_feature_importance(
+        feature_importance_data = analyze_feature_importance(
             pipeline,
             selected_features,
             model_config['name']
@@ -327,14 +339,14 @@ def train_model(
             model_config['name']
         )
 
-    return pipeline, selected_features
+    return pipeline, selected_features, feature_importance_data
 
 
 def train_all_models(
     model_configs: List[Dict[str, Any]],
     all_draws: List[Dict[str, Any]],
     features_dict: Dict[int, Dict[str, Any]]
-) -> Tuple[Dict[str, Any], Dict[str, List[str]]]:
+) -> Tuple[Dict[str, Any], Dict[str, List[str]], Dict[str, Optional[List[Dict[str, Any]]]]]:
     """
     Train all configured models with specialized training strategies and proper validation.
 
@@ -344,9 +356,10 @@ def train_all_models(
         features_dict: Feature values for all numbers
 
     Returns:
-        Tuple of (models_dict, model_features_dict)
+        Tuple of (models_dict, model_features_dict, feature_importance_dict)
         - models_dict: {model_name: {'pipeline': pipeline, 'config': config}}
         - model_features_dict: {model_name: [feature_names]}
+        - feature_importance_dict: {model_name: [top feature importance data]}
     """
     print("\n" + "="*70)
     print("TRAINING MULTIPLE ML MODELS WITH SPECIALIZED OBJECTIVES")
@@ -420,6 +433,7 @@ def train_all_models(
     # Train each model with proper train/validation split
     models = {}
     model_features = {}
+    feature_importance = {}
 
     for idx, model_config in enumerate(model_configs, 1):
         model_name = f"model_{idx}"
@@ -434,7 +448,7 @@ def train_all_models(
             val_df_to_use = val_df_standard
             exclude_bonus = False
 
-        pipeline, selected_features = train_model(
+        pipeline, selected_features, importance_data = train_model(
             model_config,
             train_df_to_use,
             all_feature_names,
@@ -448,9 +462,10 @@ def train_all_models(
             'config': model_config
         }
         model_features[model_name] = selected_features
+        feature_importance[model_name] = importance_data
 
     print("\n" + "="*70)
     print("✓ ALL MODELS TRAINED WITH PROPER VALIDATION")
     print("="*70)
 
-    return models, model_features
+    return models, model_features, feature_importance
