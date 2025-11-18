@@ -578,14 +578,14 @@ def main():
         category_dict = {num: features_dict[num]['category'] for num in range(1, 48) if num in features_dict}
         
         try:
-            bonus_predictions = generate_bonus_predictions(
+            bonus_predictions, bonus_top_6_data = generate_bonus_predictions(
                 bonus_pipeline,
                 bonus_features,
                 bonus_features_dict,
                 category_dict,
                 num_predictions=3
             )
-            print(f"✓ Generated {len(bonus_predictions)} bonus predictions")
+            print(f"✓ Generated {len(bonus_predictions)} bonus predictions (top 6 data captured for file output)")
         except Exception as e:
             print(f"✗ Error generating bonus predictions: {e}")
             import traceback
@@ -653,7 +653,7 @@ def main():
         print(f"  Using LIVE window (adapts to most recent draws)")
 
         try:
-            bonus_to_main_predictions = generate_bonus_to_main_predictions(
+            bonus_to_main_predictions, bonus_to_main_top_6_data = generate_bonus_to_main_predictions(
                 bonus_to_main_pipeline,
                 bonus_to_main_features,
                 bonus_to_main_features_dict,
@@ -661,7 +661,7 @@ def main():
                 category_dict,
                 num_predictions=3
             )
-            print(f"✓ Generated {len(bonus_to_main_predictions)} bonus-to-main predictions: {bonus_to_main_predictions}")
+            print(f"✓ Generated {len(bonus_to_main_predictions)} bonus-to-main predictions (top 6 data captured for file output)")
         except Exception as e:
             print(f"✗ Error generating bonus-to-main predictions: {e}")
             import traceback
@@ -838,6 +838,27 @@ def main():
                             pct = (count / pool_data['pool_size'] * 100) if pool_data['pool_size'] > 0 else 0
                             f.write(f"  C{bin_val}: {count:2d} numbers ({pct:5.1f}%)\n")
                         f.write("\n")
+
+                    # Add BONUS predictions (top 6 with probabilities)
+                    f.write("=" * 70 + "\n")
+                    f.write("BONUS BALL PREDICTIONS (Top 6)\n")
+                    f.write("=" * 70 + "\n")
+                    for pred in bonus_top_6_data:
+                        f.write(f"#{pred['rank']}. Number {pred['number']:2d}: "
+                                f"{pred['probability']*100:5.1f}% probability "
+                                f"[{pred['category']:6s}]\n")
+                    f.write("\n")
+
+                    # Add BONUS-TO-MAIN predictions (top 6 with probabilities)
+                    f.write("=" * 70 + "\n")
+                    f.write("BONUS-TO-MAIN PREDICTIONS (Top 6)\n")
+                    f.write("=" * 70 + "\n")
+                    for pred in bonus_to_main_top_6_data:
+                        f.write(f"#{pred['rank']}. Number {pred['number']:2d}: "
+                                f"{pred['probability']*100:5.1f}% probability "
+                                f"[{pred['category']:6s}] "
+                                f"({pred['draws_since_bonus']} draws since bonus)\n")
+                    f.write("\n")
 
                 print("\n✓ Results saved to 'lottery_picks.txt'")
             except Exception as e:
