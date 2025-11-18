@@ -675,9 +675,9 @@ def main():
         
         print("\nStep 6: Training MAIN NUMBER prediction models...")
         training_start = time.time()
-        
+
         try:
-            models, model_features = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
+            models, model_features, feature_importance = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
             print(f"\n✓ Main model training completed in {time.time() - training_start:.2f} seconds")
 
             # Model training validation
@@ -819,7 +819,15 @@ def main():
                         else:
                             f.write(f"Bonus Ball: None (jackpot optimizer - main 6 only)\n")
                             f.write(f"Complete: {sorted(line['numbers'])} (6 main only)\n")
-                        f.write(f"Description: {line['description']}\n\n")
+                        f.write(f"Description: {line['description']}\n")
+
+                        # Add Top 10 Most Important Features for this model
+                        model_name = f"model_{line['model_index']}"
+                        if model_name in feature_importance and feature_importance[model_name]:
+                            f.write(f"\nTop 10 Most Important Features:\n")
+                            for i, feat in enumerate(feature_importance[model_name], 1):
+                                f.write(f"  {i:2d}. {feat['feature']:35s} : {feat['abs_importance']:8.4f}\n")
+                        f.write("\n")
 
                     # Add Model 4 pool data
                     if pool_data:
@@ -830,6 +838,15 @@ def main():
                         f.write(f"Total Candidates: {pool_data['pool_size']}\n")
                         f.write(f"Quality Score: {pool_data['quality_score']:.0f}/100\n\n")
                         f.write(f"Full Pool (ranked by probability): {pool_data['pool']}\n\n")
+
+                        # HMC Category Breakdown
+                        f.write("HMC Category Breakdown:\n")
+                        for candidate in pool_data['all_candidates']:
+                            num = candidate['number']
+                            cat = candidate['category']
+                            prob = candidate['probability']
+                            f.write(f"  #{num:2d}  [{cat:6s}]  prob={prob:.4f}\n")
+                        f.write("\n")
 
                         # Freshness distribution
                         f.write("Freshness Distribution:\n")
