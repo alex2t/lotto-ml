@@ -17,24 +17,26 @@ def generate_bonus_predictions(
     bonus_features_dict: Dict[int, Dict[str, Any]],
     category_dict: Dict[int, str],
     num_predictions: int = 3
-) -> List[int]:
+) -> Tuple[List[int], List[Dict[str, Any]]]:
     """
     Generate N diverse bonus ball predictions.
-    
+
     Strategy:
         Prediction 1: Highest probability from optimal pool (excluding recent)
         Prediction 2: Second-tier probability with category diversity
         Prediction 3: Alternative high-probability pick with category balance
-    
+
     Args:
         bonus_pipeline: Trained bonus prediction model
         bonus_features: Feature names used by model
         bonus_features_dict: Feature values for all numbers
         category_dict: HMC category for each number
         num_predictions: Number of predictions to generate (default: 3)
-        
+
     Returns:
-        List of predicted bonus numbers (length = num_predictions)
+        Tuple of (selected_numbers, all_predictions_data)
+        - selected_numbers: List of predicted bonus numbers (length = num_predictions)
+        - all_predictions_data: List of dicts with number, probability, category for top 6
     """
     print("\n" + "="*70)
     print("GENERATING BONUS BALL PREDICTIONS")
@@ -113,8 +115,18 @@ def generate_bonus_predictions(
     
     print(f"\n✓ Generated {len(predictions)} bonus predictions: {predictions}")
     print(f"  Category distribution: {[category_dict.get(p, 'unknown') for p in predictions]}")
-    
-    return predictions
+
+    # Prepare top 6 predictions data for file output
+    top_6_data = []
+    for i, (num, prob, cat) in enumerate(available_pool[:6]):
+        top_6_data.append({
+            'number': num,
+            'probability': prob,
+            'category': cat,
+            'rank': i + 1
+        })
+
+    return predictions, top_6_data
 
 
 def assign_bonus_to_models(
