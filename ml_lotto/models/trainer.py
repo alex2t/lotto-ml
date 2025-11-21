@@ -18,6 +18,7 @@ from imblearn.over_sampling import SMOTE
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW, VALIDATION_SPLIT_RATIO
 from ml_lotto.models.pipelines import create_model_pipeline
 from ml_lotto.features.extractor import expand_feature_selection, get_all_feature_names
+from ml_lotto.features.feature_selection import select_features
 from ml_lotto.models.model_metrics import (
     calculate_comprehensive_metrics,
     compare_models,
@@ -259,7 +260,10 @@ def train_model(
     exclude_bonus: bool = False,
     val_df: pd.DataFrame = None,
     use_smote: bool = True,
-    smote_sampling_strategy: float = 0.3
+    smote_sampling_strategy: float = 0.3,
+    enable_feature_selection: bool = True,
+    correlation_threshold: float = 0.95,
+    importance_threshold: float = 0.005
 ) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]], Optional[Dict[str, Any]]]:
     """
     Train a single model based on its configuration with comprehensive validation metrics.
@@ -273,7 +277,10 @@ def train_model(
         val_df: Optional validation DataFrame for evaluation
         use_smote: Whether to apply SMOTE for handling class imbalance (default: True)
         smote_sampling_strategy: Target ratio of minority class after SMOTE (default: 0.3)
-                                  0.3 means minority will be 30% of majority class size
+                                  0.3 means minority will be 30% of minority class size
+        enable_feature_selection: Whether to apply feature selection (default: True)
+        correlation_threshold: Correlation threshold for redundancy removal (default: 0.95)
+        importance_threshold: Minimum importance threshold (default: 0.005)
 
     Returns:
         Tuple of (trained_pipeline, selected_features, feature_importance_data, metrics)
@@ -285,7 +292,7 @@ def train_model(
     if exclude_bonus:
         print(f"  ⭐ SPECIAL TRAINING: Optimized for MAIN 6 BALLS (jackpot focus)")
 
-    # Expand feature selection
+    # Expand feature selection (based on config)
     selected_features = expand_feature_selection(
         model_config['features'],
         all_feature_names
@@ -294,7 +301,32 @@ def train_model(
     if not selected_features:
         raise ValueError(f"No features selected for Model {model_index}")
 
-    print(f"  Selected features ({len(selected_features)}): {selected_features}")
+    print(f"  Initial features ({len(selected_features)}): {selected_features}")
+
+    # Apply intelligent feature selection if enabled
+    if enable_feature_selection:
+        print(f"\n  🔍 FEATURE SELECTION ENABLED")
+        selected_features, selection_info = select_features(
+            train_df,
+            selected_features,
+            enable_correlation_filter=True,
+            enable_importance_filter=True,
+            correlation_threshold=correlation_threshold,
+            importance_threshold=importance_threshold,
+            verbose=True
+        )
+
+        if not selected_features:
+            print(f"  ⚠️  WARNING: Feature selection removed all features!")
+            print(f"  ⚠️  Reverting to original feature set...")
+            selected_features = expand_feature_selection(
+                model_config['features'],
+                all_feature_names
+            )
+    else:
+        print(f"  ℹ️  Feature selection disabled")
+
+    print(f"\n  Final features ({len(selected_features)}): {selected_features}")
     print(f"  HMC Configuration: {model_config['hot_count']}H-{model_config['medium_count']}M-"
           f"{model_config['cold_count']}C+{model_config['generic_count']}G")
     print(f"  Diversity Penalty: {model_config['diversity_penalty']*100:.0f}%")

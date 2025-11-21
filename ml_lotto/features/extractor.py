@@ -55,7 +55,8 @@ def extract_features_from_hmc_json(
     sum_contribution_json_data: Dict[int, float] = None,
     long_term_features: Dict[int, Dict[str, float]] = None,
     advanced_pattern_features: Dict[int, Dict[str, float]] = None,
-    consecutive_pairs_validated: Dict[str, Any] = None
+    consecutive_pairs_validated: Dict[str, Any] = None,
+    rolling_stats_features: Dict[int, Dict[str, float]] = None
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating ALL custom features including new JSON features.
@@ -80,6 +81,7 @@ def extract_features_from_hmc_json(
         sum_contribution_json_data: NEW - Sum contribution from JSON
         long_term_features: NEW - Long-term pattern analysis features
         advanced_pattern_features: NEW - Volatility and trend features (v3.13)
+        rolling_stats_features: NEW - Rolling statistics features (v3.14)
 
     Returns:
         Dictionary mapping number (1-47) -> feature dictionary
@@ -173,6 +175,13 @@ def extract_features_from_hmc_json(
     else:
         print(f"  ✓ Loaded advanced pattern features (volatility, trend)")
 
+    # Load rolling statistics features (v3.14)
+    if rolling_stats_features is None:
+        rolling_stats_features = {}
+        print(f"  ⚠️  No rolling statistics features provided")
+    else:
+        print(f"  ✓ Loaded rolling statistics features ({len(rolling_stats_features)} numbers)")
+
     # Calculate window saturation scores (NEW v3.10)
     print("  Calculating window_saturation_penalty feature...")
     window_saturation_data = {}
@@ -226,6 +235,9 @@ def extract_features_from_hmc_json(
         # Get advanced pattern features for this number (v3.13)
         adv_feat = advanced_pattern_features.get(num, {}) if advanced_pattern_features else {}
 
+        # Get rolling statistics features for this number (v3.14)
+        roll_feat = rolling_stats_features.get(num, {}) if rolling_stats_features else {}
+
         # Calculate NEW interaction features for defaults
         recent_4_count = recent_fields.get('recent_4', 0)
         freshness_momentum_default = recent_4_count * freshness_weight_score
@@ -258,6 +270,7 @@ def extract_features_from_hmc_json(
             **recent_fields,
             **lt_feat,  # Add long-term pattern features
             **adv_feat,  # NEW v3.13: Add advanced pattern features
+            **roll_feat,  # NEW v3.14: Add rolling statistics features
         }
         
         if num_key not in hmc_data:
@@ -306,6 +319,9 @@ def extract_features_from_hmc_json(
         # Get advanced pattern features for this number (v3.13)
         adv_feat = advanced_pattern_features.get(num, {}) if advanced_pattern_features else {}
 
+        # Get rolling statistics features for this number (v3.14)
+        roll_feat = rolling_stats_features.get(num, {}) if rolling_stats_features else {}
+
         # Calculate NEW interaction features for better freshness discrimination
         # These replace redundant one-hot encoded weights with meaningful interactions
         recent_4_count = recent_fields.get('recent_4', 0)
@@ -349,6 +365,7 @@ def extract_features_from_hmc_json(
             **recent_fields,
             **lt_feat,  # Add long-term pattern features
             **adv_feat,  # NEW v3.13: Add advanced pattern features
+            **roll_feat,  # NEW v3.14: Add rolling statistics features
         }
 
         # NEW v3.16: Add pairwise and triple interaction features (dynamic from JSON)
