@@ -94,6 +94,8 @@ from ml_lotto.features.extractor import (
     expand_feature_selection
 )
 
+from ml_lotto.features.rolling_stats import extract_rolling_features_for_all_numbers
+
 from ml_lotto.features.base import get_dynamic_recent_keys
 
 from ml_lotto.features.timing import (
@@ -507,6 +509,13 @@ def main():
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
 
+        print("  Calculating rolling statistics features...")
+        rolling_stats_features = extract_rolling_features_for_all_numbers(
+            all_draws,
+            training_start_draw=TRAINING_START_DRAW,
+            max_number=MAX_NUMBER
+        )
+
         print("  Combining all MAIN NUMBER features...")
         try:
             features_dict = extract_features_from_hmc_json(
@@ -529,7 +538,8 @@ def main():
                 sum_contribution_json_data,
                 long_term_pattern_features,
                 advanced_pattern_features_dict,
-                consecutive_pairs_validated
+                consecutive_pairs_validated,
+                rolling_stats_features
             )
             print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
         except Exception as e:
