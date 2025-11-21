@@ -3,16 +3,18 @@ trainer.py
 ==========
 Handles ML model training with configurable algorithms and features.
 
-VERSION: 3.12 (Comprehensive Metrics Edition)
-- Added AUC-ROC curves and comprehensive evaluation metrics
-- Integrated model comparison and visualization
-- Enhanced validation with precision/recall/F1 metrics
+VERSION: 3.13 (SMOTE + Threshold Optimization Edition)
+- Added SMOTE (Synthetic Minority Over-sampling Technique) to handle class imbalance
+- Implemented optimal threshold selection based on F1-score maximization
+- Added metrics comparison between default (0.5) and optimal thresholds
+- Enhanced validation with both threshold strategies
 """
 
 import pandas as pd
 import numpy as np
 from typing import Dict, Any, List, Tuple, Optional
 from sklearn.calibration import calibration_curve
+from imblearn.over_sampling import SMOTE
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW, VALIDATION_SPLIT_RATIO
 from ml_lotto.models.pipelines import create_model_pipeline
 from ml_lotto.features.extractor import expand_feature_selection, get_all_feature_names
@@ -255,7 +257,9 @@ def train_model(
     all_feature_names: List[str],
     model_index: int,
     exclude_bonus: bool = False,
-    val_df: pd.DataFrame = None
+    val_df: pd.DataFrame = None,
+    use_smote: bool = True,
+    smote_sampling_strategy: float = 0.3
 ) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]], Optional[Dict[str, Any]]]:
     """
     Train a single model based on its configuration with comprehensive validation metrics.
@@ -267,6 +271,9 @@ def train_model(
         model_index: Model number (for display)
         exclude_bonus: If True, model is trained on main 6 only
         val_df: Optional validation DataFrame for evaluation
+        use_smote: Whether to apply SMOTE for handling class imbalance (default: True)
+        smote_sampling_strategy: Target ratio of minority class after SMOTE (default: 0.3)
+                                  0.3 means minority will be 30% of majority class size
 
     Returns:
         Tuple of (trained_pipeline, selected_features, feature_importance_data, metrics)
@@ -296,7 +303,45 @@ def train_model(
     X_train = train_df[selected_features].values
     y_train = train_df['hit'].values
 
-    # Calculate class imbalance for XGBoost
+    # Print class distribution before SMOTE
+    n_positive = sum(y_train)
+    n_negative = len(y_train) - n_positive
+    print(f"\n  📊 Class Distribution (Before SMOTE):")
+    print(f"     Positive (wins): {n_positive:5d} ({n_positive/len(y_train)*100:.2f}%)")
+    print(f"     Negative (losses): {n_negative:5d} ({n_negative/len(y_train)*100:.2f}%)")
+    print(f"     Imbalance ratio: {n_negative/n_positive:.2f}:1")
+
+    # Apply SMOTE if enabled
+    if use_smote and n_positive > 0:
+        try:
+            print(f"\n  🔄 Applying SMOTE (sampling_strategy={smote_sampling_strategy})...")
+            smote = SMOTE(
+                sampling_strategy=smote_sampling_strategy,
+                random_state=42,
+                k_neighbors=min(5, n_positive - 1)  # Ensure k_neighbors <= minority samples
+            )
+            X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+            # Print class distribution after SMOTE
+            n_positive_new = sum(y_train_resampled)
+            n_negative_new = len(y_train_resampled) - n_positive_new
+            print(f"  ✓ SMOTE applied successfully")
+            print(f"\n  📊 Class Distribution (After SMOTE):")
+            print(f"     Positive (wins): {n_positive_new:5d} ({n_positive_new/len(y_train_resampled)*100:.2f}%)")
+            print(f"     Negative (losses): {n_negative_new:5d} ({n_negative_new/len(y_train_resampled)*100:.2f}%)")
+            print(f"     Imbalance ratio: {n_negative_new/n_positive_new:.2f}:1")
+            print(f"     Synthetic samples added: {n_positive_new - n_positive}")
+
+            X_train = X_train_resampled
+            y_train = y_train_resampled
+
+        except Exception as e:
+            print(f"  ⚠️  SMOTE failed: {e}")
+            print(f"  ⚠️  Continuing with original imbalanced data...")
+    else:
+        print(f"  ℹ️  SMOTE disabled - using original class distribution")
+
+    # Calculate class imbalance for XGBoost (using resampled data if SMOTE was applied)
     scale_pos_weight = None
     if model_config['algorithm'] == 'xgboost':
         scale_pos_weight = (len(y_train) - sum(y_train)) / sum(y_train)

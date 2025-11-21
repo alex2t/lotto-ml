@@ -3,11 +3,17 @@ model_metrics.py
 ================
 Comprehensive model evaluation metrics for lottery prediction.
 
+VERSION: 3.13 (Optimal Threshold Edition)
+- Added optimal threshold selection based on F1-score maximization
+- Metrics calculated with both default (0.5) and optimal thresholds
+- Enhanced reporting to show improvement from threshold optimization
+
 Includes:
 - AUC-ROC curves
 - Precision/Recall/F1
 - Calibration curves
 - Classification reports
+- Threshold optimization
 """
 
 import numpy as np
@@ -61,30 +67,58 @@ def calculate_comprehensive_metrics(
     metrics = {}
 
     # ========================================
-    # 1. BASIC ACCURACY METRICS
+    # 1. PROBABILITY-BASED PREDICTIONS (DO THIS FIRST)
     # ========================================
-    train_pred = pipeline.predict(X_train)
-    val_pred = pipeline.predict(X_val)
+    train_proba = pipeline.predict_proba(X_train)[:, 1]
+    val_proba = pipeline.predict_proba(X_val)[:, 1]
 
-    train_accuracy = (train_pred == y_train).sum() / len(y_train)
-    val_accuracy = (val_pred == y_val).sum() / len(y_val)
-
-    metrics['train_accuracy'] = train_accuracy
-    metrics['val_accuracy'] = val_accuracy
-    metrics['overfitting_gap'] = train_accuracy - val_accuracy
+    # ========================================
+    # 2. FIND OPTIMAL THRESHOLD (EARLY)
+    # ========================================
+    # Find optimal threshold that maximizes F1 on validation set
+    precisions_temp, recalls_temp, pr_thresholds_temp = precision_recall_curve(y_val, val_proba)
+    f1_scores_temp = 2 * (precisions_temp * recalls_temp) / (precisions_temp + recalls_temp + 1e-10)
+    optimal_idx = np.argmax(f1_scores_temp)
+    optimal_threshold = pr_thresholds_temp[optimal_idx] if optimal_idx < len(pr_thresholds_temp) else 0.5
 
     print(f"\n{'='*70}")
     print(f"  📊 MODEL EVALUATION: {model_name}")
     print(f"{'='*70}")
-    print(f"  Train Accuracy: {train_accuracy:.4f}")
-    print(f"  Val Accuracy:   {val_accuracy:.4f}")
-    print(f"  Overfit Gap:    {metrics['overfitting_gap']:.4f}")
+    print(f"  ⚙️  Optimal Threshold: {optimal_threshold:.4f} (maximizes F1-score)")
+    print(f"  ⚙️  Default Threshold: 0.5")
 
     # ========================================
-    # 2. PROBABILITY-BASED PREDICTIONS
+    # 3. BASIC ACCURACY METRICS - WITH BOTH THRESHOLDS
     # ========================================
-    train_proba = pipeline.predict_proba(X_train)[:, 1]
-    val_proba = pipeline.predict_proba(X_val)[:, 1]
+    # Default threshold (0.5)
+    train_pred_default = pipeline.predict(X_train)
+    val_pred_default = pipeline.predict(X_val)
+
+    # Optimal threshold
+    train_pred_optimal = (train_proba >= optimal_threshold).astype(int)
+    val_pred_optimal = (val_proba >= optimal_threshold).astype(int)
+
+    train_accuracy_default = (train_pred_default == y_train).sum() / len(y_train)
+    val_accuracy_default = (val_pred_default == y_val).sum() / len(y_val)
+
+    train_accuracy_optimal = (train_pred_optimal == y_train).sum() / len(y_train)
+    val_accuracy_optimal = (val_pred_optimal == y_val).sum() / len(y_val)
+
+    # Store default threshold metrics (for backwards compatibility)
+    metrics['train_accuracy'] = train_accuracy_default
+    metrics['val_accuracy'] = val_accuracy_default
+    metrics['overfitting_gap'] = train_accuracy_default - val_accuracy_default
+
+    # Store optimal threshold metrics
+    metrics['train_accuracy_optimal'] = train_accuracy_optimal
+    metrics['val_accuracy_optimal'] = val_accuracy_optimal
+    metrics['optimal_threshold'] = optimal_threshold
+
+    print(f"\n  📊 Accuracy Comparison:")
+    print(f"     {'Metric':<20} {'Default (0.5)':<15} {'Optimal':<15} {'Improvement':<15}")
+    print(f"     {'-'*65}")
+    print(f"     {'Train Accuracy':<20} {train_accuracy_default:<15.4f} {train_accuracy_optimal:<15.4f} {train_accuracy_optimal-train_accuracy_default:+.4f}")
+    print(f"     {'Val Accuracy':<20} {val_accuracy_default:<15.4f} {val_accuracy_optimal:<15.4f} {val_accuracy_optimal-val_accuracy_default:+.4f}")
 
     # ========================================
     # 3. AUC-ROC METRICS ⭐
@@ -133,23 +167,44 @@ def calculate_comprehensive_metrics(
         print(f"     💾 Saved ROC curve to {output_dir}/{model_name}_roc_curve.png")
 
     # ========================================
-    # 4. PRECISION-RECALL METRICS
+    # 4. PRECISION-RECALL METRICS - WITH BOTH THRESHOLDS
     # ========================================
-    precision_val = precision_score(y_val, val_pred, zero_division=0)
-    recall_val = recall_score(y_val, val_pred, zero_division=0)
-    f1_val = f1_score(y_val, val_pred, zero_division=0)
+    # Default threshold (0.5)
+    precision_val_default = precision_score(y_val, val_pred_default, zero_division=0)
+    recall_val_default = recall_score(y_val, val_pred_default, zero_division=0)
+    f1_val_default = f1_score(y_val, val_pred_default, zero_division=0)
+
+    # Optimal threshold
+    precision_val_optimal = precision_score(y_val, val_pred_optimal, zero_division=0)
+    recall_val_optimal = recall_score(y_val, val_pred_optimal, zero_division=0)
+    f1_val_optimal = f1_score(y_val, val_pred_optimal, zero_division=0)
+
+    # Average precision (independent of threshold)
     avg_precision_val = average_precision_score(y_val, val_proba)
 
-    metrics['precision'] = precision_val
-    metrics['recall'] = recall_val
-    metrics['f1_score'] = f1_val
+    # Store default threshold metrics (for backwards compatibility)
+    metrics['precision'] = precision_val_default
+    metrics['recall'] = recall_val_default
+    metrics['f1_score'] = f1_val_default
     metrics['avg_precision'] = avg_precision_val
 
-    print(f"\n  📈 Precision-Recall Metrics:")
-    print(f"     Precision: {precision_val:.4f}  (When model predicts 1, how often correct?)")
-    print(f"     Recall:    {recall_val:.4f}  (Of all winning numbers, how many caught?)")
-    print(f"     F1-Score:  {f1_val:.4f}  (Harmonic mean of precision & recall)")
-    print(f"     Avg Precision: {avg_precision_val:.4f}  (Area under PR curve)")
+    # Store optimal threshold metrics
+    metrics['precision_optimal'] = precision_val_optimal
+    metrics['recall_optimal'] = recall_val_optimal
+    metrics['f1_score_optimal'] = f1_val_optimal
+
+    print(f"\n  📈 Precision-Recall-F1 Comparison:")
+    print(f"     {'Metric':<20} {'Default (0.5)':<15} {'Optimal':<15} {'Improvement':<15}")
+    print(f"     {'-'*65}")
+    print(f"     {'Precision':<20} {precision_val_default:<15.4f} {precision_val_optimal:<15.4f} {precision_val_optimal-precision_val_default:+.4f}")
+    print(f"     {'Recall':<20} {recall_val_default:<15.4f} {recall_val_optimal:<15.4f} {recall_val_optimal-recall_val_default:+.4f}")
+    print(f"     {'F1-Score':<20} {f1_val_default:<15.4f} {f1_val_optimal:<15.4f} {f1_val_optimal-f1_val_default:+.4f}")
+    print(f"     {'Avg Precision':<20} {avg_precision_val:<15.4f} {'(threshold-free)':<15}")
+
+    print(f"\n  💡 Interpretation:")
+    print(f"     Precision: When model predicts WIN, how often is it correct?")
+    print(f"     Recall:    Of all actual WINS, how many did model catch?")
+    print(f"     F1-Score:  Harmonic mean of precision & recall")
 
     # Precision-Recall curve
     precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_val, val_proba)
@@ -172,32 +227,61 @@ def calculate_comprehensive_metrics(
         print(f"     💾 Saved PR curve to {output_dir}/{model_name}_pr_curve.png")
 
     # ========================================
-    # 5. CONFUSION MATRIX
+    # 5. CONFUSION MATRIX - WITH BOTH THRESHOLDS
     # ========================================
-    cm = confusion_matrix(y_val, val_pred)
-    tn, fp, fn, tp = cm.ravel()
+    # Default threshold
+    cm_default = confusion_matrix(y_val, val_pred_default)
+    tn_default, fp_default, fn_default, tp_default = cm_default.ravel()
 
+    # Optimal threshold
+    cm_optimal = confusion_matrix(y_val, val_pred_optimal)
+    tn_optimal, fp_optimal, fn_optimal, tp_optimal = cm_optimal.ravel()
+
+    # Store default threshold confusion matrix (for backwards compatibility)
     metrics['confusion_matrix'] = {
-        'true_negatives': int(tn),
-        'false_positives': int(fp),
-        'false_negatives': int(fn),
-        'true_positives': int(tp)
+        'true_negatives': int(tn_default),
+        'false_positives': int(fp_default),
+        'false_negatives': int(fn_default),
+        'true_positives': int(tp_default)
     }
 
-    print(f"\n  🔢 Confusion Matrix:")
+    # Store optimal threshold confusion matrix
+    metrics['confusion_matrix_optimal'] = {
+        'true_negatives': int(tn_optimal),
+        'false_positives': int(fp_optimal),
+        'false_negatives': int(fn_optimal),
+        'true_positives': int(tp_optimal)
+    }
+
+    print(f"\n  🔢 Confusion Matrix Comparison:")
+    print(f"\n     Default Threshold (0.5):")
     print(f"     ┌────────────────────┬──────────┬──────────┐")
     print(f"     │                    │ Pred=0   │ Pred=1   │")
     print(f"     ├────────────────────┼──────────┼──────────┤")
-    print(f"     │ Actual=0 (No win)  │  {tn:5d}   │  {fp:5d}   │")
-    print(f"     │ Actual=1 (Win)     │  {fn:5d}   │  {tp:5d}   │")
+    print(f"     │ Actual=0 (No win)  │  {tn_default:5d}   │  {fp_default:5d}   │")
+    print(f"     │ Actual=1 (Win)     │  {fn_default:5d}   │  {tp_default:5d}   │")
     print(f"     └────────────────────┴──────────┴──────────┘")
 
-    # Calculate specificity and sensitivity
-    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-    sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0  # Same as recall
+    print(f"\n     Optimal Threshold ({optimal_threshold:.4f}):")
+    print(f"     ┌────────────────────┬──────────┬──────────┐")
+    print(f"     │                    │ Pred=0   │ Pred=1   │")
+    print(f"     ├────────────────────┼──────────┼──────────┤")
+    print(f"     │ Actual=0 (No win)  │  {tn_optimal:5d}   │  {fp_optimal:5d}   │")
+    print(f"     │ Actual=1 (Win)     │  {fn_optimal:5d}   │  {tp_optimal:5d}   │")
+    print(f"     └────────────────────┴──────────┴──────────┘")
 
-    print(f"\n     Sensitivity (Recall):  {sensitivity:.4f}")
-    print(f"     Specificity:           {specificity:.4f}")
+    # Calculate specificity and sensitivity for both thresholds
+    specificity_default = tn_default / (tn_default + fp_default) if (tn_default + fp_default) > 0 else 0
+    sensitivity_default = tp_default / (tp_default + fn_default) if (tp_default + fn_default) > 0 else 0
+
+    specificity_optimal = tn_optimal / (tn_optimal + fp_optimal) if (tn_optimal + fp_optimal) > 0 else 0
+    sensitivity_optimal = tp_optimal / (tp_optimal + fn_optimal) if (tp_optimal + fn_optimal) > 0 else 0
+
+    print(f"\n     Sensitivity/Specificity:")
+    print(f"     {'Metric':<20} {'Default (0.5)':<15} {'Optimal':<15}")
+    print(f"     {'-'*50}")
+    print(f"     {'Sensitivity (Recall)':<20} {sensitivity_default:<15.4f} {sensitivity_optimal:<15.4f}")
+    print(f"     {'Specificity':<20} {specificity_default:<15.4f} {specificity_optimal:<15.4f}")
 
     # ========================================
     # 6. CALIBRATION ANALYSIS
@@ -236,28 +320,27 @@ def calculate_comprehensive_metrics(
         print(f"     💾 Saved calibration curve to {output_dir}/{model_name}_calibration.png")
 
     # ========================================
-    # 7. THRESHOLD ANALYSIS
+    # 7. DETAILED CLASSIFICATION REPORT (OPTIMAL THRESHOLD)
     # ========================================
-    # Find optimal threshold that maximizes F1
-    precisions, recalls, pr_thresholds = precision_recall_curve(y_val, val_proba)
-    f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-10)
-    optimal_idx = np.argmax(f1_scores)
-    optimal_threshold = pr_thresholds[optimal_idx] if optimal_idx < len(pr_thresholds) else 0.5
-    optimal_f1 = f1_scores[optimal_idx]
-
-    metrics['optimal_threshold'] = optimal_threshold
-    metrics['optimal_f1'] = optimal_f1
-
-    print(f"\n  ⚙️  Threshold Analysis:")
-    print(f"     Default threshold: 0.5")
-    print(f"     Optimal threshold: {optimal_threshold:.4f} (maximizes F1 = {optimal_f1:.4f})")
-
-    # ========================================
-    # 8. DETAILED CLASSIFICATION REPORT
-    # ========================================
-    print(f"\n  📋 Detailed Classification Report:")
-    report = classification_report(y_val, val_pred, target_names=['No Win', 'Win'], digits=4)
+    print(f"\n  📋 Detailed Classification Report (Using Optimal Threshold {optimal_threshold:.4f}):")
+    report = classification_report(y_val, val_pred_optimal, target_names=['No Win', 'Win'], digits=4)
     print("     " + "\n     ".join(report.split('\n')))
+
+    # ========================================
+    # 8. KEY TAKEAWAYS
+    # ========================================
+    print(f"\n  🎯 KEY TAKEAWAYS:")
+    if f1_val_optimal > f1_val_default:
+        improvement = ((f1_val_optimal - f1_val_default) / (f1_val_default + 1e-10)) * 100
+        print(f"     ✅ Optimal threshold improves F1-score by {improvement:.1f}%")
+        print(f"     ✅ Use threshold={optimal_threshold:.4f} for predictions")
+    else:
+        print(f"     ℹ️  Default threshold (0.5) is already near-optimal")
+
+    if tp_optimal > 0:
+        print(f"     ✅ Model successfully predicts {tp_optimal} winning numbers")
+    else:
+        print(f"     ⚠️  Model predicts 0 winning numbers - needs improvement")
 
     print(f"{'='*70}\n")
 
