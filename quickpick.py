@@ -677,7 +677,7 @@ def main():
         training_start = time.time()
 
         try:
-            models, model_features, feature_importance = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
+            models, model_features, feature_importance, all_metrics = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
             print(f"\n✓ Main model training completed in {time.time() - training_start:.2f} seconds")
 
             # Model training validation

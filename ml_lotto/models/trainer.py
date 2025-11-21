@@ -3,10 +3,10 @@ trainer.py
 ==========
 Handles ML model training with configurable algorithms and features.
 
-VERSION: 3.11 (Feature Importance & Calibration Edition)
-- Added feature importance analysis
-- Added probability calibration validation
-- Enhanced model evaluation metrics
+VERSION: 3.12 (Comprehensive Metrics Edition)
+- Added AUC-ROC curves and comprehensive evaluation metrics
+- Integrated model comparison and visualization
+- Enhanced validation with precision/recall/F1 metrics
 """
 
 import pandas as pd
@@ -16,6 +16,11 @@ from sklearn.calibration import calibration_curve
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW, VALIDATION_SPLIT_RATIO
 from ml_lotto.models.pipelines import create_model_pipeline
 from ml_lotto.features.extractor import expand_feature_selection, get_all_feature_names
+from ml_lotto.models.model_metrics import (
+    calculate_comprehensive_metrics,
+    compare_models,
+    plot_model_comparison
+)
 
 
 def calculate_train_val_split(total_draws: int, split_ratio: float = VALIDATION_SPLIT_RATIO) -> Tuple[int, int]:
@@ -251,9 +256,9 @@ def train_model(
     model_index: int,
     exclude_bonus: bool = False,
     val_df: pd.DataFrame = None
-) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]]]:
+) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]], Optional[Dict[str, Any]]]:
     """
-    Train a single model based on its configuration with optional validation evaluation.
+    Train a single model based on its configuration with comprehensive validation metrics.
 
     Args:
         model_config: Model configuration dictionary
@@ -264,7 +269,7 @@ def train_model(
         val_df: Optional validation DataFrame for evaluation
 
     Returns:
-        Tuple of (trained_pipeline, selected_features, feature_importance_data)
+        Tuple of (trained_pipeline, selected_features, feature_importance_data, metrics)
     """
     print(f"\n→ Model {model_index}: {model_config['name']}")
     print(f"  Description: {model_config['description']}")
@@ -303,52 +308,42 @@ def train_model(
     print(f"  ✓ Training complete")
 
     feature_importance_data = None
+    metrics = None
 
     # Evaluate on validation set if provided
     if val_df is not None and len(val_df) > 0:
         X_val = val_df[selected_features].values
         y_val = val_df['hit'].values
 
-        # Calculate validation accuracy
-        val_predictions = pipeline.predict(X_val)
-        val_accuracy = (val_predictions == y_val).sum() / len(y_val)
+        # Calculate comprehensive metrics including AUC-ROC
+        metrics = calculate_comprehensive_metrics(
+            pipeline=pipeline,
+            X_train=X_train,
+            y_train=y_train,
+            X_val=X_val,
+            y_val=y_val,
+            model_name=model_config['name'],
+            save_plots=True,
+            output_dir='model_metrics'
+        )
 
-        # Calculate train accuracy for comparison
-        train_predictions = pipeline.predict(X_train)
-        train_accuracy = (train_predictions == y_train).sum() / len(y_train)
-
-        print(f"  📊 Train Accuracy: {train_accuracy:.4f}")
-        print(f"  📊 Validation Accuracy: {val_accuracy:.4f}")
-
-        # Check for potential overfitting
-        if train_accuracy - val_accuracy > 0.05:
-            print(f"  ⚠️  Warning: Possible overfitting detected (diff: {train_accuracy - val_accuracy:.4f})")
-
-        # Feature Importance Analysis (NEW v3.11)
+        # Feature Importance Analysis
         feature_importance_data = analyze_feature_importance(
             pipeline,
             selected_features,
             model_config['name']
         )
 
-        # Calibration Validation (NEW v3.11)
-        validate_calibration(
-            pipeline,
-            X_val,
-            y_val,
-            model_config['name']
-        )
-
-    return pipeline, selected_features, feature_importance_data
+    return pipeline, selected_features, feature_importance_data, metrics
 
 
 def train_all_models(
     model_configs: List[Dict[str, Any]],
     all_draws: List[Dict[str, Any]],
     features_dict: Dict[int, Dict[str, Any]]
-) -> Tuple[Dict[str, Any], Dict[str, List[str]], Dict[str, Optional[List[Dict[str, Any]]]]]:
+) -> Tuple[Dict[str, Any], Dict[str, List[str]], Dict[str, Optional[List[Dict[str, Any]]]], Dict[str, Dict[str, Any]]]:
     """
-    Train all configured models with specialized training strategies and proper validation.
+    Train all configured models with comprehensive validation metrics and model comparison.
 
     Args:
         model_configs: List of model configuration dictionaries
@@ -356,10 +351,11 @@ def train_all_models(
         features_dict: Feature values for all numbers
 
     Returns:
-        Tuple of (models_dict, model_features_dict, feature_importance_dict)
+        Tuple of (models_dict, model_features_dict, feature_importance_dict, all_metrics_dict)
         - models_dict: {model_name: {'pipeline': pipeline, 'config': config}}
         - model_features_dict: {model_name: [feature_names]}
         - feature_importance_dict: {model_name: [top feature importance data]}
+        - all_metrics_dict: {model_name: comprehensive metrics dict with AUC-ROC, etc.}
     """
     print("\n" + "="*70)
     print("TRAINING MULTIPLE ML MODELS WITH SPECIALIZED OBJECTIVES")
@@ -434,6 +430,7 @@ def train_all_models(
     models = {}
     model_features = {}
     feature_importance = {}
+    all_metrics = {}
 
     for idx, model_config in enumerate(model_configs, 1):
         model_name = f"model_{idx}"
@@ -448,7 +445,7 @@ def train_all_models(
             val_df_to_use = val_df_standard
             exclude_bonus = False
 
-        pipeline, selected_features, importance_data = train_model(
+        pipeline, selected_features, importance_data, metrics = train_model(
             model_config,
             train_df_to_use,
             all_feature_names,
@@ -464,8 +461,23 @@ def train_all_models(
         model_features[model_name] = selected_features
         feature_importance[model_name] = importance_data
 
+        # Store metrics for comparison
+        if metrics is not None:
+            all_metrics[model_config['name']] = metrics
+
     print("\n" + "="*70)
-    print("✓ ALL MODELS TRAINED WITH PROPER VALIDATION")
+    print("✓ ALL MODELS TRAINED WITH COMPREHENSIVE VALIDATION")
     print("="*70)
 
-    return models, model_features, feature_importance
+    # Generate model comparison report
+    if len(all_metrics) > 0:
+        print("\n" + "="*70)
+        print("GENERATING MODEL COMPARISON REPORT")
+        print("="*70)
+
+        comparison_df = compare_models(all_metrics, output_dir='model_metrics')
+        plot_model_comparison(all_metrics, output_dir='model_metrics')
+
+        print("\n📁 Metrics and visualizations saved to model_metrics/")
+
+    return models, model_features, feature_importance, all_metrics
