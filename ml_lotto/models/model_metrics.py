@@ -3,17 +3,23 @@ model_metrics.py
 ================
 Comprehensive model evaluation metrics for lottery prediction.
 
-VERSION: 3.13 (Optimal Threshold Edition)
+VERSION: 3.15 (Enhanced Metrics Edition)
 - Added optimal threshold selection based on F1-score maximization
 - Metrics calculated with both default (0.5) and optimal thresholds
 - Enhanced reporting to show improvement from threshold optimization
+- Added Top-K Accuracy tracking (lottery-specific metric)
+- Prominent display of PR-AUC (better for imbalanced data)
+- Hit rate calculation helper function
 
 Includes:
 - AUC-ROC curves
 - Precision/Recall/F1
+- Top-K Accuracy (lottery-specific)
+- PR-AUC (Average Precision)
 - Calibration curves
 - Classification reports
 - Threshold optimization
+- Hit rate tracking
 """
 
 import numpy as np
@@ -32,6 +38,92 @@ from sklearn.metrics import (
     recall_score
 )
 from sklearn.calibration import calibration_curve
+
+
+def calculate_topk_accuracy(
+    y_true: np.ndarray,
+    y_proba: np.ndarray,
+    k_values: list = [7, 10, 15, 20]
+) -> Dict[str, float]:
+    """
+    Calculate Top-K accuracy: whether any of the top K predictions are actual winners.
+
+    This is particularly meaningful for lottery prediction where we pick K numbers
+    from predictions and check if any of them match the actual winning numbers.
+
+    Args:
+        y_true: True binary labels (1 = winning number, 0 = not winning)
+        y_proba: Predicted probabilities for each number
+        k_values: List of K values to test (default: [7, 10, 15, 20])
+
+    Returns:
+        Dictionary with Top-K accuracy for each K value
+    """
+    topk_metrics = {}
+
+    # Get indices sorted by probability (highest first)
+    sorted_indices = np.argsort(y_proba)[::-1]
+
+    for k in k_values:
+        # Get top K predictions
+        top_k_indices = sorted_indices[:k]
+
+        # Check if any of top K are actual winners (y_true == 1)
+        hit = int(np.any(y_true[top_k_indices] == 1))
+
+        # Count how many winners in top K
+        num_winners_in_topk = int(np.sum(y_true[top_k_indices]))
+
+        topk_metrics[f'top{k}_hit'] = hit
+        topk_metrics[f'top{k}_winners'] = num_winners_in_topk
+        topk_metrics[f'top{k}_accuracy'] = num_winners_in_topk / min(k, len(y_true))
+
+    return topk_metrics
+
+
+def calculate_hit_rate(
+    predictions_per_draw: list,
+    actuals_per_draw: list,
+    k: int = 7
+) -> Dict[str, Any]:
+    """
+    Calculate hit rate across multiple draws.
+
+    Hit rate = percentage of draws where at least 1 of our top K predictions won.
+
+    Args:
+        predictions_per_draw: List of prediction arrays (probabilities) for each draw
+        actuals_per_draw: List of actual binary labels for each draw
+        k: Number of top predictions to consider (default: 7 for lottery)
+
+    Returns:
+        Dictionary with hit rate statistics
+    """
+    total_draws = len(predictions_per_draw)
+    hits = 0
+    total_winners_caught = 0
+
+    for pred_proba, actual in zip(predictions_per_draw, actuals_per_draw):
+        # Get top K predictions
+        top_k_indices = np.argsort(pred_proba)[::-1][:k]
+
+        # Check if any winners in top K
+        if np.any(actual[top_k_indices] == 1):
+            hits += 1
+
+        # Count winners caught
+        total_winners_caught += int(np.sum(actual[top_k_indices]))
+
+    hit_rate = hits / total_draws if total_draws > 0 else 0
+    avg_winners_per_draw = total_winners_caught / total_draws if total_draws > 0 else 0
+
+    return {
+        'hit_rate': hit_rate,
+        'hits': hits,
+        'total_draws': total_draws,
+        'avg_winners_caught': avg_winners_per_draw,
+        'total_winners_caught': total_winners_caught
+    }
 
 
 def calculate_comprehensive_metrics(
@@ -179,7 +271,7 @@ def calculate_comprehensive_metrics(
     recall_val_optimal = recall_score(y_val, val_pred_optimal, zero_division=0)
     f1_val_optimal = f1_score(y_val, val_pred_optimal, zero_division=0)
 
-    # Average precision (independent of threshold)
+    # Average precision (independent of threshold) - PR-AUC
     avg_precision_val = average_precision_score(y_val, val_proba)
 
     # Store default threshold metrics (for backwards compatibility)
@@ -187,6 +279,7 @@ def calculate_comprehensive_metrics(
     metrics['recall'] = recall_val_default
     metrics['f1_score'] = f1_val_default
     metrics['avg_precision'] = avg_precision_val
+    metrics['pr_auc'] = avg_precision_val  # Alias for clarity
 
     # Store optimal threshold metrics
     metrics['precision_optimal'] = precision_val_optimal
@@ -199,12 +292,49 @@ def calculate_comprehensive_metrics(
     print(f"     {'Precision':<20} {precision_val_default:<15.4f} {precision_val_optimal:<15.4f} {precision_val_optimal-precision_val_default:+.4f}")
     print(f"     {'Recall':<20} {recall_val_default:<15.4f} {recall_val_optimal:<15.4f} {recall_val_optimal-recall_val_default:+.4f}")
     print(f"     {'F1-Score':<20} {f1_val_default:<15.4f} {f1_val_optimal:<15.4f} {f1_val_optimal-f1_val_default:+.4f}")
-    print(f"     {'Avg Precision':<20} {avg_precision_val:<15.4f} {'(threshold-free)':<15}")
+
+    print(f"\n  🎯 PR-AUC (Precision-Recall AUC) - Better for Imbalanced Data:")
+    print(f"     PR-AUC: {avg_precision_val:<15.4f} (threshold-independent)")
+
+    # Interpret PR-AUC
+    baseline_ratio = sum(y_val) / len(y_val)
+    print(f"     Baseline (random): {baseline_ratio:.4f}")
+    if avg_precision_val > baseline_ratio * 1.5:
+        print(f"     ✅ Good: {(avg_precision_val/baseline_ratio):.2f}x better than random")
+    elif avg_precision_val > baseline_ratio * 1.2:
+        print(f"     ⚡ Acceptable: {(avg_precision_val/baseline_ratio):.2f}x better than random")
+    else:
+        print(f"     ⚠️  Weak: Only {(avg_precision_val/baseline_ratio):.2f}x better than random")
 
     print(f"\n  💡 Interpretation:")
     print(f"     Precision: When model predicts WIN, how often is it correct?")
     print(f"     Recall:    Of all actual WINS, how many did model catch?")
     print(f"     F1-Score:  Harmonic mean of precision & recall")
+    print(f"     PR-AUC:    Overall precision-recall trade-off (better than ROC-AUC for imbalanced data)")
+
+    # ========================================
+    # 4.5. TOP-K ACCURACY (LOTTERY-SPECIFIC) ⭐
+    # ========================================
+    print(f"\n  🎰 Top-K Accuracy (Lottery-Specific Metric):")
+    topk_metrics = calculate_topk_accuracy(y_val, val_proba, k_values=[7, 10, 15, 20])
+
+    # Store in main metrics dict
+    metrics.update(topk_metrics)
+
+    print(f"     {'K':<8} {'Hit?':<10} {'Winners':<12} {'Accuracy':<12}")
+    print(f"     {'-'*42}")
+    for k in [7, 10, 15, 20]:
+        hit = topk_metrics[f'top{k}_hit']
+        winners = topk_metrics[f'top{k}_winners']
+        acc = topk_metrics[f'top{k}_accuracy']
+        hit_str = "✅ Yes" if hit else "❌ No"
+        print(f"     Top-{k:<3} {hit_str:<10} {winners:<12} {acc*100:>6.2f}%")
+
+    print(f"\n  💡 Top-K Interpretation:")
+    print(f"     Hit?:     Did we catch at least 1 winner in top K predictions?")
+    print(f"     Winners:  How many winners did we catch in top K?")
+    print(f"     Accuracy: Winners caught / K (lottery success rate)")
+    print(f"     🎯 For lottery: Top-7 is most relevant (pick 7 numbers)")
 
     # Precision-Recall curve
     precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_val, val_proba)
@@ -369,20 +499,23 @@ def compare_models(
     for model_name, metrics in all_metrics.items():
         comparison_data.append({
             'Model': model_name,
-            'Val Accuracy': metrics.get('val_accuracy', 0),
+            'Val Accuracy': metrics.get('val_accuracy_optimal', metrics.get('val_accuracy', 0)),
             'Val AUC-ROC': metrics.get('auc_val', 0),
-            'Precision': metrics.get('precision', 0),
-            'Recall': metrics.get('recall', 0),
-            'F1-Score': metrics.get('f1_score', 0),
-            'Avg Precision': metrics.get('avg_precision', 0),
+            'PR-AUC': metrics.get('pr_auc', metrics.get('avg_precision', 0)),
+            'Precision': metrics.get('precision_optimal', metrics.get('precision', 0)),
+            'Recall': metrics.get('recall_optimal', metrics.get('recall', 0)),
+            'F1-Score': metrics.get('f1_score_optimal', metrics.get('f1_score', 0)),
+            'Top-7 Winners': metrics.get('top7_winners', 0),
+            'Top-7 Accuracy': metrics.get('top7_accuracy', 0),
             'Calibration Error': metrics.get('calibration_error', 0),
-            'Overfit Gap': metrics.get('overfitting_gap', 0)
+            'Overfit Gap': metrics.get('overfitting_gap', 0),
+            'Optimal Threshold': metrics.get('optimal_threshold', 0.5)
         })
 
     comparison_df = pd.DataFrame(comparison_data)
 
-    # Sort by AUC-ROC (most important metric)
-    comparison_df = comparison_df.sort_values('Val AUC-ROC', ascending=False)
+    # Sort by F1-Score (most balanced metric for lottery prediction)
+    comparison_df = comparison_df.sort_values('F1-Score', ascending=False)
 
     # Save to CSV
     comparison_df.to_csv(f"{output_dir}/model_comparison.csv", index=False)
@@ -415,17 +548,29 @@ def plot_model_comparison(
     model_names = list(all_metrics.keys())
 
     metrics_to_plot = [
-        ('val_accuracy', 'Validation Accuracy'),
+        ('val_accuracy_optimal', 'Validation Accuracy (Optimal)'),
         ('auc_val', 'AUC-ROC'),
-        ('f1_score', 'F1-Score'),
-        ('avg_precision', 'Average Precision')
+        ('pr_auc', 'PR-AUC (Better for Imbalanced)'),
+        ('f1_score_optimal', 'F1-Score (Optimal)')
     ]
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     axes = axes.ravel()
 
     for idx, (metric_key, metric_label) in enumerate(metrics_to_plot):
-        values = [all_metrics[model][metric_key] for model in model_names]
+        # Get metric value with fallback to alternative keys
+        values = []
+        for model in model_names:
+            if metric_key in all_metrics[model]:
+                values.append(all_metrics[model][metric_key])
+            elif metric_key == 'val_accuracy_optimal':
+                values.append(all_metrics[model].get('val_accuracy', 0))
+            elif metric_key == 'pr_auc':
+                values.append(all_metrics[model].get('avg_precision', 0))
+            elif metric_key == 'f1_score_optimal':
+                values.append(all_metrics[model].get('f1_score', 0))
+            else:
+                values.append(0)
 
         colors = ['#2ecc71' if v == max(values) else '#3498db' for v in values]
 
