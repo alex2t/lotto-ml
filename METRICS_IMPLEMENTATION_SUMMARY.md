@@ -1,5 +1,7 @@
 # AUC-ROC Implementation Summary
 
+> **Note:** The standalone test script (`test_model_metrics.py`) requires you to save training/validation datasets from quickpick.py first. For automatic metrics during training, integrate the metrics directly into trainer.py instead (see Option 2 below).
+
 ## What You Now Have
 
 I've created a complete AUC-ROC and comprehensive metrics implementation for your lottery prediction models:
@@ -33,10 +35,30 @@ I've created a complete AUC-ROC and comprehensive metrics implementation for you
 
 ## Quick Start: Evaluate Your Models Now
 
-### Option 1: Test Existing Models (No Code Changes)
+### Option 1: Use Standalone Test Script (Requires Dataset Saving)
 
 ```bash
-# If you have trained models already:
+# Step 1: Generate data files
+python drawpick.py
+
+# Step 2: Modify quickpick.py to save datasets (add at the end):
+# --- Add this code after models are trained in quickpick.py ---
+import pickle
+with open('train_df_standard.pkl', 'wb') as f:
+    pickle.dump(train_df_standard, f)
+with open('val_df_standard.pkl', 'wb') as f:
+    pickle.dump(val_df_standard, f)
+with open('train_df_model2.pkl', 'wb') as f:
+    pickle.dump(train_df_model2, f)
+with open('val_df_model2.pkl', 'wb') as f:
+    pickle.dump(val_df_model2, f)
+print('✓ Datasets saved for metrics evaluation')
+# --- End of code to add ---
+
+# Step 3: Run quickpick to train and save datasets
+python quickpick.py
+
+# Step 4: Run metrics evaluation
 python test_model_metrics.py
 ```
 
@@ -48,15 +70,9 @@ python test_model_metrics.py
 - Model comparison table and chart
 - All saved to `model_metrics/` directory
 
-### Option 2: Train New Models with Metrics
+### Option 2: Integrate Into Training (Recommended)
 
-```bash
-# Train models first (creates .pkl files):
-python quickpick.py
-
-# Then evaluate:
-python test_model_metrics.py
-```
+This is the better approach - integrate metrics directly into the training pipeline so they're calculated automatically. See **Integration into Your Training Pipeline** section below.
 
 ---
 

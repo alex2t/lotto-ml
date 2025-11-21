@@ -7,11 +7,17 @@ Standalone script to evaluate existing trained models with comprehensive metrics
 Usage:
     python test_model_metrics.py
 
+Prerequisites:
+    1. Run 'python drawpick.py' to generate data files
+    2. Run 'python quickpick.py' to train models
+    3. Then run this script
+
 This will:
 1. Load your existing models (if available)
-2. Evaluate them with AUC-ROC and other metrics
-3. Generate comparison charts
-4. Save results to model_metrics/
+2. Load training/validation datasets (if saved)
+3. Evaluate them with AUC-ROC and other metrics
+4. Generate comparison charts
+5. Save results to model_metrics/
 """
 
 import sys
@@ -24,18 +30,43 @@ from pathlib import Path
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW, VALIDATION_SPLIT_RATIO
-from ml_lotto.data.loader import load_lottery_data
-from ml_lotto.features.extractor import extract_features, get_all_feature_names
-from ml_lotto.models.trainer import (
-    build_training_dataset,
-    calculate_train_val_split
-)
 from ml_lotto.models.model_metrics import (
     calculate_comprehensive_metrics,
     compare_models,
     plot_model_comparison
 )
+
+
+def load_saved_datasets():
+    """
+    Try to load pre-saved training/validation datasets.
+    Returns dict of datasets or None if not found.
+    """
+    dataset_files = {
+        'train_standard': 'train_df_standard.pkl',
+        'val_standard': 'val_df_standard.pkl',
+        'train_model2': 'train_df_model2.pkl',
+        'val_model2': 'val_df_model2.pkl'
+    }
+
+    datasets = {}
+    all_found = True
+
+    for key, filename in dataset_files.items():
+        if os.path.exists(filename):
+            try:
+                with open(filename, 'rb') as f:
+                    datasets[key] = pickle.load(f)
+            except Exception as e:
+                print(f"⚠️  Could not load {filename}: {e}")
+                all_found = False
+        else:
+            all_found = False
+
+    if all_found:
+        return datasets
+    else:
+        return None
 
 
 def evaluate_saved_models():
@@ -64,70 +95,41 @@ def evaluate_saved_models():
 
     if not available_models:
         print("\n❌ No trained models found!")
-        print("Please run quickpick.py or drawpick.py first to train models.\n")
+        print("\nTo use this script, you need to:")
+        print("  1. Run 'python drawpick.py' to generate data files")
+        print("  2. Run 'python quickpick.py' to train models")
+        print("  3. Modify quickpick.py to save datasets (see instructions below)")
+        print("\nOr integrate metrics directly into trainer.py (see EXAMPLE_trainer_with_metrics.py)\n")
         return
 
     print(f"\n✓ Found {len(available_models)} trained models")
 
-    # Load data
-    print("\n📊 Loading lottery data...")
-    all_draws = load_lottery_data()
-    print(f"   Loaded {len(all_draws)} historical draws")
+    # Try to load pre-saved datasets
+    print("\n📊 Looking for saved datasets...")
+    datasets = load_saved_datasets()
 
-    # Extract features
-    print("\n🔧 Extracting features...")
-    features_dict = extract_features(all_draws)
-    all_feature_names = get_all_feature_names()
-    print(f"   Extracted {len(all_feature_names)} features")
+    if datasets is None:
+        print("\n❌ Saved datasets not found!")
+        print("\nThis script requires training/validation datasets to be saved.")
+        print("\nTo save datasets, add this code at the end of quickpick.py (after training):")
+        print("\n" + "="*70)
+        print("# Save datasets for metrics evaluation")
+        print("import pickle")
+        print("with open('train_df_standard.pkl', 'wb') as f:")
+        print("    pickle.dump(train_df_standard, f)")
+        print("with open('val_df_standard.pkl', 'wb') as f:")
+        print("    pickle.dump(val_df_standard, f)")
+        print("with open('train_df_model2.pkl', 'wb') as f:")
+        print("    pickle.dump(train_df_model2, f)")
+        print("with open('val_df_model2.pkl', 'wb') as f:")
+        print("    pickle.dump(val_df_model2, f)")
+        print("print('✓ Datasets saved for metrics evaluation')")
+        print("="*70)
+        print("\nAlternatively, integrate metrics directly into trainer.py")
+        print("(See EXAMPLE_trainer_with_metrics.py for details)\n")
+        return
 
-    # Calculate split
-    train_end_idx, val_start_idx = calculate_train_val_split(len(all_draws))
-
-    print(f"\n📊 Dataset Split:")
-    print(f"   Total draws: {len(all_draws)}")
-    print(f"   Training: {TRAINING_START_DRAW} to {train_end_idx-1} ({train_end_idx - TRAINING_START_DRAW} draws)")
-    print(f"   Validation: {val_start_idx} to {len(all_draws)-1} ({len(all_draws) - val_start_idx} draws)")
-
-    # Build datasets
-    print("\n🏗️  Building datasets...")
-
-    # Standard dataset (for models 1, 3, 4)
-    train_df_standard = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=False,
-        start_index=TRAINING_START_DRAW,
-        end_index=train_end_idx
-    )
-
-    val_df_standard = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=False,
-        start_index=val_start_idx,
-        end_index=len(all_draws)
-    )
-
-    # Model 2 dataset (main 6 only)
-    train_df_model2 = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=True,
-        start_index=TRAINING_START_DRAW,
-        end_index=train_end_idx
-    )
-
-    val_df_model2 = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=True,
-        start_index=val_start_idx,
-        end_index=len(all_draws)
-    )
+    print("✓ Loaded pre-saved datasets")
 
     # Model configurations
     model_configs = {
@@ -175,50 +177,62 @@ def evaluate_saved_models():
             continue
 
         # Load features
+        selected_features = None
         try:
             with open(config['features_file'], 'rb') as f:
                 selected_features = pickle.load(f)
         except Exception as e:
             print(f"⚠️  Could not load features from {config['features_file']}: {e}")
-            print(f"   Using all available features")
-            selected_features = all_feature_names
 
         # Select appropriate dataset
         if config['dataset'] == 'model2':
-            train_df = train_df_model2
-            val_df = val_df_model2
+            train_df = datasets['train_model2']
+            val_df = datasets['val_model2']
         else:
-            train_df = train_df_standard
-            val_df = val_df_standard
+            train_df = datasets['train_standard']
+            val_df = datasets['val_standard']
 
-        # Filter features that exist in dataset
-        available_features = [f for f in selected_features if f in train_df.columns]
+        # Get features
+        if selected_features is None:
+            # Try to infer from dataset columns (exclude 'hit' label)
+            selected_features = [col for col in train_df.columns if col != 'hit']
+            print(f"⚠️  Using all available features from dataset: {len(selected_features)}")
+        else:
+            # Filter features that exist in dataset
+            available_features = [f for f in selected_features if f in train_df.columns]
+            if len(available_features) < len(selected_features):
+                print(f"⚠️  {len(selected_features) - len(available_features)} features not in dataset")
+            selected_features = available_features
 
-        if len(available_features) == 0:
+        if len(selected_features) == 0:
             print(f"❌ No valid features found for {config['name']}")
             continue
 
-        print(f"Using {len(available_features)} features")
+        print(f"Using {len(selected_features)} features")
 
         # Prepare data
-        X_train = train_df[available_features].values
+        X_train = train_df[selected_features].values
         y_train = train_df['hit'].values
-        X_val = val_df[available_features].values
+        X_val = val_df[selected_features].values
         y_val = val_df['hit'].values
 
         # Calculate comprehensive metrics
-        metrics = calculate_comprehensive_metrics(
-            pipeline=pipeline,
-            X_train=X_train,
-            y_train=y_train,
-            X_val=X_val,
-            y_val=y_val,
-            model_name=config['name'],
-            save_plots=True,
-            output_dir='model_metrics'
-        )
-
-        all_metrics[config['name']] = metrics
+        try:
+            metrics = calculate_comprehensive_metrics(
+                pipeline=pipeline,
+                X_train=X_train,
+                y_train=y_train,
+                X_val=X_val,
+                y_val=y_val,
+                model_name=config['name'],
+                save_plots=True,
+                output_dir='model_metrics'
+            )
+            all_metrics[config['name']] = metrics
+        except Exception as e:
+            print(f"❌ Error evaluating {config['name']}: {e}")
+            import traceback
+            traceback.print_exc()
 
     # Generate comparison
     if len(all_metrics) > 0:
