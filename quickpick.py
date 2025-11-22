@@ -621,7 +621,7 @@ def main():
         try:
             # Import helpers
             from ml_lotto.utils.bonus_window import calculate_current_bonus_window
-            from ml_lotto.features.bonus_to_main_features import extract_bonus_to_main_features_dict
+            from ml_lotto.features.bonus_to_main_features import create_unified_bonus_to_main_features
 
             # Calculate LIVE bonus window from recent draws
             print("  Calculating current bonus window from recent draws...")
@@ -632,13 +632,14 @@ def main():
             )
             print(f"  ✓ Live bonus window calculated: {len(live_bonus_window)} entries")
 
-            # Extract features using LIVE window
-            bonus_to_main_features_dict = extract_bonus_to_main_features_dict(
+            # Extract unified features (bonus-to-main + main + interactions) using LIVE window
+            bonus_to_main_features_dict = create_unified_bonus_to_main_features(
                 bonus_to_main_data,
-                features_dict,
-                current_bonus_window=live_bonus_window
+                features_dict,  # Pass main features for merging
+                current_bonus_window=live_bonus_window,
+                include_interactions=True  # Enable interactions for logistic regression
             )
-            print(f"  ✓ Bonus-to-main features extracted for {len(bonus_to_main_features_dict)} numbers")
+            print(f"  ✓ Unified bonus-to-main features created for {len(bonus_to_main_features_dict)} numbers")
         except Exception as e:
             print(f"  ✗ Error extracting bonus-to-main features: {e}")
             import traceback
