@@ -5,6 +5,7 @@ Creates ML model pipelines with scaling and calibration.
 """
 
 import xgboost as xgb
+from catboost import CatBoostClassifier
 from typing import Dict, Any, Optional
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
@@ -19,17 +20,17 @@ def create_model_pipeline(
 ) -> Pipeline:
     """
     Create a model pipeline based on configuration.
-    
+
     Args:
         model_config: Model configuration dictionary containing:
-            - algorithm: 'logistic_regression' or 'xgboost'
+            - algorithm: 'logistic_regression', 'random_forest', 'xgboost', or 'catboost'
             - algorithm_params: Parameters for the base estimator
             - calibration: Calibration method and CV folds
         scale_pos_weight: Optional class imbalance weight for XGBoost
-        
+
     Returns:
         Pipeline with scaler and calibrated classifier
-        
+
     Pipeline Structure:
         1. StandardScaler: Normalizes features to zero mean, unit variance
         2. CalibratedClassifierCV: Wraps base classifier for probability calibration
@@ -52,6 +53,9 @@ def create_model_pipeline(
         if scale_pos_weight is not None:
             algo_params['scale_pos_weight'] = scale_pos_weight
         base_clf = xgb.XGBClassifier(**algo_params)
+
+    elif algorithm == 'catboost':
+        base_clf = CatBoostClassifier(**algo_params)
 
     else:
         raise ValueError(f"Unknown algorithm: {algorithm}")
