@@ -10,6 +10,6 @@
   "search_type": "grid",
   "scoring": "f1",
   "cv_splits": 3,
-  "elapsed_time": 21.19120693206787,
+  "elapsed_time": 15.424653053283691,
   "total_fits": 24
 }

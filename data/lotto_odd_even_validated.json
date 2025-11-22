@@ -6,19 +6,19 @@
             "binomial_test",
             "fdr_correction"
         ],
-        "total_draws": 409,
+        "total_draws": 410,
         "significance_level": 0.05,
         "fdr_correction_applied": true
     },
     "overall_distribution_test": {
         "significant": false,
-        "chi2_stat": 0.0,
-        "p_value": 1.0,
-        "cramers_v": 0.0,
-        "total_odd": 1227,
-        "total_even": 1227,
-        "odd_percentage": 50.0,
-        "even_percentage": 50.0,
+        "chi2_stat": 0.0016260162601626016,
+        "p_value": 0.9678349062634422,
+        "cramers_v": 0.0008130081300813008,
+        "total_odd": 1229,
+        "total_even": 1231,
+        "odd_percentage": 49.959349593495936,
+        "even_percentage": 50.040650406504064,
         "interpretation": "Odd/even distribution is balanced (no significant deviation from 50/50)"
     },
     "per_number_affinity": {
@@ -56,7 +56,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.8230761359895022
+            "p_value_adjusted": 0.8363639082455948
         },
         "5": {
             "affinity_score": 0.8888888888888888,
@@ -137,7 +137,7 @@
             "preferred_type": "odd",
             "number_parity": "odd",
             "alignment": "aligned",
-            "p_value_adjusted": 1.8636418944960271e-06
+            "p_value_adjusted": 2.0833110576339616e-06
         },
         "14": {
             "affinity_score": 0.36,
@@ -194,13 +194,13 @@
             "p_value_adjusted": 0.01029816935490605
         },
         "20": {
-            "affinity_score": 0.543859649122807,
+            "affinity_score": 0.5344827586206896,
             "statistically_validated": false,
-            "p_value": 0.5966417603730826,
+            "p_value": 0.6940040940761318,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.787149734974613
+            "p_value_adjusted": 0.8363639082455948
         },
         "21": {
             "affinity_score": 0.8870967741935484,
@@ -248,13 +248,13 @@
             "p_value_adjusted": 1.944468855207954e-05
         },
         "26": {
-            "affinity_score": 0.4137931034482759,
+            "affinity_score": 0.4067796610169492,
             "statistically_validated": false,
-            "p_value": 0.23704711476271959,
+            "p_value": 0.19252645776146274,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.3806376737438767
+            "p_value_adjusted": 0.32316941124245535
         },
         "27": {
             "affinity_score": 0.8275862068965517,
@@ -272,7 +272,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.787149734974613
+            "p_value_adjusted": 0.8096397274024592
         },
         "29": {
             "affinity_score": 0.6842105263157895,
@@ -302,13 +302,13 @@
             "p_value_adjusted": 1.107977125987721e-05
         },
         "32": {
-            "affinity_score": 0.4727272727272728,
+            "affinity_score": 0.4642857142857143,
             "statistically_validated": false,
-            "p_value": 0.7877061896700431,
+            "p_value": 0.6888797607233395,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.8687825985394063
+            "p_value_adjusted": 0.8363639082455948
         },
         "33": {
             "affinity_score": 0.825,
@@ -338,13 +338,13 @@
             "p_value_adjusted": 3.425562465042553e-06
         },
         "36": {
-            "affinity_score": 0.4528301886792453,
+            "affinity_score": 0.4444444444444444,
             "statistically_validated": false,
-            "p_value": 0.5831321542611763,
+            "p_value": 0.49661743531793345,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.787149734974613
+            "p_value_adjusted": 0.7294068581232148
         },
         "37": {
             "affinity_score": 0.8888888888888888,
@@ -362,7 +362,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.787149734974613
+            "p_value_adjusted": 0.8096397274024592
         },
         "39": {
             "affinity_score": 0.8333333333333334,
@@ -380,7 +380,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.787149734974613
+            "p_value_adjusted": 0.8096397274024592
         },
         "41": {
             "affinity_score": 0.7843137254901961,
@@ -398,7 +398,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.3357669400041374
+            "p_value_adjusted": 0.32418876965916715
         },
         "43": {
             "affinity_score": 0.8679245283018868,
@@ -407,7 +407,7 @@
             "preferred_type": "odd",
             "number_parity": "odd",
             "alignment": "aligned",
-            "p_value_adjusted": 3.763004404078174e-07
+            "p_value_adjusted": 4.7037555050977176e-07
         },
         "44": {
             "affinity_score": 0.4565217391304348,
@@ -416,16 +416,16 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.8230761359895022
+            "p_value_adjusted": 0.8363639082455948
         },
         "45": {
-            "affinity_score": 0.85,
+            "affinity_score": 0.8360655737704918,
             "statistically_validated": true,
-            "p_value": 3.085035609438902e-08,
+            "p_value": 9.624425087798039e-08,
             "preferred_type": "odd",
             "number_parity": "odd",
             "alignment": "aligned",
-            "p_value_adjusted": 3.62491684109071e-07
+            "p_value_adjusted": 9.046959582530157e-07
         },
         "46": {
             "affinity_score": 0.6739130434782609,
@@ -437,13 +437,13 @@
             "p_value_adjusted": 0.04868463377128137
         },
         "47": {
-            "affinity_score": 0.8888888888888888,
+            "affinity_score": 0.8695652173913043,
             "statistically_validated": true,
-            "p_value": 7.878384167270269e-08,
+            "p_value": 3.1028037028590916e-07,
             "preferred_type": "odd",
             "number_parity": "odd",
             "alignment": "aligned",
-            "p_value_adjusted": 6.171400931028378e-07
+            "p_value_adjusted": 2.0833110576339616e-06
         }
     },
     "validated_scores": {
@@ -466,23 +466,23 @@
         "17": 0.8260869565217391,
         "18": 0.4878048780487805,
         "19": 0.7058823529411765,
-        "20": 0.543859649122807,
+        "20": 0.5344827586206896,
         "21": 0.8870967741935484,
         "22": 0.5272727272727272,
         "23": 0.7222222222222222,
         "24": 0.5272727272727272,
         "25": 0.8035714285714286,
-        "26": 0.4137931034482759,
+        "26": 0.4067796610169492,
         "27": 0.8275862068965517,
         "28": 0.4576271186440678,
         "29": 0.6842105263157895,
         "30": 0.4821428571428571,
         "31": 0.8571428571428571,
-        "32": 0.4727272727272728,
+        "32": 0.4642857142857143,
         "33": 0.825,
         "34": 0.5952380952380952,
         "35": 0.7971014492753623,
-        "36": 0.4528301886792453,
+        "36": 0.4444444444444444,
         "37": 0.8888888888888888,
         "38": 0.45614035087719296,
         "39": 0.8333333333333334,
@@ -491,9 +491,9 @@
         "42": 0.5901639344262295,
         "43": 0.8679245283018868,
         "44": 0.4565217391304348,
-        "45": 0.85,
+        "45": 0.8360655737704918,
         "46": 0.6739130434782609,
-        "47": 0.8888888888888888
+        "47": 0.8695652173913043
     },
     "num_significant_deviations": 25
 }
