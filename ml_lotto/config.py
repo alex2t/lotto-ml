@@ -153,8 +153,8 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
 }
 
 MODEL_1_CONFIG = {
-    'name': 'Timing Pattern Specialist',
-    'description': 'max_gap_ratio driven - focuses on historical timing cycles and gap patterns',
+    'name': 'Momentum Specialist',
+    'description': 'Focus on recency and momentum - predicts hot/trending numbers across all 7 positions',
     'algorithm': 'logistic_regression',
 
     # 6 ML-selected numbers (system always selects 6)
@@ -164,24 +164,45 @@ MODEL_1_CONFIG = {
     'generic_count': 0,
 
     'features': [
-        # TIMING-FOCUSED FEATURES (dominant: max_gap_ratio)
-        'max_gap_ratio',                # PRIMARY: Gap distribution (HIGH importance ~0.69)
-        'appearance_volatility',        # Temporal consistency (HIGH importance ~0.64)
-        'gap_consistency_score',        # Consistency metric
-        'days_since_last',              # Core timing
+        # CORE MOMENTUM (MUST HAVE)
+        'days_since_last',              # PRIMARY: Recency is key predictor
+        'total_count',                  # Frequency matters for momentum
+
+        # ROLLING STATISTICS (MOMENTUM CAPTURE)
+        'rolling_rate_10',              # Very recent activity (heating up?)
+        'rolling_rate_20',              # Recent activity confirmation
+        'rolling_trend_10',             # Trend direction (accelerating?)
+        'rolling_trend_20',             # Trend confirmation
+
+        # RECENT ACTIVITY WINDOWS
+        'recent_4',                     # Last 4 draws
+        'recent_14',                    # Last 14 draws
+
+        # GAP PATTERNS
+        'gap_consistency_score',        # Consistent appearance pattern
+        'max_gap_ratio',                # Gap distribution
+
+        # BONUS TRANSITION (for position 7)
+        'was_recent_bonus',             # Bonus → main transition (74% rate)
+
+        # TIMING-FOCUSED
         'recency_zone_score',           # Optimal window detection
+        'appearance_volatility',        # Temporal consistency
 
-        # REMOVED: PAIRWISE_INTERACTIONS, TRIPLE_INTERACTIONS, freshness_momentum
-        # These moved to Model 4 (Interaction Specialist)
-
-        # CRITICAL constraints (4 features - MUST enforce for valid draws!)
+        # CONSTRAINTS (ensure valid draws)
         'odd_even_json',                # 80% of draws are 3 odd + 3 even
         'window_saturation_penalty',    # Avoid over-saturated windows
         'range_spread_json',            # Range distribution
         'sum_contribution_json',        # Sum contribution
     ],
-    # Total: 9 features (focused on timing patterns only)
-    # Specializes in WHEN numbers appear based on gap analysis
+    # Total: ~17 features focused on WHEN numbers appear
+
+    # FEATURE SELECTION: Aggressive filtering for focused momentum signals
+    'feature_selection': {
+        'enable': True,
+        'correlation_threshold': 0.95,   # Remove duplicates
+        'importance_threshold': 0.01     # More aggressive (remove features <1% importance)
+    },
 
     'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers
 
@@ -202,8 +223,8 @@ MODEL_1_CONFIG = {
 
 MODEL_2_CONFIG = {
     'name': 'Jackpot Optimizer - 6-Ball Main Prize Specialist',
-    'description': 'Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes',
-    'algorithm': 'logistic_regression',
+    'description': 'Trained ONLY on main 6 balls (excludes bonus) - focuses on stability and long-term patterns',
+    'algorithm': 'random_forest',  # Better for complex interactions
 
     'hot_count': 2,
     'medium_count': 1,
@@ -211,58 +232,72 @@ MODEL_2_CONFIG = {
     'generic_count': 1,
 
     'features': [
-        # HMC Foundation
-        'total_count',
+        # CORE STABILITY (MUST HAVE)
+        'total_count',                  # Long-term frequency
+        'days_since_last',              # Time since appearance
 
-        # Long-term stability (critical for 6-ball consistency)
-        LONG_TERM_PATTERN_WEIGHTS,    # UPDATED v3.13: lt_category_alignment, lt_recency_weight (removed redundant hot/medium/cold)
+        # LONG-TERM PATTERNS (STABILITY)
+        LONG_TERM_PATTERN_WEIGHTS,      # lt_category_alignment, lt_recency_weight, etc.
 
-        # Timing (essential - captures optimal windows)
-        'days_since_last',
-        'recency_zone_score',
+        # DISTRIBUTION FEATURES (STABILITY)
+        'sum_contribution_json',        # Sum stability (scipy validated)
+        'range_spread_json',            # Range stability (scipy validated)
+        'odd_even_json',                # Odd/even patterns
+
+        # ADVANCED STABILITY
+        'appearance_volatility',        # Consistency in frequency
+        'gap_consistency_score',        # Predictable gaps
+        'gap_variance',                 # Gap variance
+
+        # ROLLING STATS (conservative windows for stability)
+        'rolling_rate_50',              # Long-term rate
+        'rolling_trend_50',             # Long-term trend
+
+        # FRESHNESS PATTERNS
+        FRESHNESS_PATTERN_WEIGHTS,      # Freshness interaction features
+
+        # ADVANCED PATTERNS
+        ADVANCED_PATTERN_FEATURES,      # Volatility and trend features
+
+        # TIMING (conservative)
+        'recency_zone_score',           # Optimal window
         'recent_14',                    # Longer window for stability
 
-        # Window saturation penalty (NEW v3.10 - avoids over-saturated numbers)
-        'window_saturation_penalty',
+        # CONSTRAINTS
+        'window_saturation_penalty',    # Avoid over-saturated numbers
 
-        # Bonus-to-Main pattern (70% transition rate)
-        'was_recent_bonus',             # Recent bonus balls appear in main 6
-
-        # Pattern consistency
-       # 'consecutive_pair_affinity',
-
-        # Realism constraints (ensure valid 6-ball combinations)
-        'sum_contribution_json',
-        'range_spread_json',
-        
-
-        # Validated freshness patterns (interaction features)
-        FRESHNESS_PATTERN_WEIGHTS,
-
-        # Advanced pattern features (volatility and trend)
-        ADVANCED_PATTERN_FEATURES,     # NEW v3.13: Volatility and trend features
+        # EXPLICITLY EXCLUDE BONUS FEATURES
+        # ❌ NO 'was_recent_bonus' - not relevant for main 6 jackpot
+        # ❌ NO 'bonus_to_main_*' - not relevant for main 6 jackpot
     ],
+    # Total: ~20+ features focused on STABILITY for main 6 balls
+
+    # FEATURE SELECTION: Use explicit list (no auto-selection)
+    'feature_selection': {
+        'enable': False,  # ⭐ Use explicit feature list as-is
+        # Let model handle all stability signals
+    },
 
     'diversity_penalty': 0.4,  # 40% penalty on previously selected numbers
 
     'algorithm_params': {
-        'penalty': 'l2',
-        'solver': 'liblinear',
-        'max_iter': 1000,
+        'n_estimators': 100,
+        'max_depth': 10,
+        'min_samples_split': 5,
         'class_weight': 'balanced',
-        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
-        'C': 0.5
+        'random_state': 42,
+        'n_jobs': -1
     },
 
     'calibration': {
-        'method': 'sigmoid',
+        'method': 'isotonic',  # Better for tree-based models
         'cv': 3
     }
 }
 
 MODEL_3_CONFIG = {
-    'name': 'Complex Pattern Discovery + All JSON Features + LT Patterns',
-    'description': 'XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis',
+    'name': 'Complexity Explorer',
+    'description': 'XGBoost with ALL features - finds complex interaction patterns across all signals',
     'algorithm': 'xgboost',
 
     'hot_count': 2,
@@ -271,36 +306,71 @@ MODEL_3_CONFIG = {
     'generic_count': 0,
 
     'features': [
-        'recent_4',
-        FRESHNESS_PATTERN_WEIGHTS,        # Interaction features for freshness patterns
-        LONG_TERM_PATTERN_WEIGHTS,        # UPDATED v3.13: Long-term HMC and recency (removed redundant hot/medium/cold)
-        ADVANCED_PATTERN_FEATURES,        # NEW v3.13: Volatility and trend features
+        # USE EVERYTHING - let XGBoost find complex patterns
         'total_count',
         'days_since_last',
         'recency_zone_score',
+
+        # ALL ROLLING STATISTICS
+        'rolling_rate_10',
+        'rolling_rate_20',
+        'rolling_rate_50',
+        'rolling_trend_10',
+        'rolling_trend_20',
+        'rolling_trend_50',
+        'gap_variance',
+        'gap_cv',
+        'appearance_acceleration',
+
+        # ALL RECENT ACTIVITY
+        'recent_4',
         'recent_14',
+
+        # ALL GAP PATTERNS
+        'gap_consistency_score',
+        'max_gap_ratio',
+        'appearance_volatility',
+
+        # ALL BONUS FEATURES
+        'was_recent_bonus',
         'days_since_bonus',
-        #'was_recent_bonus',
-        #'bonus_hit_contribution',         # Replaced bonus_hit_target_alignment with JSON version
+
+        # ALL PATTERN FEATURES
+        FRESHNESS_PATTERN_WEIGHTS,
+        LONG_TERM_PATTERN_WEIGHTS,
+        ADVANCED_PATTERN_FEATURES,
+
+        # ALL DISTRIBUTION FEATURES
+        'odd_even_json',
+        'sum_contribution_json',
+        'range_spread_json',
+
+        # ALL SERIES/CONSECUTIVE
         'has_consecutive_partner',
-        #'consecutive_pair_affinity',
         'series_recent',
-        'odd_even_json',                  # Replaced odd_even_affinity with JSON version
-        'sum_contribution_json',          # Replaced sum_contribution_score with JSON version
-        'range_spread_json',              # Replaced range_spread_affinity with JSON version
-        'freshness_weight_score'
-        #'pair_frequency_score'
+
+        # ALL CONSTRAINTS
+        'window_saturation_penalty',
+        'freshness_weight_score',
+
+        # Include everything available for maximum complexity detection
     ],
+    # Total: 30-40 features - XGBoost will find which interactions matter
+
+    # FEATURE SELECTION: DISABLED - keep everything for complexity
+    'feature_selection': {
+        'enable': False,  # ⭐ Use ALL features - complexity needs interactions
+    },
 
     'diversity_penalty': 0.35,  # 35% penalty on previously selected numbers
 
     'algorithm_params': {
         'n_estimators': 150,
-        'max_depth': 4,
+        'max_depth': 6,  # Deeper trees for complex patterns
         'learning_rate': 0.1,
         'use_label_encoder': False,
         'eval_metric': 'logloss',
-        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
+        'random_state': 42,
         'n_jobs': -1,
         'subsample': 0.8,
         'colsample_bytree': 0.7,
@@ -308,66 +378,65 @@ MODEL_3_CONFIG = {
     },
 
     'calibration': {
-        'method': 'sigmoid',
+        'method': 'isotonic',  # Better for tree-based models
         'cv': 3
     }
 }
 
 MODEL_4_CONFIG = {
-    'name': 'Interaction Pattern Specialist (Pool Generator)',
-    'description': 'PAIRWISE/TRIPLE driven - generates 20-number pool focused on freshness & weight synergies',
-    'algorithm': 'logistic_regression',
+    'name': 'Conservative Pool Generator',
+    'description': 'Generates 20-number pool with HIGH-PRECISION features only - must contain 6+ winners',
+    'algorithm': 'catboost',  # Best for high-precision predictions
 
     # Pool size = hot_count + medium_count + cold_count
-    # UPDATED: 20-number pool (was 18)
-    'hot_count': 7,      # Top 7 hot with best interactions (was 6)
-    'medium_count': 9,   # Top 9 medium with best interactions (was 8)
-    'cold_count': 4,     # Top 4 cold with best interactions (same)
+    # UPDATED: 20-number pool
+    'hot_count': 7,      # Top 7 hot
+    'medium_count': 9,   # Top 9 medium
+    'cold_count': 4,     # Top 4 cold
     'generic_count': 0,
 
     'features': [
-        # PRIMARY: Interaction features (dominant)
-        'PAIRWISE_INTERACTIONS',        # 10 synergistic binary features
-        'TRIPLE_INTERACTIONS',          # 3 triple combinations
+        # ONLY PROVEN HIGH-IMPORTANCE FEATURES (top performers only)
+        'days_since_last',              # #1 predictor (importance >0.15)
+        'total_count',                  # #2 predictor (importance >0.15)
+        'rolling_rate_20',              # #3 predictor (importance >0.12)
+        'gap_consistency_score',        # #4 predictor (importance >0.12)
+        'rolling_trend_10',             # #5 predictor (importance >0.10)
 
-        # Supporting features (needed for interaction calculation)
-        'total_count',                  # Base frequency
-        'recent_4',                     # Short-term momentum
-        'recent_14',                    # Medium-term momentum
-        'current_freshness_bin',        # Freshness state
-        'bonus_hit_contribution',       # Bonus patterns
+        # HIGH-CONFIDENCE INDICATORS ONLY
+        LONG_TERM_PATTERN_WEIGHTS,      # Statistically validated (scipy)
+        'sum_contribution_json',        # Statistically validated (scipy)
+        'range_spread_json',            # Statistically validated (scipy)
+        'odd_even_json',                # Statistically validated (scipy)
 
-        # REMOVED: max_gap_ratio, appearance_volatility, ADVANCED_PATTERN_FEATURES
-        # These moved to Model 1 (Timing Specialist)
-
-        # Constraints
-        'window_saturation_penalty',    # Avoid over-saturated windows
-        'odd_even_json',                # Odd/even balance
-        'sum_contribution_json',        # Sum contribution
-
-        # Long-term patterns (for stability)
-        LONG_TERM_PATTERN_WEIGHTS,      # lt_category_alignment, lt_recency_weight
-
-        # Bonus awareness
-        'was_recent_bonus'
+        # NO NOISY FEATURES (anything with importance < 0.02 excluded)
+        # NO EXPERIMENTAL FEATURES
+        # NO BONUS FEATURES (focus on reliable main ball patterns)
     ],
-    # Total: ~17 features (focused on interaction patterns)
-    # Specializes in COMBINATIONS that win (hot+fresh+recent synergies)
+    # Total: ~12 features - only the most reliable predictors
 
-    'diversity_penalty': 0.25,  # 25% penalty on previously selected numbers (for pool generator)
+    # FEATURE SELECTION: VERY AGGRESSIVE - keep only top performers
+    'feature_selection': {
+        'enable': True,
+        'correlation_threshold': 0.90,   # Aggressive duplicate removal
+        'importance_threshold': 0.02     # ⭐ VERY aggressive (only features >2% importance)
+    },
+
+    'diversity_penalty': 0.25,  # 25% penalty (for pool generator)
 
     'algorithm_params': {
-        'penalty': 'l2',
-        'solver': 'liblinear',
-        'max_iter': 1000,
-        'class_weight': 'balanced',
-        'random_state': 42,  # Fixed for reproducibility - predictions change only when data changes
-        'C': 1.0
+        'iterations': 100,
+        'depth': 6,
+        'learning_rate': 0.1,
+        'loss_function': 'Logloss',
+        'random_seed': 42,
+        'verbose': False,
+        'thread_count': -1
     },
 
     'calibration': {
-        'method': 'sigmoid',
-        'cv': 5
+        'method': 'isotonic',  # Best for tree-based models
+        'cv': 3
     }
 }
 

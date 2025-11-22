@@ -1,0 +1,14 @@
+{
+  "model_name": "Interaction Pattern Specialist (Pool Generator)",
+  "best_params": {
+    "classifier__estimator__C": 0.1,
+    "classifier__estimator__class_weight": "balanced",
+    "classifier__estimator__max_iter": 1000
+  },
+  "best_score": 0.0,
+  "search_type": "grid",
+  "scoring": "f1",
+  "cv_splits": 3,
+  "elapsed_time": 0.49895453453063965,
+  "total_fits": 6
+}

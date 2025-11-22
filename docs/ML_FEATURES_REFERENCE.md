@@ -1,7 +1,7 @@
 # Machine Learning Features Reference Guide
 
-**Version:** 5.0 (Accurate Feature Documentation)
-**Last Updated:** 2025-11-15
+**Version:** 6.0 (Complete Reference with Configuration Options)
+**Last Updated:** 2025-11-22
 **Purpose:** Complete and accurate reference for all ML features with exact data sources
 **Audience:** Newcomers, data scientists, ML engineers, and developers
 
@@ -54,6 +54,7 @@ Feature Extraction (extractor.py)
 12. [Model-Specific Feature Usage](#model-specific-feature-usage)
 13. [Feature Importance Rankings](#feature-importance-rankings)
 14. [Data Pipeline](#data-pipeline)
+15. [Training Configuration Options](#training-configuration-options)
 
 ---
 
@@ -1408,6 +1409,217 @@ ls -lh data/*.json
 
 ---
 
+## Training Configuration Options
+
+The ML training pipeline supports extensive configuration to control feature selection, class balancing, hyperparameter optimization, and metrics tracking. All options are available through the `train_model()` function in `ml_lotto/models/trainer.py`.
+
+### Feature Selection Configuration
+
+Control the two-stage feature selection process (correlation-based + importance-based):
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `enable_feature_selection` | bool | `True` | Master switch - set to `False` to disable all feature selection |
+| `correlation_threshold` | float | `0.95` | Remove features with Pearson correlation above this value (0-1) |
+| `importance_threshold` | float | `0.005` | Remove features with RandomForest importance below this value (0-1) |
+
+**Usage Example:**
+```python
+from ml_lotto.models.trainer import train_model
+
+pipeline, features, importance, metrics, tuning_results = train_model(
+    model_config=model_config,
+    train_df=train_df,
+    all_feature_names=all_feature_names,
+    model_index=1,
+    enable_feature_selection=True,      # Enable two-stage selection
+    correlation_threshold=0.90,         # More aggressive (remove >0.90 correlation)
+    importance_threshold=0.01           # Less aggressive (keep features >0.01 importance)
+)
+```
+
+**When to Adjust:**
+- **Lower `correlation_threshold`** (e.g., 0.90): More aggressive removal of redundant features
+- **Higher `importance_threshold`** (e.g., 0.01): More aggressive removal of weak features
+- **Disable feature selection**: When you want to keep all features for experimentation
+
+**Typical Results:**
+- Original features: 10-40 (depends on model configuration)
+- After correlation filtering: -0 to -5 features removed
+- After importance filtering: -0 to -12 features removed
+- Final reduction: 0-52% (model-dependent)
+
+### SMOTE Configuration
+
+Control synthetic minority oversampling to handle class imbalance:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `use_smote` | bool | `True` | Enable SMOTE oversampling |
+| `smote_sampling_strategy` | float | `0.3` | Target minority class ratio (e.g., 0.3 = minority becomes 30% of majority) |
+
+**Usage Example:**
+```python
+pipeline, features, importance, metrics, tuning_results = train_model(
+    model_config=model_config,
+    train_df=train_df,
+    all_feature_names=all_feature_names,
+    model_index=1,
+    use_smote=True,                     # Enable SMOTE
+    smote_sampling_strategy=0.4         # More aggressive balancing
+)
+```
+
+**Sampling Strategy Impact:**
+
+| Strategy | Original Ratio | After SMOTE | Synthetic Samples | Use Case |
+|----------|----------------|-------------|-------------------|----------|
+| `0.2` | 5.71:1 | 5.00:1 | +600 (conservative) | Concerned about overfitting |
+| `0.3` | 5.71:1 | 3.33:1 | +800 (recommended) | Balanced approach |
+| `0.4` | 5.71:1 | 2.50:1 | +1040 (aggressive) | Low validation performance |
+| `0.5` | 5.71:1 | 2.00:1 | +1280 (very aggressive) | Extreme imbalance issues |
+
+**When to Adjust:**
+- **Increase `smote_sampling_strategy`**: If models predict all zeros or have very low recall
+- **Decrease `smote_sampling_strategy`**: If validation performance is much worse than training (overfitting)
+- **Disable SMOTE**: If you have sufficient positive class samples (rare in lottery)
+
+### Hyperparameter Tuning Configuration
+
+Control automatic hyperparameter optimization with time-series cross-validation:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `enable_hyperparameter_tuning` | bool | `False` | Enable GridSearchCV or RandomizedSearchCV |
+| `tuning_mode` | str | `'quick'` | `'quick'` (small grid) or `'extensive'` (large grid) |
+| `tuning_cv_splits` | int | `3` | Number of TimeSeriesSplit folds for cross-validation |
+| `tuning_scoring` | str | `'f1'` | Metric to optimize: `'f1'`, `'precision'`, `'recall'`, `'roc_auc'` |
+
+**Usage Example:**
+```python
+pipeline, features, importance, metrics, tuning_results = train_model(
+    model_config=model_config,
+    train_df=train_df,
+    all_feature_names=all_feature_names,
+    model_index=1,
+    enable_hyperparameter_tuning=True,  # Enable automatic tuning
+    tuning_mode='extensive',             # More thorough search
+    tuning_cv_splits=5,                  # More CV folds (slower but better)
+    tuning_scoring='precision'           # Optimize for precision
+)
+
+# Access tuning results
+if tuning_results:
+    print(f"Best parameters: {tuning_results['best_params']}")
+    print(f"Best CV score: {tuning_results['best_score']:.4f}")
+    print(f"Search time: {tuning_results['search_time']:.1f}s")
+```
+
+**Tuning Modes Comparison:**
+
+| Mode | LogReg Grid | RF Grid | XGB Grid | Time | Use Case |
+|------|-------------|---------|----------|------|----------|
+| `'quick'` | 6 combos | 24 combos | 24 combos | 5-30s | Fast iteration, initial tuning |
+| `'extensive'` | 40 combos | 1620 combos | 504 combos | 5-30min | Final optimization, production models |
+
+**Scoring Metrics:**
+- `'f1'`: Harmonic mean of precision and recall (recommended for imbalanced data)
+- `'precision'`: Minimize false positives (conservative predictions)
+- `'recall'`: Minimize false negatives (catch more winners)
+- `'roc_auc'`: Area under ROC curve (general discrimination)
+
+**When to Adjust:**
+- **Enable tuning**: For production models or when default parameters underperform
+- **Use `'extensive'` mode**: When you have time and want best possible performance
+- **Increase `tuning_cv_splits`**: With larger datasets (500+ draws) for more robust evaluation
+- **Change `tuning_scoring`**: Based on your lottery strategy (conservative vs aggressive)
+
+### Metrics and Evaluation
+
+All models automatically track comprehensive metrics (no configuration needed):
+
+**Automatically Tracked Metrics:**
+- ✅ **Top-K Accuracy**: Hit rate for top K predictions (K = 7, 10, 15, 20)
+- ✅ **PR-AUC**: Precision-Recall AUC (better than ROC-AUC for imbalanced data)
+- ✅ **Optimal Threshold**: Automatically selected to maximize F1-score
+- ✅ **Calibration**: Mean calibration error and calibration curves
+- ✅ **Confusion Matrices**: At both default (0.5) and optimal thresholds
+- ✅ **Visual Plots**: ROC curves, PR curves, calibration plots (saved to `model_metrics/`)
+
+**Example Metrics Output:**
+```
+🎯 PR-AUC (Precision-Recall AUC):
+   PR-AUC: 0.1542 (threshold-independent)
+   Baseline (random): 0.1489
+   ⚠️  Weak: Only 1.04x better than random
+
+🎰 Top-K Accuracy (Lottery-Specific Metric):
+   K        Hit?       Winners      Accuracy
+   ------------------------------------------
+   Top-7   ✅ Yes      1             14.29%
+   Top-10  ✅ Yes      2             20.00%
+   Top-15  ✅ Yes      3             20.00%
+   Top-20  ✅ Yes      3             15.00%
+
+⚙️  Optimal Threshold: 0.1803 (maximizes F1-score)
+```
+
+### Complete Configuration Example
+
+```python
+from ml_lotto.models.trainer import train_model
+
+# Train with all features enabled and custom settings
+pipeline, features, importance, metrics, tuning_results = train_model(
+    # Required parameters
+    model_config=model_config,          # From ml_lotto/config.py
+    train_df=train_df,                  # Training dataset
+    all_feature_names=all_feature_names,# List of all features
+    model_index=1,                      # Model number for logging
+
+    # Optional parameters
+    exclude_bonus=False,                # Include bonus features
+    val_df=val_df,                      # Validation dataset
+
+    # SMOTE Configuration (Class Balancing)
+    use_smote=True,                     # Enable synthetic oversampling
+    smote_sampling_strategy=0.3,        # Target 30% minority ratio
+
+    # Feature Selection Configuration
+    enable_feature_selection=True,      # Enable two-stage selection
+    correlation_threshold=0.95,         # Remove >0.95 correlated features
+    importance_threshold=0.005,         # Remove <0.005 importance features
+
+    # Hyperparameter Tuning Configuration
+    enable_hyperparameter_tuning=True,  # Enable automatic optimization
+    tuning_mode='quick',                # Quick vs extensive search
+    tuning_cv_splits=3,                 # TimeSeriesSplit folds
+    tuning_scoring='f1'                 # Optimize F1-score
+)
+
+# Results include:
+# - pipeline: Fitted sklearn Pipeline with best model
+# - features: List of selected feature names
+# - importance: Feature importance data (if available)
+# - metrics: Dict with all evaluation metrics
+# - tuning_results: Dict with best params and CV scores (if tuning enabled)
+```
+
+### Configuration Best Practices
+
+1. **Start with Defaults**: Use default settings for initial training
+2. **Enable Tuning Gradually**: Start with `tuning_mode='quick'`, then try `'extensive'`
+3. **Monitor Overfitting**: Watch for large gaps between training and validation metrics
+4. **Adjust SMOTE Carefully**: Too much synthetic data can cause overfitting
+5. **Use Time-Series CV**: Never use random CV splits for lottery data (temporal dependency)
+6. **Save Tuning Results**: Review `tuning_results` to understand parameter importance
+
+### Configuration File Reference
+
+See `train_with_all_features.py` for a complete working example demonstrating all configuration options.
+
+---
+
 ## Conclusion
 
 This reference guide documents **all ~40 ML features** used in the Lotto ML prediction system. Key takeaways:
@@ -1422,8 +1634,9 @@ For technical details on JSON file structures, see `JSON_DATA_REFERENCE.md`.
 
 ---
 
-**Document Version:** 5.0
-**Last Updated:** 2025-11-15
+**Document Version:** 6.0
+**Last Updated:** 2025-11-22
 **Authors:** Lotto ML System Documentation Team
 **Total Features:** ~40
 **Scipy-Validated Features:** 3 highly significant
+**Configuration Options:** Feature Selection, SMOTE, Hyperparameter Tuning
