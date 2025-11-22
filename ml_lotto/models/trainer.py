@@ -605,7 +605,7 @@ def train_all_models(
             val_df_to_use = val_df_standard
             exclude_bonus = False
 
-        pipeline, selected_features, importance_data, metrics = train_model(
+        pipeline, selected_features, importance_data, metrics, tuning_results = train_model(
             model_config,
             train_df_to_use,
             all_feature_names,
