@@ -21,6 +21,7 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, TimeSeries
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import make_scorer, f1_score
 import time
 import json
 
@@ -140,6 +141,32 @@ def get_catboost_grid(quick: bool = False) -> Dict[str, List]:
 
 
 # ============================================================================
+# SCORING FUNCTIONS
+# ============================================================================
+
+def get_scoring_metric(scoring: str):
+    """
+    Get appropriate scoring metric, handling edge cases for imbalanced data.
+
+    For F1 score, uses zero_division=0 to handle cases where precision/recall
+    are undefined (e.g., when model predicts all negatives).
+
+    Args:
+        scoring: Scoring metric name
+
+    Returns:
+        Scorer object or string
+    """
+    if scoring == 'f1':
+        # Use zero_division=0 to return 0 instead of raising warning/error
+        # when there are no positive predictions
+        return make_scorer(f1_score, zero_division=0)
+    else:
+        # For other metrics (roc_auc, precision, recall, etc.), use string
+        return scoring
+
+
+# ============================================================================
 # HYPERPARAMETER TUNING FUNCTIONS
 # ============================================================================
 
@@ -183,6 +210,9 @@ def tune_hyperparameters(
     print(f"  Scoring Metric: {scoring}")
     print(f"  Parameter Grid Size: {_get_grid_size(param_grid)} combinations")
 
+    # Get appropriate scoring metric (handles imbalanced data edge cases)
+    scorer = get_scoring_metric(scoring)
+
     # Use TimeSeriesSplit for time-series aware CV
     tscv = TimeSeriesSplit(n_splits=cv_splits)
 
@@ -194,7 +224,7 @@ def tune_hyperparameters(
             estimator=pipeline,
             param_grid=param_grid,
             cv=tscv,
-            scoring=scoring,
+            scoring=scorer,
             n_jobs=n_jobs,
             verbose=verbose,
             return_train_score=True
@@ -205,7 +235,7 @@ def tune_hyperparameters(
             param_distributions=param_grid,
             n_iter=n_iter,
             cv=tscv,
-            scoring=scoring,
+            scoring=scorer,
             n_jobs=n_jobs,
             verbose=verbose,
             return_train_score=True,
@@ -235,8 +265,37 @@ def tune_hyperparameters(
     # Analyze results
     results_df = pd.DataFrame(search.cv_results_)
 
+    # Check if all scores are zero or very low
+    if best_score < 0.001:
+        print(f"\n  ⚠️  WARNING: Best score is {best_score:.6f} - Model may be predicting all negatives!")
+        print(f"     This is common with highly imbalanced data (lottery predictions).")
+        print(f"")
+        print(f"     💡 RECOMMENDATIONS:")
+        print(f"     1. Use 'roc_auc' scoring: Better for imbalanced data, doesn't require positive predictions")
+        print(f"        Example: tuning_scoring='roc_auc'")
+        print(f"     2. Use 'average_precision' scoring: Works well with rare positive class")
+        print(f"        Example: tuning_scoring='average_precision'")
+        print(f"     3. Verify class weights: Ensure 'balanced' or custom weights are set")
+        print(f"     4. Check positive class ratio: If <1%, consider adjusting scale_pos_weight")
+        print(f"")
+
+        # Show train scores to check for fitting issues
+        if 'mean_train_score' in results_df.columns:
+            best_train = results_df.loc[search.best_index_, 'mean_train_score']
+            print(f"     📊 Training score: {best_train:.4f}")
+            if best_train < 0.001:
+                print(f"        ⚠️  Training score also ~0 - Model isn't learning from data!")
+                print(f"        Check: feature quality, target distribution, model capacity")
+            else:
+                print(f"        ✓ Model is learning (train > 0), but not generalizing to validation")
+                print(f"        This suggests severe overfitting or data distribution issues")
+
     # Get top 5 configurations by actual score (not rank)
-    top_configs = results_df.nlargest(5, 'mean_test_score')[
+    # Sort by mean_test_score descending, then by std ascending (prefer stable models)
+    top_configs = results_df.sort_values(
+        by=['mean_test_score', 'std_test_score'],
+        ascending=[False, True]
+    ).head(5)[
         ['rank_test_score', 'mean_test_score', 'std_test_score', 'params']
     ]
 
@@ -249,6 +308,15 @@ def tune_hyperparameters(
         std = row['std_test_score']
         params_str = str(row['params'])[:40] + "..." if len(str(row['params'])) > 40 else str(row['params'])
         print(f"     {rank:<6} {mean:<12.4f} {std:<10.4f} {params_str}")
+
+    # If all scores are the same, show score distribution
+    unique_scores = results_df['mean_test_score'].nunique()
+    if unique_scores <= 3:
+        print(f"\n  ℹ️  Only {unique_scores} unique score(s) found across {len(results_df)} configurations")
+        score_dist = results_df['mean_test_score'].value_counts().head(5)
+        print(f"     Score distribution:")
+        for score, count in score_dist.items():
+            print(f"       {score:.6f}: {count} configurations")
 
     # Package results
     tuning_results = {
