@@ -3,11 +3,14 @@ trainer.py
 ==========
 Handles ML model training with configurable algorithms and features.
 
-VERSION: 3.13 (SMOTE + Threshold Optimization Edition)
+VERSION: 3.16 (Complete ML Pipeline Edition)
 - Added SMOTE (Synthetic Minority Over-sampling Technique) to handle class imbalance
 - Implemented optimal threshold selection based on F1-score maximization
-- Added metrics comparison between default (0.5) and optimal thresholds
-- Enhanced validation with both threshold strategies
+- Added feature selection (correlation + importance filtering)
+- Integrated rolling statistics for temporal patterns
+- Added hyperparameter tuning with TimeSeriesSplit CV
+- Enhanced metrics with Top-K accuracy and PR-AUC
+- Metrics comparison between default (0.5) and optimal thresholds
 """
 
 import pandas as pd
@@ -23,6 +26,11 @@ from ml_lotto.models.model_metrics import (
     calculate_comprehensive_metrics,
     compare_models,
     plot_model_comparison
+)
+from ml_lotto.models.hyperparameter_tuning import (
+    quick_tune,
+    extensive_tune,
+    save_tuning_results
 )
 
 
@@ -142,7 +150,7 @@ def analyze_feature_importance(
     """
     try:
         # Get the calibrated classifier from pipeline
-        calibrated_clf = pipeline.named_steps['clf']
+        calibrated_clf = pipeline.named_steps['classifier']
 
         # Extract the base estimator from CalibratedClassifierCV
         # After fitting, calibrated_classifiers_ contains the fitted models
@@ -263,8 +271,12 @@ def train_model(
     smote_sampling_strategy: float = 0.3,
     enable_feature_selection: bool = True,
     correlation_threshold: float = 0.95,
-    importance_threshold: float = 0.005
-) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]], Optional[Dict[str, Any]]]:
+    importance_threshold: float = 0.005,
+    enable_hyperparameter_tuning: bool = False,
+    tuning_mode: str = 'quick',
+    tuning_cv_splits: int = 3,
+    tuning_scoring: str = 'f1'
+) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
     """
     Train a single model based on its configuration with comprehensive validation metrics.
 
@@ -281,9 +293,13 @@ def train_model(
         enable_feature_selection: Whether to apply feature selection (default: True)
         correlation_threshold: Correlation threshold for redundancy removal (default: 0.95)
         importance_threshold: Minimum importance threshold (default: 0.005)
+        enable_hyperparameter_tuning: Whether to tune hyperparameters (default: False)
+        tuning_mode: 'quick' or 'extensive' tuning (default: 'quick')
+        tuning_cv_splits: Number of CV splits for tuning (default: 3)
+        tuning_scoring: Scoring metric for tuning (default: 'f1')
 
     Returns:
-        Tuple of (trained_pipeline, selected_features, feature_importance_data, metrics)
+        Tuple of (trained_pipeline, selected_features, feature_importance_data, metrics, tuning_results)
     """
     print(f"\n→ Model {model_index}: {model_config['name']}")
     print(f"  Description: {model_config['description']}")
@@ -303,16 +319,33 @@ def train_model(
 
     print(f"  Initial features ({len(selected_features)}): {selected_features}")
 
+    # Check for model-specific feature selection settings
+    feature_sel_config = model_config.get('feature_selection', {})
+    if feature_sel_config:
+        # Override with model-specific settings
+        enable_selection = feature_sel_config.get('enable', enable_feature_selection)
+        corr_thresh = feature_sel_config.get('correlation_threshold', correlation_threshold)
+        imp_thresh = feature_sel_config.get('importance_threshold', importance_threshold)
+        print(f"\n  ⚙️  Using model-specific feature selection settings:")
+        print(f"     Enable: {enable_selection}")
+        print(f"     Correlation threshold: {corr_thresh}")
+        print(f"     Importance threshold: {imp_thresh}")
+    else:
+        # Use defaults passed to function
+        enable_selection = enable_feature_selection
+        corr_thresh = correlation_threshold
+        imp_thresh = importance_threshold
+
     # Apply intelligent feature selection if enabled
-    if enable_feature_selection:
+    if enable_selection:
         print(f"\n  🔍 FEATURE SELECTION ENABLED")
         selected_features, selection_info = select_features(
             train_df,
             selected_features,
             enable_correlation_filter=True,
             enable_importance_filter=True,
-            correlation_threshold=correlation_threshold,
-            importance_threshold=importance_threshold,
+            correlation_threshold=corr_thresh,
+            importance_threshold=imp_thresh,
             verbose=True
         )
 
@@ -327,9 +360,13 @@ def train_model(
         print(f"  ℹ️  Feature selection disabled")
 
     print(f"\n  Final features ({len(selected_features)}): {selected_features}")
-    print(f"  HMC Configuration: {model_config['hot_count']}H-{model_config['medium_count']}M-"
-          f"{model_config['cold_count']}C+{model_config['generic_count']}G")
-    print(f"  Diversity Penalty: {model_config['diversity_penalty']*100:.0f}%")
+
+    # Display HMC configuration if available (optional)
+    if 'hot_count' in model_config:
+        print(f"  HMC Configuration: {model_config['hot_count']}H-{model_config['medium_count']}M-"
+              f"{model_config['cold_count']}C+{model_config['generic_count']}G")
+    if 'diversity_penalty' in model_config:
+        print(f"  Diversity Penalty: {model_config['diversity_penalty']*100:.0f}%")
 
     # Prepare training data
     X_train = train_df[selected_features].values
@@ -378,9 +415,72 @@ def train_model(
     if model_config['algorithm'] == 'xgboost':
         scale_pos_weight = (len(y_train) - sum(y_train)) / sum(y_train)
 
-    # Create and train pipeline
+    # Create pipeline
     pipeline = create_model_pipeline(model_config, scale_pos_weight)
-    pipeline.fit(X_train, y_train)
+
+    # ========================================
+    # HYPERPARAMETER TUNING (OPTIONAL)
+    # ========================================
+    tuning_results = None
+    if enable_hyperparameter_tuning:
+        print(f"\n  🔧 Hyperparameter Tuning Enabled (mode: {tuning_mode})")
+
+        # Determine model type for pre-defined grids
+        algo = model_config['algorithm'].lower()
+        if 'logistic' in algo:
+            model_type = 'logistic'
+        elif 'random' in algo or 'forest' in algo:
+            model_type = 'random_forest'
+        elif 'xgb' in algo or 'xgboost' in algo:
+            model_type = 'xgboost'
+        elif 'catboost' in algo or 'cat' in algo:
+            model_type = 'catboost'
+        else:
+            print(f"  ⚠️  Unknown model type '{algo}' - skipping tuning")
+            pipeline.fit(X_train, y_train)
+            model_type = None
+
+        if model_type:
+            try:
+                if tuning_mode == 'quick':
+                    pipeline, tuning_results = quick_tune(
+                        pipeline=pipeline,
+                        X_train=X_train,
+                        y_train=y_train,
+                        model_type=model_type,
+                        model_name=model_config['name'],
+                        cv_splits=tuning_cv_splits,
+                        scoring=tuning_scoring,
+                        n_jobs=-1
+                    )
+                elif tuning_mode == 'extensive':
+                    pipeline, tuning_results = extensive_tune(
+                        pipeline=pipeline,
+                        X_train=X_train,
+                        y_train=y_train,
+                        model_type=model_type,
+                        model_name=model_config['name'],
+                        cv_splits=tuning_cv_splits,
+                        scoring=tuning_scoring,
+                        n_jobs=-1,
+                        use_random=True,
+                        n_iter=100
+                    )
+                else:
+                    print(f"  ⚠️  Unknown tuning_mode '{tuning_mode}' - using defaults")
+                    pipeline.fit(X_train, y_train)
+
+                # Save tuning results
+                if tuning_results:
+                    save_tuning_results(tuning_results, model_config['name'])
+
+            except Exception as e:
+                print(f"  ⚠️  Hyperparameter tuning failed: {e}")
+                print(f"  ℹ️  Falling back to default parameters")
+                pipeline.fit(X_train, y_train)
+    else:
+        # Train with default parameters
+        pipeline.fit(X_train, y_train)
 
     print(f"  ✓ Training complete")
 
@@ -411,13 +511,17 @@ def train_model(
             model_config['name']
         )
 
-    return pipeline, selected_features, feature_importance_data, metrics
+    return pipeline, selected_features, feature_importance_data, metrics, tuning_results
 
 
 def train_all_models(
     model_configs: List[Dict[str, Any]],
     all_draws: List[Dict[str, Any]],
-    features_dict: Dict[int, Dict[str, Any]]
+    features_dict: Dict[int, Dict[str, Any]],
+    enable_hyperparameter_tuning: bool = False,
+    tuning_mode: str = 'quick',
+    tuning_cv_splits: int = 3,
+    tuning_scoring: str = 'f1'
 ) -> Tuple[Dict[str, Any], Dict[str, List[str]], Dict[str, Optional[List[Dict[str, Any]]]], Dict[str, Dict[str, Any]]]:
     """
     Train all configured models with comprehensive validation metrics and model comparison.
@@ -426,6 +530,10 @@ def train_all_models(
         model_configs: List of model configuration dictionaries
         all_draws: Historical draw data
         features_dict: Feature values for all numbers
+        enable_hyperparameter_tuning: Enable automatic hyperparameter optimization (default: False)
+        tuning_mode: 'quick' or 'extensive' hyperparameter search (default: 'quick')
+        tuning_cv_splits: Number of TimeSeriesSplit CV folds (default: 3)
+        tuning_scoring: Metric to optimize ('f1', 'precision', 'recall', 'roc_auc') (default: 'f1')
 
     Returns:
         Tuple of (models_dict, model_features_dict, feature_importance_dict, all_metrics_dict)
@@ -522,13 +630,17 @@ def train_all_models(
             val_df_to_use = val_df_standard
             exclude_bonus = False
 
-        pipeline, selected_features, importance_data, metrics = train_model(
+        pipeline, selected_features, importance_data, metrics, tuning_results = train_model(
             model_config,
             train_df_to_use,
             all_feature_names,
             idx,
             exclude_bonus=exclude_bonus,
-            val_df=val_df_to_use
+            val_df=val_df_to_use,
+            enable_hyperparameter_tuning=enable_hyperparameter_tuning,
+            tuning_mode=tuning_mode,
+            tuning_cv_splits=tuning_cv_splits,
+            tuning_scoring=tuning_scoring
         )
 
         models[model_name] = {

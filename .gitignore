@@ -6,3 +6,6 @@ __pycache__/
 #*.json
 trend_analysis/
 # data/
+
+# Test artifacts
+model_metrics/Test_*
