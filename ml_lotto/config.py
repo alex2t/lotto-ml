@@ -43,8 +43,9 @@ NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA
 TRAINING_START_DRAW = TRAINING_DATA
 
 # Train/Validation Split Configuration
-# Prevents data leakage by holding out recent draws for validation
-VALIDATION_SPLIT_RATIO = 0.80  # 80% train, 20% validation
+# For production: Use ALL data to capture latest lottery patterns
+# For development: Use 0.80 to prevent overfitting during model tuning
+VALIDATION_SPLIT_RATIO = 1.0  # 100% train - predictions update with each new draw
 
 DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
 HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'
