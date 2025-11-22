@@ -304,10 +304,10 @@ hit_rate = sum(topk_hits) / len(draws)
 
 ---
 
-### 7. Hyperparameter Tuning ❌ **NOT IMPLEMENTED**
+### 7. Hyperparameter Tuning ✅ **IMPLEMENTED**
 
 **Time Estimate**: 2 hours
-**Status**: ❌ Not yet implemented
+**Status**: ✅ Completed in `ml_lotto/models/hyperparameter_tuning.py`
 
 #### What It Does
 Systematic search for optimal model hyperparameters:
@@ -323,28 +323,66 @@ Systematic search for optimal model hyperparameters:
 - Reduces overfitting through proper regularization
 - Finds best balance between bias and variance
 
-#### Recommended Implementation
+#### Implementation Details
 ```python
-from sklearn.model_selection import GridSearchCV
+from ml_lotto.models.hyperparameter_tuning import quick_tune, extensive_tune
 
-param_grid = {
-    'classifier__n_estimators': [50, 100, 200],
-    'classifier__max_depth': [5, 10, 15, None],
-    'classifier__min_samples_split': [2, 5, 10],
-    'classifier__scale_pos_weight': [1, 2, 3, 5]
-}
-
-grid_search = GridSearchCV(
-    pipeline,
-    param_grid,
-    cv=5,
+# Quick tuning (recommended for first pass)
+best_pipeline, tuning_results = quick_tune(
+    pipeline=pipeline,
+    X_train=X_train,
+    y_train=y_train,
+    model_type='random_forest',  # or 'logistic', 'xgboost', 'catboost'
+    model_name='Model1_RF',
+    cv_splits=3,
     scoring='f1',
-    n_jobs=-1,
-    verbose=1
+    n_jobs=-1
 )
 
-grid_search.fit(X_train, y_train)
-best_model = grid_search.best_estimator_
+# Extensive tuning (for final optimization)
+best_pipeline, tuning_results = extensive_tune(
+    pipeline=pipeline,
+    X_train=X_train,
+    y_train=y_train,
+    model_type='xgboost',
+    model_name='Model2_XGB',
+    cv_splits=5,
+    scoring='f1',
+    n_jobs=-1,
+    use_random=True,  # RandomizedSearchCV for large grids
+    n_iter=100
+)
+
+# Extract best parameters
+from ml_lotto.models.hyperparameter_tuning import extract_best_params
+best_params = extract_best_params(tuning_results)
+print(f"Best params: {best_params}")
+```
+
+#### Key Features
+- **Time-Series Aware CV**: Uses `TimeSeriesSplit` to respect temporal ordering
+- **Pre-defined Grids**: Optimized parameter ranges for each model type
+- **Quick vs Extensive**: Choose speed vs thoroughness
+- **Parameter Importance**: Analyzes which hyperparameters matter most
+- **Results Tracking**: Saves best params and tuning history to JSON
+
+#### Example Output
+```
+🔧 HYPERPARAMETER TUNING: Model1_RF
+Search Type: GRID
+CV Strategy: TimeSeriesSplit (n_splits=3)
+Scoring Metric: f1
+Parameter Grid Size: 24 combinations
+
+✅ Tuning Complete! (elapsed: 8.3s)
+
+🏆 Best Parameters:
+   classifier__n_estimators: 100
+   classifier__max_depth: 10
+   classifier__class_weight: balanced
+   classifier__min_samples_split: 5
+
+📊 Best CV Score (f1): 0.2876 (+13.2% improvement)
 ```
 
 #### Expected Benefits
@@ -352,8 +390,9 @@ best_model = grid_search.best_estimator_
 - AUC-ROC: 0.50-0.52 → 0.52-0.55 (+2-3%)
 - Better generalization to new draws
 - Reduced overfitting gap
+- Optimal class imbalance handling
 
-**Priority**: Medium (good ROI for 2 hours)
+**Files**: `ml_lotto/models/hyperparameter_tuning.py`, `test_hyperparameter_tuning.py` (6/6 tests passing)
 
 ---
 
@@ -418,12 +457,12 @@ def soft_voting_ensemble(
 | **Feature Selection** | ✅ Done | 1 hour | 🔥 High | - |
 | **Rolling Statistics** | ✅ Done | 2 hours | 🔥 High | - |
 | **Ensemble Voting** | ✅ Done | 2 hours | 🔥 High | - |
-| **Better Metrics** | ⚠️ Partial | 30 min | 📊 Medium | High |
-| **Hyperparameter Tuning** | ❌ Not Done | 2 hours | 📊 Medium | Medium |
+| **Better Metrics** | ✅ Done | 30 min | 📊 High | - |
+| **Hyperparameter Tuning** | ✅ Done | 2 hours | 📊 Medium | - |
 | **Soft Voting** | ❌ Not Done | 2 hours | 📊 Low | Low |
 
-**Total Time Invested**: ~6.5 hours
-**Total Time Remaining**: ~4.5 hours (for complete implementation)
+**Total Time Invested**: ~9 hours
+**Total Time Remaining**: ~2 hours (for soft voting completion)
 
 ---
 
@@ -539,7 +578,8 @@ F1-Score: 0.30-0.35
 
 **Implemented Files**:
 - `ml_lotto/models/trainer.py` - SMOTE integration
-- `ml_lotto/models/model_metrics.py` - Threshold optimization
+- `ml_lotto/models/model_metrics.py` - Threshold optimization & Top-K accuracy
+- `ml_lotto/models/hyperparameter_tuning.py` - Hyperparameter tuning with TimeSeriesSplit
 - `ml_lotto/features/feature_selection.py` - Feature selection
 - `ml_lotto/features/rolling_stats.py` - Rolling statistics
 - `ml_lotto/prediction/ensemble.py` - Ensemble voting
@@ -548,13 +588,20 @@ F1-Score: 0.30-0.35
 **Documentation**:
 - `FEATURE_IMPROVEMENTS_V3.14.md` - Feature selection & rolling stats
 - `ENSEMBLE_VOTING.md` - Ensemble voting strategies
-- `test_ensemble.py` - Ensemble test suite (5/5 passing)
+- `ML_APPROACHES_FOR_LOTTO_PREDICTION.md` - Complete ML approaches guide
+
+**Test Suites**:
+- `test_ensemble.py` - Ensemble voting tests (5/5 passing)
+- `test_better_metrics.py` - Enhanced metrics tests (4/4 passing)
+- `test_hyperparameter_tuning.py` - Hyperparameter tuning tests (6/6 passing)
 - `test_rolling_integration.py` - Rolling stats validation
 
 **Key Commits**:
 - `5afe751` - Implement SMOTE and optimal threshold selection
 - `ef7cbe5` - Activate rolling statistics features
 - `85d3c41` - Implement ensemble voting strategies
+- `bfb6ad9` - Enhance metrics tracking with Top-K accuracy and PR-AUC
+- [Current] - Implement hyperparameter tuning with time-series CV
 
 ---
 
