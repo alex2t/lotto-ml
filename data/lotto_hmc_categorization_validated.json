@@ -20,27 +20,27 @@
         "category_statistics": {
             "hot": {
                 "count": 26,
-                "mean_days_since": 16.153846153846153,
+                "mean_days_since": 22.153846153846153,
                 "std_dev": 19.81452458716546,
-                "median": 8.0,
-                "min": 1.0,
-                "max": 71.0
+                "median": 14.0,
+                "min": 7.0,
+                "max": 77.0
             },
             "medium": {
                 "count": 9,
-                "mean_days_since": 18.444444444444443,
+                "mean_days_since": 24.444444444444443,
                 "std_dev": 18.709029311478933,
-                "median": 15.0,
-                "min": 1.0,
-                "max": 64.0
+                "median": 21.0,
+                "min": 7.0,
+                "max": 70.0
             },
             "cold": {
                 "count": 12,
-                "mean_days_since": 24.25,
+                "mean_days_since": 30.25,
                 "std_dev": 17.47790813362036,
-                "median": 20.0,
-                "min": 5.0,
-                "max": 57.0
+                "median": 26.0,
+                "min": 11.0,
+                "max": 63.0
             }
         },
         "interpretation": "Categories are NOT statistically distinct (may need redefinition)"
@@ -90,21 +90,21 @@
         "medium_cold_overlap": true,
         "categories_distinct": false,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 8.0,
-            "medium_cold_cutoff": 18.0
+            "hot_medium_cutoff": 14.0,
+            "medium_cold_cutoff": 24.0
         },
         "current_ranges": {
             "hot": {
-                "min": 1.0,
-                "max": 71.0
+                "min": 7.0,
+                "max": 77.0
             },
             "medium": {
-                "min": 1.0,
-                "max": 64.0
+                "min": 7.0,
+                "max": 70.0
             },
             "cold": {
-                "min": 5.0,
-                "max": 57.0
+                "min": 11.0,
+                "max": 63.0
             }
         }
     },

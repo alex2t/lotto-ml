@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-21 22:25:12
+LOTTERY PICKS - GENERATED 2025-11-22 00:58:36
 ======================================================================
 INTERACTION FEATURES EDITION V3.16
 Model 1: 6 main (ML-optimized with interactions) + 1 bonus
@@ -15,12 +15,12 @@ Complete: [3, 4, 15, 16, 22, 40] + BONUS 41
 Description: max_gap_ratio driven - focuses on historical timing cycles and gap patterns
 
 Top 10 Most Important Features:
-   1. days_since_last                     :   0.0533
-   2. sum_contribution_json               :   0.0369
-   3. gap_consistency_score               :   0.0258
-   4. odd_even_json                       :   0.0079
-   5. range_spread_json                   :   0.0059
-   6. recency_zone_score                  :   0.0050
+   1. days_since_last                     :   0.0527
+   2. sum_contribution_json               :   0.0389
+   3. appearance_volatility               :   0.0355
+   4. recency_zone_score                  :   0.0067
+   5. odd_even_json                       :   0.0062
+   6. range_spread_json                   :   0.0034
 
 Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [2H-1M-1C+2G | C0=2, C1=3, C_GE_2=1]
 Main Numbers (6): [13, 28, 29, 35, 37, 42]
@@ -29,16 +29,16 @@ Complete: [13, 28, 29, 35, 37, 42] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) to optimize for jackpot prizes
 
 Top 10 Most Important Features:
-   1. lt_category_alignment               :   0.2215
-   2. total_count                         :   0.1879
-   3. freshness_category_interaction      :   0.1759
-   4. freshness_momentum                  :   0.1653
-   5. current_freshness_bin               :   0.1152
-   6. range_spread_json                   :   0.1013
-   7. freshness_timing                    :   0.0767
-   8. appearance_acceleration             :   0.0643
-   9. appearance_trend                    :   0.0628
-  10. days_since_last                     :   0.0590
+   1. lt_category_alignment               :   0.1905
+   2. total_count                         :   0.1882
+   3. freshness_category_interaction      :   0.1285
+   4. freshness_momentum                  :   0.1237
+   5. range_spread_json                   :   0.1013
+   6. freshness_timing                    :   0.0768
+   7. appearance_acceleration             :   0.0670
+   8. appearance_trend                    :   0.0630
+   9. current_freshness_bin               :   0.0596
+  10. days_since_last                     :   0.0572
 
 Line 3: Complex Pattern Discovery + All JSON Features + LT Patterns [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
 Main Numbers (6): [7, 8, 21, 34, 38, 39]
@@ -47,16 +47,16 @@ Complete: [7, 8, 21, 34, 38, 39] + BONUS 19
 Description: XGBoost with full feature set including ALL NEW JSON features and LONG-TERM pattern analysis
 
 Top 10 Most Important Features:
-   1. total_count                         :   0.1205
-   2. days_since_last                     :   0.0917
-   3. freshness_category_interaction      :   0.0879
-   4. lt_category_alignment               :   0.0739
-   5. series_recent                       :   0.0634
-   6. recent_vs_baseline                  :   0.0606
-   7. appearance_trend                    :   0.0591
-   8. freshness_momentum                  :   0.0584
-   9. freshness_timing                    :   0.0550
-  10. days_since_bonus                    :   0.0487
+   1. total_count                         :   0.1253
+   2. series_recent                       :   0.1162
+   3. days_since_last                     :   0.1070
+   4. appearance_trend                    :   0.0884
+   5. freshness_category_interaction      :   0.0814
+   6. recent_vs_baseline                  :   0.0731
+   7. range_spread_json                   :   0.0530
+   8. appearance_volatility               :   0.0451
+   9. lt_category_alignment               :   0.0450
+  10. appearance_acceleration             :   0.0447
 
 ======================================================================
 MODEL 4: CANDIDATE POOL ANALYSIS
@@ -69,24 +69,24 @@ Full Pool (ranked by probability): [12, 35, 1, 45, 2, 5, 13, 32, 22, 8, 21, 10, 
 
 HMC Category Breakdown:
   #12  [hot   ]  prob=0.2776
-  #35  [hot   ]  prob=0.2720
-  # 1  [hot   ]  prob=0.2698
-  #45  [hot   ]  prob=0.2541
-  # 2  [hot   ]  prob=0.2524
-  # 5  [hot   ]  prob=0.2499
+  #35  [hot   ]  prob=0.2721
+  # 1  [hot   ]  prob=0.2699
+  #45  [hot   ]  prob=0.2542
+  # 2  [hot   ]  prob=0.2525
+  # 5  [hot   ]  prob=0.2501
   #13  [cold  ]  prob=0.2488
-  #32  [hot   ]  prob=0.2488
+  #32  [hot   ]  prob=0.2487
   #22  [medium]  prob=0.2466
   # 8  [medium]  prob=0.2423
   #21  [cold  ]  prob=0.2398
-  #10  [medium]  prob=0.2390
-  # 6  [medium]  prob=0.2339
-  #47  [cold  ]  prob=0.2279
+  #10  [medium]  prob=0.2389
+  # 6  [medium]  prob=0.2338
+  #47  [cold  ]  prob=0.2278
   #43  [cold  ]  prob=0.2270
   #11  [medium]  prob=0.2269
   #39  [medium]  prob=0.2230
   #28  [medium]  prob=0.2172
-  #44  [medium]  prob=0.2135
+  #44  [medium]  prob=0.2136
   #15  [medium]  prob=0.2035
 
 Freshness Distribution:
