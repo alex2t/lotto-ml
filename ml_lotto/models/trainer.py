@@ -500,7 +500,11 @@ def train_model(
 def train_all_models(
     model_configs: List[Dict[str, Any]],
     all_draws: List[Dict[str, Any]],
-    features_dict: Dict[int, Dict[str, Any]]
+    features_dict: Dict[int, Dict[str, Any]],
+    enable_hyperparameter_tuning: bool = False,
+    tuning_mode: str = 'quick',
+    tuning_cv_splits: int = 3,
+    tuning_scoring: str = 'f1'
 ) -> Tuple[Dict[str, Any], Dict[str, List[str]], Dict[str, Optional[List[Dict[str, Any]]]], Dict[str, Dict[str, Any]]]:
     """
     Train all configured models with comprehensive validation metrics and model comparison.
@@ -509,6 +513,10 @@ def train_all_models(
         model_configs: List of model configuration dictionaries
         all_draws: Historical draw data
         features_dict: Feature values for all numbers
+        enable_hyperparameter_tuning: Enable automatic hyperparameter optimization (default: False)
+        tuning_mode: 'quick' or 'extensive' hyperparameter search (default: 'quick')
+        tuning_cv_splits: Number of TimeSeriesSplit CV folds (default: 3)
+        tuning_scoring: Metric to optimize ('f1', 'precision', 'recall', 'roc_auc') (default: 'f1')
 
     Returns:
         Tuple of (models_dict, model_features_dict, feature_importance_dict, all_metrics_dict)
@@ -611,7 +619,11 @@ def train_all_models(
             all_feature_names,
             idx,
             exclude_bonus=exclude_bonus,
-            val_df=val_df_to_use
+            val_df=val_df_to_use,
+            enable_hyperparameter_tuning=enable_hyperparameter_tuning,
+            tuning_mode=tuning_mode,
+            tuning_cv_splits=tuning_cv_splits,
+            tuning_scoring=tuning_scoring
         )
 
         models[model_name] = {
