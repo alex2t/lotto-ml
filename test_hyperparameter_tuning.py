@@ -16,6 +16,7 @@ import sys
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.pipeline import Pipeline
 
 from ml_lotto.models.hyperparameter_tuning import (
@@ -54,9 +55,9 @@ def test_parameter_grids():
     print(f"Logistic Regression (full): {_get_grid_size(lr_full)} combinations")
     print(f"Random Forest (full): {_get_grid_size(rf_full)} combinations")
 
-    # Verify grids have required parameters
-    assert 'classifier__C' in lr_quick, "Missing C in LR grid"
-    assert 'classifier__n_estimators' in rf_quick, "Missing n_estimators in RF grid"
+    # Verify grids have required parameters (with estimator__ for CalibratedClassifierCV)
+    assert 'classifier__estimator__C' in lr_quick, "Missing C in LR grid"
+    assert 'classifier__estimator__n_estimators' in rf_quick, "Missing n_estimators in RF grid"
 
     print(f"\n✅ PASS: Parameter grids generated correctly")
     return True
@@ -82,10 +83,12 @@ def test_quick_tuning_logistic():
     print(f"  Features: {n_features}")
     print(f"  Positive class: {sum(y_train)} ({sum(y_train)/len(y_train)*100:.1f}%)")
 
-    # Create pipeline
+    # Create pipeline (matching production structure with CalibratedClassifierCV)
+    base_clf = LogisticRegression(random_state=42, max_iter=1000)
+    calibrated_clf = CalibratedClassifierCV(estimator=base_clf, method='isotonic', cv=3)
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('classifier', LogisticRegression(random_state=42, max_iter=1000))
+        ('classifier', calibrated_clf)
     ])
 
     # Quick tune
@@ -132,10 +135,12 @@ def test_quick_tuning_random_forest():
     print(f"  Features: {n_features}")
     print(f"  Positive class: {sum(y_train)} ({sum(y_train)/len(y_train)*100:.1f}%)")
 
-    # Create pipeline
+    # Create pipeline (matching production structure with CalibratedClassifierCV)
+    base_clf = RandomForestClassifier(random_state=42, n_jobs=1)
+    calibrated_clf = CalibratedClassifierCV(estimator=base_clf, method='isotonic', cv=3)
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('classifier', RandomForestClassifier(random_state=42, n_jobs=1))
+        ('classifier', calibrated_clf)
     ])
 
     # Quick tune
@@ -179,15 +184,18 @@ def test_time_series_cv():
     X_train = np.random.randn(n_samples, n_features)
     y_train = np.random.choice([0, 1], size=n_samples, p=[0.85, 0.15])
 
+    # Create pipeline (matching production structure with CalibratedClassifierCV)
+    base_clf = LogisticRegression(random_state=42, max_iter=1000)
+    calibrated_clf = CalibratedClassifierCV(estimator=base_clf, method='isotonic', cv=3)
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('classifier', LogisticRegression(random_state=42, max_iter=1000))
+        ('classifier', calibrated_clf)
     ])
 
     # Small parameter grid for testing
     param_grid = {
-        'classifier__C': [0.1, 1.0],
-        'classifier__class_weight': ['balanced', None]
+        'classifier__estimator__C': [0.1, 1.0],
+        'classifier__estimator__class_weight': ['balanced', None]
     }
 
     # Tune with TimeSeriesSplit
@@ -226,12 +234,15 @@ def test_results_saving():
     X_train = np.random.randn(100, 5)
     y_train = np.random.choice([0, 1], size=100, p=[0.85, 0.15])
 
+    # Create pipeline (matching production structure with CalibratedClassifierCV)
+    base_clf = LogisticRegression(random_state=42, max_iter=1000)
+    calibrated_clf = CalibratedClassifierCV(estimator=base_clf, method='isotonic', cv=3)
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('classifier', LogisticRegression(random_state=42, max_iter=1000))
+        ('classifier', calibrated_clf)
     ])
 
-    param_grid = {'classifier__C': [0.1, 1.0]}
+    param_grid = {'classifier__estimator__C': [0.1, 1.0]}
 
     best_pipeline, tuning_results = tune_hyperparameters(
         pipeline=pipeline,
@@ -290,9 +301,12 @@ def test_parameter_importance():
     X_train = np.random.randn(200, 8)
     y_train = np.random.choice([0, 1], size=200, p=[0.85, 0.15])
 
+    # Create pipeline (matching production structure with CalibratedClassifierCV)
+    base_clf = RandomForestClassifier(random_state=42, n_jobs=1)
+    calibrated_clf = CalibratedClassifierCV(estimator=base_clf, method='isotonic', cv=3)
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('classifier', RandomForestClassifier(random_state=42, n_jobs=1))
+        ('classifier', calibrated_clf)
     ])
 
     # Use quick RF grid
