@@ -21,6 +21,12 @@ from pathlib import Path
 # OUTPUT MODE: Set to False for concise, essential output only
 VERBOSE = False
 
+# HYPERPARAMETER TUNING CONFIGURATION
+ENABLE_HYPERPARAMETER_TUNING = True  # Enable automatic hyperparameter optimization
+TUNING_MODE = 'quick'                # 'quick' (fast, 6-24 combos) or 'extensive' (thorough, 40-1620 combos)
+TUNING_CV_SPLITS = 3                 # Number of TimeSeriesSplit CV folds
+TUNING_SCORING = 'f1'                # Metric to optimize: 'f1', 'precision', 'recall', 'roc_auc'
+
 import os
 import contextlib
 
@@ -687,7 +693,15 @@ def main():
         training_start = time.time()
 
         try:
-            models, model_features, feature_importance, all_metrics = train_all_models(ACTIVE_MODELS, all_draws, features_dict)
+            models, model_features, feature_importance, all_metrics = train_all_models(
+                ACTIVE_MODELS,
+                all_draws,
+                features_dict,
+                enable_hyperparameter_tuning=ENABLE_HYPERPARAMETER_TUNING,
+                tuning_mode=TUNING_MODE,
+                tuning_cv_splits=TUNING_CV_SPLITS,
+                tuning_scoring=TUNING_SCORING
+            )
             print(f"\n✓ Main model training completed in {time.time() - training_start:.2f} seconds")
 
             # Model training validation
