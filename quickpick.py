@@ -131,7 +131,7 @@ from ml_lotto.features.freshness import (
 
 from ml_lotto.features.history import extract_win_bias_ratio_from_history
 
-from ml_lotto.features.bonus_features import extract_bonus_features_from_json
+from ml_lotto.features.bonus_features import extract_bonus_features_from_json, create_unified_bonus_features
 
 from ml_lotto.models.trainer import train_all_models
 from ml_lotto.models.bonus_trainer import train_bonus_model
@@ -557,20 +557,25 @@ def main():
         feature_time = time.time() - feature_start
         print(f"✓ Main feature extraction completed in {feature_time:.2f} seconds")
         
-        print("\nStep 2b: Extracting BONUS BALL features from JSON...")
+        print("\nStep 2b: Creating UNIFIED BONUS BALL features...")
+        print("  (Combining: Bonus-specific + Main features + Interactions)")
         bonus_feature_start = time.time()
-        
+
         try:
-            bonus_features_dict = extract_bonus_features_from_json(bonus_analysis_data)
-            print(f"  ✓ Bonus features extracted for {len(bonus_features_dict)} numbers")
+            bonus_features_dict = create_unified_bonus_features(
+                bonus_analysis_data,
+                features_dict,  # Pass main features for merging
+                include_interactions=True  # Enable interactions for logistic regression
+            )
+            print(f"  ✓ Unified bonus features created for {len(bonus_features_dict)} numbers")
         except Exception as e:
-            print(f"  ✗ Error extracting bonus features: {e}")
+            print(f"  ✗ Error creating unified bonus features: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
-        
+
         bonus_feature_time = time.time() - bonus_feature_start
-        print(f"✓ Bonus feature extraction completed in {bonus_feature_time:.2f} seconds")
+        print(f"✓ Unified bonus feature creation completed in {bonus_feature_time:.2f} seconds")
         
         print("\nStep 3: Training BONUS BALL prediction model...")
         bonus_training_start = time.time()

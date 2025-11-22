@@ -16,6 +16,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.pipeline import Pipeline
+from ml_lotto.features.extractor import expand_feature_selection
 
 
 def build_bonus_training_dataset(
@@ -29,17 +30,17 @@ def build_bonus_training_dataset(
 
     For each historical draw:
         For each number 1-47:
-            X (features) = bonus-specific features from JSON
+            X (features) = unified bonus features (bonus-specific + main + interactions)
             y (label) = 1 if number was bonus ball, 0 otherwise
 
     Args:
         all_draws: Historical draw data with bonus balls
-        bonus_features_dict: Bonus feature values for each number
+        bonus_features_dict: Unified bonus feature values for each number
         training_start_draw: Starting draw index for training
         training_end_draw: Ending draw index (exclusive). If None, uses all available draws.
 
     Returns:
-        DataFrame with bonus features + 'is_bonus' label column
+        DataFrame with all bonus features + 'is_bonus' label column
     """
     if training_end_draw is None:
         training_end_draw = len(all_draws)
@@ -49,33 +50,32 @@ def build_bonus_training_dataset(
     print(f"    Draw range: {training_start_draw} to {training_end_draw-1} ({training_end_draw - training_start_draw} draws)")
     records = []
 
-    feature_names = [
-        'category_weight',
-        'was_bonus_last_10',
-        'freshness_weight',
-        'timing_zone_weight',
-        'days_since_last_bonus',
-        'bonus_frequency_ratio',
-        'total_bonus_count',
-        'avg_days_between_bonus'
-    ]
+    # Dynamically get feature names from the actual data (supports unified features)
+    # This ensures we use ALL features available, including interactions
+    if bonus_features_dict:
+        sample_num = next(iter(bonus_features_dict.keys()))
+        feature_names = [k for k in bonus_features_dict[sample_num].keys()
+                        if k != 'category']  # Exclude 'category' as it's categorical (used for interactions)
+        print(f"    Features detected: {len(feature_names)}")
+    else:
+        raise ValueError("bonus_features_dict is empty")
 
     for draw_idx in range(training_start_draw, training_end_draw):
         bonus_number = all_draws[draw_idx].get('bonus_number')
-        
+
         for num in range(1, 48):
             if num in bonus_features_dict:
                 feat = bonus_features_dict[num]
                 record = {fname: feat.get(fname, 0) for fname in feature_names}
                 record['is_bonus'] = 1 if num == bonus_number else 0
                 records.append(record)
-    
+
     train_df = pd.DataFrame(records)
     bonus_count = train_df['is_bonus'].sum()
     print(f"    Training records: {len(train_df)}")
     print(f"    Bonus ball occurrences: {bonus_count}")
     print(f"    Class balance: {bonus_count}/{len(train_df)} ({bonus_count/len(train_df)*100:.2f}%)")
-    
+
     return train_df
 
 
@@ -126,7 +126,14 @@ def train_bonus_model(
             None  # Use all remaining draws
         )
 
-    selected_features = bonus_model_config['features']
+    # Get all available features from the training dataset (excluding 'is_bonus' label)
+    all_available_features = [col for col in train_df.columns if col != 'is_bonus']
+
+    # Expand feature selection (handles placeholders like PAIRWISE_INTERACTIONS, TRIPLE_INTERACTIONS)
+    feature_spec = bonus_model_config['features']
+    selected_features = expand_feature_selection(feature_spec, all_available_features)
+
+    print(f"  Feature expansion: {len(feature_spec)} spec items → {len(selected_features)} actual features")
 
     X_train = train_df[selected_features].values
     y_train = train_df['is_bonus'].values
