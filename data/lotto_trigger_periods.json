@@ -311,7 +311,7 @@
     "9": {
         "total_count": 69,
         "last_seen": "2025/11/08",
-        "category": "medium",
+        "category": "hot",
         "recent": {
             "last_4": 1,
             "last_5": 1,
@@ -1072,7 +1072,7 @@
     "28": {
         "total_count": 70,
         "last_seen": "2025/11/05",
-        "category": "cold",
+        "category": "medium",
         "recent": {
             "last_4": 1,
             "last_5": 1,
@@ -1818,7 +1818,7 @@
     "46": {
         "total_count": 79,
         "last_seen": "2025/11/15",
-        "category": "medium",
+        "category": "hot",
         "recent": {
             "last_4": 3,
             "last_5": 3,

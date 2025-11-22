@@ -162,7 +162,7 @@ def main():
             enable_hyperparameter_tuning=True,
             tuning_mode='quick',  # or 'extensive' for comprehensive search
             tuning_cv_splits=3,
-            tuning_scoring='f1'
+            tuning_scoring='roc_auc'
         )
 
         trained_models[model_config['name']] = {

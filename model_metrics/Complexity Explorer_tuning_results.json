@@ -3,13 +3,13 @@
   "best_params": {
     "classifier__estimator__learning_rate": 0.01,
     "classifier__estimator__max_depth": 3,
-    "classifier__estimator__n_estimators": 50,
+    "classifier__estimator__n_estimators": 100,
     "classifier__estimator__scale_pos_weight": 1
   },
-  "best_score": 0.0,
+  "best_score": 0.5094238363449611,
   "search_type": "grid",
-  "scoring": "f1",
+  "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 3.8785064220428467,
+  "elapsed_time": 8.041842937469482,
   "total_fits": 24
 }

@@ -245,6 +245,9 @@ MODEL_1_CONFIG = {
         'window_saturation_penalty',    # Avoid over-saturated windows
         'range_spread_json',            # Range distribution
         'sum_contribution_json',        # Sum contribution
+
+        'PAIRWISE_INTERACTIONS',       # Critical for logistic regression!
+        'TRIPLE_INTERACTIONS',         # Category × freshness × timing patterns
     ],
     # Total: ~17 features focused on WHEN numbers appear
 

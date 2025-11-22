@@ -275,7 +275,7 @@ def train_model(
     enable_hyperparameter_tuning: bool = False,
     tuning_mode: str = 'quick',
     tuning_cv_splits: int = 3,
-    tuning_scoring: str = 'f1'
+    tuning_scoring: str = 'roc_auc' 
 ) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
     """
     Train a single model based on its configuration with comprehensive validation metrics.
@@ -521,7 +521,7 @@ def train_all_models(
     enable_hyperparameter_tuning: bool = False,
     tuning_mode: str = 'quick',
     tuning_cv_splits: int = 3,
-    tuning_scoring: str = 'f1'
+    tuning_scoring: str = 'roc_auc'
 ) -> Tuple[Dict[str, Any], Dict[str, List[str]], Dict[str, Optional[List[Dict[str, Any]]]], Dict[str, Dict[str, Any]]]:
     """
     Train all configured models with comprehensive validation metrics and model comparison.
