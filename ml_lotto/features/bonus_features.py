@@ -132,7 +132,7 @@ def extract_bonus_features_from_json(
 def get_bonus_feature_names() -> List[str]:
     """
     Get list of bonus feature names.
-    
+
     Returns:
         List of feature names used in bonus prediction
     """
@@ -146,3 +146,148 @@ def get_bonus_feature_names() -> List[str]:
         'total_bonus_count',
         'avg_days_between_bonus'
     ]
+
+
+def create_unified_bonus_features(
+    bonus_json: Dict[str, Any],
+    main_features_dict: Dict[int, Dict[str, Any]],
+    include_interactions: bool = True
+) -> Dict[int, Dict[str, Any]]:
+    """
+    Create unified bonus feature dictionary combining:
+    - Bonus-specific features (8 from JSON)
+    - Selected main features (rolling, gap, recency)
+    - Interaction features (if enabled)
+
+    This provides a comprehensive feature set for bonus ball prediction,
+    especially important for logistic regression which cannot discover
+    interactions automatically.
+
+    Args:
+        bonus_json: Data from lotto_bonus_analysis.json
+        main_features_dict: Main feature dictionary from extract_features_from_hmc_json
+        include_interactions: Whether to include pairwise/triple interactions (default: True)
+
+    Returns:
+        Dictionary mapping number -> unified bonus feature dictionary
+
+    Features included:
+        - 8 bonus-specific features from JSON
+        - 12 main features (rolling stats, gaps, recency)
+        - 13 interaction features (if enabled)
+        Total: 8 + 12 + 13 = 33 features
+    """
+    print("\n" + "="*70)
+    print("CREATING UNIFIED BONUS FEATURES")
+    print("="*70)
+    print("Combining: Bonus-specific + Main features + Interactions")
+
+    # Step 1: Extract base bonus features
+    bonus_base = extract_bonus_features_from_json(bonus_json)
+
+    # Step 2: Merge with main features
+    unified_features = {}
+
+    for num in range(1, 48):
+        # Start with bonus-specific features
+        features = bonus_base.get(num, {}).copy()
+        main_feat = main_features_dict.get(num, {})
+
+        # Add relevant main features
+        features.update({
+            # Rolling statistics (temporal patterns)
+            'rolling_rate_10': float(main_feat.get('rolling_rate_10', 0)),
+            'rolling_rate_20': float(main_feat.get('rolling_rate_20', 0)),
+            'rolling_trend_10': float(main_feat.get('rolling_trend_10', 0)),
+
+            # Gap patterns (predictable cycles)
+            'gap_consistency_score': float(main_feat.get('gap_consistency_score', 0)),
+            'gap_variance': float(main_feat.get('gap_variance', 0)),
+            'max_gap_ratio': float(main_feat.get('max_gap_ratio', 0)),
+
+            # Recent activity (saturation signals)
+            'recent_4': float(main_feat.get('recent_4', 0)),
+            'recent_14': float(main_feat.get('recent_14', 0)),
+
+            # Baseline frequency
+            'total_count': float(main_feat.get('total_count', 0)),
+
+            # Volatility
+            'appearance_volatility': float(main_feat.get('appearance_volatility', 0)),
+
+            # Category/freshness for interactions
+            'category': main_feat.get('category', 'medium'),
+            'freshness_bin': int(main_feat.get('freshness_bin', 0)),
+        })
+
+        # Step 3: Add interaction features if requested
+        if include_interactions:
+            try:
+                from ml_lotto.features.interactions import calculate_all_interaction_features
+                interaction_feat = calculate_all_interaction_features(
+                    features,  # Use merged features as input
+                    include_triples=True
+                )
+                features.update(interaction_feat)
+            except Exception as e:
+                print(f"  ⚠️  Warning: Could not add interaction features: {e}")
+                print(f"     Continuing with base features only")
+
+        unified_features[num] = features
+
+    # Report results
+    sample_features = unified_features[1]
+    bonus_count = sum(1 for k in sample_features.keys() if k in get_bonus_feature_names())
+    interaction_count = sum(1 for k in sample_features.keys() if 'interaction' in k or 'triple_' in k)
+    main_count = len(sample_features) - bonus_count - interaction_count
+
+    print(f"\n✓ Created unified bonus features for 47 numbers")
+    print(f"  Bonus-specific features: {bonus_count}")
+    print(f"  Main features: {main_count}")
+    print(f"  Interaction features: {interaction_count}")
+    print(f"  Total features per number: {len(sample_features)}")
+
+    return unified_features
+
+
+def get_unified_bonus_feature_names(include_interactions: bool = True) -> List[str]:
+    """
+    Get complete list of unified bonus feature names.
+
+    Args:
+        include_interactions: Whether to include interaction features (default: True)
+
+    Returns:
+        List of all feature names in unified bonus features
+    """
+    # Base bonus features (8)
+    base_features = get_bonus_feature_names()
+
+    # Main features (12)
+    main_features = [
+        'rolling_rate_10',
+        'rolling_rate_20',
+        'rolling_trend_10',
+        'gap_consistency_score',
+        'gap_variance',
+        'max_gap_ratio',
+        'recent_4',
+        'recent_14',
+        'total_count',
+        'appearance_volatility',
+        'category',
+        'freshness_bin'
+    ]
+
+    all_features = base_features + main_features
+
+    # Interaction features (13 if enabled)
+    if include_interactions:
+        try:
+            from ml_lotto.features.interactions import get_interaction_feature_names
+            interaction_features = get_interaction_feature_names(include_triples=True)
+            all_features.extend(interaction_features)
+        except Exception as e:
+            print(f"  ⚠️  Warning: Could not get interaction feature names: {e}")
+
+    return all_features
