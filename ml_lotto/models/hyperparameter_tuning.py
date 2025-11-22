@@ -235,8 +235,8 @@ def tune_hyperparameters(
     # Analyze results
     results_df = pd.DataFrame(search.cv_results_)
 
-    # Get top 5 configurations
-    top_configs = results_df.nsmallest(5, 'rank_test_score')[
+    # Get top 5 configurations by actual score (not rank)
+    top_configs = results_df.nlargest(5, 'mean_test_score')[
         ['rank_test_score', 'mean_test_score', 'std_test_score', 'params']
     ]
 
