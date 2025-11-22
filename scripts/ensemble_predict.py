@@ -4,9 +4,9 @@ ensemble_predict.py
 Generate ensemble predictions by combining multiple trained models.
 
 Usage:
-    python ensemble_predict.py --strategy majority
-    python ensemble_predict.py --strategy threshold --min-votes 3
-    python ensemble_predict.py --strategy weighted
+    python scripts/ensemble_predict.py --strategy majority
+    python scripts/ensemble_predict.py --strategy threshold --min-votes 3
+    python scripts/ensemble_predict.py --strategy weighted
 
 This script loads trained models and combines their predictions using
 ensemble voting to reduce false positives and improve precision.
