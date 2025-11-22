@@ -350,7 +350,7 @@
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 3.0,
             "days_since_last_bonus": 196,
-            "most_common_category": "medium",
+            "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_4_5": 1,

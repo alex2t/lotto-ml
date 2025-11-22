@@ -43,8 +43,9 @@ NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA
 TRAINING_START_DRAW = TRAINING_DATA
 
 # Train/Validation Split Configuration
-# Prevents data leakage by holding out recent draws for validation
-VALIDATION_SPLIT_RATIO = 0.80  # 80% train, 20% validation
+# For production: Use ALL data to capture latest lottery patterns
+# For development: Use 0.80 to prevent overfitting during model tuning
+VALIDATION_SPLIT_RATIO = 1.0  # 100% train - predictions update with each new draw
 
 DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
 HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'
@@ -204,7 +205,7 @@ MODEL_1_CONFIG = {
         'importance_threshold': 0.01     # More aggressive (remove features <1% importance)
     },
 
-    'diversity_penalty': 0.3,  # 30% penalty on previously selected numbers
+    'diversity_penalty': 0.00,  # 30% penalty on previously selected numbers
 
     'algorithm_params': {
         'penalty': 'l2',
@@ -278,7 +279,7 @@ MODEL_2_CONFIG = {
         # Let model handle all stability signals
     },
 
-    'diversity_penalty': 0.4,  # 40% penalty on previously selected numbers
+    'diversity_penalty': 0.00,  # 40% penalty on previously selected numbers
 
     'algorithm_params': {
         'n_estimators': 100,
@@ -300,9 +301,9 @@ MODEL_3_CONFIG = {
     'description': 'XGBoost with ALL features - finds complex interaction patterns across all signals',
     'algorithm': 'xgboost',
 
-    'hot_count': 2,
+    'hot_count': 3,
     'medium_count': 2,
-    'cold_count': 2,
+    'cold_count': 1,
     'generic_count': 0,
 
     'features': [
@@ -362,7 +363,7 @@ MODEL_3_CONFIG = {
         'enable': False,  # ⭐ Use ALL features - complexity needs interactions
     },
 
-    'diversity_penalty': 0.35,  # 35% penalty on previously selected numbers
+    'diversity_penalty': 0.00,  # 35% penalty on previously selected numbers
 
     'algorithm_params': {
         'n_estimators': 150,
@@ -422,7 +423,7 @@ MODEL_4_CONFIG = {
         'importance_threshold': 0.02     # ⭐ VERY aggressive (only features >2% importance)
     },
 
-    'diversity_penalty': 0.25,  # 25% penalty (for pool generator)
+    'diversity_penalty': 0.00,  # 25% penalty (for pool generator)
 
     'algorithm_params': {
         'iterations': 100,

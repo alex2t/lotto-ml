@@ -1,15 +1,15 @@
 {
-  "model_name": "Complexity Explorer",
+  "model_name": "Conservative Pool Generator",
   "best_params": {
+    "classifier__estimator__depth": 4,
+    "classifier__estimator__iterations": 50,
     "classifier__estimator__learning_rate": 0.01,
-    "classifier__estimator__max_depth": 3,
-    "classifier__estimator__n_estimators": 50,
     "classifier__estimator__scale_pos_weight": 1
   },
   "best_score": 0.0,
   "search_type": "grid",
   "scoring": "f1",
   "cv_splits": 3,
-  "elapsed_time": 3.8785064220428467,
+  "elapsed_time": 15.87651801109314,
   "total_fits": 24
 }
