@@ -11,103 +11,103 @@
         "total_numbers": 47
     },
     "anova_test": {
-        "significant": false,
-        "f_statistic": 0.7418268644920358,
-        "p_value": 0.482104630243567,
-        "eta_squared": 0.03261949310019099,
+        "significant": true,
+        "f_statistic": 107.66664492086878,
+        "p_value": 1.1248042667330495e-17,
+        "eta_squared": 0.8303341617774883,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
-                "count": 26,
-                "mean_days_since": 22.153846153846153,
-                "std_dev": 19.81452458716546,
-                "median": 14.0,
-                "min": 7.0,
-                "max": 77.0
+                "count": 25,
+                "mean_days_since": 8.36,
+                "std_dev": 4.2805762851902704,
+                "median": 7.0,
+                "min": 3.0,
+                "max": 14.0
             },
             "medium": {
-                "count": 9,
-                "mean_days_since": 24.444444444444443,
-                "std_dev": 18.709029311478933,
-                "median": 21.0,
-                "min": 7.0,
-                "max": 70.0
+                "count": 12,
+                "mean_days_since": 22.5,
+                "std_dev": 4.210376791603422,
+                "median": 22.5,
+                "min": 17.0,
+                "max": 28.0
             },
             "cold": {
-                "count": 12,
-                "mean_days_since": 30.25,
-                "std_dev": 17.47790813362036,
-                "median": 26.0,
-                "min": 11.0,
-                "max": 63.0
+                "count": 10,
+                "mean_days_since": 55.1,
+                "std_dev": 16.8486728788287,
+                "median": 61.0,
+                "min": 31.0,
+                "max": 77.0
             }
         },
-        "interpretation": "Categories are NOT statistically distinct (may need redefinition)"
+        "interpretation": "Significant with large effect (categories strongly distinct)"
     },
     "pairwise_comparisons": {
         "bonferroni_corrected_alpha": 0.016666666666666666,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": -0.3029184569094869,
-                "p_value": 0.7638533754952597,
-                "significant": false,
-                "mean_difference": -2.2905982905982896
+                "t_statistic": -9.454496844397244,
+                "p_value": 3.603003581101466e-11,
+                "significant": true,
+                "mean_difference": -14.14
             },
             "hot_vs_cold": {
-                "t_statistic": -1.2126339696640787,
-                "p_value": 0.2331676918635379,
-                "significant": false,
-                "mean_difference": -8.096153846153847
+                "t_statistic": -13.113176275272837,
+                "p_value": 1.225362356427551e-14,
+                "significant": true,
+                "mean_difference": -46.74
             },
             "medium_vs_cold": {
-                "t_statistic": -0.7311657076075156,
-                "p_value": 0.47359948549014685,
-                "significant": false,
-                "mean_difference": -5.805555555555557
+                "t_statistic": -6.493120012225636,
+                "p_value": 2.4917483192886966e-06,
+                "significant": true,
+                "mean_difference": -32.6
             }
         },
-        "all_significant": false
+        "all_significant": true
     },
     "category_distribution": {
         "significant": true,
-        "chi2_stat": 10.510638297872342,
-        "p_value": 0.005219680170748771,
+        "chi2_stat": 8.46808510638298,
+        "p_value": 0.014493680484792822,
         "category_counts": {
-            "hot": 26,
-            "medium": 9,
-            "cold": 12
+            "hot": 25,
+            "medium": 12,
+            "cold": 10
         },
         "category_percentages": {
-            "hot": 55.319148936170215,
-            "medium": 19.148936170212767,
-            "cold": 25.53191489361702
+            "hot": 53.191489361702125,
+            "medium": 25.53191489361702,
+            "cold": 21.27659574468085
         },
         "interpretation": "Category sizes are imbalanced (some over/under-represented)"
     },
     "threshold_validation": {
-        "hot_medium_overlap": true,
-        "medium_cold_overlap": true,
-        "categories_distinct": false,
+        "hot_medium_overlap": false,
+        "medium_cold_overlap": false,
+        "categories_distinct": true,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 14.0,
-            "medium_cold_cutoff": 24.0
+            "hot_medium_cutoff": 11.0,
+            "medium_cold_cutoff": 23.004600000000007
         },
         "current_ranges": {
             "hot": {
-                "min": 7.0,
-                "max": 77.0
+                "min": 3.0,
+                "max": 14.0
             },
             "medium": {
-                "min": 7.0,
-                "max": 70.0
+                "min": 17.0,
+                "max": 28.0
             },
             "cold": {
-                "min": 11.0,
-                "max": 63.0
+                "min": 31.0,
+                "max": 77.0
             }
         }
     },
-    "categorization_valid": false,
-    "recommendation": "RECOMMENDATION: Redefine category thresholds - current categories not statistically distinct"
+    "categorization_valid": true,
+    "recommendation": "RECOMMENDATION: Current categorization is statistically valid - no changes needed"
 }
