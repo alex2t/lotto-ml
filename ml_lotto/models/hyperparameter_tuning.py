@@ -41,17 +41,17 @@ def get_logistic_regression_grid(quick: bool = False) -> Dict[str, List]:
     """
     if quick:
         return {
-            'classifier__C': [0.1, 1.0, 10.0],
-            'classifier__class_weight': ['balanced', None],
-            'classifier__max_iter': [1000]
+            'classifier__estimator__C': [0.1, 1.0, 10.0],
+            'classifier__estimator__class_weight': ['balanced', None],
+            'classifier__estimator__max_iter': [1000]
         }
     else:
         return {
-            'classifier__C': [0.01, 0.1, 1.0, 10.0, 100.0],
-            'classifier__penalty': ['l2'],
-            'classifier__class_weight': ['balanced', None],
-            'classifier__solver': ['lbfgs', 'liblinear'],
-            'classifier__max_iter': [1000, 2000]
+            'classifier__estimator__C': [0.01, 0.1, 1.0, 10.0, 100.0],
+            'classifier__estimator__penalty': ['l2'],
+            'classifier__estimator__class_weight': ['balanced', None],
+            'classifier__estimator__solver': ['lbfgs', 'liblinear'],
+            'classifier__estimator__max_iter': [1000, 2000]
         }
 
 
@@ -67,19 +67,19 @@ def get_random_forest_grid(quick: bool = False) -> Dict[str, List]:
     """
     if quick:
         return {
-            'classifier__n_estimators': [50, 100],
-            'classifier__max_depth': [5, 10, None],
-            'classifier__min_samples_split': [2, 5],
-            'classifier__class_weight': ['balanced', 'balanced_subsample']
+            'classifier__estimator__n_estimators': [50, 100],
+            'classifier__estimator__max_depth': [5, 10, None],
+            'classifier__estimator__min_samples_split': [2, 5],
+            'classifier__estimator__class_weight': ['balanced', 'balanced_subsample']
         }
     else:
         return {
-            'classifier__n_estimators': [50, 100, 200, 300],
-            'classifier__max_depth': [5, 10, 15, 20, None],
-            'classifier__min_samples_split': [2, 5, 10],
-            'classifier__min_samples_leaf': [1, 2, 4],
-            'classifier__max_features': ['sqrt', 'log2', None],
-            'classifier__class_weight': ['balanced', 'balanced_subsample', None]
+            'classifier__estimator__n_estimators': [50, 100, 200, 300],
+            'classifier__estimator__max_depth': [5, 10, 15, 20, None],
+            'classifier__estimator__min_samples_split': [2, 5, 10],
+            'classifier__estimator__min_samples_leaf': [1, 2, 4],
+            'classifier__estimator__max_features': ['sqrt', 'log2', None],
+            'classifier__estimator__class_weight': ['balanced', 'balanced_subsample', None]
         }
 
 
@@ -95,20 +95,20 @@ def get_xgboost_grid(quick: bool = False) -> Dict[str, List]:
     """
     if quick:
         return {
-            'classifier__n_estimators': [50, 100],
-            'classifier__max_depth': [3, 5],
-            'classifier__learning_rate': [0.01, 0.1],
-            'classifier__scale_pos_weight': [1, 3, 5]
+            'classifier__estimator__n_estimators': [50, 100],
+            'classifier__estimator__max_depth': [3, 5],
+            'classifier__estimator__learning_rate': [0.01, 0.1],
+            'classifier__estimator__scale_pos_weight': [1, 3, 5]
         }
     else:
         return {
-            'classifier__n_estimators': [50, 100, 200, 300],
-            'classifier__max_depth': [3, 5, 7, 9],
-            'classifier__learning_rate': [0.01, 0.05, 0.1, 0.2],
-            'classifier__subsample': [0.6, 0.8, 1.0],
-            'classifier__colsample_bytree': [0.6, 0.8, 1.0],
-            'classifier__scale_pos_weight': [1, 2, 3, 5, 7],
-            'classifier__gamma': [0, 0.1, 0.2]
+            'classifier__estimator__n_estimators': [50, 100, 200, 300],
+            'classifier__estimator__max_depth': [3, 5, 7, 9],
+            'classifier__estimator__learning_rate': [0.01, 0.05, 0.1, 0.2],
+            'classifier__estimator__subsample': [0.6, 0.8, 1.0],
+            'classifier__estimator__colsample_bytree': [0.6, 0.8, 1.0],
+            'classifier__estimator__scale_pos_weight': [1, 2, 3, 5, 7],
+            'classifier__estimator__gamma': [0, 0.1, 0.2]
         }
 
 
@@ -124,18 +124,18 @@ def get_catboost_grid(quick: bool = False) -> Dict[str, List]:
     """
     if quick:
         return {
-            'classifier__iterations': [50, 100],
-            'classifier__depth': [4, 6],
-            'classifier__learning_rate': [0.01, 0.1],
-            'classifier__scale_pos_weight': [1, 3, 5]
+            'classifier__estimator__iterations': [50, 100],
+            'classifier__estimator__depth': [4, 6],
+            'classifier__estimator__learning_rate': [0.01, 0.1],
+            'classifier__estimator__scale_pos_weight': [1, 3, 5]
         }
     else:
         return {
-            'classifier__iterations': [50, 100, 200, 300],
-            'classifier__depth': [4, 6, 8, 10],
-            'classifier__learning_rate': [0.01, 0.05, 0.1, 0.2],
-            'classifier__l2_leaf_reg': [1, 3, 5, 7],
-            'classifier__scale_pos_weight': [1, 2, 3, 5, 7]
+            'classifier__estimator__iterations': [50, 100, 200, 300],
+            'classifier__estimator__depth': [4, 6, 8, 10],
+            'classifier__estimator__learning_rate': [0.01, 0.05, 0.1, 0.2],
+            'classifier__estimator__l2_leaf_reg': [1, 3, 5, 7],
+            'classifier__estimator__scale_pos_weight': [1, 2, 3, 5, 7]
         }
 
 
