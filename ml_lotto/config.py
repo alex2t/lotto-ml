@@ -150,22 +150,45 @@ BONUS_MODEL_CONFIG = {
 
 BONUS_TO_MAIN_MODEL_CONFIG = {
     'name': 'Bonus-to-Main Transition Predictor',
-    'description': '74% of bonus numbers appear as main within 10 draws',
+    'description': '74% of bonus numbers appear as main within 10 draws (3.48x boost over random)',
     'algorithm': 'logistic_regression',
     'features': [
-        'is_in_bonus_window',
-        'draws_since_bonus',
-        'historical_transition_rate',
-        'category_multiplier',
-        'freshness_multiplier',
-        'timing_decay_weight',
-        'composite_transition_score',
-        'window_saturation_penalty',
-        'avg_draws_to_transition',
-        'recent_4',
-        'recent_9',
-        'total_count'
+        # === BONUS-TO-MAIN SPECIFIC FEATURES (12) ===
+        'is_in_bonus_window',          # Binary: in recent 10 bonus draws
+        'draws_since_bonus',           # Timing: 0-9 draws ago
+        'historical_transition_rate',  # Number's historical success rate
+        'category_multiplier',         # Hot/medium/cold weight
+        'freshness_multiplier',        # Freshness category weight
+        'timing_decay_weight',         # Time-based decay (draw_1 strongest)
+        'composite_transition_score',  # Combined probability score
+        'window_saturation_penalty',   # Window over-saturation penalty
+        'avg_draws_to_transition',     # Number's typical transition timing
+        'recent_4',                    # Recent main appearances (4 draws)
+        'recent_9',                    # Recent main appearances (9 draws)
+        'total_count',                 # Overall frequency
+
+        # === MAIN FEATURES - TEMPORAL PATTERNS (4) ===
+        'days_since_last',             # CRITICAL: Saturation indicator (was missing!)
+        'rolling_rate_10',             # Recent momentum (10 draws)
+        'rolling_rate_20',             # Medium-term trend (20 draws)
+        'rolling_trend_10',            # Acceleration (heating up?)
+
+        # === MAIN FEATURES - GAP PATTERNS (3) ===
+        'gap_consistency_score',       # Predictable appearance cycles
+        'gap_variance',                # Pattern stability
+        'max_gap_ratio',               # Current gap vs historical max
+
+        # === MAIN FEATURES - BASELINE (3) ===
+        'appearance_volatility',       # Frequency consistency
+        'category',                    # HMC category (for interactions)
+        'freshness_bin',               # Freshness bin (for interactions)
+
+        # === INTERACTION FEATURES (~13) ===
+        'PAIRWISE_INTERACTIONS',       # Critical for logistic regression!
+        'TRIPLE_INTERACTIONS',         # Category × freshness × timing patterns
     ],
+    # Total: 12 bonus-to-main + 10 main + ~13 interactions = ~35 features
+
     'algorithm_params': {
         'penalty': 'l2',
         'C': 0.8,
