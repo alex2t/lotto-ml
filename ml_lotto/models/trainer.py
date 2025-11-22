@@ -319,16 +319,33 @@ def train_model(
 
     print(f"  Initial features ({len(selected_features)}): {selected_features}")
 
+    # Check for model-specific feature selection settings
+    feature_sel_config = model_config.get('feature_selection', {})
+    if feature_sel_config:
+        # Override with model-specific settings
+        enable_selection = feature_sel_config.get('enable', enable_feature_selection)
+        corr_thresh = feature_sel_config.get('correlation_threshold', correlation_threshold)
+        imp_thresh = feature_sel_config.get('importance_threshold', importance_threshold)
+        print(f"\n  ⚙️  Using model-specific feature selection settings:")
+        print(f"     Enable: {enable_selection}")
+        print(f"     Correlation threshold: {corr_thresh}")
+        print(f"     Importance threshold: {imp_thresh}")
+    else:
+        # Use defaults passed to function
+        enable_selection = enable_feature_selection
+        corr_thresh = correlation_threshold
+        imp_thresh = importance_threshold
+
     # Apply intelligent feature selection if enabled
-    if enable_feature_selection:
+    if enable_selection:
         print(f"\n  🔍 FEATURE SELECTION ENABLED")
         selected_features, selection_info = select_features(
             train_df,
             selected_features,
             enable_correlation_filter=True,
             enable_importance_filter=True,
-            correlation_threshold=correlation_threshold,
-            importance_threshold=importance_threshold,
+            correlation_threshold=corr_thresh,
+            importance_threshold=imp_thresh,
             verbose=True
         )
 
