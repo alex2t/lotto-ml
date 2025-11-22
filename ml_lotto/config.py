@@ -97,15 +97,42 @@ BONUS_MODEL_CONFIG = {
     'name': 'Bonus Ball Predictor',
     'algorithm': 'logistic_regression',
     'features': [
-        'category_weight',
-        'was_bonus_last_10',
-        'freshness_weight',
-        'timing_zone_weight',
-        'days_since_last_bonus',
-        'bonus_frequency_ratio',
-        'total_bonus_count',
-        'avg_days_between_bonus'
+        # === BONUS-SPECIFIC FEATURES (8) ===
+        'category_weight',              # HMC category preference for bonus
+        'was_bonus_last_10',           # Recent exclusion pattern
+        'freshness_weight',            # Freshness preference for bonus
+        'timing_zone_weight',          # Optimal timing zones
+        'days_since_last_bonus',       # Recency of last bonus appearance
+        'bonus_frequency_ratio',       # Historical bonus rate
+        'total_bonus_count',           # Total bonus appearances
+        'avg_days_between_bonus',      # Pattern regularity
+
+        # === MAIN FEATURES - TEMPORAL PATTERNS (3) ===
+        'rolling_rate_10',              # Recent bonus momentum (10 draws)
+        'rolling_rate_20',              # Medium-term bonus trend (20 draws)
+        'rolling_trend_10',             # Bonus acceleration (heating up?)
+
+        # === MAIN FEATURES - GAP PATTERNS (3) ===
+        'gap_consistency_score',        # Predictable bonus appearance cycles
+        'gap_variance',                 # Bonus pattern stability
+        'max_gap_ratio',                # Current gap vs historical max
+
+        # === MAIN FEATURES - RECENT ACTIVITY (2) ===
+        'recent_4',                     # Recent main appearances (saturation)
+        'recent_14',                    # Medium-term main appearances
+
+        # === MAIN FEATURES - BASELINE (3) ===
+        'total_count',                  # Overall popularity as main ball
+        'appearance_volatility',        # Frequency consistency
+        'category',                     # HMC category (for interactions)
+        'freshness_bin',                # Freshness bin (for interactions)
+
+        # === INTERACTION FEATURES (~13) ===
+        'PAIRWISE_INTERACTIONS',        # Critical for logistic regression!
+        'TRIPLE_INTERACTIONS',          # Category × freshness × recency patterns
     ],
+    # Total: 8 bonus + 12 main + ~13 interactions = ~33 features
+
     'algorithm_params': {
         'penalty': 'l2',
         'C': 1.0,
