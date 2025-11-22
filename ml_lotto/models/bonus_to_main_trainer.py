@@ -11,6 +11,7 @@ from typing import Dict, List, Tuple
 from sklearn.linear_model import LogisticRegression
 from sklearn.calibration import CalibratedClassifierCV
 from collections import defaultdict
+from ml_lotto.features.extractor import expand_feature_selection
 
 
 def train_bonus_to_main_model(
@@ -42,7 +43,15 @@ def train_bonus_to_main_model(
     print(f"TRAINING BONUS-TO-MAIN PREDICTOR: {model_config['name']}")
     print(f"{'='*70}")
 
-    feature_names = model_config['features']
+    # Get all available features from a sample feature dict
+    sample_num = next(iter(bonus_to_main_features.keys()))
+    all_available_features = list(bonus_to_main_features[sample_num].keys())
+
+    # Expand feature selection (handles placeholders like PAIRWISE_INTERACTIONS, TRIPLE_INTERACTIONS)
+    feature_spec = model_config['features']
+    feature_names = expand_feature_selection(feature_spec, all_available_features)
+
+    print(f"Feature expansion: {len(feature_spec)} spec items → {len(feature_names)} actual features")
     print(f"Features: {len(feature_names)}")
     for fname in feature_names:
         print(f"  - {fname}")
