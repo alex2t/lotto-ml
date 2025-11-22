@@ -2,7 +2,7 @@
     "description": "Data-driven window saturation penalty configuration",
     "version": "2.0",
     "scipy_optimized": false,
-    "generated_date": "2025-11-22 13:55:05",
+    "generated_date": "2025-11-22 15:21:52",
     "data_source": {
         "statistics": "data/lotto_statistics_analysis.json",
         "odds": "data/lotto_odds_results.json",
