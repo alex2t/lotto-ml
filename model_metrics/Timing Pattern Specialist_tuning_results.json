@@ -1,0 +1,14 @@
+{
+  "model_name": "Timing Pattern Specialist",
+  "best_params": {
+    "classifier__estimator__C": 0.1,
+    "classifier__estimator__class_weight": "balanced",
+    "classifier__estimator__max_iter": 1000
+  },
+  "best_score": 0.0,
+  "search_type": "grid",
+  "scoring": "f1",
+  "cv_splits": 3,
+  "elapsed_time": 5.062688589096069,
+  "total_fits": 6
+}
