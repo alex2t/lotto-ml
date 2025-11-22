@@ -25,7 +25,7 @@ VERBOSE = False
 ENABLE_HYPERPARAMETER_TUNING = True  # Enable automatic hyperparameter optimization
 TUNING_MODE = 'quick'                # 'quick' (fast, 6-24 combos) or 'extensive' (thorough, 40-1620 combos)
 TUNING_CV_SPLITS = 3                 # Number of TimeSeriesSplit CV folds
-TUNING_SCORING = 'f1'                # Metric to optimize: 'f1', 'precision', 'recall', 'roc_auc'
+TUNING_SCORING = 'roc_auc'                 # Metric to optimize: 'f1', 'precision', 'recall', 'roc_auc'
 
 import os
 import contextlib

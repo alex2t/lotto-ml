@@ -83,7 +83,7 @@
             "medium": 25.53191489361702,
             "cold": 21.27659574468085
         },
-        "interpretation": "Category sizes are balanced (approximately equal)"
+        "interpretation": "Category sizes are imbalanced (some over/under-represented)"
     },
     "threshold_validation": {
         "hot_medium_overlap": false,
