@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import json
+from pathlib import Path
 from typing import Dict, Any
 from view.utils.data_loader import load_draw_history, get_sorted_draw_dates
 from view.utils.formatting import get_category_color
@@ -139,9 +141,18 @@ def show():
     """Display the draw history page."""
     st.title("📊 Lotto Draw History")
     st.markdown("Historical data for each lotto draw, displayed from oldest to newest.")
-    
+
     # Load draw history data
     draw_data = load_draw_history()
+
+    # Load bonus-to-main transition data
+    try:
+        with open('data/lotto_bonus_to_main_patterns.json', 'r') as f:
+            bonus_transition_data = json.load(f)
+    except FileNotFoundError:
+        bonus_transition_data = None
+        st.warning("Bonus-to-main transition data not found.")
+
     # get_sorted_draw_dates returns dates from OLDEST to NEWEST
     sorted_dates = get_sorted_draw_dates(draw_data)
     
@@ -150,6 +161,74 @@ def show():
         return
     
     st.info(f"Total draws available: **{len(sorted_dates)}** (Draw #{draw_data[sorted_dates[0]].get('draw_index', 'N/A')} to #{draw_data[sorted_dates[-1]].get('draw_index', 'N/A')})")
+
+    # --- BONUS-TO-MAIN TRANSITION PANEL ---
+    if bonus_transition_data:
+        st.markdown("---")
+        st.header("🎯 Bonus-to-Main Transition Candidates")
+        st.markdown("""
+        **Why This Matters:** 74.25% of bonus numbers transition to main draw within 10 draws!
+        Numbers below have appeared as bonus recently and are likely to appear in main draw soon.
+        """)
+
+        metadata = bonus_transition_data.get('metadata', {})
+        per_number_data = bonus_transition_data.get('per_number_transition_profile', {})
+
+        col_meta1, col_meta2, col_meta3 = st.columns(3)
+        with col_meta1:
+            st.metric("Overall Transition Rate", f"{metadata.get('overall_transition_rate', 0)*100:.1f}%")
+        with col_meta2:
+            st.metric("Total Bonus Appearances", metadata.get('total_bonus_appearances', 0))
+        with col_meta3:
+            st.metric("Numbers Tracked", metadata.get('numbers_with_transitions', 0))
+
+        # Build high-probability candidates list
+        candidates = []
+        for number, stats in per_number_data.items():
+            transition_rate = stats.get('transition_rate', 0)
+            days_since = stats.get('days_since_last_bonus', 999)
+            avg_draws = stats.get('avg_draws_to_transition', 0)
+
+            # High probability if: transition_rate > 0.65 AND days_since < 100
+            if transition_rate > 0.65 and days_since < 150:
+                candidates.append({
+                    'Number': int(number),
+                    'Transition Rate': f"{transition_rate*100:.1f}%",
+                    'Days Since Bonus': days_since,
+                    'Avg Draws to Transit': f"{avg_draws:.1f}",
+                    'Last Bonus': stats.get('last_bonus_date', 'N/A'),
+                    'Total Bonus Appearances': stats.get('total_bonus_appearances', 0),
+                    'HMC When Transitioning': stats.get('most_common_category', 'N/A').upper(),
+                    'Freshness': f"C{stats.get('most_common_freshness', 0)}"
+                })
+
+        if candidates:
+            candidates_df = pd.DataFrame(candidates)
+            candidates_df = candidates_df.sort_values(by='Days Since Bonus', ascending=True)
+
+            st.subheader(f"🔥 Top {len(candidates)} High-Probability Transition Candidates")
+            st.dataframe(
+                candidates_df,
+                hide_index=True,
+                width='stretch',
+                column_config={
+                    'Number': st.column_config.NumberColumn('Number', width='small'),
+                    'Days Since Bonus': st.column_config.NumberColumn('Days Since Bonus', width='small'),
+                }
+            )
+
+            # Copyable list
+            candidate_numbers = candidates_df['Number'].tolist()
+            candidate_numbers_str = ", ".join(str(n) for n in candidate_numbers)
+
+            st.markdown("**Copy to filter these candidates:**")
+            st.code(candidate_numbers_str, language=None)
+
+            st.info(f"💡 **Strategy Tip:** Recent bonus numbers ({candidate_numbers_str}) have {metadata.get('overall_transition_rate', 0)*100:.1f}% chance of appearing in main draw within 10 draws. Consider including 1-2 of these in your selection.")
+        else:
+            st.info("No high-probability candidates at this time. Check back after next draw!")
+
+        st.markdown("---")
     
     # Sidebar filters
     st.sidebar.header("Filter Options")
