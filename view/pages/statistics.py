@@ -1,6 +1,8 @@
 # view/pages/statistics.py
 import streamlit as st
 import pandas as pd
+import json
+from pathlib import Path
 from typing import Dict, Any
 from view.utils.data_loader import load_trigger_data
 from view.utils.hmc_calculator import (
@@ -42,10 +44,17 @@ def extract_patterns_data(odds_data: Dict[str, Any]) -> pd.DataFrame:
 def show():
     """Display the statistics page."""
     st.title("📈 Lotto Statistics")
-    
+
     # Load data
     try:
         _, odds_data, _, _ = load_trigger_data()
+
+        # Load odd/even validation data
+        with open('data/lotto_odd_even_validated.json', 'r') as f:
+            odd_even_data = json.load(f)
+    except FileNotFoundError as e:
+        st.error(f"Required data file not found: {e}")
+        return
     except Exception as e:
         st.error(f"Error loading data: {str(e)}")
         return
@@ -184,7 +193,141 @@ def show():
             st.dataframe(all_six_ball_df, hide_index=True, height=400)
 
     st.markdown("---")
-    
+
+    # --- ODD/EVEN ANALYSIS ---
+    st.header("⚖️ Odd/Even Pattern Analysis")
+    st.markdown("""
+    **Why This Matters for Validation:**
+    - ML predictions should have realistic odd/even ratios
+    - Historical data shows balanced distribution (≈50/50)
+    - Some numbers have statistical preference for odd/even draws
+    - Use this to validate your number selections
+    """)
+
+    # Overall Distribution
+    overall_dist = odd_even_data.get('overall_distribution_test', {})
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric(
+            "Odd Numbers %",
+            f"{overall_dist.get('odd_percentage', 0):.2f}%",
+            delta=f"{overall_dist.get('total_odd', 0)} total"
+        )
+    with col2:
+        st.metric(
+            "Even Numbers %",
+            f"{overall_dist.get('even_percentage', 0):.2f}%",
+            delta=f"{overall_dist.get('total_even', 0)} total"
+        )
+    with col3:
+        is_balanced = overall_dist.get('significant', False)
+        balance_status = "Balanced ✅" if not is_balanced else "Imbalanced ⚠️"
+        st.metric(
+            "Distribution",
+            balance_status,
+            delta=f"p={overall_dist.get('p_value', 1):.4f}"
+        )
+
+    st.info(f"📊 {overall_dist.get('interpretation', 'No interpretation available')}")
+
+    # Per-Number Affinity Analysis
+    st.subheader("🎯 Per-Number Odd/Even Affinity")
+    st.markdown("""
+    Numbers with **statistically validated** preference (p < 0.05) are highlighted.
+    - **Aligned**: Number's parity matches its preferred draw type
+    - **Affinity Score > 0.75**: Strong preference for odd/even draws
+    """)
+
+    affinity_data = odd_even_data.get('per_number_affinity', {})
+
+    affinity_list = []
+    for number, stats in affinity_data.items():
+        affinity_list.append({
+            'Number': int(number),
+            'Parity': stats.get('number_parity', 'N/A').upper(),
+            'Preferred Type': stats.get('preferred_type', 'N/A').upper(),
+            'Affinity Score': f"{stats.get('affinity_score', 0):.3f}",
+            'Validated': '✅' if stats.get('statistically_validated', False) else '',
+            'Alignment': stats.get('alignment', 'N/A').capitalize(),
+            'p-value': f"{stats.get('p_value_adjusted', 1):.6f}"
+        })
+
+    affinity_df = pd.DataFrame(affinity_list)
+    affinity_df = affinity_df.sort_values(by='Number')
+
+    # Filter options
+    col_filter1, col_filter2 = st.columns(2)
+    with col_filter1:
+        show_validated_only = st.checkbox("Show only statistically validated numbers", value=False)
+    with col_filter2:
+        min_affinity = st.slider("Minimum affinity score", 0.0, 1.0, 0.0, 0.05)
+
+    display_affinity_df = affinity_df.copy()
+    if show_validated_only:
+        display_affinity_df = display_affinity_df[display_affinity_df['Validated'] == '✅']
+
+    display_affinity_df['Affinity Score'] = display_affinity_df['Affinity Score'].astype(float)
+    display_affinity_df = display_affinity_df[display_affinity_df['Affinity Score'] >= min_affinity]
+    display_affinity_df['Affinity Score'] = display_affinity_df['Affinity Score'].apply(lambda x: f"{x:.3f}")
+
+    st.dataframe(
+        display_affinity_df,
+        hide_index=True,
+        width='stretch',
+        column_config={
+            'Number': st.column_config.NumberColumn('Number', width='small'),
+            'Affinity Score': st.column_config.TextColumn('Affinity Score', width='small'),
+            'Validated': st.column_config.TextColumn('Validated', width='small'),
+        }
+    )
+
+    # Validation Helper
+    with st.expander("🔍 Validate Your Number Selection"):
+        st.markdown("Enter your 6 numbers to check their odd/even distribution:")
+
+        validation_input = st.text_input(
+            "Enter 6 numbers (comma-separated)",
+            placeholder="e.g., 5, 12, 23, 31, 42, 47"
+        )
+
+        if validation_input:
+            try:
+                selected_numbers = [int(n.strip()) for n in validation_input.split(',') if n.strip().isdigit()]
+
+                if len(selected_numbers) == 6:
+                    odd_count = sum(1 for n in selected_numbers if n % 2 == 1)
+                    even_count = 6 - odd_count
+
+                    odd_pct = (odd_count / 6) * 100
+                    even_pct = (even_count / 6) * 100
+
+                    col_val1, col_val2, col_val3 = st.columns(3)
+                    with col_val1:
+                        st.metric("Odd Numbers", odd_count, delta=f"{odd_pct:.1f}%")
+                    with col_val2:
+                        st.metric("Even Numbers", even_count, delta=f"{even_pct:.1f}%")
+                    with col_val3:
+                        # Check if ratio is realistic
+                        if (odd_count >= 2 and odd_count <= 4):
+                            st.success("✅ Realistic ratio")
+                        elif (odd_count == 1 or odd_count == 5):
+                            st.warning("⚠️ Uncommon ratio")
+                        else:
+                            st.error("❌ Very rare ratio")
+
+                    # Show affinity scores for selected numbers
+                    st.markdown("**Selected Numbers' Affinity:**")
+                    selected_affinity = affinity_df[affinity_df['Number'].isin(selected_numbers)]
+                    st.dataframe(selected_affinity, hide_index=True, width=800)
+
+                elif len(selected_numbers) > 0:
+                    st.warning(f"Please enter exactly 6 numbers. Currently: {len(selected_numbers)}")
+            except Exception as e:
+                st.error(f"Invalid input: {str(e)}")
+
+    st.markdown("---")
+
     # --- CONSECUTIVE PATTERNS ANALYSIS ---
     st.header("🔢 Consecutive Number Patterns Analysis")
     st.markdown("Historical occurrences of consecutive number patterns, sorted by date (most recent first).")

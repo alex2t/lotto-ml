@@ -1,6 +1,8 @@
 # view/pages/trigger_analysis.py
 import streamlit as st
 import pandas as pd
+import json
+from pathlib import Path
 from typing import Dict, Any, List
 from view.utils.data_loader import load_trigger_data # PATH CHANGE
 from view.utils.formatting import ( # PATH CHANGE
@@ -60,10 +62,20 @@ def create_html_table(display_df: pd.DataFrame, all_series_names: List[str]) -> 
 def show():
     """Display the trigger analysis page."""
     st.title("📊 Trigger Periods Analysis")
-    
+
     # Load data
     trigger_df, odds_data, all_series_options, dynamic_recent_columns = load_trigger_data()
-    
+
+    # Load sum/range validation data
+    try:
+        with open('data/lotto_sum_contribution_validated.json', 'r') as f:
+            sum_data = json.load(f)
+        with open('data/lotto_range_spread_validated.json', 'r') as f:
+            range_data = json.load(f)
+    except FileNotFoundError as e:
+        sum_data = None
+        range_data = None
+
     # Get all unique series names and sort by window size
     all_series_names = set()
     for series_data in trigger_df["Series Data"]:
@@ -166,10 +178,84 @@ def show():
         st.warning("No scenario data found in lotto_odds_results.json.")
     
     st.markdown("---")
-    
+
+    # --- SUM/RANGE VALIDATION PANEL ---
+    if sum_data and not filtered_df.empty:
+        st.header("✅ Sum/Range Validation")
+
+        sum_dist = sum_data.get('overall_distribution', {})
+        sum_mean = sum_dist.get('mean', 144.87)
+        sum_std = sum_dist.get('std', 30.4)
+        sum_min = sum_dist.get('min', 46)
+        sum_max = sum_dist.get('max', 238)
+
+        # Calculate realistic range (mean ± 2 std deviations)
+        realistic_min = max(21, sum_mean - 2 * sum_std)  # Min possible is 21 (1+2+3+4+5+6)
+        realistic_max = min(267, sum_mean + 2 * sum_std)  # Max possible is 267 (42+43+44+45+46+47)
+
+        col_sum1, col_sum2, col_sum3, col_sum4 = st.columns(4)
+        with col_sum1:
+            st.metric("Historical Mean Sum", f"{sum_mean:.1f}")
+        with col_sum2:
+            st.metric("Std Deviation", f"{sum_std:.1f}")
+        with col_sum3:
+            st.metric("Realistic Range", f"{realistic_min:.0f} - {realistic_max:.0f}")
+        with col_sum4:
+            st.metric("Actual Range", f"{sum_min} - {sum_max}")
+
+        # If exactly 6 numbers are filtered, calculate their sum
+        filtered_numbers = filtered_df['Number'].tolist()
+        if len(filtered_numbers) == 6:
+            selected_sum = sum(filtered_numbers)
+
+            st.subheader(f"📊 Your Selection Sum: {selected_sum}")
+
+            # Validate sum
+            if realistic_min <= selected_sum <= realistic_max:
+                st.success(f"✅ **Realistic Sum!** Your sum ({selected_sum}) falls within the expected range ({realistic_min:.0f} - {realistic_max:.0f})")
+                confidence = "HIGH"
+            elif sum_min <= selected_sum <= sum_max:
+                st.warning(f"⚠️ **Uncommon Sum.** Your sum ({selected_sum}) is within historical bounds but outside typical range.")
+                confidence = "MEDIUM"
+            else:
+                st.error(f"❌ **Unrealistic Sum!** Your sum ({selected_sum}) is outside all historical data ({sum_min} - {sum_max})")
+                confidence = "LOW"
+
+            # Range spread analysis
+            number_range = max(filtered_numbers) - min(filtered_numbers)
+            st.metric("Number Range", number_range, delta=f"From {min(filtered_numbers)} to {max(filtered_numbers)}")
+
+            # Show distribution of numbers across 1-47
+            range_bins = {
+                "1-10": sum(1 for n in filtered_numbers if 1 <= n <= 10),
+                "11-20": sum(1 for n in filtered_numbers if 11 <= n <= 20),
+                "21-30": sum(1 for n in filtered_numbers if 21 <= n <= 30),
+                "31-40": sum(1 for n in filtered_numbers if 31 <= n <= 40),
+                "41-47": sum(1 for n in filtered_numbers if 41 <= n <= 47),
+            }
+
+            st.markdown("**Distribution Across Number Ranges:**")
+            col_r1, col_r2, col_r3, col_r4, col_r5 = st.columns(5)
+            for col, (range_label, count) in zip([col_r1, col_r2, col_r3, col_r4, col_r5], range_bins.items()):
+                with col:
+                    st.metric(range_label, count)
+
+            # Overall validation summary
+            st.info(f"**Validation Confidence:** {confidence}")
+
+        elif len(filtered_numbers) > 6:
+            st.info(f"📝 Select exactly 6 numbers for sum validation. Currently showing {len(filtered_numbers)} numbers.")
+            if filtered_numbers:
+                avg_sum = sum(filtered_numbers) / len(filtered_numbers)
+                st.markdown(f"**Quick Stats:** Average value = {avg_sum:.1f}")
+        else:
+            st.info(f"📝 Select 6 numbers to see sum/range validation. Currently showing {len(filtered_numbers)} numbers.")
+
+        st.markdown("---")
+
     # --- MAIN PAGE DISPLAY ---
     st.header("🎯 Trigger Periods Analysis Table")
-    
+
     if not filtered_df.empty:
         st.markdown(f"**Displaying {len(filtered_df)} numbers.**")
         
