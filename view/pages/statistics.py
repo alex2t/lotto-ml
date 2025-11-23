@@ -62,7 +62,85 @@ def show():
     # --- Lotto Odds Results Display ---
     st.header("🎲 Lotto Odds Results Interpretation")
     st.markdown("This section analyzes historical draw patterns to show the probability of certain combinations of 'hot', 'medium', and 'cold' numbers occurring.")
-    
+
+    # --- OVERALL HMC PERCENTAGE FOR MAIN NUMBERS ---
+    st.subheader("📊 Overall HMC Distribution in Main Numbers")
+    st.markdown("""
+    **What percentage of main numbers (across all historical draws) are Hot, Medium, or Cold?**
+
+    This analysis counts all main numbers (6 per draw, excluding bonus) across all historical draws
+    and shows the overall percentage distribution by HMC category.
+    """)
+
+    # Load draw history to calculate overall percentages
+    try:
+        with open('data/lotto_draw_history.json', 'r') as f:
+            draw_history = json.load(f)
+
+        # Calculate HMC percentages for main numbers only
+        total_hot_main = 0
+        total_medium_main = 0
+        total_cold_main = 0
+
+        for date, draw_data in draw_history.items():
+            winning_numbers = draw_data.get('winning_numbers_details', [])
+
+            for number_detail in winning_numbers:
+                category = number_detail.get('category', 'medium')
+                is_bonus = number_detail.get('is_bonus', False)
+
+                # Count only main numbers (exclude bonus)
+                if not is_bonus:
+                    if category == 'hot':
+                        total_hot_main += 1
+                    elif category == 'cold':
+                        total_cold_main += 1
+                    else:
+                        total_medium_main += 1
+
+        total_main = total_hot_main + total_medium_main + total_cold_main
+
+        # Calculate percentages
+        hot_pct = (total_hot_main / total_main * 100) if total_main > 0 else 0
+        medium_pct = (total_medium_main / total_main * 100) if total_main > 0 else 0
+        cold_pct = (total_cold_main / total_main * 100) if total_main > 0 else 0
+
+        # Display as metrics
+        col_hmc1, col_hmc2, col_hmc3, col_hmc4 = st.columns(4)
+
+        with col_hmc1:
+            st.metric("🔥 Hot Numbers", f"{hot_pct:.2f}%", f"{total_hot_main} / {total_main}")
+
+        with col_hmc2:
+            st.metric("🌡️ Medium Numbers", f"{medium_pct:.2f}%", f"{total_medium_main} / {total_main}")
+
+        with col_hmc3:
+            st.metric("❄️ Cold Numbers", f"{cold_pct:.2f}%", f"{total_cold_main} / {total_main}")
+
+        with col_hmc4:
+            st.metric("Total Draws", len(draw_history), f"{total_main / len(draw_history):.0f} main/draw")
+
+        # Visual bar chart
+        st.markdown("**Visual Distribution:**")
+        hmc_dist_chart = pd.DataFrame({
+            'Category': ['🔥 Hot', '🌡️ Medium', '❄️ Cold'],
+            'Percentage': [hot_pct, medium_pct, cold_pct]
+        })
+        st.bar_chart(hmc_dist_chart.set_index('Category'))
+
+        st.info(f"""
+        **Key Insight:** Across all {len(draw_history)} historical draws ({total_main} main numbers total),
+        Hot numbers appear most frequently at {hot_pct:.1f}%, followed by Cold at {cold_pct:.1f}%,
+        and Medium at {medium_pct:.1f}%. This suggests selecting more hot numbers may align with historical trends.
+        """)
+
+    except FileNotFoundError:
+        st.warning("Draw history data not available for overall HMC percentage calculation.")
+    except Exception as e:
+        st.error(f"Error calculating overall HMC percentages: {str(e)}")
+
+    st.markdown("---")
+
     st.subheader("HMC (Hot-Medium-Cold) Distribution")
     
     hmc_data = odds_data.get("hmc", {})
