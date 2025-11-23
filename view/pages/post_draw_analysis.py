@@ -341,7 +341,7 @@ def show():
                         'Number', 'HMC', 'Freshness', 'Volatility', 'Trend', 'Momentum',
                         'Last Seen', 'L4', 'L5', 'L9', 'Total Hits'
                     ]
-                    st.dataframe(correct_display, use_container_width=True, hide_index=True)
+                    st.dataframe(correct_display, width='stretch', hide_index=True)
 
                 # HMC breakdown
                 st.markdown("**HMC Breakdown of Correct Predictions:**")
@@ -374,7 +374,7 @@ def show():
                         'Number', 'HMC', 'Freshness', 'Volatility', 'Trend', 'Momentum',
                         'Last Seen', 'L4', 'L5', 'L9', 'Total Hits'
                     ]
-                    st.dataframe(missed_display, use_container_width=True, hide_index=True)
+                    st.dataframe(missed_display, width='stretch', hide_index=True)
 
                 # HMC breakdown
                 st.markdown("**HMC Breakdown of Missed Numbers:**")
@@ -449,7 +449,7 @@ def show():
                             'Number', 'HMC', 'Freshness', 'Volatility', 'Trend', 'Momentum',
                             'Last Seen', 'L4', 'L5', 'Total Hits'
                         ]
-                        st.dataframe(wrong_display, use_container_width=True, hide_index=True)
+                        st.dataframe(wrong_display, width='stretch', hide_index=True)
 
             # === RECOMMENDATIONS ===
             st.markdown("---")
