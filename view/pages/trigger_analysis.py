@@ -69,23 +69,44 @@ def show():
     for series_data in trigger_df["Series Data"]:
         all_series_names.update(series_data.keys())
     all_series_names = sort_series_names(list(all_series_names))
-    
-    TRIGGER_COLUMNS = ["Category", "Total Count", "Last Seen"] + dynamic_recent_columns
+
+    # Map freshness bin to label for display
+    def freshness_bin_to_label(bin_num):
+        if bin_num == 0:
+            return "C0"
+        elif bin_num == 1:
+            return "C1"
+        elif bin_num == 2:
+            return "C≥2"
+        else:
+            return "N/A"
+
+    # Add freshness label column
+    trigger_df["Freshness"] = trigger_df["Freshness Bin"].apply(freshness_bin_to_label)
+
+    TRIGGER_COLUMNS = ["Category", "Freshness", "Total Count", "Last Seen"] + dynamic_recent_columns
     
     # --- Sidebar Filters ---
     st.sidebar.header("🔍 Data Filters")
-    
+
     hmc_category = st.sidebar.selectbox(
         "Select HMC Category",
-        options=["All", "hot", "medium", "cold"]
+        options=["All", "hot", "medium", "cold"],
+        help="Filter numbers by Hot-Medium-Cold category"
     )
-    
+
+    freshness_weight = st.sidebar.selectbox(
+        "Select Freshness Weight",
+        options=["All", "C0", "C1", "C≥2"],
+        help="Filter by freshness: C0 (not in last 5 draws), C1 (appeared once), C≥2 (appeared 2+ times)"
+    )
+
     numbers_input = st.sidebar.text_input(
         "Enter specific numbers (e.g., 1, 12, 45)",
         value=""
     )
     entered_numbers = [num.strip() for num in numbers_input.split(",") if num.strip().isdigit()]
-    
+
     series_selection = st.sidebar.selectbox(
         "Filter by Series Name",
         options=["All Series"] + all_series_options,
@@ -94,9 +115,19 @@ def show():
     
     # --- Data Filtering Logic ---
     filtered_df = trigger_df.copy()
+
+    # Filter by HMC category
     if hmc_category != "All":
         filtered_df = filtered_df[filtered_df["Category"] == hmc_category]
-    
+
+    # Filter by Freshness Weight
+    if freshness_weight != "All":
+        # Map freshness weight to bin number
+        freshness_map = {"C0": 0, "C1": 1, "C≥2": 2}
+        freshness_bin_filter = freshness_map[freshness_weight]
+        filtered_df = filtered_df[filtered_df["Freshness Bin"] == freshness_bin_filter]
+
+    # Filter by specific numbers
     if entered_numbers:
         entered_numbers_int = [int(n) for n in entered_numbers]
         filtered_df = filtered_df[filtered_df["Number"].isin(entered_numbers_int)]
@@ -183,12 +214,27 @@ def show():
         st.info("No numbers match the current selection criteria.")
     
     st.markdown("---")
-    
-    # --- Date Color Coding Info ---
-    with st.expander("ℹ️ Date Color Coding Info"):
-        st.markdown(f"""
-        - **🔴 Red**: Less than {THRESHOLD_RED} weeks ago
-        - **🟣 Purple**: {THRESHOLD_RED} to {THRESHOLD_PURPLE} weeks ago
-        - **🟡 Yellow**: {THRESHOLD_PURPLE} to {THRESHOLD_YELLOW} weeks ago
-        - **⚫ Black**: More than {THRESHOLD_YELLOW} weeks ago
-        """)
+
+    # --- Info Sections ---
+    col_info1, col_info2 = st.columns(2)
+
+    with col_info1:
+        with st.expander("ℹ️ Date Color Coding Info"):
+            st.markdown(f"""
+            - **🔴 Red**: Less than {THRESHOLD_RED} weeks ago
+            - **🟣 Purple**: {THRESHOLD_RED} to {THRESHOLD_PURPLE} weeks ago
+            - **🟡 Yellow**: {THRESHOLD_PURPLE} to {THRESHOLD_YELLOW} weeks ago
+            - **⚫ Black**: More than {THRESHOLD_YELLOW} weeks ago
+            """)
+
+    with col_info2:
+        with st.expander("ℹ️ Freshness Weight Info"):
+            st.markdown("""
+            **Freshness Categories** (based on last 5 draws):
+            - **C0**: Number did NOT appear in the last 5 draws
+            - **C1**: Number appeared exactly ONCE in the last 5 draws
+            - **C≥2**: Number appeared TWO or MORE times in the last 5 draws
+
+            You can combine HMC and Freshness filters to find numbers that match both criteria.
+            For example: Hot + C1 shows hot numbers that appeared once in the last 5 draws.
+            """)
