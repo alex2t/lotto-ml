@@ -4,6 +4,11 @@ import pandas as pd
 import json
 from pathlib import Path
 from typing import Dict, Any
+from view.utils.freshness_calculator import (
+    calculate_6_ball_freshness_probabilities,
+    get_6_ball_freshness_breakdown,
+    get_7_ball_freshness_details
+)
 
 def load_freshness_data() -> Dict[str, Any]:
  
@@ -76,97 +81,169 @@ def show():
     st.markdown("\n".join(category_list_md))
     
     st.markdown("---")
-    
-    # --- Pattern Lookup Tool ---
+
+    # --- Pattern Lookup Tool with 6-ball and 7-ball support ---
     st.subheader("🔍 Pattern Lookup Tool")
-    st.markdown(f"Enter the count of numbers for each freshness category (C0 to C≥{C_max}) to find the historical percentage:")
-    
+
+    # Mode selector
+    mode = st.radio(
+        "Select number of balls to analyze:",
+        options=["6 balls (Player Selection)", "7 balls (Full Draw)"],
+        horizontal=True,
+        help="Choose 6 balls to see combined probability, or 7 balls to see exact match probability"
+    )
+
+    is_6_ball_mode = "6 balls" in mode
+    target_total = 6 if is_6_ball_mode else 7
+
+    if is_6_ball_mode:
+        st.markdown(f"""
+        **6-Ball Mode:** Enter your selection pattern. The system will calculate the combined probability
+        of matching when the 7th ball (which could be any freshness category) is drawn.
+        """)
+    else:
+        st.markdown(f"""
+        **7-Ball Mode:** Enter the complete pattern to find its exact historical occurrence rate.
+        """)
+
     # Dynamic Input Fields
-    
-    # Create columns dynamically (C_max + 1 bins)
     input_cols = st.columns(C_max + 1)
     input_values = {}
-    default_input_values = {0: 3, 1: 3, 2: 1, 3: 0, 4: 0, 5: 0} # Extended defaults
-    
+
+    # Set defaults based on mode
+    if is_6_ball_mode:
+        default_input_values = {0: 3, 1: 2, 2: 1}  # 6 balls total
+    else:
+        default_input_values = {0: 3, 1: 3, 2: 1}  # 7 balls total
+
     for i in range(C_max + 1):
         with input_cols[i]:
             label = bin_labels[i]
-            # Use default values corresponding to the original C0=3, C1=3, C>=2=1 pattern
-            default_value = 0
-            if C_max >= 2:
-                if i == 0 or i == 1:
-                    default_value = 3
-                elif i == C_max:
-                    default_value = 1
-                else:
-                    default_value = 0
-            
-            # Use a slightly safer, generic default if C_max is small (e.g., C_max=1)
-            if i == C_max and C_max <= 2:
-                 default_value = 1
-
-            # Use a pre-defined default if available
             default_value = default_input_values.get(i, 0)
 
-
             input_values[i] = st.number_input(
-                label, 
-                min_value=0, 
-                max_value=7, 
-                value=default_value, # Use dynamic default
-                step=1, 
-                key=f"input_c{i}"
+                label,
+                min_value=0,
+                max_value=7,
+                value=default_value,
+                step=1,
+                key=f"input_c{i}_{mode}"
             )
-    
+
     # Validate total
     total_numbers = sum(input_values.values())
-    
+
     if st.button("🔎 Search Pattern", type="primary"):
-        if total_numbers != 7:
-            st.error(f"⚠️ Total must equal 7 numbers. Current total: {total_numbers}")
+        if total_numbers != target_total:
+            st.error(f"⚠️ Total must equal {target_total} numbers. Current total: {total_numbers}")
         else:
-            # Dynamically construct the pattern string and search criteria
-            
-            # Construct pattern_str (e.g., C0=3, C1=3, C_GE_2=1)
-            search_pattern_str_parts = []
-            for i in range(C_max + 1):
-                label = bin_labels[i]
-                search_pattern_str_parts.append(f"{label}={input_values[i]}")
-            search_pattern_str = ", ".join(search_pattern_str_parts)
-            
-            distributions = freshness_data.get("distribution_analysis_7_numbers", [])
-            found_pattern = None
-            
-            for pattern in distributions:
-                is_match = True
-                for i in range(C_max + 1):
-                    # Check the input value against the corresponding dynamic JSON key
-                    key = json_keys[i]
-                    if pattern.get(key) != input_values[i]:
-                        is_match = False
-                        break
-                
-                if is_match:
-                    found_pattern = pattern
-                    break
-            
-            if found_pattern:
-                st.success(f"✅ Pattern Found!")
-                st.metric(
-                    label="Historical Occurrence Rate",
-                    value=f"{found_pattern.get('percentage', 0):.2f}%",
-                    delta=f"{found_pattern.get('draws_matched', 0)} draws matched"
-                )
-                
-                st.info(f"""
-                **Pattern Details:**
-                - **Pattern**: {found_pattern.get('pattern', 'N/A')}
-                - **Draws Matched**: {found_pattern.get('draws_matched', 0)} out of {total_draws} draws
-                - **Percentage**: {found_pattern.get('percentage', 0):.2f}%
-                """)
+            # Convert input_values to list for calculator
+            pattern_counts = [input_values[i] for i in range(C_max + 1)]
+
+            if is_6_ball_mode:
+                # 6-ball mode: show combined probability
+                try:
+                    breakdown = get_6_ball_freshness_breakdown(pattern_counts, freshness_data, C_max)
+
+                    st.success(f"✅ Pattern: **{breakdown['pattern_6_ball']}**")
+                    st.metric(
+                        label="Combined Probability (All possible 7th balls)",
+                        value=f"{breakdown['total_percentage']:.2f}%",
+                        delta=f"{breakdown['total_count']} total occurrences"
+                    )
+
+                    st.markdown("**Breakdown by 7th Ball:**")
+                    breakdown_display = []
+                    for item in breakdown['breakdown']:
+                        breakdown_display.append({
+                            'Scenario': item['scenario'],
+                            '7-Ball Pattern': item['pattern_str'],
+                            'Probability (%)': f"{item['percentage']:.2f}%",
+                            'Occurrences': item['count']
+                        })
+
+                    breakdown_df = pd.DataFrame(breakdown_display)
+                    st.dataframe(breakdown_df, hide_index=True, width=900)
+
+                    # Visual chart
+                    st.markdown("**Probability Distribution:**")
+                    chart_data = pd.DataFrame({
+                        'Scenario': [item['scenario'] for item in breakdown['breakdown']],
+                        'Percentage': [item['percentage'] for item in breakdown['breakdown']]
+                    })
+                    st.bar_chart(chart_data.set_index('Scenario'))
+
+                except Exception as e:
+                    st.error(f"Error calculating pattern: {str(e)}")
             else:
-                st.warning(f"❌ Pattern `{search_pattern_str}` not found in historical data. This combination has never occurred in the analyzed {total_draws} draws.")
-    
+                # 7-ball mode: show exact match
+                try:
+                    details = get_7_ball_freshness_details(pattern_counts, freshness_data, C_max)
+
+                    if details['found']:
+                        st.success(f"✅ Pattern Found!")
+                        st.metric(
+                            label="Historical Occurrence Rate",
+                            value=f"{details['percentage']:.2f}%",
+                            delta=f"{details['draws_matched']} draws matched"
+                        )
+
+                        st.info(f"""
+                        **Pattern Details:**
+                        - **Pattern**: {details['pattern_str']}
+                        - **Draws Matched**: {details['draws_matched']} out of {total_draws} draws
+                        - **Percentage**: {details['percentage']:.2f}%
+                        """)
+                    else:
+                        st.warning(f"❌ Pattern `{details['pattern_str']}` not found in historical data. This combination has never occurred in the analyzed {total_draws} draws.")
+
+                except Exception as e:
+                    st.error(f"Error searching pattern: {str(e)}")
+
+    # --- 6-BALL PATTERN ANALYSIS SECTION ---
+    st.markdown("---")
+    st.subheader("🎯 6-Ball Freshness Pattern Analysis")
+    st.markdown("""
+    **Understanding 6-Ball Patterns:**
+    - Players select **6 numbers**, but Irish Lotto draws **7 numbers** (6 main + 1 bonus)
+    - When you pick 6 numbers with a specific freshness pattern, the 7th ball drawn could be:
+      - **C0** (not recently seen) → Your pattern adds one C0 number
+      - **C1** (seen once recently) → Your pattern adds one C1 number
+      - **C≥2** (seen frequently) → Your pattern adds one C≥2 number
+    - The table below shows the **combined probability** of matching any of these 7-ball outcomes
+    """)
+
+    # Calculate all 6-ball patterns
+    six_ball_results = calculate_6_ball_freshness_probabilities(freshness_data, C_max)
+
+    # Display top 10 patterns
+    st.markdown("##### Top 10 Best 6-Ball Freshness Patterns")
+    top_10_six_ball = six_ball_results[:10]
+
+    six_ball_display = []
+    for result in top_10_six_ball:
+        six_ball_display.append({
+            '6-Ball Pattern': result['pattern_6_ball'],
+            'Combined Probability (%)': f"{result['total_percentage']:.2f}%",
+            'Total Occurrences': result['total_count']
+        })
+
+    six_ball_df = pd.DataFrame(six_ball_display)
+    st.dataframe(six_ball_df, hide_index=True, width=800)
+
+    # Full comparison table
+    with st.expander("📊 View All 6-Ball Patterns (Sorted by Probability)"):
+        all_six_ball_display = []
+        for result in six_ball_results:
+            all_six_ball_display.append({
+                '6-Ball Pattern': result['pattern_6_ball'],
+                'Combined Probability (%)': f"{result['total_percentage']:.2f}%",
+                'Total Occurrences': result['total_count']
+            })
+
+        all_six_ball_df = pd.DataFrame(all_six_ball_display)
+        st.dataframe(all_six_ball_df, hide_index=True, height=400)
+
     st.markdown("---")
     
     # --- Full Distribution Table ---
