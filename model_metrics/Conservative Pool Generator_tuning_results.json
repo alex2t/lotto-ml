@@ -6,10 +6,10 @@
     "classifier__estimator__learning_rate": 0.01,
     "classifier__estimator__scale_pos_weight": 3
   },
-  "best_score": 0.5136741008247804,
+  "best_score": 0.5134506684083253,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 18.238532543182373,
+  "elapsed_time": 21.589716911315918,
   "total_fits": 24
 }
