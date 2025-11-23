@@ -2,7 +2,7 @@
 import streamlit as st
 
 # Import page modules from the new 'view' directory
-from view.pages import trigger_analysis, draw_history, statistics, freshness_analysis, prediction_validator, number_insights, pattern_comparison
+from view.pages import trigger_analysis, draw_history, statistics, freshness_analysis, prediction_validator, number_insights, pattern_comparison, post_draw_analysis
 
 # Page configuration must be first
 st.set_page_config(
@@ -21,7 +21,8 @@ PAGES = {
     "🔥 Freshness Analysis": freshness_analysis,
     "✅ Prediction Validator": prediction_validator,
     "🔍 Number Insights": number_insights,
-    "🔎 Pattern Comparison": pattern_comparison
+    "🔎 Pattern Comparison": pattern_comparison,
+    "📊 Post Draw Analysis": post_draw_analysis
 }
 
 # Style adjustments
