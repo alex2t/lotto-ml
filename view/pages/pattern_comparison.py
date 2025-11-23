@@ -312,7 +312,7 @@ def show():
             })
 
         match_df = pd.DataFrame(match_records)
-        st.dataframe(match_df, use_container_width=True)
+        st.dataframe(match_df, width='stretch')
 
         # Highlight best match
         best_match = similar_draws[0]

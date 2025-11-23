@@ -349,7 +349,7 @@ def show():
         if series_records:
             series_df = pd.DataFrame(series_records)
             series_df = series_df.sort_values(by='End Date', ascending=False)
-            st.dataframe(series_df, use_container_width=True)
+            st.dataframe(series_df, width='stretch')
         else:
             st.info("No trigger series patterns detected for this number.")
 
@@ -386,7 +386,7 @@ def show():
         appearance_df = appearance_df[['date', 'type', 'Gap (days)']].copy()
         appearance_df.columns = ['Date', 'Type', 'Gap (days)']
 
-        st.dataframe(appearance_df, use_container_width=True)
+        st.dataframe(appearance_df, width='stretch')
 
         st.caption(f"Showing last 20 appearances (Total: {len(appearances)})")
     else:
