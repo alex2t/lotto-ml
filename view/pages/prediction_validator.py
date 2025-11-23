@@ -4,6 +4,7 @@ import pandas as pd
 import json
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
+from view.utils.anomaly_detector import detect_anomalies
 
 
 def load_validation_data() -> Tuple[Dict, Dict, Dict, Dict, Dict]:
@@ -294,6 +295,73 @@ def show():
             with col5b:
                 st.write(msg5)
                 st.progress(score5 / 100)
+
+            # Automated Anomaly Detection
+            st.markdown("---")
+            st.header("⚠️ Automated Anomaly Detection")
+
+            alerts, alert_summary = detect_anomalies(numbers)
+
+            # Display alert summary
+            col_alert1, col_alert2, col_alert3, col_alert4 = st.columns(4)
+
+            with col_alert1:
+                total_alerts = len(alerts)
+                st.metric("Total Alerts", total_alerts)
+
+            with col_alert2:
+                critical_count = alert_summary.get('critical', 0)
+                if critical_count > 0:
+                    st.metric("🚨 Critical", critical_count, delta="High Risk", delta_color="inverse")
+                else:
+                    st.metric("🚨 Critical", critical_count)
+
+            with col_alert3:
+                warning_count = alert_summary.get('warning', 0)
+                if warning_count > 0:
+                    st.metric("⚠️ Warning", warning_count, delta="Review", delta_color="off")
+                else:
+                    st.metric("⚠️ Warning", warning_count)
+
+            with col_alert4:
+                info_count = alert_summary.get('info', 0)
+                st.metric("ℹ️ Info", info_count)
+
+            # Display individual alerts
+            if alerts:
+                st.markdown("**Detected Anomalies:**")
+
+                # Group by severity
+                critical_alerts = [a for a in alerts if a['severity'] == 'critical']
+                warning_alerts = [a for a in alerts if a['severity'] == 'warning']
+                info_alerts = [a for a in alerts if a['severity'] == 'info']
+
+                # Show critical alerts first
+                if critical_alerts:
+                    for alert in critical_alerts:
+                        with st.container():
+                            st.error(f"**🚨 {alert['category']}: {alert['message']}**")
+                            if alert.get('details'):
+                                st.caption(alert['details'])
+
+                # Show warnings
+                if warning_alerts:
+                    for alert in warning_alerts:
+                        with st.container():
+                            st.warning(f"**⚠️ {alert['category']}: {alert['message']}**")
+                            if alert.get('details'):
+                                st.caption(alert['details'])
+
+                # Show info
+                if info_alerts:
+                    for alert in info_alerts:
+                        with st.container():
+                            st.info(f"**ℹ️ {alert['category']}: {alert['message']}**")
+                            if alert.get('details'):
+                                st.caption(alert['details'])
+
+            else:
+                st.success("✅ **No anomalies detected!** Your selection passes all automated checks.")
 
             # Overall Score
             st.markdown("---")
