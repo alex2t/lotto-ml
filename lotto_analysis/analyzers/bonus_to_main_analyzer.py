@@ -44,7 +44,22 @@ def calculate_per_number_transition_profiles(
             'freshness_when_bonus': []
         }
 
-    # Scan through draws
+    # First pass: Track ALL bonus appearances (including last 10) for last_bonus_date and total count
+    for idx in range(len(sorted_draws)):
+        date, draw = sorted_draws[idx]
+        details = draw.get('winning_numbers_details', [])
+
+        if len(details) < 7:
+            continue
+
+        bonus_detail = details[6]
+        bonus_num = bonus_detail['number']
+
+        # Always update last_bonus_date and count for ANY bonus appearance
+        number_profiles[bonus_num]['last_bonus_date'] = date
+        number_profiles[bonus_num]['total_bonus_appearances'] += 1
+
+    # Second pass: Calculate transitions AND category/freshness stats (only up to -10 since we need future window)
     for idx in range(len(sorted_draws) - 10):
         date, draw = sorted_draws[idx]
         details = draw.get('winning_numbers_details', [])
@@ -57,8 +72,7 @@ def calculate_per_number_transition_profiles(
         bonus_category = bonus_detail.get('category', 'unknown')
         bonus_freshness = bonus_detail.get('current_freshness_bin', 0)
 
-        number_profiles[bonus_num]['total_bonus_appearances'] += 1
-        number_profiles[bonus_num]['last_bonus_date'] = date
+        # Track category and freshness stats (for transition analysis)
         number_profiles[bonus_num]['category_when_bonus'].append(bonus_category)
         number_profiles[bonus_num]['freshness_when_bonus'].append(bonus_freshness)
 
