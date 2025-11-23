@@ -29,10 +29,13 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
         else:
             # Standard formatting
             formatted_number = f"<span style='padding: 2px 5px;'>{number}</span>"
-            
+
         formatted_bonus_numbers.append(formatted_number)
-        
+
     formatted_list_html = " ".join(formatted_bonus_numbers) # Use space separator for better HTML rendering
+
+    # Create comma-separated plain text version for easy copying
+    comma_separated_bonus = ", ".join(str(num) for num in recent_bonus_numbers)
     
     
     # Extract dynamic recent_counts keys from first number
@@ -56,8 +59,17 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
                 </span>
             </div>
             
-            <div style="margin-top: 10px; background-color: #ffe6f2; padding: 5px 10px; border-radius: 4px; display: flex; align-items: center; flex-wrap: wrap;">
-                <strong style="margin-right: 10px;">Last 10 Bonus Numbers:</strong> {formatted_list_html}
+            <div style="margin-top: 10px; background-color: #ffe6f2; padding: 5px 10px; border-radius: 4px;">
+                <div style="display: flex; align-items: center; flex-wrap: wrap;">
+                    <strong style="margin-right: 10px;">Last 10 Bonus Numbers:</strong> {formatted_list_html}
+                </div>
+                <div style="margin-top: 8px; font-size: 12px;">
+                    <strong style="color: #666;">Copy to filter:</strong>
+                    <input type="text" readonly value="{comma_separated_bonus}"
+                           onclick="this.select();"
+                           style="width: 100%; max-width: 500px; padding: 4px 8px; margin-left: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; background-color: #f5f5f5; cursor: pointer;"
+                           title="Click to select, then Ctrl+C to copy">
+                </div>
             </div>
             
         </div>
