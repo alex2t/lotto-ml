@@ -76,6 +76,71 @@ def show():
         sum_data = None
         range_data = None
 
+    # Load advanced patterns data (volatility/trend indicators)
+    try:
+        with open('data/lotto_advanced_patterns.json', 'r') as f:
+            advanced_data = json.load(f)
+    except FileNotFoundError:
+        advanced_data = None
+
+    # Enrich trigger_df with volatility/trend indicators
+    if advanced_data:
+        per_number_features = advanced_data.get('per_number_features', {})
+
+        def get_volatility_label(volatility_value):
+            """Categorize volatility into Low/Medium/High."""
+            if volatility_value < 0.85:
+                return "Low"
+            elif volatility_value < 1.15:
+                return "Med"
+            else:
+                return "High"
+
+        def get_trend_label(trend_value, is_significant):
+            """Categorize trend into Up/Stable/Down with significance."""
+            if not is_significant:
+                return "→"
+            elif trend_value > 0.2:
+                return "↑"
+            elif trend_value < -0.2:
+                return "↓"
+            else:
+                return "→"
+
+        def get_momentum_label(recent_vs_baseline):
+            """Categorize momentum: heating up, cooling down, stable."""
+            if recent_vs_baseline > 1.2:
+                return "🔥"
+            elif recent_vs_baseline < 0.8:
+                return "❄️"
+            else:
+                return "—"
+
+        volatility_list = []
+        trend_list = []
+        momentum_list = []
+        regime_shift_list = []
+
+        for idx, row in trigger_df.iterrows():
+            number_str = str(row['Number'])
+            features = per_number_features.get(number_str, {})
+
+            volatility = features.get('appearance_volatility', 1.0)
+            trend = features.get('appearance_trend', 0.0)
+            is_significant = features.get('trend_is_significant', False)
+            recent_vs_baseline = features.get('recent_vs_baseline', 1.0)
+            in_shift = features.get('in_regime_shift', False)
+
+            volatility_list.append(get_volatility_label(volatility))
+            trend_list.append(get_trend_label(trend, is_significant))
+            momentum_list.append(get_momentum_label(recent_vs_baseline))
+            regime_shift_list.append("Yes" if in_shift else "No")
+
+        trigger_df['Volatility'] = volatility_list
+        trigger_df['Trend'] = trend_list
+        trigger_df['Momentum'] = momentum_list
+        trigger_df['Regime Shift'] = regime_shift_list
+
     # Get all unique series names and sort by window size
     all_series_names = set()
     for series_data in trigger_df["Series Data"]:
@@ -96,7 +161,11 @@ def show():
     # Add freshness label column
     trigger_df["Freshness"] = trigger_df["Freshness Bin"].apply(freshness_bin_to_label)
 
-    TRIGGER_COLUMNS = ["Category", "Freshness", "Total Count", "Last Seen"] + dynamic_recent_columns
+    # Define columns to display (conditionally include volatility/trend if available)
+    if advanced_data:
+        TRIGGER_COLUMNS = ["Category", "Freshness", "Volatility", "Trend", "Momentum", "Regime Shift", "Total Count", "Last Seen"] + dynamic_recent_columns
+    else:
+        TRIGGER_COLUMNS = ["Category", "Freshness", "Total Count", "Last Seen"] + dynamic_recent_columns
     
     # --- Sidebar Filters ---
     st.sidebar.header("🔍 Data Filters")
@@ -112,6 +181,37 @@ def show():
         options=["All", "C0", "C1", "C≥2"],
         help="Filter by freshness: C0 (not in last 5 draws), C1 (appeared once), C≥2 (appeared 2+ times)"
     )
+
+    # Volatility/Trend filters (only if advanced data available)
+    if advanced_data:
+        volatility_filter = st.sidebar.selectbox(
+            "Select Volatility Level",
+            options=["All", "High", "Med", "Low"],
+            help="Filter by volatility: High (unpredictable), Med (moderate), Low (consistent)"
+        )
+
+        trend_filter = st.sidebar.selectbox(
+            "Select Trend Direction",
+            options=["All", "↑ Trending Up", "→ Stable", "↓ Trending Down"],
+            help="Filter by trend: ↑ (increasing), → (stable), ↓ (decreasing)"
+        )
+
+        momentum_filter = st.sidebar.selectbox(
+            "Select Momentum",
+            options=["All", "🔥 Heating Up", "— Stable", "❄️ Cooling Down"],
+            help="Filter by momentum: 🔥 (appearing more), ❄️ (appearing less)"
+        )
+
+        regime_shift_filter = st.sidebar.selectbox(
+            "Regime Shift Status",
+            options=["All", "Yes", "No"],
+            help="Filter by regime shift: numbers experiencing pattern changes"
+        )
+    else:
+        volatility_filter = "All"
+        trend_filter = "All"
+        momentum_filter = "All"
+        regime_shift_filter = "All"
 
     numbers_input = st.sidebar.text_input(
         "Enter specific numbers (e.g., 1, 12, 45)",
@@ -138,6 +238,26 @@ def show():
         freshness_map = {"C0": 0, "C1": 1, "C≥2": 2}
         freshness_bin_filter = freshness_map[freshness_weight]
         filtered_df = filtered_df[filtered_df["Freshness Bin"] == freshness_bin_filter]
+
+    # Filter by Volatility
+    if advanced_data and volatility_filter != "All":
+        filtered_df = filtered_df[filtered_df["Volatility"] == volatility_filter]
+
+    # Filter by Trend
+    if advanced_data and trend_filter != "All":
+        trend_map = {"↑ Trending Up": "↑", "→ Stable": "→", "↓ Trending Down": "↓"}
+        trend_symbol = trend_map[trend_filter]
+        filtered_df = filtered_df[filtered_df["Trend"] == trend_symbol]
+
+    # Filter by Momentum
+    if advanced_data and momentum_filter != "All":
+        momentum_map = {"🔥 Heating Up": "🔥", "— Stable": "—", "❄️ Cooling Down": "❄️"}
+        momentum_symbol = momentum_map[momentum_filter]
+        filtered_df = filtered_df[filtered_df["Momentum"] == momentum_symbol]
+
+    # Filter by Regime Shift
+    if advanced_data and regime_shift_filter != "All":
+        filtered_df = filtered_df[filtered_df["Regime Shift"] == regime_shift_filter]
 
     # Filter by specific numbers
     if entered_numbers:
@@ -253,6 +373,106 @@ def show():
 
         st.markdown("---")
 
+    # --- TRENDING/VOLATILE NUMBERS SECTION ---
+    if advanced_data and not trigger_df.empty:
+        st.header("🔥 Trending & Volatile Numbers")
+        st.markdown("""
+        **Quick Reference Lists** - Copy these numbers to use in filters or for quick analysis.
+        These lists are generated from the full dataset before any filters are applied.
+        """)
+
+        per_number_features = advanced_data.get('per_number_features', {})
+
+        # Build lists of numbers by category
+        trending_up_numbers = []
+        volatile_numbers = []
+        regime_shift_numbers = []
+        heating_up_numbers = []
+        cooling_down_numbers = []
+
+        for number_str, features in per_number_features.items():
+            number = int(number_str)
+            trend = features.get('appearance_trend', 0.0)
+            is_significant = features.get('trend_is_significant', False)
+            volatility = features.get('appearance_volatility', 1.0)
+            in_shift = features.get('in_regime_shift', False)
+            recent_vs_baseline = features.get('recent_vs_baseline', 1.0)
+
+            # Trending up (significant upward trend)
+            if is_significant and trend > 0.2:
+                trending_up_numbers.append((number, trend))
+
+            # High volatility
+            if volatility >= 1.15:
+                volatile_numbers.append((number, volatility))
+
+            # In regime shift
+            if in_shift:
+                regime_shift_numbers.append(number)
+
+            # Heating up (appearing more than baseline)
+            if recent_vs_baseline > 1.2:
+                heating_up_numbers.append((number, recent_vs_baseline))
+
+            # Cooling down (appearing less than baseline)
+            if recent_vs_baseline < 0.8:
+                cooling_down_numbers.append((number, recent_vs_baseline))
+
+        # Sort and display
+        col_trend1, col_trend2 = st.columns(2)
+
+        with col_trend1:
+            st.subheader("📈 Trending Up Numbers")
+            if trending_up_numbers:
+                trending_up_numbers.sort(key=lambda x: x[1], reverse=True)
+                top_trending = [num for num, _ in trending_up_numbers[:10]]
+                st.markdown(f"**Top 10 (by trend strength):**")
+                st.code(", ".join(str(n) for n in top_trending), language=None)
+                st.caption(f"Total: {len(trending_up_numbers)} numbers trending up")
+            else:
+                st.info("No numbers with significant upward trends")
+
+            st.subheader("🔥 Heating Up (Momentum)")
+            if heating_up_numbers:
+                heating_up_numbers.sort(key=lambda x: x[1], reverse=True)
+                top_heating = [num for num, _ in heating_up_numbers[:10]]
+                st.markdown(f"**Top 10 (by momentum):**")
+                st.code(", ".join(str(n) for n in top_heating), language=None)
+                st.caption(f"Total: {len(heating_up_numbers)} numbers heating up")
+            else:
+                st.info("No numbers heating up significantly")
+
+        with col_trend2:
+            st.subheader("⚡ High Volatility Numbers")
+            if volatile_numbers:
+                volatile_numbers.sort(key=lambda x: x[1], reverse=True)
+                top_volatile = [num for num, _ in volatile_numbers[:10]]
+                st.markdown(f"**Top 10 (most volatile):**")
+                st.code(", ".join(str(n) for n in top_volatile), language=None)
+                st.caption(f"Total: {len(volatile_numbers)} highly volatile numbers")
+            else:
+                st.info("No highly volatile numbers")
+
+            st.subheader("🔄 Numbers in Regime Shift")
+            if regime_shift_numbers:
+                regime_shift_numbers.sort()
+                st.markdown(f"**All numbers in shift:**")
+                st.code(", ".join(str(n) for n in regime_shift_numbers), language=None)
+                st.caption(f"Total: {len(regime_shift_numbers)} numbers in regime shift")
+            else:
+                st.info("No numbers in regime shift")
+
+        # Cooling down section (full width)
+        if cooling_down_numbers:
+            st.subheader("❄️ Cooling Down Numbers")
+            cooling_down_numbers.sort(key=lambda x: x[1])
+            top_cooling = [num for num, _ in cooling_down_numbers[:10]]
+            st.markdown(f"**Top 10 (coolest):**")
+            st.code(", ".join(str(n) for n in top_cooling), language=None)
+            st.caption(f"Total: {len(cooling_down_numbers)} numbers cooling down")
+
+        st.markdown("---")
+
     # --- MAIN PAGE DISPLAY ---
     st.header("🎯 Trigger Periods Analysis Table")
 
@@ -324,3 +544,38 @@ def show():
             You can combine HMC and Freshness filters to find numbers that match both criteria.
             For example: Hot + C1 shows hot numbers that appeared once in the last 5 draws.
             """)
+
+    # Additional info sections for volatility/trend
+    if advanced_data:
+        col_info3, col_info4 = st.columns(2)
+
+        with col_info3:
+            with st.expander("ℹ️ Volatility & Trend Info"):
+                st.markdown("""
+                **Volatility** (Consistency of appearance patterns):
+                - **High**: Unpredictable appearance patterns (volatility ≥ 1.15)
+                - **Med**: Moderate predictability (0.85 ≤ volatility < 1.15)
+                - **Low**: Consistent, predictable patterns (volatility < 0.85)
+
+                **Trend** (Direction of change over time):
+                - **↑ Trending Up**: Statistically significant increase in appearances
+                - **→ Stable**: No significant trend detected
+                - **↓ Trending Down**: Statistically significant decrease in appearances
+
+                Note: Trends are only shown when statistically significant (p < 0.05).
+                """)
+
+        with col_info4:
+            with st.expander("ℹ️ Momentum & Regime Shift Info"):
+                st.markdown("""
+                **Momentum** (Recent vs baseline activity):
+                - **🔥 Heating Up**: Appearing >20% more than historical baseline
+                - **— Stable**: Within ±20% of baseline
+                - **❄️ Cooling Down**: Appearing >20% less than baseline
+
+                **Regime Shift**:
+                - **Yes**: Number is currently experiencing a significant change in behavior pattern
+                - **No**: Number is following its typical pattern
+
+                These indicators help identify numbers undergoing phase transitions in their draw patterns.
+                """)
