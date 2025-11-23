@@ -3,6 +3,10 @@ import streamlit as st
 import pandas as pd
 from typing import Dict, Any
 from view.utils.data_loader import load_trigger_data
+from view.utils.hmc_calculator import (
+    calculate_6_ball_hmc_probabilities,
+    get_6_ball_pattern_breakdown
+)
 
 
 def extract_patterns_data(odds_data: Dict[str, Any]) -> pd.DataFrame:
@@ -81,7 +85,104 @@ def show():
         st.bar_chart(hmc_df.set_index('Pattern (H-M-C)')['Calculated Percentage'])
     else:
         st.warning("No HMC data available.")
-    
+
+    # --- 6-BALL HMC PATTERN ANALYSIS ---
+    st.markdown("---")
+    st.subheader("🎯 6-Ball HMC Pattern Analysis for Players")
+    st.markdown("""
+    **Understanding 6-Ball Patterns:**
+    - Players select **6 numbers**, but Irish Lotto draws **7 numbers** (6 main + 1 bonus)
+    - When you pick 6 numbers with a specific Hot-Medium-Cold pattern, the 7th ball drawn could be:
+      - **Hot** → Your 6-ball pattern becomes (H+1, M, C)
+      - **Medium** → Your 6-ball pattern becomes (H, M+1, C)
+      - **Cold** → Your 6-ball pattern becomes (H, M, C+1)
+    - The table below shows the **combined probability** of matching any of these 7-ball outcomes
+    """)
+
+    if hmc_data:
+        # Calculate all 6-ball pattern probabilities
+        six_ball_results = calculate_6_ball_hmc_probabilities(hmc_data)
+
+        # Display top 10 patterns
+        st.markdown("##### Top 10 Best 6-Ball HMC Patterns")
+        top_10_six_ball = six_ball_results[:10]
+
+        six_ball_display = []
+        for result in top_10_six_ball:
+            six_ball_display.append({
+                '6-Ball Pattern': result['pattern_6_ball'],
+                'Hot': result['hot'],
+                'Medium': result['medium'],
+                'Cold': result['cold'],
+                'Combined Probability (%)': f"{result['total_percentage']:.2f}%",
+                'Total Occurrences': result['total_count']
+            })
+
+        six_ball_df = pd.DataFrame(six_ball_display)
+        st.dataframe(six_ball_df, hide_index=True, width=900)
+
+        # Interactive selector
+        st.markdown("##### 🔍 Custom 6-Ball Pattern Analyzer")
+        st.markdown("Select your 6-ball HMC pattern to see the detailed breakdown:")
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            hot_count = st.number_input("Hot Numbers", min_value=0, max_value=6, value=2, step=1)
+        with col2:
+            medium_count = st.number_input("Medium Numbers", min_value=0, max_value=6, value=2, step=1)
+        with col3:
+            cold_count = st.number_input("Cold Numbers", min_value=0, max_value=6, value=2, step=1)
+
+        total_selected = hot_count + medium_count + cold_count
+
+        if total_selected == 6:
+            # Get breakdown for selected pattern
+            breakdown = get_6_ball_pattern_breakdown(hot_count, medium_count, cold_count, hmc_data)
+
+            st.success(f"✅ Pattern: **{breakdown['pattern_6_ball']}** - Combined Probability: **{breakdown['total_percentage']:.2f}%** ({breakdown['total_count']} occurrences)")
+
+            st.markdown("**Breakdown by 7th Ball:**")
+            breakdown_display = []
+            for item in breakdown['breakdown']:
+                breakdown_display.append({
+                    'Scenario': item['scenario'],
+                    '7-Ball Pattern': item['pattern_7_ball'],
+                    'Probability (%)': f"{item['percentage']:.2f}%",
+                    'Occurrences': item['count']
+                })
+
+            breakdown_df = pd.DataFrame(breakdown_display)
+            st.dataframe(breakdown_df, hide_index=True, width=800)
+
+            # Visual chart
+            st.markdown("**Probability Distribution:**")
+            chart_data = pd.DataFrame({
+                'Scenario': [item['scenario'] for item in breakdown['breakdown']],
+                'Percentage': [item['percentage'] for item in breakdown['breakdown']]
+            })
+            st.bar_chart(chart_data.set_index('Scenario'))
+
+        elif total_selected > 6:
+            st.error(f"❌ Total must equal 6. Currently: {total_selected}")
+        else:
+            st.warning(f"⚠️ Total must equal 6. Currently: {total_selected}")
+
+        # Full comparison table
+        with st.expander("📊 View All 6-Ball Patterns (Sorted by Probability)"):
+            all_six_ball_display = []
+            for result in six_ball_results:
+                all_six_ball_display.append({
+                    '6-Ball Pattern': result['pattern_6_ball'],
+                    'Hot': result['hot'],
+                    'Medium': result['medium'],
+                    'Cold': result['cold'],
+                    'Combined Probability (%)': f"{result['total_percentage']:.2f}%",
+                    'Total Occurrences': result['total_count']
+                })
+
+            all_six_ball_df = pd.DataFrame(all_six_ball_display)
+            st.dataframe(all_six_ball_df, hide_index=True, height=400)
+
     st.markdown("---")
     
     # --- CONSECUTIVE PATTERNS ANALYSIS ---
