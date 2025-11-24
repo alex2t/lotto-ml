@@ -184,7 +184,7 @@
             }
         },
         "overall_chi2": 189.9844155844156,
-        "p_value": 9.98048175283936e-31,
+        "p_value": 9.980481752839358e-31,
         "significant": true,
         "total_draws_analyzed": 410,
         "num_patterns": 19,
@@ -219,8 +219,8 @@
                         "midpoint_days": 151.0
                     }
                 },
-                "correlation": -0.6282239195280928,
-                "p_value": 0.37177608047190724,
+                "correlation": -0.6282239195280929,
+                "p_value": 0.371776080471907,
                 "significant": false,
                 "num_data_points": 4
             },
@@ -271,7 +271,7 @@
                     }
                 },
                 "correlation": -0.8315895303659326,
-                "p_value": 0.0808351979430362,
+                "p_value": 0.08083519794303615,
                 "significant": false,
                 "num_data_points": 5
             }
