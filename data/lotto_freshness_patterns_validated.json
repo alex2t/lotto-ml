@@ -214,7 +214,7 @@
     "top_pattern_validation": {
         "significant": true,
         "z_score": 9.561222495568027,
-        "p_value": 2.3883558649711807e-14,
+        "p_value": 2.388355864971181e-14,
         "observed_percentage": 12.93,
         "expected_percentage": 3.8461538461538463,
         "fold_enrichment": 3.3617999999999997,
