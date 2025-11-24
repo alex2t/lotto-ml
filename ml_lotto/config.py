@@ -209,9 +209,9 @@ MODEL_1_CONFIG = {
     'algorithm': 'logistic_regression',
 
     # 6 ML-selected numbers (system always selects 6)
-    'hot_count': 2,
-    'medium_count': 2,
-    'cold_count': 2,
+    'hot_count': 4,
+    'medium_count': 1,
+    'cold_count': 1,
     'generic_count': 0,
 
     'features': [
@@ -280,10 +280,10 @@ MODEL_2_CONFIG = {
     'description': 'Trained ONLY on main 6 balls (excludes bonus) - focuses on stability and long-term patterns',
     'algorithm': 'random_forest',  # Better for complex interactions
 
-    'hot_count': 2,
-    'medium_count': 1,
+    'hot_count': 3,
+    'medium_count': 2,
     'cold_count': 1,
-    'generic_count': 1,
+    'generic_count': 0,
 
     'features': [
         # CORE STABILITY (MUST HAVE)
@@ -355,8 +355,8 @@ MODEL_3_CONFIG = {
     'algorithm': 'xgboost',
 
     'hot_count': 3,
-    'medium_count': 2,
-    'cold_count': 1,
+    'medium_count': 1,
+    'cold_count': 2,
     'generic_count': 0,
 
     'features': [
@@ -444,9 +444,9 @@ MODEL_4_CONFIG = {
 
     # Pool size = hot_count + medium_count + cold_count
     # UPDATED: 20-number pool
-    'hot_count': 7,      # Top 7 hot
-    'medium_count': 9,   # Top 9 medium
-    'cold_count': 4,     # Top 4 cold
+    'hot_count': 10,      # Top 7 hot
+    'medium_count': 5,   # Top 9 medium
+    'cold_count': 5,     # Top 4 cold
     'generic_count': 0,
 
     'features': [

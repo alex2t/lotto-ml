@@ -1,37 +1,37 @@
 {
-    "total_draws_analyzed": 410,
+    "total_draws_analyzed": 411,
     "analysis_6_main_numbers": {
         "description": "Analysis of 6 main numbers (excluding bonus)",
         "odd_even_patterns": {
             "6_0": {
                 "count": 4,
-                "percentage": 0.98,
-                "odds": 0.0098
+                "percentage": 0.97,
+                "odds": 0.0097
             },
             "5_1": {
                 "count": 40,
-                "percentage": 9.76,
-                "odds": 0.0976
+                "percentage": 9.73,
+                "odds": 0.0973
             },
             "4_2": {
                 "count": 95,
-                "percentage": 23.17,
-                "odds": 0.2317
+                "percentage": 23.11,
+                "odds": 0.2311
             },
             "3_3": {
-                "count": 131,
-                "percentage": 31.95,
-                "odds": 0.3195
+                "count": 132,
+                "percentage": 32.12,
+                "odds": 0.3212
             },
             "2_4": {
                 "count": 97,
-                "percentage": 23.66,
-                "odds": 0.2366
+                "percentage": 23.6,
+                "odds": 0.236
             },
             "1_5": {
                 "count": 38,
-                "percentage": 9.27,
-                "odds": 0.0927
+                "percentage": 9.25,
+                "odds": 0.0925
             },
             "0_6": {
                 "count": 5,
@@ -42,38 +42,38 @@
         "sum_distributions": {
             "S6_VERY_LOW (<110)": {
                 "count": 49,
-                "percentage": 11.95,
-                "odds": 0.1195
+                "percentage": 11.92,
+                "odds": 0.1192
             },
             "S6_LOW (110-124)": {
                 "count": 58,
-                "percentage": 14.15,
-                "odds": 0.1415
+                "percentage": 14.11,
+                "odds": 0.1411
             },
             "S6_MID_LOW (125-139)": {
                 "count": 66,
-                "percentage": 16.1,
-                "odds": 0.161
+                "percentage": 16.06,
+                "odds": 0.1606
             },
             "S6_MID (140-154)": {
                 "count": 82,
-                "percentage": 20.0,
-                "odds": 0.2
+                "percentage": 19.95,
+                "odds": 0.1995
             },
             "S6_MID_HIGH (155-169)": {
-                "count": 67,
-                "percentage": 16.34,
-                "odds": 0.1634
+                "count": 68,
+                "percentage": 16.55,
+                "odds": 0.1655
             },
             "S6_HIGH (170-184)": {
                 "count": 43,
-                "percentage": 10.49,
-                "odds": 0.1049
+                "percentage": 10.46,
+                "odds": 0.1046
             },
             "S6_VERY_HIGH (>=185)": {
                 "count": 45,
-                "percentage": 10.98,
-                "odds": 0.1098
+                "percentage": 10.95,
+                "odds": 0.1095
             }
         }
     },
@@ -87,33 +87,33 @@
             },
             "6_1": {
                 "count": 22,
-                "percentage": 5.37,
-                "odds": 0.0537
+                "percentage": 5.35,
+                "odds": 0.0535
             },
             "5_2": {
                 "count": 71,
-                "percentage": 17.32,
-                "odds": 0.1732
+                "percentage": 17.27,
+                "odds": 0.1727
             },
             "4_3": {
-                "count": 117,
-                "percentage": 28.54,
-                "odds": 0.2854
+                "count": 118,
+                "percentage": 28.71,
+                "odds": 0.2871
             },
             "3_4": {
                 "count": 118,
-                "percentage": 28.78,
-                "odds": 0.2878
+                "percentage": 28.71,
+                "odds": 0.2871
             },
             "2_5": {
                 "count": 60,
-                "percentage": 14.63,
-                "odds": 0.1463
+                "percentage": 14.6,
+                "odds": 0.146
             },
             "1_6": {
                 "count": 18,
-                "percentage": 4.39,
-                "odds": 0.0439
+                "percentage": 4.38,
+                "odds": 0.0438
             },
             "0_7": {
                 "count": 3,
@@ -124,38 +124,38 @@
         "sum_distributions": {
             "S_VERY_LOW (<130)": {
                 "count": 46,
-                "percentage": 11.22,
-                "odds": 0.1122
+                "percentage": 11.19,
+                "odds": 0.1119
             },
             "S_LOW (130-144)": {
                 "count": 47,
-                "percentage": 11.46,
-                "odds": 0.1146
+                "percentage": 11.44,
+                "odds": 0.1144
             },
             "S_MID_LOW (145-159)": {
                 "count": 65,
-                "percentage": 15.85,
-                "odds": 0.1585
+                "percentage": 15.82,
+                "odds": 0.1582
             },
             "S_MID (160-174)": {
                 "count": 64,
-                "percentage": 15.61,
-                "odds": 0.1561
+                "percentage": 15.57,
+                "odds": 0.1557
             },
             "S_MID_HIGH (175-189)": {
                 "count": 74,
-                "percentage": 18.05,
-                "odds": 0.1805
+                "percentage": 18.0,
+                "odds": 0.18
             },
             "S_HIGH (190-204)": {
-                "count": 49,
-                "percentage": 11.95,
-                "odds": 0.1195
+                "count": 50,
+                "percentage": 12.17,
+                "odds": 0.1217
             },
             "S_VERY_HIGH (>=205)": {
                 "count": 65,
-                "percentage": 15.85,
-                "odds": 0.1585
+                "percentage": 15.82,
+                "odds": 0.1582
             }
         }
     },
@@ -167,9 +167,9 @@
             "odd_even_affinity": 0.75
         },
         "2": {
-            "total_appearances": 59,
+            "total_appearances": 60,
             "most_common_pattern": "3_3",
-            "pattern_frequency": 25,
+            "pattern_frequency": 26,
             "odd_even_affinity": 0.65
         },
         "3": {
@@ -233,7 +233,7 @@
             "odd_even_affinity": 0.65
         },
         "13": {
-            "total_appearances": 62,
+            "total_appearances": 63,
             "most_common_pattern": "4_2",
             "pattern_frequency": 22,
             "odd_even_affinity": 0.75
@@ -329,9 +329,9 @@
             "odd_even_affinity": 0.65
         },
         "29": {
-            "total_appearances": 57,
+            "total_appearances": 58,
             "most_common_pattern": "3_3",
-            "pattern_frequency": 22,
+            "pattern_frequency": 23,
             "odd_even_affinity": 0.75
         },
         "30": {
@@ -347,7 +347,7 @@
             "odd_even_affinity": 0.75
         },
         "32": {
-            "total_appearances": 56,
+            "total_appearances": 57,
             "most_common_pattern": "2_4",
             "pattern_frequency": 20,
             "odd_even_affinity": 0.65
@@ -365,9 +365,9 @@
             "odd_even_affinity": 0.65
         },
         "35": {
-            "total_appearances": 69,
+            "total_appearances": 70,
             "most_common_pattern": "3_3",
-            "pattern_frequency": 24,
+            "pattern_frequency": 25,
             "odd_even_affinity": 0.75
         },
         "36": {
@@ -419,9 +419,9 @@
             "odd_even_affinity": 0.75
         },
         "44": {
-            "total_appearances": 46,
+            "total_appearances": 47,
             "most_common_pattern": "3_3",
-            "pattern_frequency": 18,
+            "pattern_frequency": 19,
             "odd_even_affinity": 0.65
         },
         "45": {
@@ -451,7 +451,7 @@
             "sum_contribution_score": 0.5
         },
         "2": {
-            "total_appearances": 59,
+            "total_appearances": 60,
             "most_common_sum_bin": "S6_MID_LOW (125-139)",
             "bin_frequency": 18,
             "sum_contribution_score": 0.5
@@ -517,7 +517,7 @@
             "sum_contribution_score": 0.7
         },
         "13": {
-            "total_appearances": 62,
+            "total_appearances": 63,
             "most_common_sum_bin": "S6_VERY_LOW (<110)",
             "bin_frequency": 14,
             "sum_contribution_score": 0.7
@@ -613,7 +613,7 @@
             "sum_contribution_score": 0.85
         },
         "29": {
-            "total_appearances": 57,
+            "total_appearances": 58,
             "most_common_sum_bin": "S6_MID_LOW (125-139)",
             "bin_frequency": 12,
             "sum_contribution_score": 0.85
@@ -631,7 +631,7 @@
             "sum_contribution_score": 0.85
         },
         "32": {
-            "total_appearances": 56,
+            "total_appearances": 57,
             "most_common_sum_bin": "S6_MID (140-154)",
             "bin_frequency": 12,
             "sum_contribution_score": 0.85
@@ -649,9 +649,9 @@
             "sum_contribution_score": 0.85
         },
         "35": {
-            "total_appearances": 69,
+            "total_appearances": 70,
             "most_common_sum_bin": "S6_MID_HIGH (155-169)",
-            "bin_frequency": 16,
+            "bin_frequency": 17,
             "sum_contribution_score": 0.85
         },
         "36": {
@@ -703,9 +703,9 @@
             "sum_contribution_score": 0.5
         },
         "44": {
-            "total_appearances": 46,
+            "total_appearances": 47,
             "most_common_sum_bin": "S6_MID_HIGH (155-169)",
-            "bin_frequency": 14,
+            "bin_frequency": 15,
             "sum_contribution_score": 0.5
         },
         "45": {

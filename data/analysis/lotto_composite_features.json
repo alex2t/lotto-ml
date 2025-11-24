@@ -32,8 +32,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if total_count >= 0 else 0) * (1 if recent_9 >= 2 else 0)",
       "description": "Binary interaction: both total_count and recent_9 are high",
-      "expected_win_rate_when_true": 0.8693,
-      "interaction_strength": 1.0224,
+      "expected_win_rate_when_true": 0.869,
+      "interaction_strength": 1.0218,
       "interaction_type": "synergistic"
     },
     {
@@ -41,8 +41,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_9 >= 2 else 0) * (1 if recent_14 >= 0 else 0)",
       "description": "Binary interaction: both recent_9 and recent_14 are high",
-      "expected_win_rate_when_true": 0.8693,
-      "interaction_strength": 1.0224,
+      "expected_win_rate_when_true": 0.869,
+      "interaction_strength": 1.0218,
       "interaction_type": "synergistic"
     },
     {
@@ -50,8 +50,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_9 >= 2 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
       "description": "Binary interaction: both recent_9 and bonus_hit_contribution are high",
-      "expected_win_rate_when_true": 0.8693,
-      "interaction_strength": 1.0224,
+      "expected_win_rate_when_true": 0.869,
+      "interaction_strength": 1.0218,
       "interaction_type": "synergistic"
     },
     {
@@ -59,8 +59,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if total_count >= 0 else 0) * (1 if recent_4 >= 1 else 0)",
       "description": "Binary interaction: both total_count and recent_4 are high",
-      "expected_win_rate_when_true": 0.8633,
-      "interaction_strength": 1.0142,
+      "expected_win_rate_when_true": 0.8631,
+      "interaction_strength": 1.0137,
       "interaction_type": "synergistic"
     },
     {
@@ -68,8 +68,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if total_count >= 0 else 0) * (1 if freshness_bin >= 1 else 0)",
       "description": "Binary interaction: both total_count and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8633,
-      "interaction_strength": 1.0142,
+      "expected_win_rate_when_true": 0.8631,
+      "interaction_strength": 1.0137,
       "interaction_type": "synergistic"
     },
     {
@@ -77,8 +77,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_4 >= 1 else 0) * (1 if recent_14 >= 0 else 0)",
       "description": "Binary interaction: both recent_4 and recent_14 are high",
-      "expected_win_rate_when_true": 0.8633,
-      "interaction_strength": 1.0142,
+      "expected_win_rate_when_true": 0.8631,
+      "interaction_strength": 1.0137,
       "interaction_type": "synergistic"
     },
     {
@@ -86,8 +86,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_4 >= 1 else 0) * (1 if freshness_bin >= 1 else 0)",
       "description": "Binary interaction: both recent_4 and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8633,
-      "interaction_strength": 1.0142,
+      "expected_win_rate_when_true": 0.8631,
+      "interaction_strength": 1.0137,
       "interaction_type": "synergistic"
     }
   ],

@@ -4,7 +4,7 @@
         "last_seen": "2025/11/05",
         "category": "medium",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 2,
             "last_24": 7
@@ -43,13 +43,13 @@
         }
     },
     "2": {
-        "total_count": 80,
-        "last_seen": "2025/11/15",
+        "total_count": 81,
+        "last_seen": "2025/11/22",
         "category": "hot",
         "recent": {
-            "last_4": 1,
-            "last_5": 1,
-            "last_9": 1,
+            "last_4": 2,
+            "last_5": 2,
+            "last_9": 2,
             "last_24": 4
         },
         "series": {
@@ -70,9 +70,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/07/23",
-                        "end_date": "2025/08/06",
-                        "count": 14
+                        "start_date": "2025/11/08",
+                        "end_date": "2025/11/22",
+                        "count": 15
                     }
                 ]
             }
@@ -81,7 +81,7 @@
     "3": {
         "total_count": 68,
         "last_seen": "2025/10/25",
-        "category": "medium",
+        "category": "cold",
         "recent": {
             "last_4": 0,
             "last_5": 0,
@@ -158,7 +158,7 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_24": 6
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -200,8 +200,8 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
-            "last_24": 6
+            "last_9": 1,
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -278,7 +278,7 @@
         "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 2,
             "last_24": 3
         },
@@ -311,7 +311,7 @@
     "9": {
         "total_count": 69,
         "last_seen": "2025/11/08",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 1,
             "last_5": 1,
@@ -386,7 +386,7 @@
         "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 1,
             "last_24": 2
         },
@@ -421,8 +421,8 @@
         "last_seen": "2025/11/15",
         "category": "hot",
         "recent": {
-            "last_4": 2,
-            "last_5": 3,
+            "last_4": 1,
+            "last_5": 2,
             "last_9": 3,
             "last_24": 7
         },
@@ -460,14 +460,14 @@
         }
     },
     "13": {
-        "total_count": 79,
-        "last_seen": "2025/11/11",
+        "total_count": 80,
+        "last_seen": "2025/11/22",
         "category": "hot",
         "recent": {
-            "last_4": 1,
+            "last_4": 2,
             "last_5": 2,
             "last_9": 3,
-            "last_24": 6
+            "last_24": 7
         },
         "series": {
             "series": {
@@ -509,7 +509,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
+            "last_9": 1,
             "last_24": 3
         },
         "series": {
@@ -541,7 +541,7 @@
     "15": {
         "total_count": 62,
         "last_seen": "2025/11/08",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 1,
             "last_5": 1,
@@ -622,7 +622,7 @@
         "last_seen": "2025/11/05",
         "category": "medium",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 1,
             "last_24": 2
@@ -747,7 +747,7 @@
             "last_4": 2,
             "last_5": 2,
             "last_9": 2,
-            "last_24": 5
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -767,8 +767,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/11/05",
-                        "end_date": "2025/11/19",
+                        "start_date": "2025/11/08",
+                        "end_date": "2025/11/22",
                         "count": 11
                     }
                 ]
@@ -824,9 +824,9 @@
         "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 1,
-            "last_24": 4
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -996,9 +996,9 @@
         "category": "hot",
         "recent": {
             "last_4": 1,
-            "last_5": 2,
+            "last_5": 1,
             "last_9": 3,
-            "last_24": 4
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -1029,11 +1029,11 @@
     "27": {
         "total_count": 85,
         "last_seen": "2025/11/08",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
+            "last_9": 1,
             "last_24": 5
         },
         "series": {
@@ -1074,7 +1074,7 @@
         "last_seen": "2025/11/05",
         "category": "medium",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 2,
             "last_24": 4
@@ -1106,14 +1106,14 @@
         }
     },
     "29": {
-        "total_count": 79,
-        "last_seen": "2025/09/13",
-        "category": "cold",
+        "total_count": 80,
+        "last_seen": "2025/11/22",
+        "category": "hot",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
-            "last_9": 0,
-            "last_24": 2
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 1,
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -1194,7 +1194,7 @@
     "31": {
         "total_count": 64,
         "last_seen": "2025/11/08",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 1,
             "last_5": 1,
@@ -1228,14 +1228,14 @@
         }
     },
     "32": {
-        "total_count": 82,
-        "last_seen": "2025/11/19",
+        "total_count": 83,
+        "last_seen": "2025/11/22",
         "category": "hot",
         "recent": {
             "last_4": 2,
             "last_5": 3,
-            "last_9": 3,
-            "last_24": 5
+            "last_9": 4,
+            "last_24": 6
         },
         "series": {
             "series": {
@@ -1248,16 +1248,16 @@
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2025/06/11",
-                        "end_date": "2025/07/12",
-                        "count": 3
+                        "start_date": "2025/10/22",
+                        "end_date": "2025/11/22",
+                        "count": 4
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2025/11/01",
-                        "end_date": "2025/11/19",
-                        "count": 4
+                        "start_date": "2023/01/07",
+                        "end_date": "2023/01/25",
+                        "count": 3
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -1350,14 +1350,14 @@
         }
     },
     "35": {
-        "total_count": 94,
-        "last_seen": "2025/11/08",
+        "total_count": 95,
+        "last_seen": "2025/11/22",
         "category": "hot",
         "recent": {
-            "last_4": 1,
-            "last_5": 1,
+            "last_4": 2,
+            "last_5": 2,
             "last_9": 3,
-            "last_24": 4
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -1420,8 +1420,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/11/05",
-                        "end_date": "2025/11/19",
+                        "start_date": "2025/11/08",
+                        "end_date": "2025/11/22",
                         "count": 10
                     }
                 ]
@@ -1517,12 +1517,12 @@
     "39": {
         "total_count": 75,
         "last_seen": "2025/11/08",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 1,
             "last_5": 1,
             "last_9": 2,
-            "last_24": 6
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -1646,7 +1646,7 @@
     "42": {
         "total_count": 86,
         "last_seen": "2025/10/25",
-        "category": "medium",
+        "category": "cold",
         "recent": {
             "last_4": 0,
             "last_5": 0,
@@ -1689,7 +1689,7 @@
     "43": {
         "total_count": 80,
         "last_seen": "2025/10/25",
-        "category": "medium",
+        "category": "cold",
         "recent": {
             "last_4": 0,
             "last_5": 0,
@@ -1730,14 +1730,14 @@
         }
     },
     "44": {
-        "total_count": 73,
-        "last_seen": "2025/11/15",
+        "total_count": 74,
+        "last_seen": "2025/11/22",
         "category": "hot",
         "recent": {
-            "last_4": 1,
-            "last_5": 1,
+            "last_4": 2,
+            "last_5": 2,
             "last_9": 3,
-            "last_24": 5
+            "last_24": 6
         },
         "series": {
             "series": {
@@ -1764,31 +1764,31 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/10/18",
-                        "end_date": "2025/11/01",
-                        "count": 6
+                        "start_date": "2025/11/08",
+                        "end_date": "2025/11/22",
+                        "count": 7
                     }
                 ]
             }
         }
     },
     "45": {
-        "total_count": 93,
-        "last_seen": "2025/11/19",
+        "total_count": 94,
+        "last_seen": "2025/11/22",
         "category": "hot",
         "recent": {
             "last_4": 2,
-            "last_5": 2,
-            "last_9": 3,
-            "last_24": 7
+            "last_5": 3,
+            "last_9": 4,
+            "last_24": 8
         },
         "series": {
             "series": {
                 "25_consecutives_8_times": [
                     {
-                        "start_date": "2024/07/24",
-                        "end_date": "2024/10/16",
-                        "count": 1
+                        "start_date": "2025/08/30",
+                        "end_date": "2025/11/22",
+                        "count": 2
                     }
                 ],
                 "10_consecutives_4_times": [
@@ -1807,9 +1807,9 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2025/11/05",
-                        "end_date": "2025/11/19",
-                        "count": 11
+                        "start_date": "2025/05/03",
+                        "end_date": "2025/05/17",
+                        "count": 8
                     }
                 ]
             }
@@ -1820,7 +1820,7 @@
         "last_seen": "2025/11/15",
         "category": "hot",
         "recent": {
-            "last_4": 3,
+            "last_4": 2,
             "last_5": 3,
             "last_9": 3,
             "last_24": 7
@@ -1858,7 +1858,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 2,
+            "last_9": 1,
             "last_24": 2
         },
         "series": {
