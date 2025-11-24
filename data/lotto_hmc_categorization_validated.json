@@ -13,34 +13,34 @@
     "anova_test": {
         "significant": true,
         "f_statistic": 107.66664492086878,
-        "p_value": 1.1248042667330495e-17,
+        "p_value": 1.1248042667330493e-17,
         "eta_squared": 0.8303341617774883,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
                 "count": 25,
-                "mean_days_since": 8.36,
+                "mean_days_since": 10.36,
                 "std_dev": 4.2805762851902704,
-                "median": 7.0,
-                "min": 3.0,
-                "max": 14.0
+                "median": 9.0,
+                "min": 5.0,
+                "max": 16.0
             },
             "medium": {
                 "count": 12,
-                "mean_days_since": 22.5,
+                "mean_days_since": 24.5,
                 "std_dev": 4.210376791603422,
-                "median": 22.5,
-                "min": 17.0,
-                "max": 28.0
+                "median": 24.5,
+                "min": 19.0,
+                "max": 30.0
             },
             "cold": {
                 "count": 10,
-                "mean_days_since": 55.1,
+                "mean_days_since": 57.1,
                 "std_dev": 16.8486728788287,
-                "median": 61.0,
-                "min": 31.0,
-                "max": 77.0
+                "median": 63.0,
+                "min": 33.0,
+                "max": 79.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -72,7 +72,7 @@
     "category_distribution": {
         "significant": true,
         "chi2_stat": 8.46808510638298,
-        "p_value": 0.014493680484792822,
+        "p_value": 0.01449368048479282,
         "category_counts": {
             "hot": 25,
             "medium": 12,
@@ -90,21 +90,21 @@
         "medium_cold_overlap": false,
         "categories_distinct": true,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 11.0,
-            "medium_cold_cutoff": 23.004600000000007
+            "hot_medium_cutoff": 13.0,
+            "medium_cold_cutoff": 25.004600000000007
         },
         "current_ranges": {
             "hot": {
-                "min": 3.0,
-                "max": 14.0
+                "min": 5.0,
+                "max": 16.0
             },
             "medium": {
-                "min": 17.0,
-                "max": 28.0
+                "min": 19.0,
+                "max": 30.0
             },
             "cold": {
-                "min": 31.0,
-                "max": 77.0
+                "min": 33.0,
+                "max": 79.0
             }
         }
     },

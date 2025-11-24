@@ -31,7 +31,8 @@ def load_number_data(number: int) -> Dict[str, Any]:
     try:
         with open('data/lotto_bonus_to_main_patterns.json', 'r') as f:
             bonus_data = json.load(f)
-            per_number = bonus_data.get('per_number_analysis', {})
+            # Fixed: Use correct key name 'per_number_transition_profile'
+            per_number = bonus_data.get('per_number_transition_profile', {})
             data['bonus_transition'] = per_number.get(str(number), {})
     except FileNotFoundError:
         data['bonus_transition'] = {}
@@ -70,28 +71,26 @@ def get_appearance_timeline(number: int, draw_history: Dict) -> List[Dict]:
     appearances = []
 
     for date_str, draw_data in sorted(draw_history.items()):
-        main_numbers = draw_data.get('main_numbers', [])
-        bonus_number = draw_data.get('bonus_number')
+        winning_numbers_details = draw_data.get('winning_numbers_details', [])
 
-        if number in main_numbers:
-            appearances.append({
-                'date': date_str,
-                'type': 'Main',
-                'position': main_numbers.index(number) + 1 if number in main_numbers else None
-            })
-        elif number == bonus_number:
-            appearances.append({
-                'date': date_str,
-                'type': 'Bonus',
-                'position': None
-            })
+        for idx, detail in enumerate(winning_numbers_details):
+            num = detail.get('number')
+            is_bonus = detail.get('is_bonus', False)
+
+            if num == number:
+                appearances.append({
+                    'date': date_str,
+                    'type': 'Bonus' if is_bonus else 'Main',
+                    'position': idx + 1 if not is_bonus else None
+                })
+                break  # Found the number, move to next draw
 
     return appearances
 
 
 def calculate_gap_stats(appearances: List[Dict]) -> Dict[str, Any]:
     """Calculate gap statistics between appearances."""
-    if len(appearances) < 2:
+    if len(appearances) < 1:
         return {
             'min_gap': 0,
             'max_gap': 0,
@@ -99,17 +98,36 @@ def calculate_gap_stats(appearances: List[Dict]) -> Dict[str, Any]:
             'current_gap': 0
         }
 
+    def parse_date(date_str):
+        """Parse date string in either YYYY-MM-DD or YYYY/MM/DD format."""
+        try:
+            return datetime.strptime(date_str, '%Y-%m-%d')
+        except ValueError:
+            try:
+                return datetime.strptime(date_str, '%Y/%m/%d')
+            except ValueError:
+                # Try with short format like "19 Nov 2025"
+                try:
+                    return datetime.strptime(date_str, '%d %b %Y')
+                except ValueError:
+                    return None
+
     gaps = []
-    for i in range(1, len(appearances)):
-        date1 = datetime.strptime(appearances[i-1]['date'], '%Y-%m-%d')
-        date2 = datetime.strptime(appearances[i]['date'], '%Y-%m-%d')
-        gap_days = (date2 - date1).days
-        gaps.append(gap_days)
+    if len(appearances) >= 2:
+        for i in range(1, len(appearances)):
+            date1 = parse_date(appearances[i-1]['date'])
+            date2 = parse_date(appearances[i]['date'])
+            if date1 and date2:
+                gap_days = (date2 - date1).days
+                gaps.append(gap_days)
 
     # Calculate current gap (days since last appearance)
-    last_appearance = datetime.strptime(appearances[-1]['date'], '%Y-%m-%d')
-    current_date = datetime(2025, 11, 23)  # Current date
-    current_gap = (current_date - last_appearance).days
+    last_date = parse_date(appearances[-1]['date'])
+    if last_date:
+        current_date = datetime.now()
+        current_gap = (current_date - last_date).days
+    else:
+        current_gap = 0
 
     return {
         'min_gap': min(gaps) if gaps else 0,
@@ -265,8 +283,8 @@ def show():
         col_b1, col_b2, col_b3 = st.columns(3)
 
         with col_b1:
-            bonus_count = bonus_profile.get('total_bonus_appearances', 0)
-            main_count = bonus_profile.get('total_main_appearances', 0)
+            bonus_count = bonus_profile.get('bonus_appearances', 0)
+            main_count = bonus_profile.get('main_appearances', 0)
             st.metric("Bonus Appearances", bonus_count)
             st.caption(f"Main: {main_count}")
 
@@ -275,13 +293,18 @@ def show():
             st.metric("Bonus→Main Rate", f"{transition_rate*100:.1f}%")
 
         with col_b3:
-            avg_draws = bonus_transition.get('stats', {}).get('avg_draws_to_main', 0)
-            st.metric("Avg Draws to Transit", f"{avg_draws:.1f}")
+            # Fixed: Use correct field name 'avg_draws_to_transition'
+            avg_draws = bonus_transition.get('avg_draws_to_transition', 0)
+            if avg_draws:
+                st.metric("Avg Draws to Transit", f"{avg_draws:.1f}")
+            else:
+                st.metric("Avg Draws to Transit", "N/A")
 
         # Last bonus appearance
         last_bonus = bonus_transition.get('last_bonus_date')
         if last_bonus:
-            days_since = bonus_transition.get('days_since_bonus', 0)
+            # Fixed: Use correct field name 'days_since_last_bonus'
+            days_since = bonus_transition.get('days_since_last_bonus', 0)
             st.info(f"📅 Last Bonus: {last_bonus} ({days_since} days ago)")
 
             if transition_rate > 0.65 and days_since < 150:
@@ -368,16 +391,32 @@ def show():
 
         appearance_df = pd.DataFrame(recent_appearances)
 
+        def parse_date(date_str):
+            """Parse date string in either YYYY-MM-DD or YYYY/MM/DD format."""
+            try:
+                return datetime.strptime(date_str, '%Y-%m-%d')
+            except ValueError:
+                try:
+                    return datetime.strptime(date_str, '%Y/%m/%d')
+                except ValueError:
+                    try:
+                        return datetime.strptime(date_str, '%d %b %Y')
+                    except ValueError:
+                        return None
+
         # Add gap column
         if len(appearances) >= 2:
             gaps_for_display = []
             for i in range(len(recent_appearances)):
                 actual_index = len(appearances) - 1 - i
                 if actual_index > 0:
-                    date1 = datetime.strptime(appearances[actual_index - 1]['date'], '%Y-%m-%d')
-                    date2 = datetime.strptime(appearances[actual_index]['date'], '%Y-%m-%d')
-                    gap = (date2 - date1).days
-                    gaps_for_display.append(gap)
+                    date1 = parse_date(appearances[actual_index - 1]['date'])
+                    date2 = parse_date(appearances[actual_index]['date'])
+                    if date1 and date2:
+                        gap = (date2 - date1).days
+                        gaps_for_display.append(gap)
+                    else:
+                        gaps_for_display.append(None)
                 else:
                     gaps_for_display.append(None)
 
