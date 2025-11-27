@@ -626,7 +626,7 @@ def main():
 
         # Save success patterns
         hmc_success_file = 'data/lotto_hmc_success_patterns_validated.json'
-        write_json_file(hmc_success_results, hmc_success_file)
+        write_json_file(hmc_success_file, hmc_success_results)
         print(f"  ✓ HMC success patterns saved to {hmc_success_file}")
 
         # Step 2: Generate HMC recommendations
@@ -640,7 +640,7 @@ def main():
 
         # Save JSON recommendations
         hmc_json_file = 'data/lotto_hmc_recommendations.json'
-        write_json_file(hmc_recommendations, hmc_json_file)
+        write_json_file(hmc_json_file, hmc_recommendations)
         print(f"  ✓ HMC recommendations (JSON) saved to {hmc_json_file}")
 
         # Generate and save text file
