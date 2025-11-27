@@ -56,6 +56,10 @@ from lotto_analysis.analyzers.feature_interaction_analyzer import (
     save_feature_interaction_outputs
 )
 
+# Import HMC recommendation analyzers (Phase 16)
+from lotto_analysis.analyzers.hmc_success_analyzer import HMCSuccessAnalyzer
+from lotto_analysis.analyzers.hmc_recommendation_analyzer import HMCRecommendationAnalyzer
+
 from lotto_analysis.utils.output_generator import (
     generate_hmc_analysis, generate_draw_range_analysis,
     write_json_file, format_date_iso,
@@ -604,6 +608,81 @@ def main():
         import traceback
         traceback.print_exc()
 
+    # ===== HMC RECOMMENDATION ANALYSIS (PHASE 16) =====
+    print("\n" + "=" * 70)
+    print("Phase 16: HMC Configuration Recommendation (Data-Driven)")
+    print("=" * 70)
+    print("Generating optimal HMC configurations for 3 models...")
+    print("All parameters learned from historical backtest data (scipy validated)")
+
+    try:
+        # Step 1: Analyze what predicts HMC success
+        print("\n[HMC] Analyzing historical success patterns...")
+        hmc_success_analyzer = HMCSuccessAnalyzer(
+            draws_data=draw_history_log,
+            hmc_data=output_data['hmc']
+        )
+        hmc_success_results = hmc_success_analyzer.analyze()
+
+        # Save success patterns
+        hmc_success_file = 'data/lotto_hmc_success_patterns_validated.json'
+        write_json_file(hmc_success_results, hmc_success_file)
+        print(f"  ✓ HMC success patterns saved to {hmc_success_file}")
+
+        # Step 2: Generate HMC recommendations
+        print("\n[HMC] Generating HMC configuration recommendations...")
+        hmc_recommender = HMCRecommendationAnalyzer(
+            draws_data=draw_history_log,
+            hmc_data=output_data['hmc'],
+            success_patterns=hmc_success_results
+        )
+        hmc_recommendations = hmc_recommender.analyze()
+
+        # Save JSON recommendations
+        hmc_json_file = 'data/lotto_hmc_recommendations.json'
+        write_json_file(hmc_recommendations, hmc_json_file)
+        print(f"  ✓ HMC recommendations (JSON) saved to {hmc_json_file}")
+
+        # Generate and save text file
+        hmc_text_file = 'data/lotto_hmc_recommendations.txt'
+        hmc_recommender.generate_text_report(hmc_recommendations, hmc_text_file)
+        print(f"  ✓ HMC recommendations (TEXT) saved to {hmc_text_file}")
+
+        # Print top recommendation summary
+        if hmc_recommendations['recommendations']:
+            top_rec = hmc_recommendations['recommendations'][0]
+            print("\n" + "-" * 70)
+            print("TOP HMC RECOMMENDATION (Rank #1)")
+            print("-" * 70)
+            print(f"Score: {top_rec['total_score']:.2f}")
+            print(f"\nModel 1: {top_rec['model_1_config']['pattern']} "
+                  f"(h={top_rec['model_1_config']['hot_count']}, "
+                  f"m={top_rec['model_1_config']['medium_count']}, "
+                  f"c={top_rec['model_1_config']['cold_count']}) "
+                  f"- {top_rec['model_1_config']['probability']:.2f}%")
+            print(f"Model 2: {top_rec['model_2_config']['pattern']} "
+                  f"(h={top_rec['model_2_config']['hot_count']}, "
+                  f"m={top_rec['model_2_config']['medium_count']}, "
+                  f"c={top_rec['model_2_config']['cold_count']}) "
+                  f"- {top_rec['model_2_config']['probability']:.2f}%")
+            print(f"Model 3: {top_rec['model_3_config']['pattern']} "
+                  f"(h={top_rec['model_3_config']['hot_count']}, "
+                  f"m={top_rec['model_3_config']['medium_count']}, "
+                  f"c={top_rec['model_3_config']['cold_count']}) "
+                  f"- {top_rec['model_3_config']['probability']:.2f}%")
+            print(f"\nEnsemble Coverage: {top_rec['ensemble_metrics']['total_coverage']:.2f}%")
+            print(f"Diversity Score:   {top_rec['ensemble_metrics']['diversity_score']:.2f}")
+            print(f"\n📄 Review full report: {hmc_text_file}")
+            print("-" * 70)
+
+        print("  ✓ HMC recommendation analysis complete")
+
+    except Exception as e:
+        print(f"  ⚠️  Warning: HMC recommendation analysis failed: {e}")
+        print("  System will continue without HMC recommendations")
+        import traceback
+        traceback.print_exc()
+
     print("\n" + "=" * 70)
     print("✓ All Analysis Phases Complete!")
     print("=" * 70)
@@ -637,7 +716,10 @@ def main():
         "data/lotto_recency_zones_calculated.json",
         "data/analysis/lotto_feature_interactions.json",
         "data/analysis/lotto_interaction_summary.csv",
-        "data/analysis/lotto_composite_features.json"
+        "data/analysis/lotto_composite_features.json",
+        "data/lotto_hmc_success_patterns_validated.json",
+        "data/lotto_hmc_recommendations.json",
+        "data/lotto_hmc_recommendations.txt"
     ]
 
     missing_files = []
