@@ -620,7 +620,7 @@ def main():
         print("\n[HMC] Analyzing historical success patterns...")
         hmc_success_analyzer = HMCSuccessAnalyzer(
             draws_data=draw_history_log,
-            hmc_data=output_data['hmc']
+            hmc_data=final_main['hmc']
         )
         hmc_success_results = hmc_success_analyzer.analyze()
 
@@ -633,7 +633,7 @@ def main():
         print("\n[HMC] Generating HMC configuration recommendations...")
         hmc_recommender = HMCRecommendationAnalyzer(
             draws_data=draw_history_log,
-            hmc_data=output_data['hmc'],
+            hmc_data=final_main['hmc'],
             success_patterns=hmc_success_results
         )
         hmc_recommendations = hmc_recommender.analyze()
