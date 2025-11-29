@@ -12,35 +12,35 @@
     },
     "anova_test": {
         "significant": true,
-        "f_statistic": 70.49465875008542,
-        "p_value": 1.8999080388671067e-14,
-        "eta_squared": 0.762148427841195,
+        "f_statistic": 61.36925511803134,
+        "p_value": 1.867104868938823e-13,
+        "eta_squared": 0.7361137511801783,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
                 "count": 21,
-                "mean_days_since": 6.476190476190476,
-                "std_dev": 4.202606900711124,
-                "median": 5.0,
-                "min": 2.0,
-                "max": 13.0
+                "mean_days_since": 7.380952380952381,
+                "std_dev": 3.8791260675078667,
+                "median": 7.0,
+                "min": 3.0,
+                "max": 14.0
             },
             "medium": {
-                "count": 14,
-                "mean_days_since": 20.285714285714285,
-                "std_dev": 4.084277008396796,
-                "median": 19.0,
-                "min": 16.0,
-                "max": 26.0
+                "count": 13,
+                "mean_days_since": 21.846153846153847,
+                "std_dev": 3.5554220060388952,
+                "median": 21.0,
+                "min": 18.0,
+                "max": 28.0
             },
             "cold": {
-                "count": 12,
-                "mean_days_since": 49.083333333333336,
-                "std_dev": 18.500409495877424,
-                "median": 45.5,
-                "min": 30.0,
-                "max": 79.0
+                "count": 13,
+                "mean_days_since": 48.76923076923077,
+                "std_dev": 19.331122773711506,
+                "median": 38.0,
+                "min": 31.0,
+                "max": 84.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -49,39 +49,39 @@
         "bonferroni_corrected_alpha": 0.016666666666666666,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": -9.629452814682175,
-                "p_value": 4.1317583949399824e-11,
+                "t_statistic": -10.898397061203069,
+                "p_value": 2.651688811614145e-12,
                 "significant": true,
-                "mean_difference": -13.809523809523808
+                "mean_difference": -14.465201465201465
             },
             "hot_vs_cold": {
-                "t_statistic": -10.215396498538041,
-                "p_value": 1.921745110509531e-11,
+                "t_statistic": -9.590504262351683,
+                "p_value": 6.242509929530431e-11,
                 "significant": true,
-                "mean_difference": -42.60714285714286
+                "mean_difference": -41.38827838827839
             },
             "medium_vs_cold": {
-                "t_statistic": -5.683186095314202,
-                "p_value": 7.46185698676144e-06,
+                "t_statistic": -4.938729927347828,
+                "p_value": 4.8554751259190846e-05,
                 "significant": true,
-                "mean_difference": -28.79761904761905
+                "mean_difference": -26.92307692307692
             }
         },
         "all_significant": true
     },
     "category_distribution": {
         "significant": false,
-        "chi2_stat": 2.851063829787234,
-        "p_value": 0.24038056719263398,
+        "chi2_stat": 2.723404255319149,
+        "p_value": 0.25622427913886375,
         "category_counts": {
             "hot": 21,
-            "medium": 14,
-            "cold": 12
+            "medium": 13,
+            "cold": 13
         },
         "category_percentages": {
             "hot": 44.680851063829785,
-            "medium": 29.78723404255319,
-            "cold": 25.53191489361702
+            "medium": 27.659574468085108,
+            "cold": 27.659574468085108
         },
         "interpretation": "Category sizes are balanced (approximately equal)"
     },
@@ -90,21 +90,21 @@
         "medium_cold_overlap": false,
         "categories_distinct": true,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 9.0,
-            "medium_cold_cutoff": 23.0
+            "hot_medium_cutoff": 10.0,
+            "medium_cold_cutoff": 24.0
         },
         "current_ranges": {
             "hot": {
-                "min": 2.0,
-                "max": 13.0
+                "min": 3.0,
+                "max": 14.0
             },
             "medium": {
-                "min": 16.0,
-                "max": 26.0
+                "min": 18.0,
+                "max": 28.0
             },
             "cold": {
-                "min": 30.0,
-                "max": 79.0
+                "min": 31.0,
+                "max": 84.0
             }
         }
     },

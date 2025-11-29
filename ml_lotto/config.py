@@ -281,8 +281,8 @@ MODEL_2_CONFIG = {
     'algorithm': 'random_forest',  # Better for complex interactions
 
     'hot_count': 3,
-    'medium_count': 2,
-    'cold_count': 1,
+    'medium_count': 1,
+    'cold_count': 2,
     'generic_count': 0,
 
     'features': [
@@ -354,8 +354,8 @@ MODEL_3_CONFIG = {
     'description': 'XGBoost with ALL features - finds complex interaction patterns across all signals',
     'algorithm': 'xgboost',
 
-    'hot_count': 3,
-    'medium_count': 1,
+    'hot_count': 2,
+    'medium_count': 2,
     'cold_count': 2,
     'generic_count': 0,
 

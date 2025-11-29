@@ -1,19 +1,19 @@
 {
     "requested_draws": 500,
-    "pattern_analysis_draws": 411,
-    "hmc_analysis_draws": 411,
+    "pattern_analysis_draws": 412,
+    "hmc_analysis_draws": 412,
     "hmc_training_draws": 100,
-    "available_draws": 511,
-    "used_draws": 511,
+    "available_draws": 512,
+    "used_draws": 512,
     "skipped_rows": 0,
     "scenarios": [
         {
             "window_size": 5,
             "results": {
                 "2_times": {
-                    "hit_count": 264,
-                    "total_windows": 407,
-                    "odds": 0.6486
+                    "hit_count": 265,
+                    "total_windows": 408,
+                    "odds": 0.6495
                 }
             }
         },
@@ -21,9 +21,9 @@
             "window_size": 6,
             "results": {
                 "3_times": {
-                    "hit_count": 71,
-                    "total_windows": 406,
-                    "odds": 0.1749
+                    "hit_count": 70,
+                    "total_windows": 407,
+                    "odds": 0.172
                 }
             }
         },
@@ -31,9 +31,9 @@
             "window_size": 10,
             "results": {
                 "4_times": {
-                    "hit_count": 99,
-                    "total_windows": 402,
-                    "odds": 0.2463
+                    "hit_count": 100,
+                    "total_windows": 403,
+                    "odds": 0.2481
                 }
             }
         },
@@ -42,8 +42,8 @@
             "results": {
                 "8_times": {
                     "hit_count": 60,
-                    "total_windows": 387,
-                    "odds": 0.155
+                    "total_windows": 388,
+                    "odds": 0.1546
                 }
             }
         }
@@ -51,35 +51,35 @@
     "hmc": {
         "4-1-2": {
             "count": 52,
-            "percentage": 12.65
+            "percentage": 12.62
         },
         "3-2-2": {
-            "count": 45,
-            "percentage": 10.95
+            "count": 46,
+            "percentage": 11.17
         },
         "4-2-1": {
             "count": 40,
-            "percentage": 9.73
+            "percentage": 9.71
         },
         "3-1-3": {
             "count": 36,
-            "percentage": 8.76
+            "percentage": 8.74
         },
         "2-3-2": {
             "count": 32,
-            "percentage": 7.79
+            "percentage": 7.77
         },
         "2-2-3": {
             "count": 29,
-            "percentage": 7.06
+            "percentage": 7.04
         },
         "5-1-1": {
             "count": 28,
-            "percentage": 6.81
+            "percentage": 6.8
         },
         "3-3-1": {
             "count": 17,
-            "percentage": 4.14
+            "percentage": 4.13
         },
         "5-2-0": {
             "count": 13,
@@ -87,31 +87,31 @@
         },
         "5-0-2": {
             "count": 12,
-            "percentage": 2.92
+            "percentage": 2.91
         },
         "3-0-4": {
             "count": 12,
-            "percentage": 2.92
+            "percentage": 2.91
         },
         "2-1-4": {
             "count": 12,
-            "percentage": 2.92
+            "percentage": 2.91
         },
         "4-0-3": {
             "count": 12,
-            "percentage": 2.92
+            "percentage": 2.91
         },
         "6-0-1": {
             "count": 9,
-            "percentage": 2.19
+            "percentage": 2.18
         },
         "4-3-0": {
             "count": 9,
-            "percentage": 2.19
+            "percentage": 2.18
         },
         "2-4-1": {
             "count": 8,
-            "percentage": 1.95
+            "percentage": 1.94
         },
         "6-1-0": {
             "count": 7,
@@ -173,35 +173,49 @@
         },
         "20-25": {
             "count": 14,
-            "percentage": 3.41
+            "percentage": 3.4
         },
         "25-30": {
-            "count": 47,
-            "percentage": 11.44
+            "count": 48,
+            "percentage": 11.65
         },
         "30-35": {
             "count": 89,
-            "percentage": 21.65
+            "percentage": 21.6
         },
         "35-40": {
             "count": 109,
-            "percentage": 26.52
+            "percentage": 26.46
         },
         "40-45": {
             "count": 137,
-            "percentage": 33.33
+            "percentage": 33.25
         },
         ">45": {
             "count": 9,
-            "percentage": 2.19
+            "percentage": 2.18
         }
     },
     "patterns": {
         "2_consecutive": {
-            "hit_count": 292,
-            "total_draws": 511,
-            "odds": 0.5714,
+            "hit_count": 293,
+            "total_draws": 512,
+            "odds": 0.5723,
             "last20": [
+                {
+                    "date": "2025-11-26",
+                    "numbers": [
+                        33,
+                        34
+                    ]
+                },
+                {
+                    "date": "2025-11-26",
+                    "numbers": [
+                        11,
+                        12
+                    ]
+                },
                 {
                     "date": "2025-11-22",
                     "numbers": [
@@ -327,32 +341,18 @@
                         19,
                         20
                     ]
-                },
-                {
-                    "date": "2025-09-13",
-                    "numbers": [
-                        29,
-                        30
-                    ]
-                },
-                {
-                    "date": "2025-09-06",
-                    "numbers": [
-                        37,
-                        38
-                    ]
                 }
             ],
             "all_pairs": {
                 "42-43": 8,
                 "38-39": 12,
                 "39-40": 11,
-                "33-34": 6,
+                "33-34": 7,
                 "8-9": 9,
                 "41-42": 12,
                 "31-32": 8,
                 "32-33": 9,
-                "11-12": 15,
+                "11-12": 16,
                 "35-36": 17,
                 "6-7": 9,
                 "27-28": 10,
@@ -394,8 +394,8 @@
         },
         "3_consecutive": {
             "hit_count": 35,
-            "total_draws": 511,
-            "odds": 0.0685,
+            "total_draws": 512,
+            "odds": 0.0684,
             "last20": [
                 {
                     "date": "2025-11-01",
@@ -561,7 +561,7 @@
         },
         "4_consecutive": {
             "hit_count": 5,
-            "total_draws": 511,
+            "total_draws": 512,
             "odds": 0.0098,
             "last20": [
                 {
@@ -613,19 +613,19 @@
         },
         "5_consecutive": {
             "hit_count": 0,
-            "total_draws": 511,
+            "total_draws": 512,
             "odds": 0.0,
             "last20": []
         },
         "6_consecutive": {
             "hit_count": 0,
-            "total_draws": 511,
+            "total_draws": 512,
             "odds": 0.0,
             "last20": []
         },
         "7_consecutive": {
             "hit_count": 0,
-            "total_draws": 511,
+            "total_draws": 512,
             "odds": 0.0,
             "last20": []
         },
@@ -671,12 +671,12 @@
                 "normalized_score": 0.5294
             },
             "11": {
-                "total_pair_appearances": 25,
-                "normalized_score": 0.7353
+                "total_pair_appearances": 26,
+                "normalized_score": 0.7647
             },
             "12": {
-                "total_pair_appearances": 29,
-                "normalized_score": 0.8529
+                "total_pair_appearances": 30,
+                "normalized_score": 0.8824
             },
             "13": {
                 "total_pair_appearances": 22,
@@ -759,12 +759,12 @@
                 "normalized_score": 0.5
             },
             "33": {
-                "total_pair_appearances": 15,
-                "normalized_score": 0.4412
+                "total_pair_appearances": 16,
+                "normalized_score": 0.4706
             },
             "34": {
-                "total_pair_appearances": 22,
-                "normalized_score": 0.6471
+                "total_pair_appearances": 23,
+                "normalized_score": 0.6765
             },
             "35": {
                 "total_pair_appearances": 33,
@@ -823,15 +823,15 @@
     "recent_bonus_analysis": {
         "1_hit": {
             "count": 152,
-            "odds": 0.3698
+            "odds": 0.3689
         },
         "2_hits": {
             "count": 100,
-            "odds": 0.2433
+            "odds": 0.2427
         },
         "3_or_more": {
             "count": 42,
-            "odds": 0.1022
+            "odds": 0.1019
         }
     },
     "range_spread_analysis": {
@@ -906,15 +906,15 @@
             "spread_affinity_score": 1.0
         },
         "11": {
-            "appearances_in_draws": 51,
-            "average_range_contribution": 33.86,
+            "appearances_in_draws": 52,
+            "average_range_contribution": 33.65,
             "min_range": 15,
             "max_range": 44,
             "spread_affinity_score": 1.0
         },
         "12": {
-            "appearances_in_draws": 62,
-            "average_range_contribution": 32.55,
+            "appearances_in_draws": 63,
+            "average_range_contribution": 32.4,
             "min_range": 11,
             "max_range": 44,
             "spread_affinity_score": 1.0
@@ -997,8 +997,8 @@
             "spread_affinity_score": 1.0
         },
         "24": {
-            "appearances_in_draws": 55,
-            "average_range_contribution": 32.51,
+            "appearances_in_draws": 56,
+            "average_range_contribution": 32.34,
             "min_range": 13,
             "max_range": 43,
             "spread_affinity_score": 1.0
@@ -1032,8 +1032,8 @@
             "spread_affinity_score": 1.0
         },
         "29": {
-            "appearances_in_draws": 58,
-            "average_range_contribution": 32.98,
+            "appearances_in_draws": 59,
+            "average_range_contribution": 32.81,
             "min_range": 18,
             "max_range": 45,
             "spread_affinity_score": 1.0
@@ -1060,15 +1060,15 @@
             "spread_affinity_score": 1.0
         },
         "33": {
-            "appearances_in_draws": 40,
-            "average_range_contribution": 34.1,
+            "appearances_in_draws": 41,
+            "average_range_contribution": 33.83,
             "min_range": 14,
             "max_range": 44,
             "spread_affinity_score": 1.0
         },
         "34": {
-            "appearances_in_draws": 42,
-            "average_range_contribution": 33.07,
+            "appearances_in_draws": 43,
+            "average_range_contribution": 32.84,
             "min_range": 14,
             "max_range": 43,
             "spread_affinity_score": 1.0

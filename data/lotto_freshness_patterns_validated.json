@@ -6,173 +6,173 @@
             "chi_square_uniformity_test",
             "z_test_proportion"
         ],
-        "total_draws": 411,
+        "total_draws": 412,
         "total_patterns": 26,
         "c_max": 2,
         "significance_level": 0.05
     },
     "pattern_distribution_test": {
         "significant": true,
-        "chi2_stat": 431.3114355231144,
-        "p_value": 1.1684768572675536e-75,
-        "cramers_v": 0.20488236148103428,
+        "chi2_stat": 432.36893203883494,
+        "p_value": 7.082046534094598e-76,
+        "cramers_v": 0.20488427518324245,
         "num_patterns": 26,
         "degrees_of_freedom": 25,
         "pattern_residuals": {
             "C0=3, C1=3, C_GE_2=1": {
                 "observed": 53,
-                "expected": 15.807692307692308,
-                "residual": 9.354463594705752,
+                "expected": 15.846153846153847,
+                "residual": 9.33344224482136,
                 "significant": true
             },
             "C0=4, C1=2, C_GE_2=1": {
                 "observed": 52,
-                "expected": 15.807692307692308,
-                "residual": 9.102947510463405,
+                "expected": 15.846153846153847,
+                "residual": 9.082231583987658,
                 "significant": true
             },
             "C0=5, C1=1, C_GE_2=1": {
                 "observed": 39,
-                "expected": 15.807692307692308,
-                "residual": 5.833238415312895,
+                "expected": 15.846153846153847,
+                "residual": 5.816492993149543,
                 "significant": true
             },
             "C0=4, C1=3, C_GE_2=0": {
                 "observed": 38,
-                "expected": 15.807692307692308,
-                "residual": 5.581722331070548,
+                "expected": 15.846153846153847,
+                "residual": 5.565282332315841,
                 "significant": true
             },
             "C0=5, C1=2, C_GE_2=0": {
                 "observed": 34,
-                "expected": 15.807692307692308,
-                "residual": 4.575657994101159,
+                "expected": 15.846153846153847,
+                "residual": 4.560439688981037,
                 "significant": true
             },
             "C0=3, C1=4, C_GE_2=0": {
-                "observed": 32,
-                "expected": 15.807692307692308,
-                "residual": 4.072625825616465,
+                "observed": 33,
+                "expected": 15.846153846153847,
+                "residual": 4.309229028147335,
                 "significant": true
             },
             "C0=2, C1=4, C_GE_2=1": {
                 "observed": 27,
-                "expected": 15.807692307692308,
-                "residual": 2.8150454044047297,
+                "expected": 15.846153846153847,
+                "residual": 2.8019650631451287,
                 "significant": true
             },
             "C0=3, C1=2, C_GE_2=2": {
                 "observed": 27,
-                "expected": 15.807692307692308,
-                "residual": 2.8150454044047297,
+                "expected": 15.846153846153847,
+                "residual": 2.8019650631451287,
                 "significant": true
             },
             "C0=4, C1=1, C_GE_2=2": {
                 "observed": 19,
-                "expected": 15.807692307692308,
-                "residual": 0.8029167304659538,
+                "expected": 15.846153846153847,
+                "residual": 0.7922797764755191,
                 "significant": false
             },
             "C0=2, C1=3, C_GE_2=2": {
                 "observed": 16,
-                "expected": 15.807692307692308,
-                "residual": 0.048368477738912716,
+                "expected": 15.846153846153847,
+                "residual": 0.03864779397441543,
                 "significant": false
             },
             "C0=6, C1=1, C_GE_2=0": {
                 "observed": 15,
-                "expected": 15.807692307692308,
-                "residual": -0.2031476065034343,
+                "expected": 15.846153846153847,
+                "residual": -0.21256286685928577,
                 "significant": false
             },
             "C0=2, C1=5, C_GE_2=0": {
                 "observed": 10,
-                "expected": 15.807692307692308,
-                "residual": -1.4607280277151693,
+                "expected": 15.846153846153847,
+                "residual": -1.4686161710277919,
                 "significant": false
             },
             "C0=2, C1=2, C_GE_2=3": {
                 "observed": 9,
-                "expected": 15.807692307692308,
-                "residual": -1.7122441119575165,
+                "expected": 15.846153846153847,
+                "residual": -1.7198268318614929,
                 "significant": false
             },
             "C0=3, C1=1, C_GE_2=3": {
                 "observed": 8,
-                "expected": 15.807692307692308,
-                "residual": -1.9637601961998634,
+                "expected": 15.846153846153847,
+                "residual": -1.9710374926951941,
                 "significant": true
             },
             "C0=6, C1=0, C_GE_2=1": {
                 "observed": 5,
-                "expected": 15.807692307692308,
-                "residual": -2.7183084489269045,
+                "expected": 15.846153846153847,
+                "residual": -2.724669475196298,
                 "significant": true
             },
             "C0=1, C1=4, C_GE_2=2": {
                 "observed": 5,
-                "expected": 15.807692307692308,
-                "residual": -2.7183084489269045,
+                "expected": 15.846153846153847,
+                "residual": -2.724669475196298,
                 "significant": true
             },
             "C0=1, C1=5, C_GE_2=1": {
                 "observed": 4,
-                "expected": 15.807692307692308,
-                "residual": -2.9698245331692514,
+                "expected": 15.846153846153847,
+                "residual": -2.975880136029999,
                 "significant": true
             },
             "C0=1, C1=6, C_GE_2=0": {
                 "observed": 4,
-                "expected": 15.807692307692308,
-                "residual": -2.9698245331692514,
+                "expected": 15.846153846153847,
+                "residual": -2.975880136029999,
                 "significant": true
             },
             "C0=1, C1=3, C_GE_2=3": {
                 "observed": 3,
-                "expected": 15.807692307692308,
-                "residual": -3.2213406174115984,
+                "expected": 15.846153846153847,
+                "residual": -3.2270907968637,
                 "significant": true
             },
             "C0=5, C1=0, C_GE_2=2": {
                 "observed": 3,
-                "expected": 15.807692307692308,
-                "residual": -3.2213406174115984,
+                "expected": 15.846153846153847,
+                "residual": -3.2270907968637,
                 "significant": true
             },
             "C0=7, C1=0, C_GE_2=0": {
                 "observed": 2,
-                "expected": 15.807692307692308,
-                "residual": -3.4728567016539453,
+                "expected": 15.846153846153847,
+                "residual": -3.4783014576974014,
                 "significant": true
             },
             "C0=3, C1=0, C_GE_2=4": {
                 "observed": 2,
-                "expected": 15.807692307692308,
-                "residual": -3.4728567016539453,
+                "expected": 15.846153846153847,
+                "residual": -3.4783014576974014,
                 "significant": true
             },
             "C0=0, C1=5, C_GE_2=2": {
                 "observed": 1,
-                "expected": 15.807692307692308,
-                "residual": -3.7243727858962927,
+                "expected": 15.846153846153847,
+                "residual": -3.7295121185311024,
                 "significant": true
             },
             "C0=0, C1=7, C_GE_2=0": {
                 "observed": 1,
-                "expected": 15.807692307692308,
-                "residual": -3.7243727858962927,
+                "expected": 15.846153846153847,
+                "residual": -3.7295121185311024,
                 "significant": true
             },
             "C0=0, C1=4, C_GE_2=3": {
                 "observed": 1,
-                "expected": 15.807692307692308,
-                "residual": -3.7243727858962927,
+                "expected": 15.846153846153847,
+                "residual": -3.7295121185311024,
                 "significant": true
             },
             "C0=4, C1=0, C_GE_2=3": {
                 "observed": 1,
-                "expected": 15.807692307692308,
-                "residual": -3.7243727858962927,
+                "expected": 15.846153846153847,
+                "residual": -3.7295121185311024,
                 "significant": true
             }
         },
@@ -180,31 +180,31 @@
     },
     "bin_distribution_test": {
         "significant": true,
-        "chi2_stat": 596.2606882168926,
-        "p_value": 3.339155667201306e-130,
+        "chi2_stat": 598.4653259361997,
+        "p_value": 1.108933919717226e-130,
         "degrees_of_freedom": 2,
         "bin_analysis": {
             "C0": {
-                "observed": 1460,
-                "expected": 959.0,
-                "percentage": 50.747306221758784,
-                "z_score": 16.178133777201694,
+                "observed": 1463,
+                "expected": 961.3333333333334,
+                "percentage": 50.728155339805824,
+                "z_score": 16.17998983922459,
                 "over_represented": true,
                 "under_represented": false
             },
             "C1": {
-                "observed": 1021,
-                "expected": 959.0,
-                "percentage": 35.48835592631213,
-                "z_score": 2.0020844195339422,
+                "observed": 1025,
+                "expected": 961.3333333333334,
+                "percentage": 35.54091539528433,
+                "z_score": 2.053407348366708,
                 "over_represented": true,
                 "under_represented": false
             },
             "C_GE_2": {
                 "observed": 396,
-                "expected": 959.0,
-                "percentage": 13.764337851929092,
-                "z_score": -18.180218196735638,
+                "expected": 961.3333333333334,
+                "percentage": 13.730929264909847,
+                "z_score": -18.2333971875913,
                 "over_represented": false,
                 "under_represented": true
             }
@@ -213,11 +213,11 @@
     },
     "top_pattern_validation": {
         "significant": true,
-        "z_score": 9.53971848171959,
-        "p_value": 2.639088547737697e-14,
-        "observed_percentage": 12.9,
+        "z_score": 9.518280827067072,
+        "p_value": 2.915098652240122e-14,
+        "observed_percentage": 12.86,
         "expected_percentage": 3.8461538461538463,
-        "fold_enrichment": 3.354,
+        "fold_enrichment": 3.3436,
         "interpretation": "Top pattern is highly significantly over-represented (very strong signal)"
     },
     "validated_weights": {
@@ -237,6 +237,6 @@
     "top_pattern_details": {
         "pattern": "C0=3, C1=3, C_GE_2=1",
         "draws_matched": 53,
-        "percentage": 12.9
+        "percentage": 12.86
     }
 }

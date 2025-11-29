@@ -1,8 +1,8 @@
 {
   "metadata": {
     "analysis_type": "feature_interaction_exploration",
-    "total_draws": 411,
-    "total_records": 2877,
+    "total_draws": 412,
+    "total_records": 2884,
     "total_pairwise_interactions": 21,
     "total_triple_interactions": 10,
     "total_composite_features": 10
@@ -20,7 +20,7 @@
       "interaction_strength": 3.0,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 2877,
+        "high_high": 2884,
         "high_low": 0,
         "low_high": 0,
         "low_low": 0
@@ -38,7 +38,7 @@
       "interaction_strength": 3.0,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 2877,
+        "high_high": 2884,
         "high_low": 0,
         "low_high": 0,
         "low_low": 0
@@ -56,7 +56,7 @@
       "interaction_strength": 3.0,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 2877,
+        "high_high": 2884,
         "high_low": 0,
         "low_high": 0,
         "low_low": 0
@@ -67,15 +67,15 @@
       "feature_2": "recent_9",
       "median_1": 0,
       "median_2": 2,
-      "win_rate_high_high": 0.869,
+      "win_rate_high_high": 0.8691,
       "win_rate_high_low": 0.8502,
       "win_rate_low_high": 0,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0218,
+      "interaction_strength": 1.022,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1061,
-        "high_low": 1816,
+        "high_high": 1062,
+        "high_low": 1822,
         "low_high": 0,
         "low_low": 0
       }
@@ -85,16 +85,16 @@
       "feature_2": "recent_14",
       "median_1": 2,
       "median_2": 0,
-      "win_rate_high_high": 0.869,
+      "win_rate_high_high": 0.8691,
       "win_rate_high_low": 0,
       "win_rate_low_high": 0.8502,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0218,
+      "interaction_strength": 1.022,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1061,
+        "high_high": 1062,
         "high_low": 0,
-        "low_high": 1816,
+        "low_high": 1822,
         "low_low": 0
       }
     },
@@ -103,16 +103,16 @@
       "feature_2": "bonus_hit_contribution",
       "median_1": 2,
       "median_2": 0.0,
-      "win_rate_high_high": 0.869,
+      "win_rate_high_high": 0.8691,
       "win_rate_high_low": 0,
       "win_rate_low_high": 0.8502,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0218,
+      "interaction_strength": 1.022,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1061,
+        "high_high": 1062,
         "high_low": 0,
-        "low_high": 1816,
+        "low_high": 1822,
         "low_low": 0
       }
     },
@@ -121,15 +121,15 @@
       "feature_2": "recent_4",
       "median_1": 0,
       "median_2": 1,
-      "win_rate_high_high": 0.8631,
-      "win_rate_high_low": 0.8514,
+      "win_rate_high_high": 0.8628,
+      "win_rate_high_low": 0.8517,
       "win_rate_low_high": 0,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0137,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1417,
-        "high_low": 1460,
+        "high_high": 1421,
+        "high_low": 1463,
         "low_high": 0,
         "low_low": 0
       }
@@ -139,15 +139,15 @@
       "feature_2": "freshness_bin",
       "median_1": 0,
       "median_2": 1,
-      "win_rate_high_high": 0.8631,
-      "win_rate_high_low": 0.8514,
+      "win_rate_high_high": 0.8628,
+      "win_rate_high_low": 0.8517,
       "win_rate_low_high": 0,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0137,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1417,
-        "high_low": 1460,
+        "high_high": 1421,
+        "high_low": 1463,
         "low_high": 0,
         "low_low": 0
       }
@@ -157,16 +157,16 @@
       "feature_2": "recent_14",
       "median_1": 1,
       "median_2": 0,
-      "win_rate_high_high": 0.8631,
+      "win_rate_high_high": 0.8628,
       "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8514,
+      "win_rate_low_high": 0.8517,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0137,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1417,
+        "high_high": 1421,
         "high_low": 0,
-        "low_high": 1460,
+        "low_high": 1463,
         "low_low": 0
       }
     },
@@ -175,17 +175,17 @@
       "feature_2": "freshness_bin",
       "median_1": 1,
       "median_2": 1,
-      "win_rate_high_high": 0.8631,
+      "win_rate_high_high": 0.8628,
       "win_rate_high_low": 0,
       "win_rate_low_high": 0,
-      "win_rate_low_low": 0.8514,
-      "interaction_strength": 1.0137,
+      "win_rate_low_low": 0.8517,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1417,
+        "high_high": 1421,
         "high_low": 0,
         "low_high": 0,
-        "low_low": 1460
+        "low_low": 1463
       }
     },
     {
@@ -193,16 +193,16 @@
       "feature_2": "bonus_hit_contribution",
       "median_1": 1,
       "median_2": 0.0,
-      "win_rate_high_high": 0.8631,
+      "win_rate_high_high": 0.8628,
       "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8514,
+      "win_rate_low_high": 0.8517,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0137,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1417,
+        "high_high": 1421,
         "high_low": 0,
-        "low_high": 1460,
+        "low_high": 1463,
         "low_low": 0
       }
     },
@@ -211,15 +211,15 @@
       "feature_2": "freshness_bin",
       "median_1": 0,
       "median_2": 1,
-      "win_rate_high_high": 0.8631,
-      "win_rate_high_low": 0.8514,
+      "win_rate_high_high": 0.8628,
+      "win_rate_high_low": 0.8517,
       "win_rate_low_high": 0,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0137,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1417,
-        "high_low": 1460,
+        "high_high": 1421,
+        "high_low": 1463,
         "low_high": 0,
         "low_low": 0
       }
@@ -229,16 +229,16 @@
       "feature_2": "bonus_hit_contribution",
       "median_1": 1,
       "median_2": 0.0,
-      "win_rate_high_high": 0.8631,
+      "win_rate_high_high": 0.8628,
       "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8514,
+      "win_rate_low_high": 0.8517,
       "win_rate_low_low": 0,
-      "interaction_strength": 1.0137,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1417,
+        "high_high": 1421,
         "high_low": 0,
-        "low_high": 1460,
+        "low_high": 1463,
         "low_low": 0
       }
     },
@@ -247,15 +247,15 @@
       "feature_2": "days_since_last",
       "median_1": 0,
       "median_2": 32,
-      "win_rate_high_high": 0.8554,
-      "win_rate_high_low": 0.8577,
+      "win_rate_high_high": 0.8558,
+      "win_rate_high_low": 0.8576,
       "win_rate_low_high": 0,
       "win_rate_low_low": 0,
-      "interaction_strength": 0.9973,
+      "interaction_strength": 0.9979,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 740,
-        "high_low": 2137,
+        "high_high": 742,
+        "high_low": 2142,
         "low_high": 0,
         "low_low": 0
       }
@@ -265,16 +265,16 @@
       "feature_2": "recent_14",
       "median_1": 32,
       "median_2": 0,
-      "win_rate_high_high": 0.8554,
+      "win_rate_high_high": 0.8558,
       "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8577,
+      "win_rate_low_high": 0.8576,
       "win_rate_low_low": 0,
-      "interaction_strength": 0.9973,
+      "interaction_strength": 0.9979,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 740,
+        "high_high": 742,
         "high_low": 0,
-        "low_high": 2137,
+        "low_high": 2142,
         "low_low": 0
       }
     },
@@ -283,16 +283,16 @@
       "feature_2": "bonus_hit_contribution",
       "median_1": 32,
       "median_2": 0.0,
-      "win_rate_high_high": 0.8554,
+      "win_rate_high_high": 0.8558,
       "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8577,
+      "win_rate_low_high": 0.8576,
       "win_rate_low_low": 0,
-      "interaction_strength": 0.9973,
+      "interaction_strength": 0.9979,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 740,
+        "high_high": 742,
         "high_low": 0,
-        "low_high": 2137,
+        "low_high": 2142,
         "low_low": 0
       }
     },
@@ -302,16 +302,16 @@
       "median_1": 32,
       "median_2": 1,
       "win_rate_high_high": 1.0,
-      "win_rate_high_low": 0.8546,
-      "win_rate_low_high": 0.8627,
-      "win_rate_low_low": 0.8481,
-      "interaction_strength": 0.1219,
+      "win_rate_high_low": 0.855,
+      "win_rate_low_high": 0.8624,
+      "win_rate_low_low": 0.8483,
+      "interaction_strength": 0.1218,
       "interaction_type": "synergistic",
       "sample_sizes": {
         "high_high": 4,
-        "high_low": 736,
-        "low_high": 1413,
-        "low_low": 724
+        "high_low": 738,
+        "low_high": 1417,
+        "low_low": 725
       }
     },
     {
@@ -320,16 +320,16 @@
       "median_1": 32,
       "median_2": 1,
       "win_rate_high_high": 1.0,
-      "win_rate_high_low": 0.8546,
-      "win_rate_low_high": 0.8627,
-      "win_rate_low_low": 0.8481,
-      "interaction_strength": 0.1219,
+      "win_rate_high_low": 0.855,
+      "win_rate_low_high": 0.8624,
+      "win_rate_low_low": 0.8483,
+      "interaction_strength": 0.1218,
       "interaction_type": "synergistic",
       "sample_sizes": {
         "high_high": 4,
-        "high_low": 736,
-        "low_high": 1413,
-        "low_low": 724
+        "high_low": 738,
+        "low_high": 1417,
+        "low_low": 725
       }
     },
     {
@@ -338,16 +338,16 @@
       "median_1": 32,
       "median_2": 2,
       "win_rate_high_high": 0.9,
-      "win_rate_high_low": 0.8548,
-      "win_rate_low_high": 0.8687,
-      "win_rate_low_low": 0.8471,
-      "interaction_strength": 0.0373,
+      "win_rate_high_low": 0.8552,
+      "win_rate_low_high": 0.8688,
+      "win_rate_low_low": 0.8468,
+      "interaction_strength": 0.0372,
       "interaction_type": "neutral",
       "sample_sizes": {
         "high_high": 10,
-        "high_low": 730,
-        "low_high": 1051,
-        "low_low": 1086
+        "high_low": 732,
+        "low_high": 1052,
+        "low_low": 1090
       }
     },
     {
@@ -355,17 +355,17 @@
       "feature_2": "recent_9",
       "median_1": 1,
       "median_2": 2,
-      "win_rate_high_high": 0.8751,
-      "win_rate_high_low": 0.8428,
+      "win_rate_high_high": 0.8753,
+      "win_rate_high_low": 0.8418,
       "win_rate_low_high": 0.8372,
-      "win_rate_low_low": 0.8533,
-      "interaction_strength": 0.027,
+      "win_rate_low_low": 0.8536,
+      "interaction_strength": 0.0274,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 889,
-        "high_low": 528,
+        "high_high": 890,
+        "high_low": 531,
         "low_high": 172,
-        "low_low": 1288
+        "low_low": 1291
       }
     },
     {
@@ -373,17 +373,17 @@
       "feature_2": "freshness_bin",
       "median_1": 2,
       "median_2": 1,
-      "win_rate_high_high": 0.8751,
+      "win_rate_high_high": 0.8753,
       "win_rate_high_low": 0.8372,
-      "win_rate_low_high": 0.8428,
-      "win_rate_low_low": 0.8533,
-      "interaction_strength": 0.027,
+      "win_rate_low_high": 0.8418,
+      "win_rate_low_low": 0.8536,
+      "interaction_strength": 0.0274,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 889,
+        "high_high": 890,
         "high_low": 172,
-        "low_high": 528,
-        "low_low": 1288
+        "low_high": 531,
+        "low_low": 1291
       }
     }
   ],
@@ -397,7 +397,7 @@
             1
           ],
           "win_rate": 0.8571,
-          "sample_size": 2877
+          "sample_size": 2884
         }
       ],
       "thresholds": []
@@ -419,8 +419,8 @@
             -95.8,
             61.0
           ],
-          "win_rate": 0.857,
-          "sample_size": 2671
+          "win_rate": 0.8569,
+          "sample_size": 2677
         },
         {
           "bin_index": 5,
@@ -428,8 +428,8 @@
             61.0,
             217.8
           ],
-          "win_rate": 0.8542,
-          "sample_size": 192
+          "win_rate": 0.8549,
+          "sample_size": 193
         },
         {
           "bin_index": 9,
@@ -451,8 +451,8 @@
             0.0,
             0.4
           ],
-          "win_rate": 0.8514,
-          "sample_size": 1460
+          "win_rate": 0.8517,
+          "sample_size": 1463
         },
         {
           "bin_index": 2,
@@ -460,8 +460,8 @@
             0.8,
             1.2
           ],
-          "win_rate": 0.859,
-          "sample_size": 1021
+          "win_rate": 0.8585,
+          "sample_size": 1025
         },
         {
           "bin_index": 5,
@@ -501,8 +501,8 @@
             0.0,
             0.6
           ],
-          "win_rate": 0.8482,
-          "sample_size": 731
+          "win_rate": 0.8484,
+          "sample_size": 732
         },
         {
           "bin_index": 1,
@@ -510,8 +510,8 @@
             0.6,
             1.2
           ],
-          "win_rate": 0.8516,
-          "sample_size": 1085
+          "win_rate": 0.8514,
+          "sample_size": 1090
         },
         {
           "bin_index": 3,
@@ -528,8 +528,8 @@
             3.0,
             3.6
           ],
-          "win_rate": 0.8694,
-          "sample_size": 291
+          "win_rate": 0.8699,
+          "sample_size": 292
         },
         {
           "bin_index": 6,
@@ -570,7 +570,7 @@
             1
           ],
           "win_rate": 0.8571,
-          "sample_size": 2877
+          "sample_size": 2884
         }
       ],
       "thresholds": []
@@ -583,8 +583,8 @@
             0.0,
             0.2
           ],
-          "win_rate": 0.8514,
-          "sample_size": 1460
+          "win_rate": 0.8517,
+          "sample_size": 1463
         },
         {
           "bin_index": 5,
@@ -592,8 +592,8 @@
             1.0,
             1.2
           ],
-          "win_rate": 0.859,
-          "sample_size": 1021
+          "win_rate": 0.8585,
+          "sample_size": 1025
         },
         {
           "bin_index": 9,
@@ -613,9 +613,9 @@
       "category": "medium",
       "freshness_bin": 1,
       "recency": "recent",
-      "win_rate": 0.8907,
-      "lift_over_baseline": 1.039,
-      "sample_size": 183,
+      "win_rate": 0.8859,
+      "lift_over_baseline": 1.034,
+      "sample_size": 184,
       "wins": 163
     },
     {
@@ -640,10 +640,10 @@
       "category": "hot",
       "freshness_bin": 1,
       "recency": "very_recent",
-      "win_rate": 0.8625,
-      "lift_over_baseline": 1.006,
-      "sample_size": 429,
-      "wins": 370
+      "win_rate": 0.8628,
+      "lift_over_baseline": 1.007,
+      "sample_size": 430,
+      "wins": 371
     },
     {
       "category": "medium",
@@ -658,10 +658,10 @@
       "category": "cold",
       "freshness_bin": 0,
       "recency": "old",
-      "win_rate": 0.8525,
+      "win_rate": 0.8529,
       "lift_over_baseline": 0.995,
-      "sample_size": 807,
-      "wins": 688
+      "sample_size": 809,
+      "wins": 690
     },
     {
       "category": "hot",
@@ -676,10 +676,10 @@
       "category": "medium",
       "freshness_bin": 0,
       "recency": "old",
-      "win_rate": 0.8415,
+      "win_rate": 0.8421,
       "lift_over_baseline": 0.982,
-      "sample_size": 284,
-      "wins": 239
+      "sample_size": 285,
+      "wins": 240
     },
     {
       "category": "hot",
@@ -694,10 +694,10 @@
       "category": "hot",
       "freshness_bin": 1,
       "recency": "recent",
-      "win_rate": 0.8399,
-      "lift_over_baseline": 0.98,
-      "sample_size": 406,
-      "wins": 341
+      "win_rate": 0.8407,
+      "lift_over_baseline": 0.981,
+      "sample_size": 408,
+      "wins": 343
     }
   ],
   "recommended_composite_features": [
@@ -733,8 +733,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if total_count >= 0 else 0) * (1 if recent_9 >= 2 else 0)",
       "description": "Binary interaction: both total_count and recent_9 are high",
-      "expected_win_rate_when_true": 0.869,
-      "interaction_strength": 1.0218,
+      "expected_win_rate_when_true": 0.8691,
+      "interaction_strength": 1.022,
       "interaction_type": "synergistic"
     },
     {
@@ -742,8 +742,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_9 >= 2 else 0) * (1 if recent_14 >= 0 else 0)",
       "description": "Binary interaction: both recent_9 and recent_14 are high",
-      "expected_win_rate_when_true": 0.869,
-      "interaction_strength": 1.0218,
+      "expected_win_rate_when_true": 0.8691,
+      "interaction_strength": 1.022,
       "interaction_type": "synergistic"
     },
     {
@@ -751,8 +751,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_9 >= 2 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
       "description": "Binary interaction: both recent_9 and bonus_hit_contribution are high",
-      "expected_win_rate_when_true": 0.869,
-      "interaction_strength": 1.0218,
+      "expected_win_rate_when_true": 0.8691,
+      "interaction_strength": 1.022,
       "interaction_type": "synergistic"
     },
     {
@@ -760,8 +760,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if total_count >= 0 else 0) * (1 if recent_4 >= 1 else 0)",
       "description": "Binary interaction: both total_count and recent_4 are high",
-      "expected_win_rate_when_true": 0.8631,
-      "interaction_strength": 1.0137,
+      "expected_win_rate_when_true": 0.8628,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic"
     },
     {
@@ -769,8 +769,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if total_count >= 0 else 0) * (1 if freshness_bin >= 1 else 0)",
       "description": "Binary interaction: both total_count and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8631,
-      "interaction_strength": 1.0137,
+      "expected_win_rate_when_true": 0.8628,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic"
     },
     {
@@ -778,8 +778,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_4 >= 1 else 0) * (1 if recent_14 >= 0 else 0)",
       "description": "Binary interaction: both recent_4 and recent_14 are high",
-      "expected_win_rate_when_true": 0.8631,
-      "interaction_strength": 1.0137,
+      "expected_win_rate_when_true": 0.8628,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic"
     },
     {
@@ -787,8 +787,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_4 >= 1 else 0) * (1 if freshness_bin >= 1 else 0)",
       "description": "Binary interaction: both recent_4 and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8631,
-      "interaction_strength": 1.0137,
+      "expected_win_rate_when_true": 0.8628,
+      "interaction_strength": 1.0129,
       "interaction_type": "synergistic"
     }
   ]

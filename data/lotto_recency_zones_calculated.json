@@ -3,8 +3,8 @@
     "analysis_type": "recency_zone_optimization",
     "description": "Data-driven recency zone scoring to replace hard-coded thresholds",
     "version": "1.0",
-    "generated_date": "2025-11-24 18:03:02",
-    "total_draws": 411,
+    "generated_date": "2025-11-29 16:25:55",
+    "total_draws": 412,
     "calculation_method": "empirical_win_rate",
     "bins": [
       "0-14",
@@ -18,7 +18,7 @@
   "recency_zones_by_category": {
     "hot": {
       "0-14": {
-        "wins": 1170,
+        "wins": 1173,
         "win_rate": 0.9983,
         "win_percentage": 99.83,
         "score": 1.0
@@ -56,7 +56,7 @@
         "score": 0.0
       },
       "15-30": {
-        "wins": 596,
+        "wins": 597,
         "win_rate": 1.0,
         "win_percentage": 100.0,
         "score": 1.0
@@ -94,103 +94,103 @@
         "score": 0.0
       },
       "31-60": {
-        "wins": 522,
-        "win_rate": 0.7543,
-        "win_percentage": 75.43,
+        "wins": 523,
+        "win_rate": 0.7536,
+        "win_percentage": 75.36,
         "score": 1.0
       },
       "61-120": {
-        "wins": 155,
-        "win_rate": 0.224,
-        "win_percentage": 22.4,
-        "score": 0.2969
+        "wins": 156,
+        "win_rate": 0.2248,
+        "win_percentage": 22.48,
+        "score": 0.2983
       },
       "121+": {
         "wins": 15,
-        "win_rate": 0.0217,
-        "win_percentage": 2.17,
+        "win_rate": 0.0216,
+        "win_percentage": 2.16,
         "score": 0.0287
       }
     }
   },
   "recency_zones_combined": {
     "0-14": {
-      "wins": 1170,
-      "win_rate": 0.4756,
-      "win_percentage": 47.56,
+      "wins": 1173,
+      "win_rate": 0.4757,
+      "win_percentage": 47.57,
       "score": 1.0
     },
     "15-30": {
-      "wins": 597,
-      "win_rate": 0.2427,
-      "win_percentage": 24.27,
-      "score": 0.5103
+      "wins": 598,
+      "win_rate": 0.2425,
+      "win_percentage": 24.25,
+      "score": 0.5098
     },
     "31-60": {
-      "wins": 522,
-      "win_rate": 0.2122,
-      "win_percentage": 21.22,
-      "score": 0.4462
+      "wins": 523,
+      "win_rate": 0.2121,
+      "win_percentage": 21.21,
+      "score": 0.4459
     },
     "61-120": {
-      "wins": 155,
-      "win_rate": 0.063,
-      "win_percentage": 6.3,
-      "score": 0.1325
+      "wins": 156,
+      "win_rate": 0.0633,
+      "win_percentage": 6.33,
+      "score": 0.133
     },
     "121+": {
       "wins": 16,
       "win_rate": 0.0065,
       "win_percentage": 0.65,
-      "score": 0.0137
+      "score": 0.0136
     }
   },
   "totals": {
-    "hot": 1172,
-    "medium": 596,
-    "cold": 692,
-    "combined": 2460
+    "hot": 1175,
+    "medium": 597,
+    "cold": 694,
+    "combined": 2466
   },
   "statistical_validation": {
     "test": "Kruskal-Wallis H-test",
-    "h_statistic": 2098.6087425785477,
+    "h_statistic": 2103.6412584864415,
     "p_value": 0.0,
     "significant": true,
     "interpretation": "Category recency distributions are significantly different (p=0.0000)",
     "category_stats": {
       "hot": {
-        "mean": 6.19,
+        "mean": 6.2,
         "median": 7,
-        "std": 47.52,
-        "n": 1176
+        "std": 47.46,
+        "n": 1179
       },
       "medium": {
-        "mean": 20.65,
+        "mean": 20.66,
         "median": 21,
-        "std": 29.85,
-        "n": 597
+        "std": 29.82,
+        "n": 598
       },
       "cold": {
-        "mean": 55.94,
+        "mean": 55.92,
         "median": 45,
-        "std": 74.6,
-        "n": 693
+        "std": 74.5,
+        "n": 695
       }
     },
     "pairwise_comparisons": {
       "hot_vs_medium": {
-        "u_statistic": 1820.0,
-        "p_value": 1.2043143848839013e-260,
+        "u_statistic": 1824.0,
+        "p_value": 3.7693098700242175e-261,
         "significant": true
       },
       "hot_vs_cold": {
-        "u_statistic": 1858.0,
-        "p_value": 2.2582241202514066e-286,
+        "u_statistic": 1863.0,
+        "p_value": 3.735158333650498e-287,
         "significant": true
       },
       "medium_vs_cold": {
-        "u_statistic": 596.0,
-        "p_value": 8.590988003686852e-211,
+        "u_statistic": 597.0,
+        "p_value": 2.927156392171588e-211,
         "significant": true
       }
     }
@@ -204,31 +204,31 @@
       "alignment": "good"
     },
     "15-30": {
-      "calculated_score": 0.5103,
+      "calculated_score": 0.5098,
       "hardcoded_score": 0.78,
-      "difference": -0.2697,
-      "percent_difference": -34.58,
+      "difference": -0.2702,
+      "percent_difference": -34.64,
       "alignment": "needs_adjustment"
     },
     "31-60": {
-      "calculated_score": 0.4462,
+      "calculated_score": 0.4459,
       "hardcoded_score": 0.54,
-      "difference": -0.0938,
-      "percent_difference": -17.37,
+      "difference": -0.0941,
+      "percent_difference": -17.43,
       "alignment": "good"
     },
     "61-120": {
-      "calculated_score": 0.1325,
+      "calculated_score": 0.133,
       "hardcoded_score": 0.18,
-      "difference": -0.0475,
-      "percent_difference": -26.39,
+      "difference": -0.047,
+      "percent_difference": -26.11,
       "alignment": "good"
     },
     "121+": {
-      "calculated_score": 0.0137,
+      "calculated_score": 0.0136,
       "hardcoded_score": 0.01,
-      "difference": 0.0037,
-      "percent_difference": 37.0,
+      "difference": 0.0036,
+      "percent_difference": 36.0,
       "alignment": "good"
     }
   },

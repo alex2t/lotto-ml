@@ -1,0 +1,159 @@
+{
+    "metadata": {
+        "analysis_type": "hmc_success_pattern_validation",
+        "statistical_methods": [
+            "independent_t_test",
+            "chi_square_test",
+            "percentile_analysis",
+            "logistic_regression",
+            "historical_backtest"
+        ],
+        "significance_level": 0.05,
+        "draws_analyzed": 411,
+        "start_draw": 100,
+        "end_draw": 511
+    },
+    "success_correlations": {
+        "probability_correlation": {
+            "success_mean": 18.689938596491228,
+            "success_std": 9.188195024227944,
+            "failure_mean": 8.945009645061727,
+            "failure_std": 8.839731419132992,
+            "t_statistic": 35.18676599705832,
+            "p_value": 1.071438858417102e-257,
+            "significant": true,
+            "effect_size": 9.7449289514295,
+            "interpretation": "Higher probability significantly predicts success"
+        },
+        "recency_correlation": {
+            "success_mean": 7.752707581227437,
+            "success_std": 11.487013617066838,
+            "failure_mean": 18.001142595978063,
+            "failure_std": 22.097475981748328,
+            "t_statistic": -15.178756951804152,
+            "p_value": 1.8618994291938803e-51,
+            "significant": true,
+            "effect_size": -10.248435014750626,
+            "interpretation": "Lower recency significantly predicts success"
+        },
+        "hot_count_distribution": {
+            "success_distribution": {
+                "0": 0.02631578947368421,
+                "1": 0.11403508771929824,
+                "2": 0.24649122807017543,
+                "3": 0.2850877192982456,
+                "4": 0.22631578947368422,
+                "5": 0.08508771929824561,
+                "6": 0.016666666666666666
+            },
+            "overall_distribution": {
+                "0": 0.25,
+                "1": 0.21428571428571427,
+                "2": 0.17857142857142858,
+                "3": 0.14285714285714285,
+                "4": 0.10714285714285714,
+                "5": 0.07142857142857142,
+                "6": 0.03571428571428571
+            },
+            "chi2_statistic": 638.1765497076022,
+            "p_value": 1.3528098778707699e-134,
+            "significant": true,
+            "interpretation": "Hot count distribution differs significantly between success and overall"
+        }
+    },
+    "optimal_parameters": {
+        "recency_thresholds": {
+            "hot_threshold_draws": 2.0,
+            "cold_threshold_draws": 7.0,
+            "success_rates": {
+                "hot": 0.18372319688109162,
+                "medium": 0.13870967741935483,
+                "cold": 0.0685532084495815
+            },
+            "interpretation": "Patterns \u22642 draws ago are HOT, \u22657 are COLD"
+        },
+        "momentum_scenario": {
+            "name": "After Hot Surge",
+            "optimal_hot_count": 4,
+            "success_rates_by_hot_count": {
+                "0": 0.009852216748768473,
+                "1": 0.06130268199233716,
+                "2": 0.16091954022988506,
+                "3": 0.1867816091954023,
+                "4": 0.19923371647509577,
+                "5": 0.11494252873563218,
+                "6": 0.011494252873563218
+            },
+            "interpretation": "When recent draws are hot-heavy, 4 hot numbers maximize success"
+        },
+        "stability_scenario": {
+            "name": "During Balanced Period",
+            "optimal_hot_count": 4,
+            "success_rates_by_hot_count": {
+                "0": 0.01091901728844404,
+                "1": 0.049893842887473464,
+                "2": 0.12802547770700637,
+                "3": 0.20382165605095542,
+                "4": 0.21549893842887474,
+                "5": 0.11464968152866242,
+                "6": 0.054140127388535034
+            },
+            "interpretation": "During balanced periods, 4 hot numbers maximize success"
+        },
+        "overall_best_hot_counts": {
+            "top_3": [
+                4,
+                3,
+                2
+            ],
+            "success_rates": {
+                "4": 0.20924574209245742,
+                "3": 0.19768856447688565,
+                "2": 0.1367396593673966,
+                "5": 0.11800486618004866,
+                "1": 0.05271695052716951,
+                "6": 0.046228710462287104,
+                "0": 0.010427528675703858
+            }
+        }
+    },
+    "learned_weights": {
+        "method": "logistic_regression",
+        "raw_coefficients": {
+            "combined_probability": 0.7603625323956432,
+            "recency_at_draw": -0.27249478340524674,
+            "hot_count": 0.11496825004300823,
+            "medium_count": -0.08285938872745002,
+            "cold_count": -0.03210886131558412
+        },
+        "normalized_weights": {
+            "combined_probability": 0.6021272220608691,
+            "recency_at_draw": 0.21578723302018868,
+            "hot_count": 0.0910427724594608,
+            "medium_count": 0.06561592849522559,
+            "cold_count": 0.025426843964255735
+        },
+        "model_accuracy": 0.9009384775808134,
+        "intercept": -2.6382496490961884,
+        "interpretation": "Weights represent relative importance of each feature in predicting success"
+    },
+    "backtest_summary": {
+        "total_configurations_tested": 11508,
+        "total_draws_tested": 411,
+        "overall_success_rate": 0.09906152241918666,
+        "total_successes": 1140,
+        "average_distance": 4.368439346541536,
+        "best_performing_patterns": {
+            "3H-1M-2C": 0.3236009732360097,
+            "4H-1M-1C": 0.291970802919708,
+            "2H-2M-2C": 0.25790754257907544,
+            "3H-2M-1C": 0.24817518248175183,
+            "2H-1M-3C": 0.1873479318734793,
+            "4H-0M-2C": 0.18491484184914841,
+            "4H-2M-0C": 0.15085158150851583,
+            "3H-0M-3C": 0.145985401459854,
+            "2H-3M-1C": 0.1386861313868613,
+            "5H-0M-1C": 0.1192214111922141
+        }
+    }
+}

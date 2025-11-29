@@ -1,0 +1,253 @@
+====================================================================================================
+HMC CONFIGURATION RECOMMENDATIONS
+====================================================================================================
+
+Generated for Draw #512
+Based on analysis of 411 historical draws
+All parameters learned from data using scipy-validated statistical methods
+
+====================================================================================================
+CURRENT DRAW ENVIRONMENT
+====================================================================================================
+
+Trend Status: HOT SURGE
+Description: Recent draws favor hot numbers (avg > 3.5)
+
+Recent 10 Draws Average:
+  - Hot Numbers:    3.60
+  - Medium Numbers: 1.60
+  - Cold Numbers:   1.80
+
+Dominant Patterns in Last 10 Draws:
+  - 3-2-2: appeared 2 times
+  - 4-2-1: appeared 1 times
+  - 3-3-1: appeared 1 times
+
+Recent Draw History:
+Draw     Date         HMC Pattern 
+----------------------------------------
+#502     2025-10-25   4-2-1       
+#503     2025-10-29   3-3-1       
+#504     2025-11-01   3-2-2       
+#505     2025-11-05   5-2-0       
+#506     2025-11-08   3-1-3       
+#507     2025-11-11   2-3-2       
+#508     2025-11-15   3-0-4       
+#509     2025-11-19   4-1-2       
+#510     2025-11-22   6-0-1       
+#511     2025-11-26   3-2-2       
+
+====================================================================================================
+LEARNED PARAMETERS (Data-Driven, NO Hard-Coded Values)
+====================================================================================================
+
+Feature Weights (from Logistic Regression on Historical Success):
+  - combined_probability     : 0.6021 (60.2%)
+  - recency_at_draw          : 0.2158 (21.6%)
+  - hot_count                : 0.0910 (9.1%)
+  - medium_count             : 0.0656 (6.6%)
+  - cold_count               : 0.0254 (2.5%)
+
+Optimal Hot Counts by Scenario (from Historical Backtest):
+  - After Hot Surge: 4 hot numbers
+    When recent draws are hot-heavy, 4 hot numbers maximize success
+  - During Balanced Period: 4 hot numbers
+    During balanced periods, 4 hot numbers maximize success
+
+Recency Thresholds (from Percentile Analysis of Successful Patterns):
+  - HOT:    ≤ 2 draws ago (Success rate: 18.4%)
+  - MEDIUM: 2 to 7 draws ago (Success rate: 13.9%)
+  - COLD:   ≥ 7 draws ago (Success rate: 6.9%)
+
+====================================================================================================
+TOP RECOMMENDATIONS (Ranked by Data-Driven Score)
+====================================================================================================
+
+----------------------------------------------------------------------------------------------------
+RANK #1 - Total Score: 1912.9
+----------------------------------------------------------------------------------------------------
+
+Model                Pattern      Hot   Med   Cold  Probability  Recency             
+----------------------------------------------------------------------------------------------------
+Model 1 (Momentum)   4H-1M-1C     4     1     1     29.13      % 2 draws ago         
+Model 2 (Jackpot)    3H-1M-2C     3     1     2     32.53      % 0 draws ago         
+Model 3 (Complexity) 2H-2M-2C     2     2     2     25.98      % 0 draws ago         
+
+Ensemble Metrics:
+  - Total Coverage:    87.64%
+  - Diversity Score:   0.11
+  - Unique Patterns:   3/3
+
+Why This Configuration:
+  1. Model 1 (Momentum): 4H-1M-1C - 29.13% probability, last seen 2 draws ago
+  2. Model 2 (Jackpot): 3H-1M-2C - 32.53% probability, last seen 0 draws ago
+  3. Model 3 (Complexity): 2H-2M-2C - 25.98% probability, last seen 0 draws ago
+  4. Ensemble coverage: 87.64%
+  5. Diversity score: 0.11
+  6. Aligns with current hot_surge trend
+
+To Apply This Configuration:
+  Update lines 212-214: hot_count=4, medium_count=1, cold_count=1
+  Update lines 283-285: hot_count=3, medium_count=1, cold_count=2
+  Update lines 357-359: hot_count=2, medium_count=2, cold_count=2
+
+----------------------------------------------------------------------------------------------------
+RANK #2 - Total Score: 1912.89
+----------------------------------------------------------------------------------------------------
+
+Model                Pattern      Hot   Med   Cold  Probability  Recency             
+----------------------------------------------------------------------------------------------------
+Model 1 (Momentum)   3H-1M-2C     3     1     2     32.53      % 0 draws ago         
+Model 2 (Jackpot)    4H-1M-1C     4     1     1     29.13      % 2 draws ago         
+Model 3 (Complexity) 2H-2M-2C     2     2     2     25.98      % 0 draws ago         
+
+Ensemble Metrics:
+  - Total Coverage:    87.64%
+  - Diversity Score:   0.11
+  - Unique Patterns:   3/3
+
+Why This Configuration:
+  1. Model 1 (Momentum): 3H-1M-2C - 32.53% probability, last seen 0 draws ago
+  2. Model 2 (Jackpot): 4H-1M-1C - 29.13% probability, last seen 2 draws ago
+  3. Model 3 (Complexity): 2H-2M-2C - 25.98% probability, last seen 0 draws ago
+  4. Ensemble coverage: 87.64%
+  5. Diversity score: 0.11
+  6. Aligns with current hot_surge trend
+
+To Apply This Configuration:
+  Update lines 212-214: hot_count=3, medium_count=1, cold_count=2
+  Update lines 283-285: hot_count=4, medium_count=1, cold_count=1
+  Update lines 357-359: hot_count=2, medium_count=2, cold_count=2
+
+----------------------------------------------------------------------------------------------------
+RANK #3 - Total Score: 1912.82
+----------------------------------------------------------------------------------------------------
+
+Model                Pattern      Hot   Med   Cold  Probability  Recency             
+----------------------------------------------------------------------------------------------------
+Model 1 (Momentum)   2H-2M-2C     2     2     2     25.98      % 0 draws ago         
+Model 2 (Jackpot)    4H-1M-1C     4     1     1     29.13      % 2 draws ago         
+Model 3 (Complexity) 3H-1M-2C     3     1     2     32.53      % 0 draws ago         
+
+Ensemble Metrics:
+  - Total Coverage:    87.64%
+  - Diversity Score:   0.11
+  - Unique Patterns:   3/3
+
+Why This Configuration:
+  1. Model 1 (Momentum): 2H-2M-2C - 25.98% probability, last seen 0 draws ago
+  2. Model 2 (Jackpot): 4H-1M-1C - 29.13% probability, last seen 2 draws ago
+  3. Model 3 (Complexity): 3H-1M-2C - 32.53% probability, last seen 0 draws ago
+  4. Ensemble coverage: 87.64%
+  5. Diversity score: 0.11
+  6. Aligns with current hot_surge trend
+
+To Apply This Configuration:
+  Update lines 212-214: hot_count=2, medium_count=2, cold_count=2
+  Update lines 283-285: hot_count=4, medium_count=1, cold_count=1
+  Update lines 357-359: hot_count=3, medium_count=1, cold_count=2
+
+----------------------------------------------------------------------------------------------------
+RANK #4 - Total Score: 1912.78
+----------------------------------------------------------------------------------------------------
+
+Model                Pattern      Hot   Med   Cold  Probability  Recency             
+----------------------------------------------------------------------------------------------------
+Model 1 (Momentum)   2H-2M-2C     2     2     2     25.98      % 0 draws ago         
+Model 2 (Jackpot)    3H-1M-2C     3     1     2     32.53      % 0 draws ago         
+Model 3 (Complexity) 4H-1M-1C     4     1     1     29.13      % 2 draws ago         
+
+Ensemble Metrics:
+  - Total Coverage:    87.64%
+  - Diversity Score:   0.11
+  - Unique Patterns:   3/3
+
+Why This Configuration:
+  1. Model 1 (Momentum): 2H-2M-2C - 25.98% probability, last seen 0 draws ago
+  2. Model 2 (Jackpot): 3H-1M-2C - 32.53% probability, last seen 0 draws ago
+  3. Model 3 (Complexity): 4H-1M-1C - 29.13% probability, last seen 2 draws ago
+  4. Ensemble coverage: 87.64%
+  5. Diversity score: 0.11
+  6. Aligns with current hot_surge trend
+
+To Apply This Configuration:
+  Update lines 212-214: hot_count=2, medium_count=2, cold_count=2
+  Update lines 283-285: hot_count=3, medium_count=1, cold_count=2
+  Update lines 357-359: hot_count=4, medium_count=1, cold_count=1
+
+----------------------------------------------------------------------------------------------------
+RANK #5 - Total Score: 1912.67
+----------------------------------------------------------------------------------------------------
+
+Model                Pattern      Hot   Med   Cold  Probability  Recency             
+----------------------------------------------------------------------------------------------------
+Model 1 (Momentum)   4H-1M-1C     4     1     1     29.13      % 2 draws ago         
+Model 2 (Jackpot)    2H-2M-2C     2     2     2     25.98      % 0 draws ago         
+Model 3 (Complexity) 3H-1M-2C     3     1     2     32.53      % 0 draws ago         
+
+Ensemble Metrics:
+  - Total Coverage:    87.64%
+  - Diversity Score:   0.11
+  - Unique Patterns:   3/3
+
+Why This Configuration:
+  1. Model 1 (Momentum): 4H-1M-1C - 29.13% probability, last seen 2 draws ago
+  2. Model 2 (Jackpot): 2H-2M-2C - 25.98% probability, last seen 0 draws ago
+  3. Model 3 (Complexity): 3H-1M-2C - 32.53% probability, last seen 0 draws ago
+  4. Ensemble coverage: 87.64%
+  5. Diversity score: 0.11
+  6. Aligns with current hot_surge trend
+
+To Apply This Configuration:
+  Update lines 212-214: hot_count=4, medium_count=1, cold_count=1
+  Update lines 283-285: hot_count=2, medium_count=2, cold_count=2
+  Update lines 357-359: hot_count=3, medium_count=1, cold_count=2
+
+====================================================================================================
+HOW TO APPLY RECOMMENDATIONS
+====================================================================================================
+
+1. Review the top recommendations
+2. Choose a recommendation that aligns with your strategy
+3. Manually update ml_lotto/config.py:
+     - Line 212-214 for Model 1
+     - Line 283-285 for Model 2
+     - Line 357-359 for Model 3
+4. Run quickpick.py with updated configuration
+
+====================================================================================================
+QUICK COPY-PASTE (Top Recommendation)
+====================================================================================================
+
+# Copy these lines into ml_lotto/config.py:
+
+MODEL_1_CONFIG = {
+    'name': 'Momentum Specialist',
+    ...
+    'hot_count': 4,
+    'medium_count': 1,
+    'cold_count': 1,
+    ...
+}
+
+MODEL_2_CONFIG = {
+    'name': 'Jackpot Optimizer - 6-Ball Main Prize Specialist',
+    ...
+    'hot_count': 3,
+    'medium_count': 1,
+    'cold_count': 2,
+    ...
+}
+
+MODEL_3_CONFIG = {
+    'name': 'Complexity Explorer',
+    ...
+    'hot_count': 2,
+    'medium_count': 2,
+    'cold_count': 2,
+    ...
+}
+
+====================================================================================================
+END OF REPORT
+====================================================================================================

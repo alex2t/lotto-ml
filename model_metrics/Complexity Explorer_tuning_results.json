@@ -1,15 +1,15 @@
 {
   "model_name": "Complexity Explorer",
   "best_params": {
-    "classifier__estimator__learning_rate": 0.01,
-    "classifier__estimator__max_depth": 5,
-    "classifier__estimator__n_estimators": 50,
-    "classifier__estimator__scale_pos_weight": 1
+    "classifier__estimator__learning_rate": 0.1,
+    "classifier__estimator__max_depth": 3,
+    "classifier__estimator__n_estimators": 100,
+    "classifier__estimator__scale_pos_weight": 5
   },
-  "best_score": 0.5105461423393715,
+  "best_score": 0.5101657648218665,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 3.9520695209503174,
+  "elapsed_time": 7.650711297988892,
   "total_fits": 24
 }
