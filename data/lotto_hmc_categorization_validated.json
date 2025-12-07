@@ -12,35 +12,35 @@
     },
     "anova_test": {
         "significant": true,
-        "f_statistic": 61.36925511803134,
-        "p_value": 1.867104868938823e-13,
-        "eta_squared": 0.7361137511801783,
+        "f_statistic": 70.63972686142108,
+        "p_value": 1.835520029659994e-14,
+        "eta_squared": 0.7625208887661165,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
-                "count": 21,
-                "mean_days_since": 7.380952380952381,
-                "std_dev": 3.8791260675078667,
-                "median": 7.0,
-                "min": 3.0,
-                "max": 14.0
+                "count": 24,
+                "mean_days_since": 5.458333333333333,
+                "std_dev": 3.7297763852619865,
+                "median": 4.0,
+                "min": 1.0,
+                "max": 11.0
             },
             "medium": {
-                "count": 13,
-                "mean_days_since": 21.846153846153847,
-                "std_dev": 3.5554220060388952,
-                "median": 21.0,
-                "min": 18.0,
-                "max": 28.0
+                "count": 12,
+                "mean_days_since": 17.833333333333332,
+                "std_dev": 3.688639397672346,
+                "median": 16.5,
+                "min": 15.0,
+                "max": 26.0
             },
             "cold": {
-                "count": 13,
-                "mean_days_since": 48.76923076923077,
-                "std_dev": 19.331122773711506,
-                "median": 38.0,
-                "min": 31.0,
-                "max": 84.0
+                "count": 11,
+                "mean_days_since": 40.90909090909091,
+                "std_dev": 15.769936876567042,
+                "median": 36.0,
+                "min": 29.0,
+                "max": 78.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -49,62 +49,62 @@
         "bonferroni_corrected_alpha": 0.016666666666666666,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": -10.898397061203069,
-                "p_value": 2.651688811614145e-12,
+                "t_statistic": -9.417899584258985,
+                "p_value": 5.2957910740335824e-11,
                 "significant": true,
-                "mean_difference": -14.465201465201465
+                "mean_difference": -12.375
             },
             "hot_vs_cold": {
-                "t_statistic": -9.590504262351683,
-                "p_value": 6.242509929530431e-11,
+                "t_statistic": -10.556974717559143,
+                "p_value": 4.095085530438207e-12,
                 "significant": true,
-                "mean_difference": -41.38827838827839
+                "mean_difference": -35.45075757575757
             },
             "medium_vs_cold": {
-                "t_statistic": -4.938729927347828,
-                "p_value": 4.8554751259190846e-05,
+                "t_statistic": -4.933652257027608,
+                "p_value": 7.011404877304676e-05,
                 "significant": true,
-                "mean_difference": -26.92307692307692
+                "mean_difference": -23.075757575757574
             }
         },
         "all_significant": true
     },
     "category_distribution": {
-        "significant": false,
-        "chi2_stat": 2.723404255319149,
-        "p_value": 0.25622427913886375,
+        "significant": true,
+        "chi2_stat": 6.680851063829787,
+        "p_value": 0.035421881373082595,
         "category_counts": {
-            "hot": 21,
-            "medium": 13,
-            "cold": 13
+            "hot": 24,
+            "medium": 12,
+            "cold": 11
         },
         "category_percentages": {
-            "hot": 44.680851063829785,
-            "medium": 27.659574468085108,
-            "cold": 27.659574468085108
+            "hot": 51.06382978723404,
+            "medium": 25.53191489361702,
+            "cold": 23.404255319148938
         },
-        "interpretation": "Category sizes are balanced (approximately equal)"
+        "interpretation": "Category sizes are imbalanced (some over/under-represented)"
     },
     "threshold_validation": {
         "hot_medium_overlap": false,
         "medium_cold_overlap": false,
         "categories_distinct": true,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 10.0,
-            "medium_cold_cutoff": 24.0
+            "hot_medium_cutoff": 8.0,
+            "medium_cold_cutoff": 18.0
         },
         "current_ranges": {
             "hot": {
-                "min": 3.0,
-                "max": 14.0
+                "min": 1.0,
+                "max": 11.0
             },
             "medium": {
-                "min": 18.0,
-                "max": 28.0
+                "min": 15.0,
+                "max": 26.0
             },
             "cold": {
-                "min": 31.0,
-                "max": 84.0
+                "min": 29.0,
+                "max": 78.0
             }
         }
     },
