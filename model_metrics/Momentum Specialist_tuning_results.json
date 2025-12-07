@@ -2,13 +2,13 @@
   "model_name": "Momentum Specialist",
   "best_params": {
     "classifier__estimator__C": 10.0,
-    "classifier__estimator__class_weight": null,
+    "classifier__estimator__class_weight": "balanced",
     "classifier__estimator__max_iter": 1000
   },
-  "best_score": 0.5087353897556169,
+  "best_score": 0.5157617381341982,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 5.050410509109497,
+  "elapsed_time": 4.90625524520874,
   "total_fits": 6
 }

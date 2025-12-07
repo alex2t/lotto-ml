@@ -4,12 +4,12 @@
     "classifier__estimator__depth": 4,
     "classifier__estimator__iterations": 50,
     "classifier__estimator__learning_rate": 0.01,
-    "classifier__estimator__scale_pos_weight": 1
+    "classifier__estimator__scale_pos_weight": 3
   },
-  "best_score": 0.5145686410053174,
+  "best_score": 0.5130854958606924,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 24.151609182357788,
+  "elapsed_time": 19.06558895111084,
   "total_fits": 24
 }

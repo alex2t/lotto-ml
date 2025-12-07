@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2025-11-29 16:30:52
+LOTTERY PICKS - GENERATED 2025-12-07 21:13:14
 ======================================================================
 INTERACTION FEATURES EDITION V3.16
 Model 1: 6 main (ML-optimized with interactions) + 1 bonus
@@ -9,21 +9,21 @@ Model 4: Candidate pool generator (configurable pool size)
 ======================================================================
 
 Line 1: Momentum Specialist [4H-1M-1C+0G | C0=2, C1=4, C_GE_2=0]
-Main Numbers (6): [1, 5, 25, 26, 35, 38]
-Bonus Ball: 19
-Complete: [1, 5, 25, 26, 35, 38] + BONUS 19
+Main Numbers (6): [1, 5, 21, 25, 38, 42]
+Bonus Ball: 1
+Complete: [1, 5, 21, 25, 38, 42] + BONUS 1
 Description: Focus on recency and momentum - predicts hot/trending numbers across all 7 positions
 
 Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [3H-1M-2C+0G | C0=3, C1=3, C_GE_2=0]
-Main Numbers (6): [6, 11, 20, 39, 40, 42]
+Main Numbers (6): [4, 21, 24, 26, 39, 40]
 Bonus Ball: None (jackpot optimizer - main 6 only)
-Complete: [6, 11, 20, 39, 40, 42] (6 main only)
+Complete: [4, 21, 24, 26, 39, 40] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) - focuses on stability and long-term patterns
 
 Line 3: Complexity Explorer [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
-Main Numbers (6): [8, 9, 19, 21, 28, 47]
-Bonus Ball: 41
-Complete: [8, 9, 19, 21, 28, 47] + BONUS 41
+Main Numbers (6): [6, 8, 11, 19, 20, 30]
+Bonus Ball: 10
+Complete: [6, 8, 11, 19, 20, 30] + BONUS 10
 Description: XGBoost with ALL features - finds complex interaction patterns across all signals
 
 ======================================================================
@@ -31,54 +31,54 @@ MODEL 4: CANDIDATE POOL ANALYSIS
 ======================================================================
 Pool Configuration: 10H+5M+5C=20
 Total Candidates: 20
-Quality Score: 98/100
+Quality Score: 84/100
 
-Full Pool (ranked by probability): [35, 12, 13, 45, 1, 42, 32, 2, 5, 6, 25, 26, 19, 21, 38, 40, 8, 22, 27, 30]
+Full Pool (ranked by probability): [13, 35, 45, 12, 42, 1, 32, 8, 38, 5, 40, 27, 29, 30, 22, 39, 21, 25, 41, 43]
 
 HMC Category Breakdown:
-  #35  [hot   ]  prob=0.2982
-  #12  [hot   ]  prob=0.2747
-  #13  [hot   ]  prob=0.2747
-  #45  [hot   ]  prob=0.2747
-  # 1  [medium]  prob=0.2747
-  #42  [cold  ]  prob=0.2747
-  #32  [hot   ]  prob=0.2614
-  # 2  [hot   ]  prob=0.2358
-  # 5  [hot   ]  prob=0.2358
-  # 6  [hot   ]  prob=0.2358
-  #25  [hot   ]  prob=0.2358
-  #26  [hot   ]  prob=0.2358
-  #19  [cold  ]  prob=0.2358
-  #21  [cold  ]  prob=0.2358
-  #38  [cold  ]  prob=0.2358
-  #40  [cold  ]  prob=0.2358
-  # 8  [medium]  prob=0.2319
-  #22  [medium]  prob=0.2319
-  #27  [medium]  prob=0.2319
-  #30  [medium]  prob=0.2319
+  #13  [medium]  prob=0.2843
+  #35  [medium]  prob=0.2843
+  #45  [medium]  prob=0.2832
+  #12  [hot   ]  prob=0.2674
+  #42  [hot   ]  prob=0.2674
+  # 1  [cold  ]  prob=0.2646
+  #32  [medium]  prob=0.2565
+  # 8  [cold  ]  prob=0.2372
+  #38  [hot   ]  prob=0.2346
+  # 5  [medium]  prob=0.2346
+  #40  [cold  ]  prob=0.2340
+  #27  [hot   ]  prob=0.2339
+  #29  [hot   ]  prob=0.2339
+  #30  [hot   ]  prob=0.2339
+  #22  [cold  ]  prob=0.2339
+  #39  [cold  ]  prob=0.2339
+  #21  [hot   ]  prob=0.2323
+  #25  [hot   ]  prob=0.2316
+  #41  [hot   ]  prob=0.2303
+  #43  [hot   ]  prob=0.2303
 
 Freshness Distribution:
-  C0:  9 numbers ( 45.0%)
-  C1:  6 numbers ( 30.0%)
-  C2:  5 numbers ( 25.0%)
+  C0:  6 numbers ( 30.0%)
+  C1: 11 numbers ( 55.0%)
+  C2:  3 numbers ( 15.0%)
 
 ======================================================================
 BONUS BALL PREDICTIONS (Top 6)
 ======================================================================
-#1. Number 19:   2.6% probability [cold  ]
-#2. Number 42:   2.5% probability [cold  ]
-#3. Number 10:   2.5% probability [cold  ]
-#4. Number 41:   2.5% probability [medium]
-#5. Number 13:   2.5% probability [hot   ]
-#6. Number 17:   2.5% probability [medium]
+#1. Number  1:   2.6% probability [cold  ]
+#2. Number 13:   2.6% probability [medium]
+#3. Number 10:   2.6% probability [hot   ]
+#4. Number 38:   2.6% probability [hot   ]
+#5. Number 41:   2.5% probability [hot   ]
+#6. Number  2:   2.5% probability [medium]
 
 ======================================================================
 BONUS-TO-MAIN PREDICTIONS (Top 6)
 ======================================================================
-#1. Number 44:  16.2% probability [hot   ] (8.0 draws since bonus)
-#2. Number  6:  15.0% probability [hot   ] (2.0 draws since bonus)
-#3. Number  1:  14.6% probability [medium] (9.0 draws since bonus)
-#4. Number 45:  14.1% probability [hot   ] (1.0 draws since bonus)
-#5. Number 35:  14.1% probability [hot   ] (5.0 draws since bonus)
-#6. Number  8:  12.7% probability [medium] (7.0 draws since bonus)
+#1. Number 42:  20.9% probability [hot   ] (0.0 draws since bonus)
+#2. Number  6:  20.3% probability [medium] (5.0 draws since bonus)
+#3. Number 35:  15.4% probability [medium] (8.0 draws since bonus)
+#4. Number 45:  14.5% probability [medium] (4.0 draws since bonus)
+#5. Number 43:  13.8% probability [hot   ] (2.0 draws since bonus)
+#6. Number 46:  13.2% probability [medium] (9.0 draws since bonus)
 
