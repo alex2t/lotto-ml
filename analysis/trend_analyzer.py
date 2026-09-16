@@ -18,6 +18,10 @@ import numpy as np
 from collections import defaultdict, Counter
 from typing import Dict, List, Tuple
 from datetime import datetime
+import matplotlib
+# All figures are written to disk; an interactive backend is never needed and
+# the Tk one crashes at interpreter shutdown from a non-main thread.
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # Configuration

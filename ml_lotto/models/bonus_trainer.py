@@ -17,6 +17,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.pipeline import Pipeline
 from ml_lotto.features.extractor import expand_feature_selection
+from ml_lotto.features.walk_forward import build_walk_forward_bonus_dataset
 
 
 def build_bonus_training_dataset(
@@ -26,12 +27,8 @@ def build_bonus_training_dataset(
     training_end_draw: int = None
 ) -> pd.DataFrame:
     """
-    Build training dataset for bonus ball prediction with proper train/validation split.
-
-    For each historical draw:
-        For each number 1-47:
-            X (features) = unified bonus features (bonus-specific + main + interactions)
-            y (label) = 1 if number was bonus ball, 0 otherwise
+    Build training dataset for bonus ball prediction with point-in-time walk-forward features.
+    Eliminates future data lookahead bias.
 
     Args:
         all_draws: Historical draw data with bonus balls
@@ -46,31 +43,15 @@ def build_bonus_training_dataset(
         training_end_draw = len(all_draws)
 
     dataset_type = "training" if training_end_draw < len(all_draws) else "full"
-    print(f"\n  Building bonus {dataset_type} dataset...")
+    print(f"\n  Building bonus walk-forward {dataset_type} dataset...")
     print(f"    Draw range: {training_start_draw} to {training_end_draw-1} ({training_end_draw - training_start_draw} draws)")
-    records = []
 
-    # Dynamically get feature names from the actual data (supports unified features)
-    # This ensures we use ALL features available, including interactions
-    if bonus_features_dict:
-        sample_num = next(iter(bonus_features_dict.keys()))
-        feature_names = [k for k in bonus_features_dict[sample_num].keys()
-                        if k != 'category']  # Exclude 'category' as it's categorical (used for interactions)
-        print(f"    Features detected: {len(feature_names)}")
-    else:
-        raise ValueError("bonus_features_dict is empty")
-
-    for draw_idx in range(training_start_draw, training_end_draw):
-        bonus_number = all_draws[draw_idx].get('bonus_number')
-
-        for num in range(1, 48):
-            if num in bonus_features_dict:
-                feat = bonus_features_dict[num]
-                record = {fname: feat.get(fname, 0) for fname in feature_names}
-                record['is_bonus'] = 1 if num == bonus_number else 0
-                records.append(record)
-
-    train_df = pd.DataFrame(records)
+    train_df = build_walk_forward_bonus_dataset(
+        all_draws=all_draws,
+        bonus_features_dict=bonus_features_dict,
+        training_start_draw=training_start_draw,
+        training_end_draw=training_end_draw
+    )
     bonus_count = train_df['is_bonus'].sum()
     print(f"    Training records: {len(train_df)}")
     print(f"    Bonus ball occurrences: {bonus_count}")
@@ -141,16 +122,19 @@ def train_bonus_model(
     algo_params = bonus_model_config['algorithm_params'].copy()
     base_clf = LogisticRegression(**algo_params)
 
-    cal_params = bonus_model_config['calibration']
-    calibrated_clf = CalibratedClassifierCV(
-        estimator=base_clf,
-        method=cal_params['method'],
-        cv=cal_params['cv']
-    )
+    cal_params = bonus_model_config.get('calibration')
+    if cal_params and cal_params.get('method'):
+        clf = CalibratedClassifierCV(
+            estimator=base_clf,
+            method=cal_params['method'],
+            cv=cal_params['cv']
+        )
+    else:
+        clf = base_clf
 
     pipeline = Pipeline([
         ('scaler', StandardScaler()),
-        ('clf', calibrated_clf)
+        ('clf', clf)
     ])
 
     print(f"\n  Training bonus model...")

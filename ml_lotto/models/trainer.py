@@ -21,6 +21,7 @@ from imblearn.over_sampling import SMOTE
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW, VALIDATION_SPLIT_RATIO
 from ml_lotto.models.pipelines import create_model_pipeline
 from ml_lotto.features.extractor import expand_feature_selection, get_all_feature_names
+from ml_lotto.features.walk_forward import PointInTimeFeatureEngine, build_walk_forward_dataset
 from ml_lotto.features.feature_selection import select_features
 from ml_lotto.models.model_metrics import (
     calculate_comprehensive_metrics,
@@ -64,21 +65,13 @@ def build_training_dataset(
     end_index: int = None
 ) -> pd.DataFrame:
     """
-    Build training dataset by combining features and labels with proper train/validation split.
-
-    INPUT SOURCES:
-        all_draws (from lotto_draw_history.json) → LABELS (y = did number win?)
-        features_dict (from lotto_trigger_periods.json) → FEATURES (X = number statistics)
-
-    TRAINING PROCESS:
-        For each historical draw in specified range:
-            For each number 1-47:
-                X (features) ← [total_count, days_since_last, ..., days_since_bonus]
-                y (label)    ← 1 if number won that draw, 0 if not
+    Build training dataset using point-in-time walk-forward feature extraction.
+    Guarantees ZERO lookahead bias / data leakage by extracting features for draw t
+    strictly from draws 0 to t-1.
 
     Args:
         all_draws: Historical draw data with winning numbers
-        features_dict: Feature values for each number
+        features_dict: Feature values for each number (baseline/static values)
         all_feature_names: List of all available feature names
         exclude_bonus: If True, only main 6 numbers are labeled as hits (for Model 2)
         start_index: First draw index to include (default: TRAINING_START_DRAW)
@@ -91,42 +84,20 @@ def build_training_dataset(
         end_index = len(all_draws)
 
     dataset_type = "training" if end_index < len(all_draws) else "full"
-    print(f"\nBuilding {dataset_type} dataset (exclude_bonus={exclude_bonus})...")
+    print(f"\nBuilding walk-forward {dataset_type} dataset (exclude_bonus={exclude_bonus})...")
     print(f"  Draw range: {start_index} to {end_index-1} ({end_index - start_index} draws)")
-    records = []
 
-    # Build training data by combining FEATURES + LABELS
-    for draw_idx in range(start_index, end_index):
-        # CRITICAL CHANGE: Different labeling strategy based on exclude_bonus
-        if exclude_bonus:
-            # Model 2: ONLY the first 6 numbers (main balls, exclude bonus)
-            target_numbers = set(all_draws[draw_idx]['numbers'][:6])
-            if draw_idx == TRAINING_START_DRAW:
-                print("  Model 2: Training on MAIN 6 ONLY (excluding bonus ball)")
-        else:
-            # Models 1 & 3: All 7 numbers (including bonus)
-            target_numbers = set(all_draws[draw_idx]['numbers'])
-            if draw_idx == TRAINING_START_DRAW:
-                print("  Standard: Training on ALL 7 positions")
-
-        for num in range(1, MAX_NUMBER + 1):
-            if num in features_dict:
-                # FEATURES: Get statistics from JSON
-                feat = features_dict[num]
-                record = {}
-
-                # Add all features
-                for feature_name in all_feature_names:
-                    record[feature_name] = feat.get(feature_name, 0)
-
-                # LABEL: Did this number win in this draw?
-                record['hit'] = 1 if num in target_numbers else 0
-
-                records.append(record)
-
-    train_df = pd.DataFrame(records)
-    print(f"✓ Training dataset created: {len(train_df)} records")
+    train_df = build_walk_forward_dataset(
+        all_draws=all_draws,
+        features_dict=features_dict,
+        all_feature_names=all_feature_names,
+        exclude_bonus=exclude_bonus,
+        start_index=start_index,
+        end_index=end_index
+    )
+    print(f"✓ Dynamic walk-forward dataset created: {len(train_df)} records (zero future data leakage)")
     return train_df
+
 
 
 def analyze_feature_importance(
@@ -267,7 +238,7 @@ def train_model(
     model_index: int,
     exclude_bonus: bool = False,
     val_df: pd.DataFrame = None,
-    use_smote: bool = True,
+    use_smote: bool = False,
     smote_sampling_strategy: float = 0.3,
     enable_feature_selection: bool = True,
     correlation_threshold: float = 0.95,
@@ -287,7 +258,7 @@ def train_model(
         model_index: Model number (for display)
         exclude_bonus: If True, model is trained on main 6 only
         val_df: Optional validation DataFrame for evaluation
-        use_smote: Whether to apply SMOTE for handling class imbalance (default: True)
+        use_smote: Whether to apply SMOTE for handling class imbalance (default: False)
         smote_sampling_strategy: Target ratio of minority class after SMOTE (default: 0.3)
                                   0.3 means minority will be 30% of minority class size
         enable_feature_selection: Whether to apply feature selection (default: True)
@@ -302,6 +273,10 @@ def train_model(
         Tuple of (trained_pipeline, selected_features, feature_importance_data, metrics, tuning_results)
     """
     print(f"\n→ Model {model_index}: {model_config['name']}")
+
+    # Check if model config explicitly overrides use_smote
+    if 'use_smote' in model_config:
+        use_smote = model_config['use_smote']
     print(f"  Description: {model_config['description']}")
     print(f"  Algorithm: {model_config['algorithm']}")
 
@@ -564,52 +539,65 @@ def train_all_models(
     print(f"  Training draws: {train_size} ({train_size/total_available*100:.1f}%)")
     print(f"  Validation draws: {val_size} ({val_size/total_available*100:.1f}%)")
     print(f"  Split ratio: {VALIDATION_SPLIT_RATIO:.2f}")
-    print(f"  ✓ Validation set held out to prevent data leakage")
+    if val_size > 0:
+        print(f"  ✓ Chronological validation set held out ({val_size} draws) for model evaluation")
+    else:
+        print(f"  ℹ️  100% of data used for training (no validation set held out)")
 
     # Get all available feature names
     all_feature_names = get_all_feature_names(features_dict)
-    print(f"  Available features: {all_feature_names}\n")
+    print(f"  Available features: {len(all_feature_names)}")
 
-    # Build FOUR datasets: train/val for standard models and train/val for model2
+    # Only materialise columns some model actually selects. all_feature_names stays the
+    # full list because keyword expansion (PAIRWISE_INTERACTIONS, RECENT_ALL, ...) filters
+    # against it, but the training matrix does not need the rest.
+    dataset_features = sorted({
+        feature
+        for config in model_configs
+        for feature in expand_feature_selection(config['features'], all_feature_names)
+    })
+    unused = len(all_feature_names) - len(dataset_features)
+    print(f"  Selected by at least one model: {len(dataset_features)} ({unused} unused columns not built)")
+
+    # Build FOUR datasets using PointInTimeFeatureEngine (precomputes state once)
+    print("\nInitializing Point-in-Time Walk-Forward Feature Engine...")
+    engine = PointInTimeFeatureEngine(all_draws, features_dict)
+
     print("\n1. Building standard TRAINING dataset (Models 1, 3, 4)...")
-    train_df_standard = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=False,  # All 7 positions
+    train_df_standard = engine.build_main_dataset(
+        all_feature_names=dataset_features,
         start_index=TRAINING_START_DRAW,
-        end_index=train_end_idx
+        end_index=train_end_idx,
+        exclude_bonus=False  # All 7 positions
     )
+    print(f"  ✓ Standard training dataset created: {len(train_df_standard)} records")
 
     print("\n2. Building standard VALIDATION dataset (Models 1, 3, 4)...")
-    val_df_standard = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=False,  # All 7 positions
+    val_df_standard = engine.build_main_dataset(
+        all_feature_names=dataset_features,
         start_index=val_start_idx,
-        end_index=len(all_draws)
+        end_index=len(all_draws),
+        exclude_bonus=False  # All 7 positions
     )
+    print(f"  ✓ Standard validation dataset created: {len(val_df_standard)} records")
 
     print("\n3. Building specialized TRAINING dataset (Model 2)...")
-    train_df_model2 = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=True,  # Main 6 only ⭐
+    train_df_model2 = engine.build_main_dataset(
+        all_feature_names=dataset_features,
         start_index=TRAINING_START_DRAW,
-        end_index=train_end_idx
+        end_index=train_end_idx,
+        exclude_bonus=True  # Main 6 only ⭐
     )
+    print(f"  ✓ Model 2 training dataset created: {len(train_df_model2)} records")
 
     print("\n4. Building specialized VALIDATION dataset (Model 2)...")
-    val_df_model2 = build_training_dataset(
-        all_draws,
-        features_dict,
-        all_feature_names,
-        exclude_bonus=True,  # Main 6 only ⭐
+    val_df_model2 = engine.build_main_dataset(
+        all_feature_names=dataset_features,
         start_index=val_start_idx,
-        end_index=len(all_draws)
+        end_index=len(all_draws),
+        exclude_bonus=True  # Main 6 only ⭐
     )
+    print(f"  ✓ Model 2 validation dataset created: {len(val_df_model2)} records")
 
     # Train each model with proper train/validation split
     models = {}

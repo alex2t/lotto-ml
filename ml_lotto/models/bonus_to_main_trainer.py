@@ -12,6 +12,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.calibration import CalibratedClassifierCV
 from collections import defaultdict
 from ml_lotto.features.extractor import expand_feature_selection
+from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
 
 
 def train_bonus_to_main_model(
@@ -70,9 +71,13 @@ def train_bonus_to_main_model(
     if all_draws:
         print(f"  Sample draw keys: {list(all_draws[0].keys())}")
 
+    # Initialize engine for point-in-time features
+    engine = PointInTimeFeatureEngine(all_draws, bonus_to_main_features)
+
     # For each draw starting from training_start_draw
     for draw_idx in range(training_start_draw, training_end_draw):
         current_draw = all_draws[draw_idx]
+        feats_at_draw = engine.extract_features_at_draw(draw_idx)
 
         # Get numbers in recent bonus window for this draw
         # We need to look at previous draw's recent bonus list
@@ -101,11 +106,9 @@ def train_bonus_to_main_model(
         current_main_numbers = current_draw.get('numbers', [])
 
         for num in recent_bonus_numbers:
-            if num not in bonus_to_main_features:
+            base_features = feats_at_draw.get(num) or bonus_to_main_features.get(num, {})
+            if not base_features:
                 continue
-
-            # Get base features for this number
-            base_features = bonus_to_main_features[num]
 
             # Override window-specific features for this historical point
             draws_since_bonus = recent_bonus_positions.get(num, -1)
@@ -187,6 +190,7 @@ def train_bonus_to_main_model(
 
         for draw_idx in range(validation_start_draw, len(all_draws)):
             current_draw = all_draws[draw_idx]
+            feats_at_draw = engine.extract_features_at_draw(draw_idx)
 
             if draw_idx < 10:
                 continue
@@ -207,10 +211,9 @@ def train_bonus_to_main_model(
             current_main_numbers = current_draw.get('numbers', [])
 
             for num in recent_bonus_numbers:
-                if num not in bonus_to_main_features:
+                base_features = feats_at_draw.get(num) or bonus_to_main_features.get(num, {})
+                if not base_features:
                     continue
-
-                base_features = bonus_to_main_features[num]
                 draws_since_bonus = recent_bonus_positions.get(num, -1)
 
                 feature_vector = []

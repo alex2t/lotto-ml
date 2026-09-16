@@ -2,10 +2,21 @@
 """
 Configuration settings for lottery analysis
 
+VERSION: 3.16c (C-5: full-history constant features removed)
+- REMOVED from all four model feature lists: odd_even_json, range_spread_json,
+  sum_contribution_json, window_saturation_penalty, series_recent and the
+  LONG_TERM_PATTERN_WEIGHTS group (lt_category_alignment, lt_recency_weight).
+  Each was a per-number statistic estimated over the whole timeline - including the
+  validation window - so it leaked outcome information and carried no temporal signal.
+  Removing them left validation ranking unchanged (every delta < 2 SE) and cut the
+  Jackpot Optimizer's train/val AUC gap from 0.380 to 0.148. The odd/even, sum and
+  range constraints they were meant to express are enforced in prediction/filters.py,
+  which is where they belong. See issue.md.
+
 VERSION: 3.16b (ML-Optimized Model 1 with Interaction Features)
-- UPDATED: Model 1 now selects 5 numbers via ML (no pre-assignment)
-  * Removed pre-assigned bonus and bonus-to-main numbers
-  * Changed hot_count: 2, medium_count: 2, cold_count: 1 (total: 5 numbers)
+- UPDATED: Model 1 selects all 6 numbers via ML (no pre-assignment)
+  * Pre-assigned bonus and bonus-to-main numbers removed from line selection
+  * Configured hot_count: 4, medium_count: 1, cold_count: 1 (total: 6 numbers)
   * Optimized feature set: removed redundant features (total_count, recent_14, lt features)
   * Kept high-importance features: appearance_volatility (0.38), current_freshness_bin (0.32), etc.
 - NEW: Triple interactions added to Model 1
@@ -37,15 +48,13 @@ RANDOM_SEED_BASE = 42 # Base seed - fixed for deterministic results
 # This is what model configs will use
 _CURRENT_RANDOM_SEED = RANDOM_SEED_BASE
 
-TOTAL_DRAWS = 600
-TRAINING_DATA = 100
-NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA
+TOTAL_DRAWS = None         # Total number of draws to analyze (None = all available)
+TRAINING_DATA = 100        # Initial training window size for HMC analysis
+NUM_DRAWS = None           # Dynamically calculated from available draws
 TRAINING_START_DRAW = TRAINING_DATA
 
-# Train/Validation Split Configuration
-# For production: Use ALL data to capture latest lottery patterns
-# For development: Use 0.80 to prevent overfitting during model tuning
-VALIDATION_SPLIT_RATIO = 1.0  # 100% train - predictions update with each new draw
+# Train/Validation Split Configuration: Hold out latest 15% of historical draws for validation metrics
+VALIDATION_SPLIT_RATIO = 0.85
 
 DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
 HMC_JSON_INPUT = 'data/lotto_trigger_periods.json'
@@ -137,15 +146,11 @@ BONUS_MODEL_CONFIG = {
     'algorithm_params': {
         'penalty': 'l2',
         'C': 1.0,
-        'class_weight': 'balanced',
         'solver': 'liblinear',
         'max_iter': 1000,
         'random_state': 42  # Fixed for reproducibility - predictions change only when data changes
     },
-    'calibration': {
-        'method': 'sigmoid',
-        'cv': 5
-    }
+    'calibration': None
 }
 
 BONUS_TO_MAIN_MODEL_CONFIG = {
@@ -241,10 +246,6 @@ MODEL_1_CONFIG = {
         'appearance_volatility',        # Temporal consistency
 
         # CONSTRAINTS (ensure valid draws)
-        'odd_even_json',                # 80% of draws are 3 odd + 3 even
-        'window_saturation_penalty',    # Avoid over-saturated windows
-        'range_spread_json',            # Range distribution
-        'sum_contribution_json',        # Sum contribution
 
         'PAIRWISE_INTERACTIONS',       # Critical for logistic regression!
         'TRIPLE_INTERACTIONS',         # Category × freshness × timing patterns
@@ -258,13 +259,12 @@ MODEL_1_CONFIG = {
         'importance_threshold': 0.01     # More aggressive (remove features <1% importance)
     },
 
-    'diversity_penalty': 0.00,  # 30% penalty on previously selected numbers
+    'diversity_penalty': 0.30,  # 30% soft penalty on previously selected numbers
 
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
         'max_iter': 1000,
-        'class_weight': 'balanced',
         'random_state': 42,
         'C': 1.0
     },
@@ -291,12 +291,8 @@ MODEL_2_CONFIG = {
         'days_since_last',              # Time since appearance
 
         # LONG-TERM PATTERNS (STABILITY)
-        LONG_TERM_PATTERN_WEIGHTS,      # lt_category_alignment, lt_recency_weight, etc.
 
         # DISTRIBUTION FEATURES (STABILITY)
-        'sum_contribution_json',        # Sum stability (scipy validated)
-        'range_spread_json',            # Range stability (scipy validated)
-        'odd_even_json',                # Odd/even patterns
 
         # ADVANCED STABILITY
         'appearance_volatility',        # Consistency in frequency
@@ -318,7 +314,6 @@ MODEL_2_CONFIG = {
         'recent_14',                    # Longer window for stability
 
         # CONSTRAINTS
-        'window_saturation_penalty',    # Avoid over-saturated numbers
 
         # EXPLICITLY EXCLUDE BONUS FEATURES
         # ❌ NO 'was_recent_bonus' - not relevant for main 6 jackpot
@@ -332,13 +327,12 @@ MODEL_2_CONFIG = {
         # Let model handle all stability signals
     },
 
-    'diversity_penalty': 0.00,  # 40% penalty on previously selected numbers
+    'diversity_penalty': 0.40,  # 40% soft penalty on previously selected numbers
 
     'algorithm_params': {
         'n_estimators': 100,
         'max_depth': 10,
         'min_samples_split': 5,
-        'class_weight': 'balanced',
         'random_state': 42,
         'n_jobs': -1
     },
@@ -391,20 +385,14 @@ MODEL_3_CONFIG = {
 
         # ALL PATTERN FEATURES
         FRESHNESS_PATTERN_WEIGHTS,
-        LONG_TERM_PATTERN_WEIGHTS,
         ADVANCED_PATTERN_FEATURES,
 
         # ALL DISTRIBUTION FEATURES
-        'odd_even_json',
-        'sum_contribution_json',
-        'range_spread_json',
 
         # ALL SERIES/CONSECUTIVE
         'has_consecutive_partner',
-        'series_recent',
 
         # ALL CONSTRAINTS
-        'window_saturation_penalty',
         'freshness_weight_score',
 
         # Include everything available for maximum complexity detection
@@ -416,7 +404,7 @@ MODEL_3_CONFIG = {
         'enable': False,  # ⭐ Use ALL features - complexity needs interactions
     },
 
-    'diversity_penalty': 0.00,  # 35% penalty on previously selected numbers
+    'diversity_penalty': 0.35,  # 35% soft penalty on previously selected numbers
 
     'algorithm_params': {
         'n_estimators': 150,
@@ -458,10 +446,6 @@ MODEL_4_CONFIG = {
         'rolling_trend_10',             # #5 predictor (importance >0.10)
 
         # HIGH-CONFIDENCE INDICATORS ONLY
-        LONG_TERM_PATTERN_WEIGHTS,      # Statistically validated (scipy)
-        'sum_contribution_json',        # Statistically validated (scipy)
-        'range_spread_json',            # Statistically validated (scipy)
-        'odd_even_json',                # Statistically validated (scipy)
 
         # NO NOISY FEATURES (anything with importance < 0.02 excluded)
         # NO EXPERIMENTAL FEATURES
@@ -476,7 +460,7 @@ MODEL_4_CONFIG = {
         'importance_threshold': 0.02     # ⭐ VERY aggressive (only features >2% importance)
     },
 
-    'diversity_penalty': 0.00,  # 25% penalty (for pool generator)
+    'diversity_penalty': 0.25,  # 25% soft penalty (for pool generator)
 
     'algorithm_params': {
         'iterations': 100,

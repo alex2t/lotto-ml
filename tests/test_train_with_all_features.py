@@ -15,12 +15,19 @@ Tests:
 """
 
 import sys
+import os
+
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 import numpy as np
 import pandas as pd
 from typing import Dict, List, Any
 
 # Import training utilities
-sys.path.insert(0, '/home/user/lotto-ml')
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ml_lotto.features.rolling_stats import extract_rolling_features_for_all_numbers
 from ml_lotto.features.extractor import extract_features_from_hmc_json, get_all_feature_names
 from ml_lotto.features.base import get_dynamic_recent_keys
@@ -47,13 +54,14 @@ def create_mock_hmc_data():
     """Create mock HMC (Hot-Medium-Cold) data for testing."""
     hmc_data = {}
     for num in range(1, 48):
-        hmc_data[num] = {
+        hmc_data[str(num)] = {
+            'category': 'hot',
             'hot_count': np.random.randint(0, 10),
             'medium_count': np.random.randint(0, 10),
             'cold_count': np.random.randint(0, 10),
             'frequency': np.random.rand(),
             'recency': np.random.randint(1, 50),
-            'recent_20': np.random.randint(0, 5)
+            'recent': {'recent_4': np.random.randint(0, 2), 'recent_20': np.random.randint(0, 5)}
         }
     return hmc_data
 
@@ -82,11 +90,11 @@ def test_rolling_features_extraction():
 
     # Check expected rolling feature keys
     expected_keys = [
-        'rolling_mean_frequency', 'rolling_std_frequency',
-        'rolling_mean_gap', 'rolling_std_gap',
-        'rolling_momentum', 'rolling_acceleration',
-        'rolling_streak', 'rolling_volatility',
-        'rolling_trend'
+        'rolling_rate_10', 'rolling_trend_10',
+        'rolling_rate_20', 'rolling_trend_20',
+        'rolling_rate_50', 'rolling_trend_50',
+        'gap_variance', 'gap_cv',
+        'appearance_acceleration'
     ]
 
     for key in expected_keys:
@@ -105,20 +113,22 @@ def test_feature_extraction():
     # Create mock data
     hmc_data = create_mock_hmc_data()
     rolling_features = {num: {
-        'rolling_mean_frequency': np.random.rand(),
-        'rolling_std_frequency': np.random.rand(),
-        'rolling_mean_gap': np.random.rand(),
-        'rolling_std_gap': np.random.rand(),
-        'rolling_momentum': np.random.rand(),
-        'rolling_acceleration': np.random.rand(),
-        'rolling_streak': np.random.rand(),
-        'rolling_volatility': np.random.rand(),
-        'rolling_trend': np.random.rand()
+        'rolling_rate_10': np.random.rand(),
+        'rolling_trend_10': np.random.rand(),
+        'rolling_rate_20': np.random.rand(),
+        'rolling_trend_20': np.random.rand(),
+        'rolling_rate_50': np.random.rand(),
+        'rolling_trend_50': np.random.rand(),
+        'gap_variance': np.random.rand(),
+        'gap_cv': np.random.rand(),
+        'appearance_acceleration': np.random.rand()
     } for num in range(1, 48)}
 
-    dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
+    dynamic_recent_keys = [('recent_4', 'recent_4'), ('recent_20', 'recent_20')]
     days_since_bonus_data = {num: np.random.randint(1, 100) for num in range(1, 48)}
     pattern_score_data = {num: np.random.rand() for num in range(1, 48)}
+    consecutive_patterns = {'2_consecutive': {'all_pairs': {'1-2': 5}}}
+    consecutive_pairs_validated = {'number_pair_scores': {str(num): 0.5 for num in range(1, 48)}}
 
     # Extract all features
     features_dict = extract_features_from_hmc_json(
@@ -126,10 +136,12 @@ def test_feature_extraction():
         dynamic_recent_keys,
         days_since_bonus_data,
         pattern_score_data,
+        consecutive_patterns=consecutive_patterns,
+        consecutive_pairs_validated=consecutive_pairs_validated,
         rolling_stats_features=rolling_features
     )
 
-    all_feature_names = get_all_feature_names(hmc_data, dynamic_recent_keys)
+    all_feature_names = get_all_feature_names(features_dict)
 
     print(f"\n  Total numbers: {len(features_dict)}")
     print(f"  Total features: {len(all_feature_names)}")

@@ -19,6 +19,12 @@ Output:
 import json
 from pathlib import Path
 from collections import defaultdict
+from lotto_analysis.core.interaction_thresholds import recency_level, split_threshold
+
+# An interaction whose defining cell covers fewer records than this is noise: the win
+# rate has a standard error near 0.5/sqrt(n), and the feature almost never fires.
+MIN_QUADRANT_SAMPLES = 30
+MIN_QUADRANT_SHARE = 0.01
 from typing import Dict, List, Tuple, Any
 
 
@@ -39,13 +45,8 @@ def extract_features_from_draw(winning_details: List[Dict]) -> Dict[int, Dict[st
 
         # Extract available features
         features[num] = {
-            'total_count': detail.get('total_count', 0),
             'days_since_last': detail.get('days_since_last_hit', 0),
             'category': detail.get('category', 'unknown'),
-            'freshness_bin': detail.get('current_freshness_bin', 0),
-            'recent_4': detail.get('recent_counts', {}).get('last_4', 0),
-            'recent_9': detail.get('recent_counts', {}).get('last_9', 0),
-            'recent_14': detail.get('recent_counts', {}).get('last_14', 0),
             'is_bonus': detail.get('is_bonus', False),
             'bonus_hit_contribution': detail.get('bonus_hit_contribution', 0.0),
             'is_recent_bonus_hit': detail.get('is_recent_bonus_hit', False),
@@ -70,12 +71,32 @@ def build_feature_matrix(draw_history_log: Dict[str, Any]) -> List[Dict[str, Any
     # Sort draws by date
     sorted_draws = sorted(draw_history_log.items(), key=lambda x: x[0])
 
-    for date, draw_data in sorted_draws:
+    # Main 6 balls per draw, so the recent_* windows below are counted exactly the way
+    # drawpick.py, hmc_analyzer.py and ml_lotto/features/walk_forward.py count them.
+    # Mining thresholds on one convention and applying them to another mis-calibrates
+    # every interaction that uses a recent_* feature.
+    drawn_per_draw = [
+        {d['number'] for d in draw.get('winning_numbers_details', []) if not d.get('is_bonus')}
+        for _, draw in sorted_draws
+    ]
+
+    def window_count(draw_index: int, number: int, window: int) -> int:
+        start = max(0, draw_index - window)
+        return sum(1 for s in drawn_per_draw[start:draw_index] if number in s)
+
+    for draw_index, (date, draw_data) in enumerate(sorted_draws):
         winning_details = draw_data.get('winning_numbers_details', [])
         if len(winning_details) < 7:
             continue
 
         features_dict = extract_features_from_draw(winning_details)
+
+        # SCENARIOS windows 5/10/25 map to the recent_4/recent_9/recent_24 feature names
+        for num, feats in features_dict.items():
+            feats['recent_4'] = window_count(draw_index, num, 5)
+            feats['recent_9'] = window_count(draw_index, num, 10)
+            feats['recent_24'] = window_count(draw_index, num, 25)
+            feats['freshness_bin'] = min(feats['recent_4'], 2)
 
         # Get winners (first 6 are main, 7th is bonus)
         main_winners = set([winning_details[i]['number'] for i in range(min(6, len(winning_details)))])
@@ -109,8 +130,8 @@ def analyze_pairwise_interactions(records: List[Dict[str, Any]]) -> List[Dict[st
     Returns:
         List of interaction results sorted by strength
     """
-    numeric_features = ['total_count', 'days_since_last', 'recent_4', 'recent_9',
-                       'recent_14', 'freshness_bin', 'bonus_hit_contribution']
+    numeric_features = ['days_since_last', 'recent_4', 'recent_9',
+                       'recent_24', 'freshness_bin', 'bonus_hit_contribution']
 
     interactions = []
 
@@ -149,10 +170,13 @@ def analyze_feature_pair(records: List[Dict[str, Any]],
     values1 = [r['features'][feat1] for r in records]
     values2 = [r['features'][feat2] for r in records]
 
-    # Calculate 75th percentile as threshold (NOT median - median=0 for many features)
-    # 75th percentile ensures we split at a discriminative point
-    median1 = sorted(values1)[int(len(values1) * 0.75)]
-    median2 = sorted(values2)[int(len(values2) * 0.75)]
+    # A threshold at the floor of the distribution makes `value >= threshold` vacuously
+    # true, producing an interaction feature that is always 1. split_threshold walks up to
+    # the next distinct value in that case, and returns None for a constant feature.
+    threshold1 = split_threshold(values1)
+    threshold2 = split_threshold(values2)
+    if threshold1 is None or threshold2 is None:
+        return None
 
     # Count wins in each quadrant
     quadrants = {
@@ -166,12 +190,20 @@ def analyze_feature_pair(records: List[Dict[str, Any]],
         val1 = r['features'][feat1]
         val2 = r['features'][feat2]
 
-        level1 = 'high' if val1 >= median1 else 'low'
-        level2 = 'high' if val2 >= median2 else 'low'
+        level1 = 'high' if val1 >= threshold1 else 'low'
+        level2 = 'high' if val2 >= threshold2 else 'low'
 
         quadrants[(level1, level2)]['total'] += 1
         if r['is_main_winner']:  # Only count main winners
             quadrants[(level1, level2)]['wins'] += 1
+
+    # The high/high cell is what the emitted feature actually encodes. If it is empty or
+    # tiny the win rate cannot be estimated and the feature is ~always 0 in production.
+    # That happens when the two conditions are mutually exclusive - e.g. "not seen for 32+
+    # days" AND "seen in the last 5 draws" cannot both hold.
+    min_quadrant = max(MIN_QUADRANT_SAMPLES, int(len(records) * MIN_QUADRANT_SHARE))
+    if quadrants[('high', 'high')]['total'] < min_quadrant:
+        return None
 
     # Calculate win rates
     win_rates = {}
@@ -201,8 +233,8 @@ def analyze_feature_pair(records: List[Dict[str, Any]],
     return {
         'feature_1': feat1,
         'feature_2': feat2,
-        'median_1': round(median1, 2),  # Actually 75th percentile (kept key name for compatibility)
-        'median_2': round(median2, 2),  # Actually 75th percentile (kept key name for compatibility)
+        'threshold_1': round(threshold1, 2),
+        'threshold_2': round(threshold2, 2),
         'win_rate_high_high': round(win_rates[('high', 'high')], 4),
         'win_rate_high_low': round(win_rates[('high', 'low')], 4),
         'win_rate_low_high': round(win_rates[('low', 'high')], 4),
@@ -228,8 +260,8 @@ def analyze_threshold_effects(records: List[Dict[str, Any]]) -> Dict[str, List[D
     Returns:
         Dict mapping feature name to threshold analysis
     """
-    numeric_features = ['total_count', 'days_since_last', 'recent_4', 'recent_9',
-                       'recent_14', 'freshness_bin']
+    numeric_features = ['days_since_last', 'recent_4', 'recent_9',
+                       'recent_24', 'freshness_bin']
 
     threshold_effects = {}
 
@@ -316,12 +348,7 @@ def analyze_triple_interactions(records: List[Dict[str, Any]]) -> List[Dict[str,
 
         # Bin days_since_last into 3 levels
         days = r['features']['days_since_last']
-        if days <= 7:
-            recency = 'very_recent'
-        elif days <= 21:
-            recency = 'recent'
-        else:
-            recency = 'old'
+        recency = recency_level(days)
 
         key = (category, freshness, recency)
         combos[key]['total'] += 1
@@ -378,8 +405,8 @@ def generate_composite_features(interactions: List[Dict],
             recommendations.append({
                 'composite_name': f"{feat1}_x_{feat2}_interaction",
                 'type': 'pairwise_interaction',
-                'formula': f"(1 if {feat1} >= {interaction['median_1']} else 0) * "
-                          f"(1 if {feat2} >= {interaction['median_2']} else 0)",
+                'formula': f"(1 if {feat1} >= {interaction['threshold_1']} else 0) * "
+                          f"(1 if {feat2} >= {interaction['threshold_2']} else 0)",
                 'description': f"Binary interaction: both {feat1} and {feat2} are high",
                 'expected_win_rate_when_true': interaction['win_rate_high_high'],
                 'interaction_strength': interaction['interaction_strength'],

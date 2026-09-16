@@ -24,6 +24,10 @@ Includes:
 
 import numpy as np
 import pandas as pd
+import matplotlib
+# All figures are written to disk; an interactive backend is never needed and
+# the Tk one crashes at interpreter shutdown from a non-main thread.
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from typing import Dict, Any, Tuple, Optional
 from sklearn.metrics import (
@@ -43,7 +47,8 @@ from sklearn.calibration import calibration_curve
 def calculate_topk_accuracy(
     y_true: np.ndarray,
     y_proba: np.ndarray,
-    k_values: list = [7, 10, 15, 20]
+    k_values: list = [7, 10, 15, 20],
+    numbers_per_draw: int = 47
 ) -> Dict[str, float]:
     """
     Calculate Top-K accuracy: whether any of the top K predictions are actual winners.
@@ -60,24 +65,44 @@ def calculate_topk_accuracy(
         Dictionary with Top-K accuracy for each K value
     """
     topk_metrics = {}
+    y_true = np.asarray(y_true)
+    y_proba = np.asarray(y_proba)
 
-    # Get indices sorted by probability (highest first)
-    sorted_indices = np.argsort(y_proba)[::-1]
+    # Validation rows are built draw-major: `numbers_per_draw` consecutive rows per
+    # draw. Top-K is only meaningful WITHIN a draw, so reshape and average across
+    # draws rather than taking one global top-K over the flattened validation set.
+    n = len(y_true)
+    if numbers_per_draw and n % numbers_per_draw == 0 and n >= numbers_per_draw:
+        n_draws = n // numbers_per_draw
+        true_m = y_true.reshape(n_draws, numbers_per_draw)
+        proba_m = y_proba.reshape(n_draws, numbers_per_draw)
+    else:
+        n_draws = 1
+        true_m = y_true.reshape(1, -1)
+        proba_m = y_proba.reshape(1, -1)
+        numbers_per_draw = n
+
+    winners_per_draw = float(true_m.sum(axis=1).mean()) if n_draws else 0.0
 
     for k in k_values:
-        # Get top K predictions
-        top_k_indices = sorted_indices[:k]
+        k_eff = min(k, numbers_per_draw)
+        # Rank within each draw; stable sort makes ties deterministic
+        order = np.argsort(-proba_m, axis=1, kind='stable')[:, :k_eff]
+        caught = np.take_along_axis(true_m, order, axis=1).sum(axis=1)
 
-        # Check if any of top K are actual winners (y_true == 1)
-        hit = int(np.any(y_true[top_k_indices] == 1))
+        avg_caught = float(caught.mean())
+        hit_rate = float((caught > 0).mean())
 
-        # Count how many winners in top K
-        num_winners_in_topk = int(np.sum(y_true[top_k_indices]))
+        # Hypergeometric expectation for picking k_eff of numbers_per_draw
+        expected = k_eff * winners_per_draw / numbers_per_draw if numbers_per_draw else 0.0
 
-        topk_metrics[f'top{k}_hit'] = hit
-        topk_metrics[f'top{k}_winners'] = num_winners_in_topk
-        topk_metrics[f'top{k}_accuracy'] = num_winners_in_topk / min(k, len(y_true))
+        topk_metrics[f'top{k}_hit'] = hit_rate
+        topk_metrics[f'top{k}_winners'] = avg_caught
+        topk_metrics[f'top{k}_expected'] = expected
+        topk_metrics[f'top{k}_lift'] = (avg_caught / expected) if expected > 0 else 0.0
+        topk_metrics[f'top{k}_accuracy'] = avg_caught / k_eff if k_eff else 0.0
 
+    topk_metrics['topk_n_draws'] = n_draws
     return topk_metrics
 
 
@@ -199,7 +224,7 @@ def calculate_comprehensive_metrics(
     # Store default threshold metrics (for backwards compatibility)
     metrics['train_accuracy'] = train_accuracy_default
     metrics['val_accuracy'] = val_accuracy_default
-    metrics['overfitting_gap'] = train_accuracy_default - val_accuracy_default
+    metrics['overfitting_gap_accuracy'] = train_accuracy_default - val_accuracy_default
 
     # Store optimal threshold metrics
     metrics['train_accuracy_optimal'] = train_accuracy_optimal
@@ -225,6 +250,10 @@ def calculate_comprehensive_metrics(
 
     metrics['auc_train'] = auc_train
     metrics['auc_val'] = auc_val
+    # Overfitting measured on a ranking metric. The 0.5-threshold accuracy gap is
+    # meaningless here: no probability reaches 0.5, so both sides equal the
+    # all-negative rate and the difference is always exactly zero.
+    metrics['overfitting_gap_auc'] = auc_train - auc_val
 
     print(f"\n  🎯 AUC-ROC Scores:")
     print(f"     Train AUC: {auc_train:.4f}")
@@ -280,6 +309,11 @@ def calculate_comprehensive_metrics(
     metrics['f1_score'] = f1_val_default
     metrics['avg_precision'] = avg_precision_val
     metrics['pr_auc'] = avg_precision_val  # Alias for clarity
+    # PR-AUC must be read against the positive-class rate, not against 0.5.
+    # For this task the baseline is 7/47 (all positions) or 6/47 (main only).
+    pr_baseline = float(sum(y_val)) / len(y_val) if len(y_val) else 0.0
+    metrics['pr_auc_baseline'] = pr_baseline
+    metrics['pr_auc_lift'] = (avg_precision_val / pr_baseline) if pr_baseline > 0 else 0.0
 
     # Store optimal threshold metrics
     metrics['precision_optimal'] = precision_val_optimal
@@ -315,26 +349,28 @@ def calculate_comprehensive_metrics(
     # ========================================
     # 4.5. TOP-K ACCURACY (LOTTERY-SPECIFIC) ⭐
     # ========================================
-    print(f"\n  🎰 Top-K Accuracy (Lottery-Specific Metric):")
+    print(f"\n  🎰 Top-K Accuracy (per draw, averaged over the validation period):")
     topk_metrics = calculate_topk_accuracy(y_val, val_proba, k_values=[7, 10, 15, 20])
 
     # Store in main metrics dict
     metrics.update(topk_metrics)
 
-    print(f"     {'K':<8} {'Hit?':<10} {'Winners':<12} {'Accuracy':<12}")
-    print(f"     {'-'*42}")
+    n_draws = topk_metrics.get('topk_n_draws', 1)
+    print(f"     Validation draws: {n_draws}")
+    print(f"     {'K':<8} {'HitRate':<10} {'AvgCaught':<12} {'Expected':<12} {'Lift':<8}")
+    print(f"     {'-'*52}")
     for k in [7, 10, 15, 20]:
-        hit = topk_metrics[f'top{k}_hit']
-        winners = topk_metrics[f'top{k}_winners']
-        acc = topk_metrics[f'top{k}_accuracy']
-        hit_str = "✅ Yes" if hit else "❌ No"
-        print(f"     Top-{k:<3} {hit_str:<10} {winners:<12} {acc*100:>6.2f}%")
+        print(f"     Top-{k:<3} "
+              f"{topk_metrics[f'top{k}_hit']*100:>6.1f}%   "
+              f"{topk_metrics[f'top{k}_winners']:<12.3f} "
+              f"{topk_metrics[f'top{k}_expected']:<12.3f} "
+              f"{topk_metrics[f'top{k}_lift']:<8.3f}")
 
     print(f"\n  💡 Top-K Interpretation:")
-    print(f"     Hit?:     Did we catch at least 1 winner in top K predictions?")
-    print(f"     Winners:  How many winners did we catch in top K?")
-    print(f"     Accuracy: Winners caught / K (lottery success rate)")
-    print(f"     🎯 For lottery: Top-7 is most relevant (pick 7 numbers)")
+    print(f"     HitRate:   Share of draws with at least 1 winner in the top K")
+    print(f"     AvgCaught: Mean winners caught in top K, per draw")
+    print(f"     Expected:  Hypergeometric expectation if picks were random")
+    print(f"     Lift:      AvgCaught / Expected. 1.00 means no skill.")
 
     # Precision-Recall curve
     precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_val, val_proba)
@@ -505,10 +541,15 @@ def compare_models(
             'Precision': metrics.get('precision_optimal', metrics.get('precision', 0)),
             'Recall': metrics.get('recall_optimal', metrics.get('recall', 0)),
             'F1-Score': metrics.get('f1_score_optimal', metrics.get('f1_score', 0)),
-            'Top-7 Winners': metrics.get('top7_winners', 0),
-            'Top-7 Accuracy': metrics.get('top7_accuracy', 0),
+            'PR-AUC Baseline': metrics.get('pr_auc_baseline', 0),
+            'PR-AUC Lift': metrics.get('pr_auc_lift', 0),
+            'Top-7 AvgCaught': metrics.get('top7_winners', 0),
+            'Top-7 Expected': metrics.get('top7_expected', 0),
+            'Top-7 Lift': metrics.get('top7_lift', 0),
+            'Top-7 HitRate': metrics.get('top7_hit', 0),
+            'Val Draws': metrics.get('topk_n_draws', 0),
             'Calibration Error': metrics.get('calibration_error', 0),
-            'Overfit Gap': metrics.get('overfitting_gap', 0),
+            'Overfit Gap (AUC)': metrics.get('overfitting_gap_auc', 0),
             'Optimal Threshold': metrics.get('optimal_threshold', 0.5)
         })
 
