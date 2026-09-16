@@ -83,22 +83,35 @@ def get_top_pattern_from_draws(
     return normalized_weights
 
 
-def analyze_7_number_freshness(draw_history_log: dict, target_window: int, c_max_threshold: int) -> Tuple[Dict[str, int], int]:
+def analyze_freshness_distribution(
+    draw_history_log: dict,
+    target_window: int,
+    c_max_threshold: int,
+    main_only: bool = False
+) -> Tuple[Dict[str, int], int]:
     """
-    Analyzes the full distribution of recent hit counts (0, 1, ..., C_max) 
-    among the 7 winning numbers for a specific window.
+    Analyze the distribution of recent hit counts (0, 1, ..., C_max) among the
+    winning numbers of each draw.
+
+    Args:
+        main_only: If True, count only the 6 main balls and require 6 per draw.
+                   If False, count all 7 drawn balls.
+
+    A ticket is 6 main numbers, so the selection layer needs the main-only
+    distribution; the 7-number one is what the dashboard reports.
     """
-    
+
     recent_key = f"last_{target_window - 1}"
-    
+    expected_per_draw = 6 if main_only else 7
+
     analysis_draws = draw_history_log.values()
     total_draws_analyzed = len(analysis_draws)
-    
+
     distribution_counts = defaultdict(int)
-    
+
     # Dynamically determine the number of bins: C=0 to C=C_max (inclusive)
     num_bins = c_max_threshold + 1
-    
+
     for draw in analysis_draws:
         winning_numbers_details = draw.get('winning_numbers_details', [])
         
@@ -108,8 +121,10 @@ def analyze_7_number_freshness(draw_history_log: dict, target_window: int, c_max
         # Initialize counts array dynamically
         counts = [0] * num_bins
         
-        # Iterate over all 7 winning numbers details
         for winner in winning_numbers_details:
+            if main_only and winner.get('is_bonus'):
+                continue
+
             recent_count = winner['recent_counts'].get(recent_key, -1)
             
             if recent_count < 0:
@@ -122,7 +137,7 @@ def analyze_7_number_freshness(draw_history_log: dict, target_window: int, c_max
                 # Assign to the final C>=X bin (Index C_max)
                 counts[c_max_threshold] += 1
         
-        if sum(counts) == 7:
+        if sum(counts) == expected_per_draw:
             # Dynamically build the distribution key string
             key_parts = []
             for i in range(c_max_threshold):
@@ -137,42 +152,68 @@ def analyze_7_number_freshness(draw_history_log: dict, target_window: int, c_max
     return dict(distribution_counts), total_draws_analyzed
 
 
-def format_freshness_output(counts: Dict[str, int], total_draws: int, target_window: int, c_max_threshold: int) -> Dict:
-    """Formats the final output structure and calculates percentages."""
+def analyze_7_number_freshness(draw_history_log: dict, target_window: int, c_max_threshold: int) -> Tuple[Dict[str, int], int]:
+    """Distribution across all 7 drawn balls."""
+    return analyze_freshness_distribution(draw_history_log, target_window, c_max_threshold,
+                                          main_only=False)
+
+
+def analyze_6_main_freshness(draw_history_log: dict, target_window: int, c_max_threshold: int) -> Tuple[Dict[str, int], int]:
+    """Distribution across the 6 main balls only - the target a generated line must hit."""
+    return analyze_freshness_distribution(draw_history_log, target_window, c_max_threshold,
+                                          main_only=True)
+
+
+def build_distribution_list(counts: Dict[str, int], total_draws: int, c_max_threshold: int) -> list:
+    """Sort patterns by frequency and expand each into its per-bin counts."""
     distribution_list = []
-    recent_key = f"last_{target_window - 1}"
-    
+
     # Sort the patterns by count (descending)
     sorted_counts = sorted(counts.items(), key=lambda item: item[1], reverse=True)
-    
-    # Dynamically create the list of expected C-values for output
-    c_keys = [f"C{i}" for i in range(c_max_threshold)] + [f"C_GE_{c_max_threshold}"]
-    
+
     for key, count in sorted_counts:
         percentage = round((count / total_draws) * 100, 2) if total_draws > 0 else 0.0
-        
+
         # Extract C values using the corrected key names
         c_values = {}
         parts = key.split(', ')
         for part in parts:
             label, _, value = part.partition('=')
             c_values[label] = int(value)
-        
+
         output_entry = {
             "pattern": key,
             "draws_matched": count,
             "percentage": percentage
         }
-        
+
         # Insert dynamic C-values into the output_entry
         for i in range(c_max_threshold):
             k = f"C{i}"
             output_entry[k] = c_values.get(k, 0)
-        
+
         final_k = f"C_GE_{c_max_threshold}"
         output_entry[final_k] = c_values.get(final_k, 0)
-        
+
         distribution_list.append(output_entry)
+
+    return distribution_list
+
+
+def format_freshness_output(counts: Dict[str, int], total_draws: int, target_window: int,
+                            c_max_threshold: int, main_counts: Dict[str, int] = None) -> Dict:
+    """
+    Formats the final output structure and calculates percentages.
+
+    Args:
+        counts: Distribution across all 7 drawn balls (reported by the dashboard).
+        main_counts: Distribution across the 6 main balls. This is what the selection
+                     layer targets, because a generated line is 6 main numbers.
+    """
+    recent_key = f"last_{target_window - 1}"
+    distribution_list = build_distribution_list(counts, total_draws, c_max_threshold)
+    main_distribution_list = (build_distribution_list(main_counts, total_draws, c_max_threshold)
+                              if main_counts else [])
 
     # ============ Calculate normalized weights from top pattern ============
     top_pattern = distribution_list[0] if distribution_list else None
@@ -215,5 +256,6 @@ def format_freshness_output(counts: Dict[str, int], total_draws: int, target_win
         "recent_count_key": recent_key,
         "total_draws_analyzed": total_draws,
         "distribution_analysis_7_numbers": distribution_list,
+        "distribution_analysis_6_main": main_distribution_list,
         "freshness_weight_calculation": freshness_weight_calculation
     }

@@ -26,6 +26,7 @@ TEST_FILES = [
     'tests/test_selection_invariants.py',
     'tests/test_metrics.py',
     'tests/test_no_constant_features.py',
+    'tests/test_freshness_target.py',
 ]
 
 # Validation window: 60 draws, 47 numbers, 7 winners per draw

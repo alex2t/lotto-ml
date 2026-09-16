@@ -133,8 +133,8 @@ def generate_all_picks(
         else:
             pattern_display_parts.append(f"C>= {i}={target_pattern[i]}")
     
-    print(f"\n✓ Target Freshness Pattern (for 7 numbers): {', '.join(pattern_display_parts)}")
-    print(f"  NOTE: Each model picks 6 main numbers (adjusted proportionally from 7-number pattern)")
+    print(f"\n✓ Target Freshness Pattern (6 main numbers): {', '.join(pattern_display_parts)}")
+    print(f"  Source: observed freshness split of the 6 main balls (distribution_analysis_6_main)")
     
     number_categories = categorize_numbers_by_freshness(features_dict)
     

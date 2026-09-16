@@ -26,12 +26,13 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Only these four files are real tests (37 of them, ~6s). Everything else in `tests/` is a legacy
+Only these five files are real tests (46 of them, ~8s). Everything else in `tests/` is a legacy
 print-script that runs model training at import — **do not run `pytest tests/` bare.**
 
 ```bash
 python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py \
-                 tests/test_metrics.py tests/test_no_constant_features.py -q
+                 tests/test_metrics.py tests/test_no_constant_features.py \
+                 tests/test_freshness_target.py -q
 
 python -m pytest tests/test_walk_forward_parity.py::test_total_count_matches_serving_json -q   # single test
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"                # by pattern
