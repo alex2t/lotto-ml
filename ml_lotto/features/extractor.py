@@ -87,7 +87,15 @@ def extract_features_from_hmc_json(
         Dictionary mapping number (1-47) -> feature dictionary
     """
     features = {}
-    current_timestamp = pd.Timestamp.now()
+    # Determine reference timestamp from latest draw date in hmc_data (reproducible & wall-clock independent)
+    ref_dates = []
+    for k, v in hmc_data.items():
+        if isinstance(v, dict) and 'last_seen' in v:
+            try:
+                ref_dates.append(pd.to_datetime(v['last_seen'].replace('/', '-')))
+            except Exception:
+                pass
+    current_timestamp = max(ref_dates) if ref_dates else pd.Timestamp.now()
     ml_feature_names = [ml_key for data_key, ml_key in dynamic_recent_keys]
 
     if freshness_features is None:
@@ -468,6 +476,6 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
             else:
                 if item in all_features:
                     expanded.append(item)
-        return list(set(expanded))
+        return sorted(set(expanded))
 
     return []
