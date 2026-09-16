@@ -4,12 +4,12 @@
     "classifier__estimator__class_weight": "balanced_subsample",
     "classifier__estimator__max_depth": 10,
     "classifier__estimator__min_samples_split": 5,
-    "classifier__estimator__n_estimators": 50
+    "classifier__estimator__n_estimators": 100
   },
-  "best_score": 0.5093548196660933,
+  "best_score": 0.5103156467705076,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 14.53992509841919,
+  "elapsed_time": 38.989914894104004,
   "total_fits": 24
 }
