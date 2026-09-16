@@ -3,9 +3,9 @@ Configuration settings for lottery analysis
 """
 
 # =============== ANALYSIS CONFIGURATION ===============
-TOTAL_DRAWS = 600          # Total number of draws to analyze
+TOTAL_DRAWS = None         # Total number of draws to analyze (None = analyze all available)
 TRAINING_DATA = 100        # Initial training window size for HMC analysis
-NUM_DRAWS = TOTAL_DRAWS - TRAINING_DATA  # Draws used for pattern analysis
+NUM_DRAWS = None           # Dynamically calculated from available draws (len - TRAINING_DATA)
 
 # Train/Validation Split Configuration (matches ml_lotto/config.py)
 # For production: Use ALL data to capture latest lottery patterns

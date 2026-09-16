@@ -7,7 +7,7 @@ These features capture temporal patterns and trends over different time windows.
 """
 
 import numpy as np
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from collections import defaultdict
 
 
@@ -38,7 +38,8 @@ def calculate_rolling_statistics(
 
     for idx in range(current_draw_idx):
         draw = all_draws[idx]
-        if number in draw['numbers']:
+        draw_nums = draw.get('numbers') or draw.get('winning_numbers', [])
+        if number in draw_nums:
             appearances.append(idx)
             if last_appearance_idx is not None:
                 gaps.append(idx - last_appearance_idx)
@@ -120,15 +121,17 @@ def calculate_rolling_statistics(
 
 def extract_rolling_features_for_all_numbers(
     all_draws: List[Dict[str, Any]],
-    training_start_draw: int = 100,
+    current_draw_idx: Optional[int] = None,
+    training_start_draw: Optional[int] = None,
     max_number: int = 47
 ) -> Dict[int, Dict[str, float]]:
     """
-    Extract rolling statistics features for all numbers.
+    Extract rolling statistics features for all numbers at a specific draw index.
 
     Args:
         all_draws: List of all historical draws
-        training_start_draw: Index where training starts
+        current_draw_idx: Point-in-time draw index to calculate features up to (defaults to len(all_draws))
+        training_start_draw: Deprecated parameter kept for backwards compatibility
         max_number: Maximum lottery number (default: 47)
 
     Returns:
@@ -136,17 +139,21 @@ def extract_rolling_features_for_all_numbers(
     """
     print(f"  Calculating rolling statistics features...")
 
+    eval_idx = current_draw_idx if current_draw_idx is not None else (
+        training_start_draw if training_start_draw is not None else len(all_draws)
+    )
+
     rolling_features = {}
 
-    # Calculate features for each number at the training start point
+    # Calculate features for each number up to eval_idx
     for num in range(1, max_number + 1):
         rolling_features[num] = calculate_rolling_statistics(
             all_draws,
             num,
-            current_draw_idx=training_start_draw,
+            current_draw_idx=eval_idx,
             windows=[10, 20, 50]
         )
 
-    print(f"  ✓ Rolling statistics calculated for {len(rolling_features)} numbers")
+    print(f"  ✓ Rolling statistics calculated for {len(rolling_features)} numbers at draw index {eval_idx}")
 
     return rolling_features

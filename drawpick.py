@@ -4,6 +4,10 @@ Lottery Analysis - Main Entry Point
 Orchestrates all analysis phases and generates output files
 """
 
+import sys
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -100,7 +104,7 @@ def main():
         return
     
     print(f"\nLoaded {len(all_draws)} draws "
-          f"(requested: {TOTAL_DRAWS}, skipped: {skipped_rows})")
+          f"(available: {available_draws}, requested: {TOTAL_DRAWS if TOTAL_DRAWS else 'ALL'}, skipped: {skipped_rows})")
     
     # ===== HMC ANALYSIS (Phase 1 & 2) =====
     print("\n" + "=" * 70)
@@ -113,11 +117,11 @@ def main():
     total_hmc_draws = len(categorization_history)
     
     # ===== PATTERN ANALYSIS =====
-    print("\n" + "=" * 70)
-    print(f"Phase 3: Pattern Analysis ({NUM_DRAWS} draws)")
-    print("=" * 70)
-    
     pattern_draws = all_draws[TRAINING_DATA:]
+    num_pattern_draws = len(pattern_draws)
+    print("\n" + "=" * 70)
+    print(f"Phase 3: Pattern Analysis ({num_pattern_draws} draws)")
+    print("=" * 70)
     (assigned_matches_by_number, assigned_windows_by_category, 
      total_windows_by_size) = process_pattern_analysis(pattern_draws)
     
@@ -207,11 +211,15 @@ def main():
     print(f"✓ Completed per-number bonus profiles for {MAX_NUMBER} numbers")
 
     # ===== BUILD SUPPORTING DATA (for lotto_trigger_periods.json) =====
+    # Counted over pattern_draws, NOT all_draws. The ML training matrix is built from
+    # lotto_draw_history.json, which starts at TRAINING_DATA, so counting total_count
+    # over the full CSV made the served value systematically larger than anything the
+    # model saw in training. Matches how the recent_* windows are already counted.
     total_counts_by_number = defaultdict(int)
     last_seen_by_number = {}
     
     for num in range(1, MAX_NUMBER + 1):
-        for draw in all_draws:
+        for draw in pattern_draws:
             if num in draw["numbers"]:
                 total_counts_by_number[num] += 1
                 last_seen_by_number[num] = draw["date"]
@@ -245,7 +253,7 @@ def main():
         
     # Build lotto_odds_results
     final_main = {
-        "requested_draws": NUM_DRAWS,
+        "requested_draws": NUM_DRAWS if NUM_DRAWS else num_pattern_draws,
         "pattern_analysis_draws": len(pattern_draws),
         "hmc_analysis_draws": total_hmc_draws,
         "hmc_training_draws": TRAINING_DATA,
@@ -291,7 +299,11 @@ def main():
             recent_draws = (pattern_draws[-window_size:] if len(pattern_draws) >= window_size 
                           else pattern_draws)
                           
-            count = sum(1 for draw in recent_draws if num in draw["numbers"])
+            # Main 6 only, matching hmc_analyzer's recent_counts. A number's bonus
+            # appearances are carried separately by was_recent_bonus / draws_since_bonus;
+            # counting them here too would double-count the bonus signal and would put
+            # this file in a different space from lotto_draw_history.json.
+            count = sum(1 for draw in recent_draws if num in draw["numbers"][:6])
             recent_data[param_name] = count
             
         series_data = {}

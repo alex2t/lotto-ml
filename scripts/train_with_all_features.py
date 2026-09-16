@@ -80,7 +80,7 @@ def main():
     print("\n📊 Extracting rolling statistics features...")
     rolling_stats_features = extract_rolling_features_for_all_numbers(
         all_draws,
-        training_start_draw=TRAINING_START_DRAW,
+        current_draw_idx=len(all_draws),
         max_number=MAX_NUMBER
     )
 

@@ -1,447 +1,320 @@
 {
   "metadata": {
     "analysis_type": "feature_interaction_exploration",
-    "total_draws": 415,
-    "total_records": 2905,
-    "total_pairwise_interactions": 21,
-    "total_triple_interactions": 10,
-    "total_composite_features": 10
+    "total_draws": 497,
+    "total_records": 3479,
+    "total_pairwise_interactions": 11,
+    "total_triple_interactions": 11,
+    "total_composite_features": 1
   },
   "pairwise_interactions": [
     {
-      "feature_1": "total_count",
-      "feature_2": "recent_14",
-      "median_1": 0,
-      "median_2": 0,
-      "win_rate_high_high": 0.8571,
+      "feature_1": "recent_4",
+      "feature_2": "freshness_bin",
+      "threshold_1": 1,
+      "threshold_2": 1,
+      "win_rate_high_high": 0.8577,
       "win_rate_high_low": 0,
       "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 3.0,
+      "win_rate_low_low": 0.8566,
+      "interaction_strength": 1.0013,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 2905,
+        "high_high": 1701,
         "high_low": 0,
         "low_high": 0,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "total_count",
-      "feature_2": "bonus_hit_contribution",
-      "median_1": 0,
-      "median_2": 0.0,
-      "win_rate_high_high": 0.8571,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 3.0,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 2905,
-        "high_low": 0,
-        "low_high": 0,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "recent_14",
-      "feature_2": "bonus_hit_contribution",
-      "median_1": 0,
-      "median_2": 0.0,
-      "win_rate_high_high": 0.8571,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 3.0,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 2905,
-        "high_low": 0,
-        "low_high": 0,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "total_count",
-      "feature_2": "recent_9",
-      "median_1": 0,
-      "median_2": 2,
-      "win_rate_high_high": 0.8696,
-      "win_rate_high_low": 0.8499,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0229,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 1066,
-        "high_low": 1839,
-        "low_high": 0,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "recent_9",
-      "feature_2": "recent_14",
-      "median_1": 2,
-      "median_2": 0,
-      "win_rate_high_high": 0.8696,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8499,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0229,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 1066,
-        "high_low": 0,
-        "low_high": 1839,
-        "low_low": 0
+        "low_low": 1778
       }
     },
     {
       "feature_1": "recent_9",
       "feature_2": "bonus_hit_contribution",
-      "median_1": 2,
-      "median_2": 0.0,
-      "win_rate_high_high": 0.8696,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8499,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0229,
-      "interaction_type": "synergistic",
+      "threshold_1": 2,
+      "threshold_2": 1.0,
+      "win_rate_high_high": 0.9024,
+      "win_rate_high_low": 0.8599,
+      "win_rate_low_high": 0.8493,
+      "win_rate_low_low": 0.8524,
+      "interaction_strength": 0.0421,
+      "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 1066,
-        "high_low": 0,
-        "low_high": 1839,
-        "low_low": 0
+        "high_high": 205,
+        "high_low": 1042,
+        "low_high": 471,
+        "low_low": 1761
       }
     },
     {
-      "feature_1": "total_count",
-      "feature_2": "recent_4",
-      "median_1": 0,
-      "median_2": 1,
-      "win_rate_high_high": 0.8634,
-      "win_rate_high_low": 0.851,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic",
+      "feature_1": "days_since_last",
+      "feature_2": "recent_24",
+      "threshold_1": 32,
+      "threshold_2": 4,
+      "win_rate_high_high": 0.8235,
+      "win_rate_high_low": 0.8568,
+      "win_rate_low_high": 0.8494,
+      "win_rate_low_low": 0.8671,
+      "interaction_strength": 0.0302,
+      "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 1428,
-        "high_low": 1477,
-        "low_high": 0,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "total_count",
-      "feature_2": "freshness_bin",
-      "median_1": 0,
-      "median_2": 1,
-      "win_rate_high_high": 0.8634,
-      "win_rate_high_low": 0.851,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 1428,
-        "high_low": 1477,
-        "low_high": 0,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "recent_4",
-      "feature_2": "recent_14",
-      "median_1": 1,
-      "median_2": 0,
-      "win_rate_high_high": 0.8634,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0.851,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 1428,
-        "high_low": 0,
-        "low_high": 1477,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "recent_4",
-      "feature_2": "freshness_bin",
-      "median_1": 1,
-      "median_2": 1,
-      "win_rate_high_high": 0.8634,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0.851,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 1428,
-        "high_low": 0,
-        "low_high": 0,
-        "low_low": 1477
+        "high_high": 136,
+        "high_low": 754,
+        "low_high": 1182,
+        "low_low": 1407
       }
     },
     {
       "feature_1": "recent_4",
       "feature_2": "bonus_hit_contribution",
-      "median_1": 1,
-      "median_2": 0.0,
-      "win_rate_high_high": 0.8634,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0.851,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic",
+      "threshold_1": 1,
+      "threshold_2": 1.0,
+      "win_rate_high_high": 0.8812,
+      "win_rate_high_low": 0.8526,
+      "win_rate_low_high": 0.8525,
+      "win_rate_low_low": 0.8577,
+      "interaction_strength": 0.0234,
+      "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 1428,
-        "high_low": 0,
-        "low_high": 1477,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "recent_14",
-      "feature_2": "freshness_bin",
-      "median_1": 0,
-      "median_2": 1,
-      "win_rate_high_high": 0.8634,
-      "win_rate_high_low": 0.851,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 1428,
-        "high_low": 1477,
-        "low_high": 0,
-        "low_low": 0
+        "high_high": 303,
+        "high_low": 1398,
+        "low_high": 373,
+        "low_low": 1405
       }
     },
     {
       "feature_1": "freshness_bin",
       "feature_2": "bonus_hit_contribution",
-      "median_1": 1,
-      "median_2": 0.0,
-      "win_rate_high_high": 0.8634,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0.851,
-      "win_rate_low_low": 0,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 1428,
-        "high_low": 0,
-        "low_high": 1477,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "total_count",
-      "feature_2": "days_since_last",
-      "median_1": 0,
-      "median_2": 32,
-      "win_rate_high_high": 0.8549,
-      "win_rate_high_low": 0.8579,
-      "win_rate_low_high": 0,
-      "win_rate_low_low": 0,
-      "interaction_strength": 0.9964,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 751,
-        "high_low": 2154,
-        "low_high": 0,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "days_since_last",
-      "feature_2": "recent_14",
-      "median_1": 32,
-      "median_2": 0,
-      "win_rate_high_high": 0.8549,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8579,
-      "win_rate_low_low": 0,
-      "interaction_strength": 0.9964,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 751,
-        "high_low": 0,
-        "low_high": 2154,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "days_since_last",
-      "feature_2": "bonus_hit_contribution",
-      "median_1": 32,
-      "median_2": 0.0,
-      "win_rate_high_high": 0.8549,
-      "win_rate_high_low": 0,
-      "win_rate_low_high": 0.8579,
-      "win_rate_low_low": 0,
-      "interaction_strength": 0.9964,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 751,
-        "high_low": 0,
-        "low_high": 2154,
-        "low_low": 0
-      }
-    },
-    {
-      "feature_1": "days_since_last",
-      "feature_2": "recent_4",
-      "median_1": 32,
-      "median_2": 1,
-      "win_rate_high_high": 1.0,
-      "win_rate_high_low": 0.8541,
-      "win_rate_low_high": 0.8631,
-      "win_rate_low_low": 0.8479,
-      "interaction_strength": 0.122,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 4,
-        "high_low": 747,
-        "low_high": 1424,
-        "low_low": 730
-      }
-    },
-    {
-      "feature_1": "days_since_last",
-      "feature_2": "freshness_bin",
-      "median_1": 32,
-      "median_2": 1,
-      "win_rate_high_high": 1.0,
-      "win_rate_high_low": 0.8541,
-      "win_rate_low_high": 0.8631,
-      "win_rate_low_low": 0.8479,
-      "interaction_strength": 0.122,
-      "interaction_type": "synergistic",
-      "sample_sizes": {
-        "high_high": 4,
-        "high_low": 747,
-        "low_high": 1424,
-        "low_low": 730
-      }
-    },
-    {
-      "feature_1": "days_since_last",
-      "feature_2": "recent_9",
-      "median_1": 32,
-      "median_2": 2,
-      "win_rate_high_high": 0.9,
-      "win_rate_high_low": 0.8543,
-      "win_rate_low_high": 0.8693,
-      "win_rate_low_low": 0.847,
-      "interaction_strength": 0.0373,
+      "threshold_1": 1,
+      "threshold_2": 1.0,
+      "win_rate_high_high": 0.8812,
+      "win_rate_high_low": 0.8526,
+      "win_rate_low_high": 0.8525,
+      "win_rate_low_low": 0.8577,
+      "interaction_strength": 0.0234,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 10,
-        "high_low": 741,
-        "low_high": 1056,
-        "low_low": 1098
+        "high_high": 303,
+        "high_low": 1398,
+        "low_high": 373,
+        "low_low": 1405
+      }
+    },
+    {
+      "feature_1": "recent_24",
+      "feature_2": "bonus_hit_contribution",
+      "threshold_1": 4,
+      "threshold_2": 1.0,
+      "win_rate_high_high": 0.8439,
+      "win_rate_high_low": 0.8474,
+      "win_rate_low_high": 0.877,
+      "win_rate_low_low": 0.86,
+      "interaction_strength": 0.0154,
+      "interaction_type": "neutral",
+      "sample_sizes": {
+        "high_high": 237,
+        "high_low": 1081,
+        "low_high": 439,
+        "low_low": 1722
       }
     },
     {
       "feature_1": "recent_4",
       "feature_2": "recent_9",
-      "median_1": 1,
-      "median_2": 2,
-      "win_rate_high_high": 0.8758,
-      "win_rate_high_low": 0.8427,
-      "win_rate_low_high": 0.8372,
-      "win_rate_low_low": 0.8529,
-      "interaction_strength": 0.0278,
+      "threshold_1": 1,
+      "threshold_2": 2,
+      "win_rate_high_high": 0.8683,
+      "win_rate_high_low": 0.8407,
+      "win_rate_low_high": 0.8593,
+      "win_rate_low_low": 0.8562,
+      "interaction_strength": 0.0142,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 894,
-        "high_low": 534,
-        "low_high": 172,
-        "low_low": 1305
+        "high_high": 1048,
+        "high_low": 653,
+        "low_high": 199,
+        "low_low": 1579
       }
     },
     {
       "feature_1": "recent_9",
       "feature_2": "freshness_bin",
-      "median_1": 2,
-      "median_2": 1,
-      "win_rate_high_high": 0.8758,
-      "win_rate_high_low": 0.8372,
-      "win_rate_low_high": 0.8427,
-      "win_rate_low_low": 0.8529,
-      "interaction_strength": 0.0278,
+      "threshold_1": 2,
+      "threshold_2": 1,
+      "win_rate_high_high": 0.8683,
+      "win_rate_high_low": 0.8593,
+      "win_rate_low_high": 0.8407,
+      "win_rate_low_low": 0.8562,
+      "interaction_strength": 0.0142,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 894,
-        "high_low": 172,
-        "low_high": 534,
-        "low_low": 1305
+        "high_high": 1048,
+        "high_low": 199,
+        "low_high": 653,
+        "low_low": 1579
+      }
+    },
+    {
+      "feature_1": "recent_4",
+      "feature_2": "recent_24",
+      "threshold_1": 1,
+      "threshold_2": 4,
+      "win_rate_high_high": 0.8494,
+      "win_rate_high_low": 0.8672,
+      "win_rate_low_high": 0.841,
+      "win_rate_low_low": 0.8613,
+      "interaction_strength": 0.0062,
+      "interaction_type": "neutral",
+      "sample_sizes": {
+        "high_high": 903,
+        "high_low": 798,
+        "low_high": 415,
+        "low_low": 1363
+      }
+    },
+    {
+      "feature_1": "recent_24",
+      "feature_2": "freshness_bin",
+      "threshold_1": 4,
+      "threshold_2": 1,
+      "win_rate_high_high": 0.8494,
+      "win_rate_high_low": 0.841,
+      "win_rate_low_high": 0.8672,
+      "win_rate_low_low": 0.8613,
+      "interaction_strength": 0.0062,
+      "interaction_type": "neutral",
+      "sample_sizes": {
+        "high_high": 903,
+        "high_low": 415,
+        "low_high": 798,
+        "low_low": 1363
+      }
+    },
+    {
+      "feature_1": "recent_9",
+      "feature_2": "recent_24",
+      "threshold_1": 2,
+      "threshold_2": 4,
+      "win_rate_high_high": 0.8583,
+      "win_rate_high_low": 0.8841,
+      "win_rate_low_high": 0.8268,
+      "win_rate_low_low": 0.8586,
+      "interaction_strength": 0.0016,
+      "interaction_type": "neutral",
+      "sample_sizes": {
+        "high_high": 833,
+        "high_low": 414,
+        "low_high": 485,
+        "low_low": 1747
       }
     }
   ],
   "threshold_effects": {
-    "total_count": {
-      "bins": [
-        {
-          "bin_index": 0,
-          "range": [
-            0,
-            1
-          ],
-          "win_rate": 0.8571,
-          "sample_size": 2905
-        }
-      ],
-      "thresholds": []
-    },
     "days_since_last": {
       "bins": [
         {
           "bin_index": 0,
           "range": [
-            -723.0,
-            -566.2
+            2.0,
+            19.7
           ],
-          "win_rate": 0.8571,
-          "sample_size": 7
+          "win_rate": 0.8604,
+          "sample_size": 1913
+        },
+        {
+          "bin_index": 1,
+          "range": [
+            19.7,
+            37.4
+          ],
+          "win_rate": 0.8554,
+          "sample_size": 885
+        },
+        {
+          "bin_index": 2,
+          "range": [
+            37.4,
+            55.1
+          ],
+          "win_rate": 0.8676,
+          "sample_size": 370
+        },
+        {
+          "bin_index": 3,
+          "range": [
+            55.1,
+            72.8
+          ],
+          "win_rate": 0.8012,
+          "sample_size": 166
         },
         {
           "bin_index": 4,
           "range": [
-            -95.8,
-            61.0
+            72.8,
+            90.5
           ],
-          "win_rate": 0.8568,
-          "sample_size": 2695
+          "win_rate": 0.8929,
+          "sample_size": 84
         },
         {
           "bin_index": 5,
           "range": [
-            61.0,
-            217.8
+            90.5,
+            108.2
+          ],
+          "win_rate": 0.8537,
+          "sample_size": 41
+        },
+        {
+          "bin_index": 6,
+          "range": [
+            108.2,
+            125.9
+          ],
+          "win_rate": 0.75,
+          "sample_size": 8
+        },
+        {
+          "bin_index": 7,
+          "range": [
+            125.9,
+            143.6
           ],
           "win_rate": 0.8571,
-          "sample_size": 196
+          "sample_size": 7
+        },
+        {
+          "bin_index": 8,
+          "range": [
+            143.6,
+            161.3
+          ],
+          "win_rate": 0.6667,
+          "sample_size": 3
         },
         {
           "bin_index": 9,
           "range": [
-            688.2,
-            845.0
+            161.3,
+            179.0
           ],
-          "win_rate": 1.0,
-          "sample_size": 7
+          "win_rate": 0.5,
+          "sample_size": 2
         }
       ],
-      "thresholds": []
+      "thresholds": [
+        {
+          "threshold_value": 143.6,
+          "before_win_rate": 0.8571,
+          "after_win_rate": 0.6667,
+          "change_pct": -22.2
+        },
+        {
+          "threshold_value": 161.3,
+          "before_win_rate": 0.6667,
+          "after_win_rate": 0.5,
+          "change_pct": -25.0
+        }
+      ]
     },
     "recent_4": {
       "bins": [
@@ -451,8 +324,8 @@
             0.0,
             0.4
           ],
-          "win_rate": 0.851,
-          "sample_size": 1477
+          "win_rate": 0.8566,
+          "sample_size": 1778
         },
         {
           "bin_index": 2,
@@ -460,8 +333,8 @@
             0.8,
             1.2
           ],
-          "win_rate": 0.8591,
-          "sample_size": 1029
+          "win_rate": 0.8552,
+          "sample_size": 1229
         },
         {
           "bin_index": 5,
@@ -469,8 +342,8 @@
             2.0,
             2.4
           ],
-          "win_rate": 0.864,
-          "sample_size": 331
+          "win_rate": 0.8542,
+          "sample_size": 391
         },
         {
           "bin_index": 7,
@@ -478,8 +351,8 @@
             2.8,
             3.2
           ],
-          "win_rate": 0.9206,
-          "sample_size": 63
+          "win_rate": 0.9054,
+          "sample_size": 74
         },
         {
           "bin_index": 9,
@@ -488,7 +361,7 @@
             4.0
           ],
           "win_rate": 1.0,
-          "sample_size": 5
+          "sample_size": 7
         }
       ],
       "thresholds": []
@@ -501,8 +374,8 @@
             0.0,
             0.6
           ],
-          "win_rate": 0.8482,
-          "sample_size": 738
+          "win_rate": 0.8457,
+          "sample_size": 901
         },
         {
           "bin_index": 1,
@@ -510,8 +383,8 @@
             0.6,
             1.2
           ],
-          "win_rate": 0.851,
-          "sample_size": 1101
+          "win_rate": 0.8557,
+          "sample_size": 1331
         },
         {
           "bin_index": 3,
@@ -519,8 +392,8 @@
             1.8,
             2.4
           ],
-          "win_rate": 0.8657,
-          "sample_size": 670
+          "win_rate": 0.8666,
+          "sample_size": 787
         },
         {
           "bin_index": 5,
@@ -528,8 +401,8 @@
             3.0,
             3.6
           ],
-          "win_rate": 0.8703,
-          "sample_size": 293
+          "win_rate": 0.8638,
+          "sample_size": 345
         },
         {
           "bin_index": 6,
@@ -537,8 +410,8 @@
             3.6,
             4.2
           ],
-          "win_rate": 0.9012,
-          "sample_size": 81
+          "win_rate": 0.8778,
+          "sample_size": 90
         },
         {
           "bin_index": 8,
@@ -546,8 +419,8 @@
             4.8,
             5.4
           ],
-          "win_rate": 0.85,
-          "sample_size": 20
+          "win_rate": 0.8696,
+          "sample_size": 23
         },
         {
           "bin_index": 9,
@@ -561,16 +434,97 @@
       ],
       "thresholds": []
     },
-    "recent_14": {
+    "recent_24": {
       "bins": [
         {
           "bin_index": 0,
           "range": [
-            0,
-            1
+            0.0,
+            1.0
           ],
-          "win_rate": 0.8571,
-          "sample_size": 2905
+          "win_rate": 0.8405,
+          "sample_size": 163
+        },
+        {
+          "bin_index": 1,
+          "range": [
+            1.0,
+            2.0
+          ],
+          "win_rate": 0.8326,
+          "sample_size": 442
+        },
+        {
+          "bin_index": 2,
+          "range": [
+            2.0,
+            3.0
+          ],
+          "win_rate": 0.882,
+          "sample_size": 729
+        },
+        {
+          "bin_index": 3,
+          "range": [
+            3.0,
+            4.0
+          ],
+          "win_rate": 0.8682,
+          "sample_size": 827
+        },
+        {
+          "bin_index": 4,
+          "range": [
+            4.0,
+            5.0
+          ],
+          "win_rate": 0.8447,
+          "sample_size": 631
+        },
+        {
+          "bin_index": 5,
+          "range": [
+            5.0,
+            6.0
+          ],
+          "win_rate": 0.8541,
+          "sample_size": 370
+        },
+        {
+          "bin_index": 6,
+          "range": [
+            6.0,
+            7.0
+          ],
+          "win_rate": 0.8159,
+          "sample_size": 201
+        },
+        {
+          "bin_index": 7,
+          "range": [
+            7.0,
+            8.0
+          ],
+          "win_rate": 0.8876,
+          "sample_size": 89
+        },
+        {
+          "bin_index": 8,
+          "range": [
+            8.0,
+            9.0
+          ],
+          "win_rate": 0.9048,
+          "sample_size": 21
+        },
+        {
+          "bin_index": 9,
+          "range": [
+            9.0,
+            10.0
+          ],
+          "win_rate": 0.8333,
+          "sample_size": 6
         }
       ],
       "thresholds": []
@@ -583,8 +537,8 @@
             0.0,
             0.2
           ],
-          "win_rate": 0.851,
-          "sample_size": 1477
+          "win_rate": 0.8566,
+          "sample_size": 1778
         },
         {
           "bin_index": 5,
@@ -592,8 +546,8 @@
             1.0,
             1.2
           ],
-          "win_rate": 0.8591,
-          "sample_size": 1029
+          "win_rate": 0.8552,
+          "sample_size": 1229
         },
         {
           "bin_index": 9,
@@ -601,8 +555,8 @@
             1.8,
             2.0
           ],
-          "win_rate": 0.8747,
-          "sample_size": 399
+          "win_rate": 0.8644,
+          "sample_size": 472
         }
       ],
       "thresholds": []
@@ -610,185 +564,113 @@
   },
   "triple_interactions": [
     {
+      "category": "hot",
+      "freshness_bin": 0,
+      "recency": "recent",
+      "win_rate": 0.8831,
+      "lift_over_baseline": 1.03,
+      "sample_size": 77,
+      "wins": 68
+    },
+    {
       "category": "medium",
       "freshness_bin": 1,
       "recency": "recent",
-      "win_rate": 0.8865,
-      "lift_over_baseline": 1.034,
-      "sample_size": 185,
-      "wins": 164
+      "win_rate": 0.8821,
+      "lift_over_baseline": 1.029,
+      "sample_size": 212,
+      "wins": 187
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 0,
+      "recency": "very_recent",
+      "win_rate": 0.8681,
+      "lift_over_baseline": 1.013,
+      "sample_size": 91,
+      "wins": 79
+    },
+    {
+      "category": "hot",
+      "freshness_bin": 1,
+      "recency": "very_recent",
+      "win_rate": 0.8678,
+      "lift_over_baseline": 1.012,
+      "sample_size": 537,
+      "wins": 466
     },
     {
       "category": "hot",
       "freshness_bin": 2,
       "recency": "very_recent",
-      "win_rate": 0.8834,
-      "lift_over_baseline": 1.031,
-      "sample_size": 283,
-      "wins": 250
+      "win_rate": 0.8649,
+      "lift_over_baseline": 1.009,
+      "sample_size": 333,
+      "wins": 288
     },
     {
       "category": "hot",
-      "freshness_bin": 0,
+      "freshness_bin": 2,
       "recency": "recent",
-      "win_rate": 0.873,
-      "lift_over_baseline": 1.019,
-      "sample_size": 63,
-      "wins": 55
+      "win_rate": 0.8633,
+      "lift_over_baseline": 1.007,
+      "sample_size": 139,
+      "wins": 120
     },
     {
-      "category": "hot",
-      "freshness_bin": 1,
-      "recency": "very_recent",
-      "win_rate": 0.8634,
-      "lift_over_baseline": 1.007,
-      "sample_size": 432,
-      "wins": 373
+      "category": "medium",
+      "freshness_bin": 0,
+      "recency": "moderate",
+      "win_rate": 0.862,
+      "lift_over_baseline": 1.006,
+      "sample_size": 355,
+      "wins": 306
     },
     {
       "category": "medium",
       "freshness_bin": 0,
       "recency": "recent",
-      "win_rate": 0.859,
-      "lift_over_baseline": 1.002,
-      "sample_size": 227,
-      "wins": 195
+      "win_rate": 0.8582,
+      "lift_over_baseline": 1.001,
+      "sample_size": 282,
+      "wins": 242
+    },
+    {
+      "category": "cold",
+      "freshness_bin": 0,
+      "recency": "moderate",
+      "win_rate": 0.8539,
+      "lift_over_baseline": 0.996,
+      "sample_size": 739,
+      "wins": 631
     },
     {
       "category": "cold",
       "freshness_bin": 0,
       "recency": "old",
-      "win_rate": 0.8521,
-      "lift_over_baseline": 0.994,
-      "sample_size": 818,
-      "wins": 697
-    },
-    {
-      "category": "hot",
-      "freshness_bin": 2,
-      "recency": "recent",
-      "win_rate": 0.8522,
-      "lift_over_baseline": 0.994,
-      "sample_size": 115,
-      "wins": 98
-    },
-    {
-      "category": "hot",
-      "freshness_bin": 0,
-      "recency": "very_recent",
-      "win_rate": 0.8421,
+      "win_rate": 0.8419,
       "lift_over_baseline": 0.982,
-      "sample_size": 76,
-      "wins": 64
+      "sample_size": 234,
+      "wins": 197
     },
     {
       "category": "hot",
       "freshness_bin": 1,
       "recency": "recent",
-      "win_rate": 0.8411,
-      "lift_over_baseline": 0.981,
-      "sample_size": 409,
-      "wins": 344
-    },
-    {
-      "category": "medium",
-      "freshness_bin": 0,
-      "recency": "old",
-      "win_rate": 0.8408,
-      "lift_over_baseline": 0.981,
-      "sample_size": 289,
-      "wins": 243
+      "win_rate": 0.8292,
+      "lift_over_baseline": 0.967,
+      "sample_size": 480,
+      "wins": 398
     }
   ],
   "recommended_composite_features": [
-    {
-      "composite_name": "total_count_x_recent_14_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if total_count >= 0 else 0) * (1 if recent_14 >= 0 else 0)",
-      "description": "Binary interaction: both total_count and recent_14 are high",
-      "expected_win_rate_when_true": 0.8571,
-      "interaction_strength": 3.0,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "total_count_x_bonus_hit_contribution_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if total_count >= 0 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
-      "description": "Binary interaction: both total_count and bonus_hit_contribution are high",
-      "expected_win_rate_when_true": 0.8571,
-      "interaction_strength": 3.0,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "recent_14_x_bonus_hit_contribution_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if recent_14 >= 0 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
-      "description": "Binary interaction: both recent_14 and bonus_hit_contribution are high",
-      "expected_win_rate_when_true": 0.8571,
-      "interaction_strength": 3.0,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "total_count_x_recent_9_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if total_count >= 0 else 0) * (1 if recent_9 >= 2 else 0)",
-      "description": "Binary interaction: both total_count and recent_9 are high",
-      "expected_win_rate_when_true": 0.8696,
-      "interaction_strength": 1.0229,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "recent_9_x_recent_14_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if recent_9 >= 2 else 0) * (1 if recent_14 >= 0 else 0)",
-      "description": "Binary interaction: both recent_9 and recent_14 are high",
-      "expected_win_rate_when_true": 0.8696,
-      "interaction_strength": 1.0229,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "recent_9_x_bonus_hit_contribution_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if recent_9 >= 2 else 0) * (1 if bonus_hit_contribution >= 0.0 else 0)",
-      "description": "Binary interaction: both recent_9 and bonus_hit_contribution are high",
-      "expected_win_rate_when_true": 0.8696,
-      "interaction_strength": 1.0229,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "total_count_x_recent_4_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if total_count >= 0 else 0) * (1 if recent_4 >= 1 else 0)",
-      "description": "Binary interaction: both total_count and recent_4 are high",
-      "expected_win_rate_when_true": 0.8634,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "total_count_x_freshness_bin_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if total_count >= 0 else 0) * (1 if freshness_bin >= 1 else 0)",
-      "description": "Binary interaction: both total_count and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8634,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic"
-    },
-    {
-      "composite_name": "recent_4_x_recent_14_interaction",
-      "type": "pairwise_interaction",
-      "formula": "(1 if recent_4 >= 1 else 0) * (1 if recent_14 >= 0 else 0)",
-      "description": "Binary interaction: both recent_4 and recent_14 are high",
-      "expected_win_rate_when_true": 0.8634,
-      "interaction_strength": 1.0145,
-      "interaction_type": "synergistic"
-    },
     {
       "composite_name": "recent_4_x_freshness_bin_interaction",
       "type": "pairwise_interaction",
       "formula": "(1 if recent_4 >= 1 else 0) * (1 if freshness_bin >= 1 else 0)",
       "description": "Binary interaction: both recent_4 and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8634,
-      "interaction_strength": 1.0145,
+      "expected_win_rate_when_true": 0.8577,
+      "interaction_strength": 1.0013,
       "interaction_type": "synergistic"
     }
   ]

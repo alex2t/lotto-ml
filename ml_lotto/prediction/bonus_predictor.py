@@ -72,7 +72,8 @@ def generate_bonus_predictions(
         if num not in recent_bonus_exclusions
     ]
     
-    available_pool.sort(key=lambda x: x[1], reverse=True)
+    # Deterministic ordering: highest probability first, ties broken by lowest number
+    available_pool.sort(key=lambda x: (-x[1], x[0]))
     
     predictions = []
     used_categories = set()

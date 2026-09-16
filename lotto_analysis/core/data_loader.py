@@ -21,23 +21,21 @@ def load_lotto_data(filename: str, requested_draws: int) -> Tuple[List[Dict], in
     """
     df = pd.read_csv(filename, dtype=str)
     available_draws = len(df)
-    df_head = df.head(requested_draws)
-
     # Detect date column
-    date_cols = [c for c in df_head.columns if re.search(r'(?i)\bdate\b', c)]
+    date_cols = [c for c in df.columns if re.search(r'(?i)\bdate\b', c)]
     if not date_cols:
         raise ValueError("No Date column found in CSV.")
     date_col = date_cols[0]
 
     # Detect number columns (Num*, Bonus)
-    num_cols = [c for c in df_head.columns if re.search(r'(?i)\bnum|bonus\b', c)]
+    num_cols = [c for c in df.columns if re.search(r'(?i)\bnum|bonus\b', c)]
     if not num_cols:
         raise ValueError("No number columns found (expected Num1–Num6 and Bonus).")
 
     parsed = []
     skipped_rows = 0
     
-    for _, row in df_head.iterrows():
+    for _, row in df.iterrows():
         # Parse date
         raw_date = row.get(date_col, "")
         dt = pd.to_datetime(raw_date, dayfirst=True, errors='coerce')
@@ -59,14 +57,23 @@ def load_lotto_data(filename: str, requested_draws: int) -> Tuple[List[Dict], in
                 break
             nums.append(int(digits))
             
-        if not ok:
+        if not ok or len(nums) != 7:
             skipped_rows += 1
             continue
             
-        parsed.append({"date": dt.strftime("%Y-%m-%d"), "numbers": nums})
+        parsed.append({"dt": dt, "date": dt.strftime("%Y-%m-%d"), "numbers": nums})
 
-    # CSV gives latest first; we want chronological oldest -> newest
-    parsed = list(reversed(parsed))
+    # Sort chronologically (oldest -> newest so index increases with time)
+    parsed.sort(key=lambda x: x["dt"])
+    
+    # If more draws available than requested, take the most recent requested_draws
+    if requested_draws and len(parsed) > requested_draws:
+        parsed = parsed[-requested_draws:]
+
+    # Remove temporary dt key
+    for draw in parsed:
+        draw.pop("dt", None)
+
     return parsed, available_draws, skipped_rows
 
 

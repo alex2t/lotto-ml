@@ -15,7 +15,9 @@ VERSION: 1.0 (Dynamic Data Loading - No Hard-Coded Values)
 
 import json
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Any, Dict, List, Tuple
+
+from lotto_analysis.core.interaction_thresholds import recency_level, split_threshold  # noqa: F401
 
 
 class InteractionFeatureCalculator:
@@ -40,7 +42,7 @@ class InteractionFeatureCalculator:
         self.interaction_data = self._load_interaction_data(interaction_json_path)
         self.pairwise_interactions = self._extract_pairwise_interactions()
         self.triple_interactions = self._extract_triple_interactions()
-        self.feature_medians = self._extract_feature_medians()
+        self.feature_thresholds = self._extract_feature_thresholds()
 
     def _load_interaction_data(self, json_path: str) -> Dict[str, Any]:
         """Load interaction analysis data from JSON file."""
@@ -69,32 +71,25 @@ class InteractionFeatureCalculator:
         # Get top 3 highest lift combinations
         return sorted(triples, key=lambda x: x.get('lift_over_baseline', 0), reverse=True)[:3]
 
-    def _extract_feature_medians(self) -> Dict[str, float]:
-        """
-        Extract median values from pairwise interactions.
-
-        These medians define the "high/low" split for each feature.
-        """
-        medians = {}
+    def _extract_feature_thresholds(self) -> Dict[str, float]:
+        """Map each feature to the split threshold the analyzer chose for it."""
+        thresholds = {}
 
         for interaction in self.pairwise_interactions:
-            feat1 = interaction.get('feature_1')
-            feat2 = interaction.get('feature_2')
+            for feature_key, threshold_key in (('feature_1', 'threshold_1'),
+                                               ('feature_2', 'threshold_2')):
+                feature = interaction.get(feature_key)
+                threshold = interaction.get(threshold_key)
+                if feature and threshold is not None and feature not in thresholds:
+                    thresholds[feature] = threshold
 
-            if feat1 and feat1 not in medians:
-                medians[feat1] = interaction.get('median_1', 0)
-
-            if feat2 and feat2 not in medians:
-                medians[feat2] = interaction.get('median_2', 0)
-
-        return medians
+        return thresholds
 
     def calculate_pairwise_interactions(self, features: Dict[str, Any]) -> Dict[str, int]:
         """
         Calculate binary pairwise interaction features.
 
-        Returns 1 if both features are >= their median, 0 otherwise.
-        All interactions are synergistic (win rate = 0.857 when both high).
+        Returns 1 if both features are >= their split threshold, 0 otherwise.
 
         Args:
             features: Dictionary of feature values for a single number
@@ -115,12 +110,14 @@ class InteractionFeatureCalculator:
             val1 = features.get(feat1, 0)
             val2 = features.get(feat2, 0)
 
-            # Get medians from the loaded data
-            median1 = interaction.get('median_1', 0)
-            median2 = interaction.get('median_2', 0)
+            # Thresholds come from the analyzer, which guarantees they split the
+            # distribution. A pair it could not split is not emitted at all.
+            threshold1 = interaction.get('threshold_1')
+            threshold2 = interaction.get('threshold_2')
+            if threshold1 is None or threshold2 is None:
+                continue
 
-            # Binary interaction: 1 if both >= median, 0 otherwise
-            both_high = 1 if (val1 >= median1 and val2 >= median2) else 0
+            both_high = 1 if (val1 >= threshold1 and val2 >= threshold2) else 0
 
             # Feature name
             interaction_name = f"{feat1}_x_{feat2}_interaction"
@@ -146,15 +143,7 @@ class InteractionFeatureCalculator:
         freshness_bin = features.get('freshness_bin', 0)
         days_since = features.get('days_since_last', 999)
 
-        # Define recency zones (same as in feature_interaction_explorer.py)
-        if days_since <= 7:
-            recency = 'very_recent'
-        elif days_since <= 21:
-            recency = 'recent'
-        elif days_since <= 60:
-            recency = 'moderate'
-        else:
-            recency = 'old'
+        recency = recency_level(days_since)
 
         # Check each triple combination from loaded data
         for triple in self.triple_interactions:
