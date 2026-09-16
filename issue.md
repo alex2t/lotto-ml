@@ -15,7 +15,6 @@ Appendix A indexes what is resolved; Appendix B keeps the full C-5 write-up for 
 
 | ID | Issue | Severity | Effort |
 |:--|:--|:--|:--|
-| **F-1** | Freshness target sums to 7 for a 6-number line | High | S |
 | **F-2** | Bonus and bonus-to-main models have no validation split | High | S |
 | **F-3** | Decision threshold is tuned and scored on the same validation set | Medium | S |
 | **C-15b** | Jackpot Optimizer Random Forest badly overfits (gap 0.383) | Medium | S |
@@ -27,10 +26,25 @@ Appendix A indexes what is resolved; Appendix B keeps the full C-5 write-up for 
 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| **F-8** | Freshness target barely constrains selection; bin 0 absorbs every slot | Medium | M |
 
 ---
 
-## 1. F-1 — The freshness target sums to 7 but a line has 6 slots
+## 1. F-1 — The freshness target sums to 7 but a line has 6 slots  — **RESOLVED**
+
+**Resolved 2026-09-16.** `lotto_7_number_freshness_results.json` now carries a second
+distribution, `distribution_analysis_6_main`, built from the 6 main balls only, and
+`get_optimal_pattern_distribution` reads that instead of the 7-ball one. The target went from
+`{0:4, 1:2, 2:1}` (sums to 7) to `{0:3, 1:2, 2:1}` (sums to 6) — the genuine mode of the main-ball
+distribution, 69 of 497 draws. The function now raises if the key is missing or the target is the
+wrong width, rather than silently using a 7-wide one, and `predictor.py` no longer claims a
+proportional adjustment it never made. Nine tests in `tests/test_freshness_target.py` cover it.
+
+Generated lines did **not** change on current data: both the old and new targets yield the same
+initial bin priority `[0, 1, 2]`, so selection picked identically. The fix removes a real defect and
+pins the contract; it did not improve the picks. Investigating that turned up **F-8**.
+
+<details><summary>Original report</summary>
 
 **Severity: High.** Silently biases every line the system generates.
 
@@ -61,6 +75,8 @@ line: either scale the 7-number distribution to 6 (rounding under the constraint
 6), or derive the distribution from the main 6 balls — note the source JSON is explicitly a
 7-number analysis, so a 6-ball equivalent may need generating. Then assert
 `sum(target.values()) == 6` so it cannot drift again.
+
+</details>
 
 ---
 
@@ -318,6 +334,45 @@ than defaulting to 0, which is what let this hide.
 
 ---
 
+## 12b. F-8 — The freshness target barely constrains selection
+
+**Severity: Medium.** Found while verifying the F-1 fix.
+
+The target is now correct, but selection largely ignores it. `pick_from_hmc_pool`
+(`ml_lotto/prediction/selection.py`) computes the bin priority **once per HMC category**:
+
+```python
+freshness_priority = sorted(
+    freshness_needed.keys(),
+    key=lambda f: freshness_needed[f] - freshness_counts[f],
+    reverse=True,
+)
+```
+
+then drains the highest-priority bin until `count_needed` is met. Bin 0 holds 24 of the 47
+candidates right now (`{0: 24, 1: 16, 2: 7}`), so it never runs out and the loop never reaches
+bin 1. The target is consulted for ordering and then effectively discarded.
+
+The gap between target and outcome in the current run:
+
+```
+target            C0=3, C1=2, C_GE_2=1
+Line 1 achieved   C0=6, C1=0, C_GE_2=0
+Line 2 achieved   C0=6, C1=0, C_GE_2=0
+Line 3 achieved   C0=4, C1=2, C_GE_2=0
+```
+
+Two of three lines are entirely bin 0. Whatever the freshness pattern is worth, the system is not
+currently getting it.
+
+**Fix.** Recompute the priority after each pick, or cap per-bin intake at the target count and only
+overflow once a bin's quota is met. Either turns `freshness_needed` into a real constraint rather
+than a one-time sort key. Worth measuring before and after with the noise floor — if enforcing the
+target does not move Top-K lift, the honest conclusion is that the freshness pattern carries no
+signal and the whole mechanism should be dropped rather than fixed.
+
+---
+
 ## 13. Improvements (not defects)
 
 Carried from the code review's improvement list, kept here so the register is complete.
@@ -371,6 +426,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-12 | Safety top-up could duplicate a pre-assigned number | `selection.py` |
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-16 | Non-deterministic feature column order | `extractor.py` |
+| F-1 | Freshness target sized for 7 balls while a line has 6 slots | `freshness_analyzer_7_numbers.py`, `constraints.py`, `drawpick.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
 | N-3 | Top-K computed globally instead of per draw; overfit gap zero by construction | `model_metrics.py` |

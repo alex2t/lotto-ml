@@ -23,7 +23,7 @@ from lotto_analysis.analyzers.pattern_analyzer import process_pattern_analysis
 from lotto_analysis.analyzers.consecutive_analyzer import analyze_consecutive_patterns
 from lotto_analysis.analyzers.hmc_analyzer import process_hmc_analysis
 from lotto_analysis.analyzers.freshness_analyzer_7_numbers import (
-    analyze_7_number_freshness, format_freshness_output
+    analyze_7_number_freshness, analyze_6_main_freshness, format_freshness_output
 )
 from lotto_analysis.analyzers.distribution_analyzer import (
     analyze_distribution_patterns,
@@ -148,6 +148,10 @@ def main():
     print("=" * 70)
     
     freshness_counts, total_draws_freshness = analyze_7_number_freshness(
+        draw_history_log, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
+    )
+    # A generated line is 6 main numbers, so the selection layer targets this one
+    main_freshness_counts, _ = analyze_6_main_freshness(
         draw_history_log, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
     )
 
@@ -362,10 +366,11 @@ def main():
                    "Per-draw history for HMC state and winning numbers details with bonus_hit_analysis")
     
     final_freshness_data = format_freshness_output(
-        freshness_counts, total_draws_freshness, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD
+        freshness_counts, total_draws_freshness, TARGET_FRESHNESS_WINDOW, C_MAX_THRESHOLD,
+        main_counts=main_freshness_counts
     )
     write_json_file(OUTPUT_FILE_7_NUMBERS, final_freshness_data,
-                   "Comprehensive freshness distribution for all 7 winning numbers with weight calculation")
+                   "Freshness distribution for the 7 drawn balls and for the 6 main balls, with weight calculation")
     
     write_json_file(OUTPUT_FILE_DISTRIBUTIONS, final_distribution_stats,
                    "Odd/Even patterns and Sum distributions (both 6 and 7 numbers) with per-number analysis")

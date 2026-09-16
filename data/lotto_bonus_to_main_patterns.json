@@ -13,7 +13,7 @@
             "transition_rate": 0.75,
             "avg_draws_to_transition": 5.58,
             "days_since_last_bonus": 33,
-            "most_common_category": "hot",
+            "most_common_category": "medium",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_6_10": 7,
@@ -27,7 +27,7 @@
             "transition_rate": 0.8333,
             "avg_draws_to_transition": 3.7,
             "days_since_last_bonus": 107,
-            "most_common_category": "hot",
+            "most_common_category": "cold",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
                 "draw_4_5": 2,
@@ -583,7 +583,7 @@
             "transition_rate": 0.7273,
             "avg_draws_to_transition": 5.12,
             "days_since_last_bonus": 177,
-            "most_common_category": "hot",
+            "most_common_category": "medium",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
                 "draw_1_3": 3,

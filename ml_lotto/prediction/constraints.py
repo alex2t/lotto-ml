@@ -9,28 +9,38 @@ from collections import defaultdict
 from ml_lotto.config import MAX_NUMBER
 
 
+LINE_SIZE = 6  # a generated line is 6 main numbers
+
+
 def get_optimal_pattern_distribution(
     freshness_data: Dict[str, Any],
     c_max_threshold: int
 ) -> Dict[int, int]:
     """
-    Get the optimal C0/C1/.../C>=X distribution from freshness data dynamically.
-    
+    Get the optimal C0/C1/.../C>=X distribution for a generated line.
+
+    Reads `distribution_analysis_6_main`, the observed freshness split of the 6 MAIN
+    balls. The sibling `distribution_analysis_7_numbers` describes all 7 drawn balls and
+    sums to 7; using it as the target for a 6-number line overstates demand by one
+    number's worth and skews which freshness bin selection prioritises.
+
     Args:
-        freshness_data: Raw JSON data from lotto_7_number_freshness_results.json
+        freshness_data: Raw JSON from lotto_7_number_freshness_results.json
         c_max_threshold: The dynamic threshold (e.g., 2)
-        
+
     Returns:
-        Dictionary mapping bin_index (0 to C_max) -> expected_count
-        Example: {0: 3, 1: 3, 2: 1} means 3x C0, 3x C1, 1x C2
+        Dictionary mapping bin_index (0 to C_max) -> expected_count, summing to 6.
     """
-    if not freshness_data or 'distribution_analysis_7_numbers' not in freshness_data:
-        # Default to a generic balanced pattern for 7 numbers
-        print("Warning: Freshness data empty. Using default pattern (4x C0/C1, 2x C2, 1x C3+).")
-        return {0: 3, 1: 2, 2: 1, 3: 1}  # Max C_max=3 for default pattern
-    
-    top_pattern_data = freshness_data['distribution_analysis_7_numbers'][0]
-    
+    distributions = (freshness_data or {}).get('distribution_analysis_6_main') or []
+
+    if not distributions:
+        raise ValueError(
+            "lotto_7_number_freshness_results.json has no 'distribution_analysis_6_main'. "
+            "Re-run drawpick.py to regenerate it."
+        )
+
+    top_pattern_data = distributions[0]
+
     # Build target distribution dynamically
     target_dist = {}
     for i in range(c_max_threshold + 1):
@@ -40,9 +50,16 @@ def get_optimal_pattern_distribution(
         else:
             # C_max bin (C>=C_max)
             count_key = f'C_GE_{c_max_threshold}'
-        
+
         target_dist[i] = top_pattern_data.get(count_key, 0)
-    
+
+    total = sum(target_dist.values())
+    if total != LINE_SIZE:
+        raise ValueError(
+            f"Freshness target {target_dist} sums to {total}, expected {LINE_SIZE}. "
+            f"Pattern was {top_pattern_data.get('pattern')!r}."
+        )
+
     return target_dist
 
 
