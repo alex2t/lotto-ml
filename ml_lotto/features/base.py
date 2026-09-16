@@ -28,7 +28,7 @@ def get_dynamic_recent_keys(hmc_data: Dict[str, Any]) -> List[Tuple[str, str]]:
     """
     all_recent_keys = set()
     for num_key, num_data in hmc_data.items():
-        if num_key.isdigit() and 'recent' in num_data:
+        if str(num_key).isdigit() and isinstance(num_data, dict) and 'recent' in num_data:
             all_recent_keys.update(num_data['recent'].keys())
             if len(all_recent_keys) >= 4:
                 break

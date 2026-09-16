@@ -17,6 +17,9 @@ import time
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
 
 # OUTPUT MODE: Set to False for concise, essential output only
 VERBOSE = False
@@ -132,6 +135,7 @@ from ml_lotto.features.freshness import (
 from ml_lotto.features.history import extract_win_bias_ratio_from_history
 
 from ml_lotto.features.bonus_features import extract_bonus_features_from_json, create_unified_bonus_features
+from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
 
 from ml_lotto.models.trainer import train_all_models
 from ml_lotto.models.bonus_trainer import train_bonus_model
@@ -515,10 +519,10 @@ def main():
         dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
         print(f"    Found {len(dynamic_recent_keys)} dynamic features: {[k[1] for k in dynamic_recent_keys]}")
 
-        print("  Calculating rolling statistics features...")
+        print("  Calculating rolling statistics features at current draw...")
         rolling_stats_features = extract_rolling_features_for_all_numbers(
             all_draws,
-            training_start_draw=TRAINING_START_DRAW,
+            current_draw_idx=len(all_draws),
             max_number=MAX_NUMBER
         )
 
@@ -599,10 +603,14 @@ def main():
         category_dict = {num: features_dict[num]['category'] for num in range(1, 48) if num in features_dict}
         
         try:
+            # Generate point-in-time features for upcoming draw using the same engine as training (C-3 fix)
+            engine_bonus = PointInTimeFeatureEngine(all_draws, bonus_features_dict)
+            bonus_pred_features = engine_bonus.extract_features_for_next_draw()
+
             bonus_predictions, bonus_top_6_data = generate_bonus_predictions(
                 bonus_pipeline,
                 bonus_features,
-                bonus_features_dict,
+                bonus_pred_features,
                 category_dict,
                 num_predictions=3
             )
@@ -741,7 +749,7 @@ def main():
         
         print("\nStep 8: Preparing models for number selection...")
         # ALL models (1, 2, 3) select their numbers via ML
-        # Model 1: Optimized with pairwise & triple interactions - selects 5 numbers
+        # Model 1: Optimized with pairwise & triple interactions - selects 6 numbers
         # Model 2: Jackpot optimizer - selects 6 numbers (no bonus)
         # Model 3: Complexity explorer - selects 6 numbers
         # Model 4: Pool generator - doesn't pick specific numbers
@@ -777,14 +785,46 @@ def main():
             sys.exit(1)
 
         print("\nStep 10: Final assembly - adding separate bonus balls...")
+        # Ranked fallback pool: top-6 bonus candidates, then the assigned predictions
+        ranked_bonus_candidates = [p['number'] for p in bonus_top_6_data] if bonus_top_6_data else []
+        for b_num in bonus_predictions:
+            if b_num not in ranked_bonus_candidates:
+                ranked_bonus_candidates.append(b_num)
+
+        assigned_bonuses = set()
         for line in lines:
             model_idx = line['model_index']
             # Model 2 does NOT get a bonus ball - it only predicts 6 main numbers
             if model_idx == 2:
                 line['bonus_for_draw'] = None  # No bonus for jackpot optimizer
+                continue
+
+            # Models 1 & 3 get bonus balls from BONUS_MODEL.
+            # The bonus must not duplicate a main number in its own line (C-8), and
+            # must not repeat a bonus already assigned to another model (N-5).
+            candidate_bonus = bonus_assignments.get(model_idx)
+            is_dup_main = candidate_bonus in line['numbers']
+            is_dup_model = candidate_bonus in assigned_bonuses
+
+            if candidate_bonus is not None and not is_dup_main and not is_dup_model:
+                chosen = candidate_bonus
             else:
-                # Models 1 & 3 get bonus balls from BONUS_MODEL
-                line['bonus_for_draw'] = bonus_assignments.get(model_idx)
+                chosen = next(
+                    (b for b in ranked_bonus_candidates
+                     if b not in line['numbers'] and b not in assigned_bonuses),
+                    None
+                )
+                reason = 'duplicated a main number' if is_dup_main else 'was already assigned to another model'
+                if chosen is not None:
+                    print(f"  ⚠️  Model {model_idx} bonus #{candidate_bonus} {reason}; reassigned to #{chosen}")
+                else:
+                    chosen = candidate_bonus
+                    print(f"  ⚠️  Model {model_idx}: no distinct bonus available; keeping #{chosen}")
+
+            line['bonus_for_draw'] = chosen
+            if chosen is not None:
+                assigned_bonuses.add(chosen)
+
 
         print("\nStep 11: Generating Model 4 candidate pool...")
         try:

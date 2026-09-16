@@ -1,20 +1,19 @@
 """
 Test rolling statistics integration
 """
-import json
+from ml_lotto.data.loader import load_draw_history_with_bias_ratios
 from ml_lotto.features.rolling_stats import extract_rolling_features_for_all_numbers
 
-# Load the HMC data
-with open('data/lotto_trigger_periods.json', 'r') as f:
-    hmc_data = json.load(f)
+DRAW_HISTORY_JSON = 'data/lotto_draw_history.json'
+all_draws, _ = load_draw_history_with_bias_ratios(DRAW_HISTORY_JSON)
 
 print("Testing rolling statistics extraction...")
-print(f"Total draws in dataset: {len(hmc_data['draws'])}")
+print(f"Total draws in dataset: {len(all_draws)}")
 
 # Test with training start at draw 100
 TRAINING_START_DRAW = 100
 rolling_features = extract_rolling_features_for_all_numbers(
-    hmc_data['draws'],
+    all_draws,
     training_start_draw=TRAINING_START_DRAW,
     max_number=47
 )

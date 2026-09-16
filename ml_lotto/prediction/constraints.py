@@ -116,10 +116,10 @@ def build_dual_categorized_pools(
         if hmc_cat in pools:
             pools[hmc_cat][fresh_cat].append((prob, num))
 
-    # Sort each pool by probability (highest first)
+    # Sort each pool by probability (highest first), with deterministic tie-break
     for hmc_cat in pools:
         for fresh_cat in pools[hmc_cat]:
-            pools[hmc_cat][fresh_cat].sort(reverse=True)
+            pools[hmc_cat][fresh_cat].sort(key=lambda x: (-x[0], x[1]))
 
     return pools
 

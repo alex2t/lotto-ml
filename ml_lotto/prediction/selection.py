@@ -4,7 +4,7 @@ selection.py
 Core number selection logic with hybrid HMC + Freshness constraints.
 """
 
-from typing import Dict, Any, List, Set, Tuple
+from typing import Dict, Any, List, Set, Tuple, Optional
 from collections import defaultdict
 from ml_lotto.prediction.filters import (
     FILTERS_AVAILABLE,
@@ -20,7 +20,8 @@ def pick_line_hybrid(
     number_categories: Dict[int, int],
     target_pattern: Dict[int, int],
     pools: Dict[str, Dict[int, List]],
-    penalty_numbers: Set[int] = None
+    penalty_numbers: Set[int] = None,
+    pre_assigned_numbers: Optional[List[int]] = None
 ) -> Tuple[List[int], List[Dict[str, Any]], str]:
     """
     HYBRID PICKER: Respects BOTH HMC ratios AND freshness patterns dynamically.
@@ -32,19 +33,17 @@ def pick_line_hybrid(
         number_categories: Freshness categorization
         target_pattern: Optimal freshness distribution {bin: count}
         pools: Pre-built dual-categorized pools {HMC: {freshness: [(prob, num)]}}
-        penalty_numbers: Numbers to avoid (from previous models)
+        penalty_numbers: Numbers with soft diversity penalties applied
+        pre_assigned_numbers: Numbers pre-assigned to this line (excluded from selection)
 
     Returns:
         Tuple of (selected_numbers, penalty_details, pattern_string)
-
-    Selection Strategy:
-        PHASE 1: Pick from HMC categories, prioritizing needed freshness bins
-        PHASE 2: Fill generic slots, prioritizing freshness gaps
-        PHASE 3: Apply Phase 1 filters if available
     """
     # Initialize penalty_numbers if None
     if penalty_numbers is None:
         penalty_numbers = set()
+    if pre_assigned_numbers is None:
+        pre_assigned_numbers = []
 
     h = model_config['hot_count']
     m = model_config['medium_count']
@@ -59,18 +58,17 @@ def pick_line_hybrid(
     freshness_counts = defaultdict(int)
     freshness_needed = target_pattern.copy()
     
+    target_count = h + m + c + g
+    all_excluded = set(pre_assigned_numbers)
+
     # PHASE 1: Pick from HMC categories, prioritizing needed freshness bins
     def pick_from_hmc_pool(hmc_cat: str, count_needed: int) -> List[int]:
         """
         Pick 'count_needed' numbers from HMC category, prioritizing target freshness.
-
-        Strategy:
-            1. Sort freshness bins by gap (needed - current)
-            2. Pick highest probability numbers from most-needed bins first
-            3. Skip numbers in penalty_numbers set (previously selected by other models)
-            4. Stop when count_needed is reached
         """
         picked = []
+        if count_needed <= 0:
+            return picked
 
         # Sort freshness bins by how much we need them (gap)
         freshness_priority = sorted(
@@ -79,20 +77,30 @@ def pick_line_hybrid(
             reverse=True
         )
 
+        # Pass 1: Try to pick unpenalized numbers first (C-11 fix: check bound before append)
         for fresh_cat in freshness_priority:
+            if len(picked) >= count_needed:
+                break
             available = pools[hmc_cat].get(fresh_cat, [])
-
             for prob, num in available:
-                # Only pick if number hasn't been picked yet AND is not penalized
-                if num not in line and num not in penalty_numbers and len(picked) < count_needed:
+                if len(picked) >= count_needed:
+                    break
+                if num not in line and num not in picked and num not in all_excluded and num not in penalty_numbers:
                     picked.append(num)
                     freshness_counts[fresh_cat] += 1
 
+        # Pass 2: Fallback to penalized numbers if unpenalized pool was insufficient
+        if len(picked) < count_needed:
+            for fresh_cat in freshness_priority:
                 if len(picked) >= count_needed:
                     break
-
-            if len(picked) >= count_needed:
-                break
+                available = pools[hmc_cat].get(fresh_cat, [])
+                for prob, num in available:
+                    if len(picked) >= count_needed:
+                        break
+                    if num not in line and num not in picked and num not in all_excluded:
+                        picked.append(num)
+                        freshness_counts[fresh_cat] += 1
 
         return picked
     
@@ -103,23 +111,37 @@ def pick_line_hybrid(
     
     # PHASE 2: Fill generic slots, prioritizing freshness gaps
     if g > 0:
-        # Collect all remaining candidates (excluding penalized numbers)
+        # Collect all remaining candidates
         all_remaining = []
 
         for hmc_cat in pools:
             for fresh_cat in pools[hmc_cat]:
                 for prob, num in pools[hmc_cat][fresh_cat]:
-                    if num not in line and num not in penalty_numbers:
+                    if num not in line and num not in all_excluded:
                         # Score by: probability + bonus if we need this freshness category
                         freshness_gap = max(0, freshness_needed[fresh_cat] - freshness_counts[fresh_cat])
-                        score = prob * (1.0 + 0.5 * freshness_gap)
+                        penalty_mult = 0.6 if num in penalty_numbers else 1.0
+                        score = prob * (1.0 + 0.5 * freshness_gap) * penalty_mult
                         all_remaining.append((score, prob, num, fresh_cat))
 
-        all_remaining.sort(reverse=True)
+        all_remaining.sort(key=lambda x: (-x[0], x[2]))
 
         for score, prob, num, fresh_cat in all_remaining[:g]:
             line.append(num)
             freshness_counts[fresh_cat] += 1
+
+    # Safety Guarantee: Ensure line has reached target_count without duplicating pre_assigned numbers (C-12 fix)
+    if len(line) < target_count:
+        needed = target_count - len(line)
+        print(f"  ℹ️  Safety top-up: adding {needed} number(s) to reach target count of {target_count}")
+        candidates = []
+        for num in range(1, len(probabilities) + 1):
+            if num not in line and num not in all_excluded:
+                candidates.append((probabilities[num - 1], num))
+        # Deterministic tie-breaking: highest probability first, then lowest number
+        candidates.sort(key=lambda x: (-x[0], x[1]))
+        for _, num in candidates[:needed]:
+            line.append(num)
     
     # Build pattern string dynamically
     pattern_parts = []

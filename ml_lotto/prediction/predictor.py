@@ -237,7 +237,8 @@ def generate_all_picks(
             number_categories,
             target_pattern,
             pools,
-            penalty_numbers if penalty_numbers else set()
+            penalty_set_for_model if penalty_set_for_model else set(),
+            pre_assigned_numbers=model_pre_assigned
         )
 
         # Combine pre-assigned numbers with selected numbers

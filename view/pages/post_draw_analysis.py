@@ -24,6 +24,53 @@ def load_analysis_data() -> Dict[str, Any]:
     return data
 
 
+def load_latest_draw_from_csv(csv_path: str = 'data/irish500.csv'):
+    """Load the most recent draw from the CSV file (chronologically sorted)."""
+    from datetime import datetime
+    try:
+        draws = []
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            lines = [l.strip() for l in f if l.strip()]
+        for line in lines[1:]:
+            parts = line.split(',')
+            if len(parts) >= 8:
+                date_str = parts[0].strip()
+                dt = None
+                for fmt in ("%d %b %Y", "%Y-%m-%d", "%d/%m/%Y"):
+                    try:
+                        dt = datetime.strptime(date_str, fmt)
+                        break
+                    except ValueError:
+                        pass
+                if dt:
+                    main_nums = [int(p.strip()) for p in parts[1:7]]
+                    bonus_num = int(parts[7].strip())
+                    draws.append({'dt': dt, 'date': date_str, 'main': main_nums, 'bonus': bonus_num})
+        if draws:
+            draws.sort(key=lambda x: x['dt'], reverse=True)
+            latest = draws[0]
+            return {'date': latest['date'], 'main': latest['main'], 'bonus': latest['bonus']}
+    except Exception:
+        pass
+    return None
+
+
+def load_latest_predictions_from_picks(picks_path: str = 'lottery_picks.txt'):
+    """Extract Model 4's candidate pool or predictions from lottery_picks.txt."""
+    import re
+    try:
+        with open(picks_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        pool_match = re.search(r'Full Pool \(ranked by probability\):\s*\[(.*?)\]', content)
+        if pool_match:
+            nums = [int(n.strip()) for n in pool_match.group(1).split(',') if n.strip().isdigit()]
+            if nums:
+                return nums
+    except Exception:
+        pass
+    return None
+
+
 def get_number_details(number: int, trigger_data: Dict, advanced_data: Dict) -> Dict[str, Any]:
     """Get detailed information about a specific number."""
     trigger_info = trigger_data.get(str(number), {})
@@ -171,8 +218,39 @@ def show():
 
     st.markdown("---")
 
+    # Quick Load Section
+    latest_draw = load_latest_draw_from_csv()
+    latest_preds = load_latest_predictions_from_picks()
+
+    st.subheader("⚡ Quick Load & Autofill")
+    col_ql1, col_ql2 = st.columns([2, 1])
+    with col_ql1:
+        if latest_draw:
+            st.info(f"📅 **Latest draw in dataset:** {latest_draw['date']} — **Main:** {', '.join(str(n) for n in sorted(latest_draw['main']))} | **Bonus:** {latest_draw['bonus']}")
+        else:
+            st.warning("⚠️ No draw data found in data/irish500.csv")
+    with col_ql2:
+        if st.button("📥 Autofill from Latest Draw & Predictions", use_container_width=True):
+            if latest_draw:
+                st.session_state["input_main_numbers"] = ', '.join(str(n) for n in sorted(latest_draw['main']))
+                st.session_state["input_bonus_number"] = str(latest_draw['bonus'])
+            if latest_preds:
+                st.session_state["input_predictions"] = ', '.join(str(n) for n in latest_preds)
+                st.session_state["input_prediction_count"] = len(latest_preds)
+            st.rerun()
+
     # Input Section
     st.header("📝 Enter Draw Results")
+
+    # Initialize session state keys directly matching widget keys
+    if 'input_main_numbers' not in st.session_state:
+        st.session_state['input_main_numbers'] = ""
+    if 'input_bonus_number' not in st.session_state:
+        st.session_state['input_bonus_number'] = ""
+    if 'input_prediction_count' not in st.session_state:
+        st.session_state['input_prediction_count'] = 20
+    if 'input_predictions' not in st.session_state:
+        st.session_state['input_predictions'] = ""
 
     col_input1, col_input2 = st.columns(2)
 
@@ -180,12 +258,14 @@ def show():
         st.subheader("🎯 Winning Numbers")
         winning_main_input = st.text_input(
             "Enter 6 Main Winning Numbers (comma-separated)",
+            key="input_main_numbers",
             placeholder="e.g., 5, 12, 23, 31, 42, 47",
             help="Enter the 6 main numbers that were drawn"
         )
 
         winning_bonus_input = st.text_input(
             "Enter Bonus Number",
+            key="input_bonus_number",
             placeholder="e.g., 15",
             help="Enter the bonus number"
         )
@@ -196,13 +276,14 @@ def show():
             "Number of Predictions",
             min_value=1,
             max_value=47,
-            value=20,
             step=1,
+            key="input_prediction_count",
             help="How many numbers did Model 4 predict? (Default: 20)"
         )
 
         predictions_input = st.text_input(
             f"Enter {prediction_count} Predicted Numbers (comma-separated)",
+            key="input_predictions",
             placeholder="e.g., 1, 3, 5, 7, 9, 11, ...",
             help=f"Enter the {prediction_count} numbers predicted by Model 4"
         )

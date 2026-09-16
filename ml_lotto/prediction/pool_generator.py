@@ -70,10 +70,10 @@ def generate_pool_from_model(
             elif category == 'cold':
                 cold_numbers.append(number_data)
 
-    # Sort each category by probability (descending)
-    hot_numbers.sort(key=lambda x: x['probability'], reverse=True)
-    medium_numbers.sort(key=lambda x: x['probability'], reverse=True)
-    cold_numbers.sort(key=lambda x: x['probability'], reverse=True)
+    # Sort each category by probability (descending), tie-break by number (ascending)
+    hot_numbers.sort(key=lambda x: (-x['probability'], x['number']))
+    medium_numbers.sort(key=lambda x: (-x['probability'], x['number']))
+    cold_numbers.sort(key=lambda x: (-x['probability'], x['number']))
 
     # Take top N from each category
     hot_candidates = hot_numbers[:hot_count]
@@ -83,8 +83,8 @@ def generate_pool_from_model(
     # Combine all candidates
     all_candidates = hot_candidates + medium_candidates + cold_candidates
 
-    # Sort combined pool by probability (descending)
-    all_candidates.sort(key=lambda x: x['probability'], reverse=True)
+    # Sort combined pool by probability (descending), tie-break by number (ascending)
+    all_candidates.sort(key=lambda x: (-x['probability'], x['number']))
 
     # Extract pool numbers (sorted by probability)
     pool_numbers = [c['number'] for c in all_candidates]
