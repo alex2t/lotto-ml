@@ -54,10 +54,13 @@ def generate_predictions(
         # so row i must be number i+1. Build one row per number unconditionally and
         # let a missing number raise here rather than shifting every number above the
         # gap onto another number's probability (F-4).
+        # feat[col], never feat.get(col, 0): features_for_model is the exact column list the
+        # pipeline was fitted on. A silent 0 for a missing column would apply a coefficient
+        # fitted on real values to a constant, breaking train/serve parity with no error (F-9).
         X_pred_list = []
         for num in range(1, MAX_NUMBER + 1):
             feat = features_dict[num]
-            X_pred_list.append([feat.get(col, 0) for col in features_for_model])
+            X_pred_list.append([feat[col] for col in features_for_model])
 
         X_pred = np.array(X_pred_list)
 

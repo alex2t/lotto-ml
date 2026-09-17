@@ -22,14 +22,13 @@ effect. A fix is not finished until this file says so.
 |--:|:--|:--|:--|:--|
 | 1 | **F-8** | Freshness target barely constrains selection; bin 0 absorbs every slot | Medium | M |
 | 2 | **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
-| 3 | **F-9** | Serving features fall back to 0 for a column the model was trained on | Low (latent) | XS |
-| 4 | **C-15a** | Feature engine rebuilt 3-4x per run; O(N^2) gap memory | Low | S |
-| 5 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
-| 6 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
-| 7 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| 8 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 3 | **C-15a** | Feature engine rebuilt 3-4x per run; O(N^2) gap memory | Low | S |
+| 4 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
+| 5 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
+| 6 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
+| 7 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
 
-**8 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
+**7 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -89,34 +88,7 @@ bonus_idx = (model_idx - 1) % len(bonus_predictions)
 `None` handling take over.
 
 ---
-## 3. F-9 — Serving features fall back to 0 for a column the model was trained on
-
-**Severity: Low, currently latent.** Found while fixing F-4, in the same four lines.
-
-`ml_lotto/prediction/predictor.py:60` builds each serving row with a silent default:
-
-```python
-X_pred_list.append([feat.get(col, 0) for col in features_for_model])
-```
-
-`features_for_model` is the exact column list the model was fitted on. If a column were ever absent
-from the serving `features_dict` — a renamed feature, an analyzer that stopped emitting a key, a
-`drawpick.py` run that did not happen — every number would be served a constant 0 for it, and the
-model would apply a coefficient fitted on real values to a column that no longer exists. Nothing
-would print, and train/serve parity would break silently. This is the same `.get(key, 0)` pattern
-that produced the phantom `total_count` and `recent_14` columns and the vacuous interaction
-thresholds.
-
-Measured 2026-09-17: 0 of 47 numbers are missing any column, for all four main models, so no value
-is being fabricated today.
-
-**Fix.** `feat[col]`, so a missing column raises where it happens. The only reason it is not done
-already is that it widens F-4's blast radius from "a missing number" to "a missing column", and it
-deserves its own verification run.
-
----
-
-## 4. C-15a — The feature engine is rebuilt several times per run
+## 3. C-15a — The feature engine is rebuilt several times per run
 
 **Severity: Low** (performance and memory only). Carried from the code review.
 
@@ -138,7 +110,7 @@ sum of squares, max) in O(N × 47).
 with running moments.
 
 ---
-## 5. F-6 — The ensemble machinery cannot be reached from the pipeline
+## 4. F-6 — The ensemble machinery cannot be reached from the pipeline
 
 **Severity: Low.**
 
@@ -155,7 +127,7 @@ the config flag rather than leaving 341 lines that look load-bearing. With all f
 chance, ensembling them will not help — resolve the modelling question first.
 
 ---
-## 6. C-6b — The two feature paths use different serving reference dates
+## 5. C-6b — The two feature paths use different serving reference dates
 
 **Severity: Low.** Carried from the code review.
 
@@ -173,7 +145,7 @@ predicted should be measured as of that draw — so move `extractor.py` onto the
 date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
 
 ---
-## 7. C-17b — The legacy test files are not tests
+## 6. C-17b — The legacy test files are not tests
 
 **Severity: Low.** Carried from the code review.
 
@@ -195,7 +167,7 @@ real and run in about 5 seconds. A plain `pytest tests/` still cannot be used be
 `pytest.ini` so `pytest` runs clean from the repo root.
 
 ---
-## 8. F-7 — Standalone analysis scripts read a window that has never existed
+## 7. F-7 — Standalone analysis scripts read a window that has never existed
 
 **Severity: Low.** Carried from the code review, confirmed in the final pass.
 
@@ -215,7 +187,7 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 9. Improvements (not defects)
+## 8. Improvements (not defects)
 
 Carried from the code review's improvement list, kept here so the register is complete.
 
@@ -283,10 +255,41 @@ Every item below was fixed and verified against the live pipeline.
 | F-3 | Decision threshold tuned and scored on the same validation rows | `model_metrics.py` |
 | F-4 | Probability array built conditionally while every consumer indexed it positionally | `predictor.py` |
 | F-10 | Dead look-ahead guard printed a false reassurance; contradictory split constant | `hmc_analyzer.py`, `lotto_analysis/config/config.py` |
+| F-9 | Serving features fell back to 0 for a column the model was trained on | `predictor.py`, `bonus_predictor.py` |
 | F-11 | HMC categorization measured days against wall-clock today | `hmc_categorization_analyzer.py` |
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-9 — Serving features fell back to 0 for a column the model was trained on
+
+**Root cause.** `[feat.get(col, 0) for col in features_for_model]`, where `features_for_model` is the
+exact column list the pipeline was fitted on. A column absent from the serving dict - a renamed
+feature, an analyzer that stopped emitting a key, a `drawpick.py` run that did not happen - would be
+served as a constant 0 to every number, and the model would apply a coefficient fitted on real values
+to a column that no longer exists. Nothing prints; train/serve parity breaks silently. Same
+`.get(key, 0)` pattern that produced the phantom `total_count` and `recent_14` columns.
+
+**A second site was found during the fix.** F-9 recorded only
+`ml_lotto/prediction/predictor.py:60`, because it was written from the F-4 investigation, which
+touched that line. `ml_lotto/prediction/bonus_predictor.py:51` carried the identical pattern and had
+never been examined. Both are fixed; fixing only the recorded one would have been the "changed one
+side only" failure the parity contract exists to prevent.
+
+**Fix.** `feat[col]` at both sites, so a missing column raises where it happens. Each carries a
+comment saying why `.get(col, 0)` is wrong there, since the bare indexing otherwise looks like an
+oversight waiting to be "hardened".
+
+**Measured before/after.** Verified no column is missing before making it raise: 0 missing across all
+five models with named feature lists (13, 9, 21, 5 and 20 columns) x 47 numbers. After the change
+`quickpick.py` exits 0 with no `KeyError`, picks are unchanged
+(`[2, 4, 5, 27, 42, 43]`+45, `[6, 23, 37, 39, 41, 46]`, `[9, 10, 32, 38, 40, 47]`+19) and all six
+model AUCs are unchanged (0.5074 / 0.5011 / 0.5118 / 0.5257 / 0.4979 / 0.5454).
+
+**Tests.** No new test. The change converts a silent wrong answer into a loud failure; asserting it
+would mean constructing a serving dict with a column removed, which tests Python's `KeyError` rather
+than this system. The existing 79 pass, and `test_walk_forward_parity.py` remains the real guard -
+it checks the columns actually agree.
 
 ### F-11 — HMC categorization measured days against wall-clock today
 

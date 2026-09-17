@@ -48,7 +48,9 @@ def generate_bonus_predictions(
     for num in range(1, 48):
         if num in bonus_features_dict:
             feat = bonus_features_dict[num]
-            record = [feat.get(col, 0) for col in bonus_features]
+            # feat[col], never feat.get(col, 0) - see F-9. A missing column must raise here
+            # rather than be served as a constant the model was never fitted on.
+            record = [feat[col] for col in bonus_features]
             X_pred_list.append(record)
             valid_numbers.append(num)
     
