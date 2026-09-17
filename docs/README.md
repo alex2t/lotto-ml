@@ -13,6 +13,8 @@ replacing 15 files (~11,900 lines) written in late 2025 that had drifted out of 
 | [`json-artifacts.md`](json-artifacts.md) | agent + human | current - the ~26 JSON files, verified inventory |
 | [`dashboard-manual.md`](dashboard-manual.md) | human | current - operating the Streamlit dashboard, page by page |
 | [`ml-concepts.md`](ml-concepts.md) | human | background - general ML explanation, **not** project spec |
+| [`implementation.md`](implementation.md) | proposal | **plan, not spec** - Dynamic Walk-Forward Feature Generation, unimplemented |
+| [`feature_review.md`](feature_review.md) | agent + human | assessment of that proposal, claims checked against the code |
 
 ## Where the authority actually lies
 
