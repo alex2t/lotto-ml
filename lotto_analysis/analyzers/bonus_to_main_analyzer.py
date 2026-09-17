@@ -123,10 +123,13 @@ def calculate_per_number_transition_profiles(
         else:
             profile['days_since_last_bonus'] = None
 
-        # Most common category/freshness when bonus
+        # Most common category/freshness when bonus.
+        # sorted() is required, not cosmetic: max() returns the first maximal element in iteration
+        # order, and set iteration order varies between processes under hash randomisation. Without
+        # it a tie resolves differently on each run and this artifact changes with no data change.
         if profile['category_when_bonus']:
             profile['most_common_category'] = max(
-                set(profile['category_when_bonus']),
+                sorted(set(profile['category_when_bonus'])),
                 key=profile['category_when_bonus'].count
             )
         else:
@@ -134,7 +137,7 @@ def calculate_per_number_transition_profiles(
 
         if profile['freshness_when_bonus']:
             profile['most_common_freshness'] = max(
-                set(profile['freshness_when_bonus']),
+                sorted(set(profile['freshness_when_bonus'])),
                 key=profile['freshness_when_bonus'].count
             )
         else:

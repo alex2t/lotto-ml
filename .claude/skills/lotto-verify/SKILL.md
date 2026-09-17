@@ -34,9 +34,11 @@ regression — `matplotlib.use('Agg')` must come before `import matplotlib.pyplo
 python .claude/skills/lotto-verify/verify.py
 ```
 
-This runs the 37 real tests, re-derives train/serve parity from the data, validates every generated
-ticket, and prints the validation metrics with the 2 SE noise floor. It exits non-zero if anything
-fails.
+This runs the 79 real tests across the nine real test files, re-derives train/serve parity from the
+data, validates every generated ticket, and prints the validation metrics with the 2 SE noise floor.
+It exits non-zero if anything fails. The nine files, and what each one guards, are listed in
+[`tests/CLAUDE.md`](../../../tests/CLAUDE.md) - if you add a real test, add it to both that list and
+`verify.py`.
 
 To compare metrics against a baseline you saved before the change:
 
@@ -69,8 +71,40 @@ globally constant ones carry no information at all.
 
 ## After verifying
 
-Update [`issue.md`](../../../issue.md) before reporting back — it is the register, and a change is
-not finished until it is current:
+Two registers must be current before you report back. A change is not finished until both are.
+
+### 1. The folder `CLAUDE.md` files
+
+Each substantial folder has a `CLAUDE.md` holding the invariants that apply inside it. They are what
+stops the next agent rediscovering a convention the hard way, so a stale one is worse than no file —
+it gets trusted over the source.
+
+For **every folder you changed a file in**, open its `CLAUDE.md` and check the change did not make
+anything in it untrue. Then check the root [`CLAUDE.md`](../../../CLAUDE.md) the same way.
+
+| If you changed | Check |
+|:--|:--|
+| `lotto_analysis/analyzers/` — which JSON an analyzer writes, or a phase | `lotto_analysis/analyzers/CLAUDE.md` |
+| `ml_lotto/features/` — a counted-over convention, a window, either feature path | `ml_lotto/features/CLAUDE.md` |
+| `ml_lotto/config.py` or `ml_lotto/models/` — a model config, params, grids | `ml_lotto/models/CLAUDE.md` |
+| `ml_lotto/prediction/` — a filter, or the selection/filters boundary | `ml_lotto/prediction/CLAUDE.md` |
+| `ml_lotto/data/` — an artifact added or a validation rule | `ml_lotto/data/CLAUDE.md` |
+| `tests/` — a test added, or a print-script promoted | `tests/CLAUDE.md` **and** `verify.py`'s list |
+| `view/` — a dashboard page | `view/pages/CLAUDE.md` **and** `app.py` |
+| `scripts/` or `analysis/` | that folder's `CLAUDE.md` |
+| a metric, feature, model or artifact a doc describes | the matching file in `docs/` |
+
+A new folder worth documenting needs its own `CLAUDE.md`, an `@` import line in the root
+`CLAUDE.md`, and a row in its folder-guide table. The imports are deliberate — do not convert the
+folder guides back to on-demand loading.
+
+Report which ones you updated, or state plainly that none needed it. Do not claim a file is current
+without opening it.
+
+### 2. `issue.md`
+
+Update [`issue.md`](../../../issue.md) — it is the defect register, and a change is not finished
+until it is current:
 
 - **Anything found**, including what this run could not fix and anything noticed in passing: next
   free `F-n`, a row in the **Priority summary** in severity order, and a section with file:line
