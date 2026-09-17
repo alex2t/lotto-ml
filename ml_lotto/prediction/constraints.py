@@ -172,3 +172,68 @@ def display_available_numbers(
     for i in range(c_max_threshold + 1):
         name = f"C{i}" if i < c_max_threshold else f"C>={i}"
         print(f"    {name}: {fresh_counts[i]} numbers")
+
+def reachable_pattern(
+    target_pattern: Dict[int, int],
+    pools: Dict[str, Dict[int, List]],
+    model_config: Dict[str, Any]
+) -> Dict[int, int]:
+    """
+    The part of `target_pattern` a model can actually achieve, given its HMC quotas.
+
+    The freshness bins are not spread evenly across the HMC categories, so a target can be
+    unreachable however selection is ordered. At the time of writing every bin 1 and bin 2
+    candidate is hot, so a model with 2 hot slots cannot place 3 non-bin-0 numbers no matter
+    what the target asks for. Feeding selection a target it cannot meet makes the miss look
+    like a selection failure and hides the real constraint (F-13).
+
+    Allocates scarce bins first, and within a bin draws on the most constrained HMC category
+    first - the same ordering `selection.pick_line_hybrid` uses, so the result is attainable
+    rather than merely optimistic. Leftover slots fall to whichever bins can still absorb them.
+
+    Returns a pattern summing to the same number of slots as the model's quotas.
+    """
+    quotas = {
+        'hot': model_config['hot_count'],
+        'medium': model_config['medium_count'],
+        'cold': model_config['cold_count'],
+    }
+    supply = {
+        hmc: {b: len(pools.get(hmc, {}).get(b, [])) for b in target_pattern}
+        for hmc in quotas
+    }
+
+    # How many bins each category can serve, and how many categories each bin has.
+    bin_suppliers = {b: sum(1 for hmc in quotas if supply[hmc][b]) for b in target_pattern}
+    cat_breadth = {hmc: sum(1 for b in target_pattern if supply[hmc][b]) for hmc in quotas}
+
+    remaining = dict(quotas)
+    achieved = {b: 0 for b in target_pattern}
+
+    def draw(bin_index: int, wanted: int) -> None:
+        """Fill up to `wanted` slots in this bin, most constrained category first."""
+        for hmc in sorted(quotas, key=lambda h: (cat_breadth[h], h)):
+            if wanted <= 0:
+                return
+            take = min(wanted, remaining[hmc], supply[hmc][bin_index])
+            if take > 0:
+                remaining[hmc] -= take
+                supply[hmc][bin_index] -= take
+                achieved[bin_index] += take
+                wanted -= take
+
+    # Scarce bins first: a bin only one category can serve must claim its slots before a
+    # flexible bin spends that category's quota.
+    for bin_index in sorted(target_pattern, key=lambda b: (bin_suppliers[b], b)):
+        draw(bin_index, target_pattern[bin_index])
+
+    # Slots the target could not place still have to go somewhere.
+    leftover = sum(remaining.values())
+    if leftover:
+        for bin_index in sorted(target_pattern, key=lambda b: (bin_suppliers[b], b)):
+            draw(bin_index, leftover)
+            leftover = sum(remaining.values())
+            if not leftover:
+                break
+
+    return achieved

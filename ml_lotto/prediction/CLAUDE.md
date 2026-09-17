@@ -31,8 +31,14 @@ is playable and repairs it if not. Keep those two jobs separate.
   pick. Both halves are needed - ranking alone still lets hot spend the bin 0 quota that medium and
   cold have no alternative to. See F-8 in `issue.md`.
 - **A model's HMC ratio can make the freshness target unreachable.** With 2 hot slots a line can hold
-  at most 2 non-bin-0 numbers, whatever the target asks for. That is a structural limit, not a
-  selection bug - do not rewrite selection chasing it. See F-13, which is open.
+  at most 2 non-bin-0 numbers, whatever the target asks for. `constraints.reachable_pattern()`
+  computes what a model can actually achieve and `predictor.py` passes that to selection, printing
+  the shortfall. A missed bin there is a structural limit, not a selection bug - do not rewrite
+  selection chasing it. See F-13.
+- **`reachable_pattern()` must stay consistent with `pick_line_hybrid()`.** It predicts what
+  selection will do by mirroring its ordering - scarce bins first, most-constrained category first.
+  Change one and the other is wrong, and the shortfall message starts lying. It is validated against
+  the achieved patterns, not against the target.
 - The `hot/medium/cold/generic_count` keys mean different things per model. Models 1-3 sum to 6 -
   they are the composition of the line (4/1/1, 3/1/2, 2/2/2). **Model 4 is a pool generator**: its
   10/5/5 defines a 20-number ranked pool that `pool_generator.py` consumes, not a line. Do not
