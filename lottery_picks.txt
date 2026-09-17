@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2026-09-17 23:07:36
+LOTTERY PICKS - GENERATED 2026-09-17 23:40:26
 ======================================================================
 INTERACTION FEATURES EDITION V3.16
 Model 1: 6 main (ML-optimized with interactions) + 1 bonus
@@ -8,10 +8,10 @@ Model 3: 6 main (complexity explorer) + 1 bonus
 Model 4: Candidate pool generator (configurable pool size)
 ======================================================================
 
-Line 1: Momentum Specialist [4H-1M-1C+0G | C0=6, C1=0, C_GE_2=0]
-Main Numbers (6): [2, 4, 5, 27, 42, 43]
+Line 1: Momentum Specialist [4H-1M-1C+0G | C0=3, C1=2, C_GE_2=1]
+Main Numbers (6): [5, 13, 15, 24, 42, 43]
 Bonus Ball: 45
-Complete: [2, 4, 5, 27, 42, 43] + BONUS 45
+Complete: [5, 13, 15, 24, 42, 43] + BONUS 45
 Description: Focus on recency and momentum - predicts hot/trending numbers across all 7 positions
 
 Top 10 Most Important Features:
@@ -26,10 +26,10 @@ Top 10 Most Important Features:
    9. rolling_rate_10                     :   0.0264
   10. total_count                         :   0.0096
 
-Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [3H-1M-2C+0G | C0=6, C1=0, C_GE_2=0]
-Main Numbers (6): [6, 23, 37, 39, 41, 46]
+Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [3H-1M-2C+0G | C0=3, C1=2, C_GE_2=1]
+Main Numbers (6): [6, 8, 9, 23, 31, 39]
 Bonus Ball: None (jackpot optimizer - main 6 only)
-Complete: [6, 23, 37, 39, 41, 46] (6 main only)
+Complete: [6, 8, 9, 23, 31, 39] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) - focuses on stability and long-term patterns
 
 Top 10 Most Important Features:

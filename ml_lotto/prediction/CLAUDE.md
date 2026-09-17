@@ -25,6 +25,14 @@ is playable and repairs it if not. Keep those two jobs separate.
 
 ## Rules
 
+- **The freshness bins are not spread evenly across HMC categories**, so selection order matters.
+  Currently every bin 1 and bin 2 candidate is hot; medium and cold can supply only bin 0. So
+  `selection.py` takes the most-constrained category first **and** re-ranks the bins before every
+  pick. Both halves are needed - ranking alone still lets hot spend the bin 0 quota that medium and
+  cold have no alternative to. See F-8 in `issue.md`.
+- **A model's HMC ratio can make the freshness target unreachable.** With 2 hot slots a line can hold
+  at most 2 non-bin-0 numbers, whatever the target asks for. That is a structural limit, not a
+  selection bug - do not rewrite selection chasing it. See F-13, which is open.
 - The `hot/medium/cold/generic_count` keys mean different things per model. Models 1-3 sum to 6 -
   they are the composition of the line (4/1/1, 3/1/2, 2/2/2). **Model 4 is a pool generator**: its
   10/5/5 defines a 20-number ranked pool that `pool_generator.py` consumes, not a line. Do not

@@ -70,44 +70,57 @@ def pick_line_hybrid(
         if count_needed <= 0:
             return picked
 
-        # Sort freshness bins by how much we need them (gap)
-        freshness_priority = sorted(
-            freshness_needed.keys(),
-            key=lambda f: freshness_needed[f] - freshness_counts[f],
-            reverse=True
-        )
+        def best_available(fresh_cat: int, allow_penalized: bool) -> Optional[int]:
+            """Highest-probability unused number in this bin, or None if the bin is exhausted."""
+            for prob, num in pools[hmc_cat].get(fresh_cat, []):
+                if num in line or num in picked or num in all_excluded:
+                    continue
+                if not allow_penalized and num in penalty_numbers:
+                    continue
+                return num
+            return None
 
-        # Pass 1: Try to pick unpenalized numbers first (C-11 fix: check bound before append)
-        for fresh_cat in freshness_priority:
-            if len(picked) >= count_needed:
-                break
-            available = pools[hmc_cat].get(fresh_cat, [])
-            for prob, num in available:
-                if len(picked) >= count_needed:
-                    break
-                if num not in line and num not in picked and num not in all_excluded and num not in penalty_numbers:
-                    picked.append(num)
-                    freshness_counts[fresh_cat] += 1
+        # Pass 1 takes unpenalized numbers, pass 2 allows penalized ones if the pool ran short.
+        for allow_penalized in (False, True):
+            while len(picked) < count_needed:
+                # Re-rank the bins before every pick. Ranking once and draining the top bin is
+                # what let bin 0 - which holds roughly half the candidates - absorb every slot
+                # and made the target advisory rather than binding (F-8). freshness_counts is
+                # shared across the hot/medium/cold calls, so the target applies to the line.
+                ranked = sorted(
+                    freshness_needed.keys(),
+                    key=lambda f: freshness_needed[f] - freshness_counts[f],
+                    reverse=True
+                )
 
-        # Pass 2: Fallback to penalized numbers if unpenalized pool was insufficient
-        if len(picked) < count_needed:
-            for fresh_cat in freshness_priority:
-                if len(picked) >= count_needed:
-                    break
-                available = pools[hmc_cat].get(fresh_cat, [])
-                for prob, num in available:
-                    if len(picked) >= count_needed:
-                        break
-                    if num not in line and num not in picked and num not in all_excluded:
-                        picked.append(num)
+                chosen = None
+                for fresh_cat in ranked:
+                    chosen = best_available(fresh_cat, allow_penalized)
+                    if chosen is not None:
                         freshness_counts[fresh_cat] += 1
+                        break
+
+                if chosen is None:
+                    break  # this HMC category is exhausted at this penalty level
+                picked.append(chosen)
 
         return picked
     
-    # Pick Hot, Medium, Cold numbers
-    line.extend(pick_from_hmc_pool('hot', h))
-    line.extend(pick_from_hmc_pool('medium', m))
-    line.extend(pick_from_hmc_pool('cold', c))
+    # Pick Hot, Medium, Cold - most freshness-constrained category first.
+    #
+    # The categories do not span the freshness bins evenly: at the time of writing every bin 1 and
+    # bin 2 candidate is hot, while medium and cold are entirely bin 0. Picking hot first spends
+    # the bin 0 quota on the only category that could have supplied the scarce bins, and medium
+    # and cold then overshoot bin 0 because they have nowhere else to go. Taking the constrained
+    # categories first leaves the flexible one to fill what is actually still needed (F-8).
+    #
+    # HMC categories are disjoint, so the order changes only which freshness bins get claimed,
+    # never which numbers are available to a category.
+    requests = [('hot', h), ('medium', m), ('cold', c)]
+    requests.sort(key=lambda req: sum(1 for entries in pools[req[0]].values() if entries))
+
+    for hmc_cat, count_for_cat in requests:
+        line.extend(pick_from_hmc_pool(hmc_cat, count_for_cat))
     
     # PHASE 2: Fill generic slots, prioritizing freshness gaps
     if g > 0:
