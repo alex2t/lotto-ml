@@ -1,7 +1,11 @@
 # Review: Dynamic Walk-Forward Feature Generation
 
-Assessment of [`implementation.md`](implementation.md), 2026-09-18. Claims checked against the code,
+Assessment of the `implementation.md` proposal, 2026-09-18. Claims were checked against the code,
 not against the document.
+
+**The proposal was declined and the document deleted** (it lived at `docs/implementation.md` and a
+byte-identical `doc/implementation.md`; recoverable from git at commit `28ac724`). This review is
+kept as the record of why, so the plan is not re-proposed without new information.
 
 **Verdict: the engineering is sound, the premise is largely spent.** Most of the value the plan
 promises has either already been delivered by earlier fixes, or applies to features no model reads.
@@ -122,6 +126,5 @@ and it will be wrong the moment the work starts or is descoped. `docs/CLAUDE.md`
 invariant, not the diff. The durable form is an `issue.md` entry per piece plus a short decision
 record of what was chosen and why.
 
-Also: `doc/implementation.md` and `docs/implementation.md` are byte-identical copies
-(`5de609fc07a0f088f60ffe9b98b27a1b`). Keep one. `docs/` is the folder the index and the rest of the
-documentation live in.
+The plan also existed as two byte-identical copies, in `doc/` and `docs/`. Both are deleted, along
+with the stray `doc/` folder.
