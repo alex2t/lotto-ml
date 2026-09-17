@@ -15,7 +15,8 @@ from ml_lotto.prediction.constraints import (
     get_optimal_pattern_distribution,
     categorize_numbers_by_freshness,
     build_dual_categorized_pools,
-    display_available_numbers
+    display_available_numbers,
+    reachable_pattern
 )
 from ml_lotto.prediction.selection import pick_line_hybrid
 from ml_lotto.prediction.filters import (
@@ -235,12 +236,25 @@ def generate_all_picks(
         model_config_adjusted['cold_count'] = c
         model_config_adjusted['generic_count'] = g
         
+        # The global target ignores this model's HMC ratio, and the two can be mutually
+        # unsatisfiable: every bin 1 and bin 2 candidate is currently hot, so a model with few
+        # hot slots cannot place the non-bin-0 numbers the target asks for. Selection is given
+        # the reachable pattern instead, and the shortfall is reported rather than showing up
+        # as a silent miss (F-13).
+        model_target = reachable_pattern(target_pattern, pools, model_config_adjusted)
+        if model_target != target_pattern:
+            shortfall = ', '.join(
+                f"C{b}: {target_pattern[b]} -> {model_target[b]}"
+                for b in sorted(target_pattern) if model_target[b] != target_pattern[b]
+            )
+            print(f"  Target unreachable for this HMC ratio, using {model_target} ({shortfall})")
+
         selected_numbers, _, achieved_pattern = pick_line_hybrid(
             model_config_adjusted,
             probabilities,
             features_dict,
             number_categories,
-            target_pattern,
+            model_target,
             pools,
             penalty_set_for_model if penalty_set_for_model else set(),
             pre_assigned_numbers=model_pre_assigned

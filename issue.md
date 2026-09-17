@@ -20,66 +20,18 @@ effect. A fix is not finished until this file says so.
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-13** | Freshness target and HMC ratio are set independently and can be mutually unsatisfiable | Medium | M |
-| 2 | **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
-| 3 | **C-15a** | Feature engine rebuilt 3-4x per run; O(N^2) gap memory | Low | S |
-| 4 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
-| 5 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
-| 6 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| 7 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 1 | **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
+| 2 | **C-15a** | Feature engine rebuilt 3-4x per run; O(N^2) gap memory | Low | S |
+| 3 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
+| 4 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
+| 5 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
+| 6 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
 
-**7 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
-
----
-
-## 1. F-13 — The freshness target and the HMC ratio can be mutually unsatisfiable
-
-**Severity: Medium.** Found while fixing F-8; it is the reason F-8 could only be partly fixed.
-
-`target_pattern` comes from `get_optimal_pattern_distribution()` and each model's hot/medium/cold
-counts come from `ml_lotto/config.py`. **Nothing reconciles the two.** They can demand incompatible
-things, and no selection algorithm can satisfy both.
-
-The freshness bins are not spread evenly across HMC categories. Measured 2026-09-17:
-
-| HMC category | bin 0 | bin 1 | bin 2+ | total |
-|:--|--:|--:|--:|--:|
-| hot | 7 | 16 | 7 | 30 |
-| medium | 7 | 0 | 0 | 7 |
-| cold | 10 | 0 | 0 | 10 |
-| **total** | **24** | **16** | **7** | **47** |
-
-Every bin 1 and bin 2 candidate is **hot**. A line can therefore hold at most as many non-bin-0
-numbers as it has hot slots, whatever the target says:
-
-| Model | Hot slots | Max non-bin-0 | Target needs | Reachable? |
-|:--|--:|--:|--:|:--|
-| Momentum Specialist | 4 | 4 | 3 | yes |
-| Jackpot Optimizer | 3 | 3 | 3 | exactly |
-| Complexity Explorer | 2 | 2 | 3 | **no** |
-
-Model 3 cannot reach `C0=3, C1=2, C_GE_2=1` under any selection strategy. After the F-8 fix it sits
-at `C0=4, C1=2` - its structural optimum, not a selection failure.
-
-This is also not stable: the split depends on how recency happens to line up with the freshness
-window, so a model that is satisfiable this week may not be next week, silently.
-
-**Fix.** Options, in rough order of honesty:
-
-1. Derive the target *conditionally on the HMC ratio* rather than globally, so each model gets a
-   pattern it can actually reach.
-2. Have `get_optimal_pattern_distribution()` return a target plus a feasibility check, and log
-   loudly when a model's ratio makes it unreachable, instead of silently missing.
-3. Establish whether the freshness pattern is worth enforcing at all. If it carries no signal, both
-   the target and this whole reconciliation problem should be deleted rather than solved.
-
-Option 3 should come first. See the note under F-8 in Appendix A - this cannot be measured from
-`model_comparison.csv`, which scores the models, not the selection. It needs a backtest of generated
-lines against actual draws.
+**6 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
-## 2. F-5 — `assign_bonus_to_models` divides by zero on an empty list
+## 1. F-5 — `assign_bonus_to_models` divides by zero on an empty list
 
 **Severity: Low, latent.**
 
@@ -97,7 +49,7 @@ bonus_idx = (model_idx - 1) % len(bonus_predictions)
 `None` handling take over.
 
 ---
-## 3. C-15a — The feature engine is rebuilt several times per run
+## 2. C-15a — The feature engine is rebuilt several times per run
 
 **Severity: Low** (performance and memory only). Carried from the code review.
 
@@ -119,7 +71,7 @@ sum of squares, max) in O(N × 47).
 with running moments.
 
 ---
-## 4. F-6 — The ensemble machinery cannot be reached from the pipeline
+## 3. F-6 — The ensemble machinery cannot be reached from the pipeline
 
 **Severity: Low.**
 
@@ -136,7 +88,7 @@ the config flag rather than leaving 341 lines that look load-bearing. With all f
 chance, ensembling them will not help — resolve the modelling question first.
 
 ---
-## 5. C-6b — The two feature paths use different serving reference dates
+## 4. C-6b — The two feature paths use different serving reference dates
 
 **Severity: Low.** Carried from the code review.
 
@@ -154,7 +106,7 @@ predicted should be measured as of that draw — so move `extractor.py` onto the
 date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
 
 ---
-## 6. C-17b — The legacy test files are not tests
+## 5. C-17b — The legacy test files are not tests
 
 **Severity: Low.** Carried from the code review.
 
@@ -176,7 +128,7 @@ real and run in about 5 seconds. A plain `pytest tests/` still cannot be used be
 `pytest.ini` so `pytest` runs clean from the repo root.
 
 ---
-## 7. F-7 — Standalone analysis scripts read a window that has never existed
+## 6. F-7 — Standalone analysis scripts read a window that has never existed
 
 **Severity: Low.** Carried from the code review, confirmed in the final pass.
 
@@ -196,7 +148,7 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 8. Improvements (not defects)
+## 7. Improvements (not defects)
 
 Carried from the code review's improvement list, kept here so the register is complete.
 
@@ -212,7 +164,12 @@ Carried from the code review's improvement list, kept here so the register is co
    anything. Note the current sum ∈ [84,206] and 3-odd/3-even filters push the *opposite* way,
    toward the most commonly played combinations — keep them for the match-3/4 tiers, not for
    jackpot EV.
-4. **MILP selection** (`review.md` §3.5) to replace greedy picking. Worth doing only once the
+4. **Establish whether the freshness pattern is worth enforcing.** The target is now correctly
+   computed (F-1), binding (F-8) and feasible (F-13), but nothing has ever shown it improves
+   outcomes. It cannot be measured from `model_comparison.csv`, which scores the models, not the
+   selection - it needs a backtest of generated lines against actual draws. If it carries no signal,
+   delete the mechanism rather than maintain it; three defects have now been fixed in it.
+5. **MILP selection** (`review.md` §3.5) to replace greedy picking. Worth doing only once the
    probabilities mean something.
 
 ---
@@ -264,12 +221,50 @@ Every item below was fixed and verified against the live pipeline.
 | F-3 | Decision threshold tuned and scored on the same validation rows | `model_metrics.py` |
 | F-4 | Probability array built conditionally while every consumer indexed it positionally | `predictor.py` |
 | F-10 | Dead look-ahead guard printed a false reassurance; contradictory split constant | `hmc_analyzer.py`, `lotto_analysis/config/config.py` |
+| F-13 | Freshness target could be unreachable for a model's HMC ratio, and missed it silently | `constraints.py`, `predictor.py` |
 | F-8 | Freshness target was consulted for ordering then discarded; bin 0 absorbed every slot | `selection.py` |
 | F-9 | Serving features fell back to 0 for a column the model was trained on | `predictor.py`, `bonus_predictor.py` |
 | F-11 | HMC categorization measured days against wall-clock today | `hmc_categorization_analyzer.py` |
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-13 — The freshness target could be unreachable for a model's HMC ratio
+
+**Root cause.** `target_pattern` came from `get_optimal_pattern_distribution()` and the hot/medium/
+cold counts from `ml_lotto/config.py`, with nothing reconciling them. The freshness bins are not
+spread evenly across HMC categories - measured 2026-09-17, every bin 1 and bin 2 candidate was hot
+(hot 7/16/7, medium 7/0/0, cold 10/0/0) - so a line can hold at most as many non-bin-0 numbers as it
+has hot slots. Model 3 has 2 hot slots against a target wanting 3 non-bin-0, and was therefore
+unsatisfiable by construction. It missed silently, and the miss looked like a selection failure.
+
+**Fix.** `constraints.reachable_pattern()` computes what a model can actually achieve from its HMC
+quotas and the live pool composition, allocating scarce bins first and drawing on the most
+constrained category first - the same ordering `selection.pick_line_hybrid` uses, so the result is
+attainable rather than optimistic. `predictor.py` passes that to selection and prints the shortfall:
+
+```
+Target unreachable for this HMC ratio, using {0: 4, 1: 2, 2: 0} (C0: 3 -> 4, C2: 1 -> 0)
+```
+
+**Measured before/after.** Picks are unchanged - `[5, 13, 15, 24, 42, 43]`, `[6, 8, 9, 23, 31, 39]`,
+`[9, 10, 32, 38, 40, 47]` - because the reachable pattern is what selection already achieved after
+F-8. The change makes the constraint visible and attributable, not different.
+
+Validated against the three known outcomes: `reachable_pattern` predicts `{0:3,1:2,2:1}`,
+`{0:3,1:2,2:1}` and `{0:4,1:2,2:0}`, matching all three lines exactly, Model 3's shortfall included.
+A feasibility calculation that disagreed with what selection produces would be worse than none.
+Slot conservation checked across all 28 hot/medium/cold splits summing to 6: no mismatches.
+
+**What this does not do.** Model 3 still cannot place 3 non-bin-0 numbers; that is arithmetic, not a
+bug. Two alternatives were rejected: deriving a per-model target from the freshness data would mean
+each model chases a different pattern, which is no longer the observed distribution the target
+represents; and changing the HMC ratios would be tuning the models to satisfy a mechanism whose value
+is unestablished.
+
+**Still open, as improvement 5.** Whether the freshness pattern is worth enforcing at all. If it
+carries no signal, the target, `reachable_pattern` and the whole reconciliation problem should be
+deleted rather than maintained.
 
 ### F-8 — The freshness target was consulted for ordering, then discarded
 
