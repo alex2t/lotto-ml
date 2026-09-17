@@ -20,27 +20,27 @@
         "category_statistics": {
             "hot": {
                 "count": 30,
-                "mean_days_since": 7.133333333333334,
+                "mean_days_since": 5.133333333333334,
                 "std_dev": 4.150058855696763,
-                "median": 7.0,
-                "min": 2.0,
-                "max": 14.0
+                "median": 5.0,
+                "min": 0.0,
+                "max": 12.0
             },
             "medium": {
                 "count": 7,
-                "mean_days_since": 20.857142857142858,
+                "mean_days_since": 18.857142857142858,
                 "std_dev": 3.1320159337914952,
-                "median": 21.0,
-                "min": 18.0,
-                "max": 25.0
+                "median": 19.0,
+                "min": 16.0,
+                "max": 23.0
             },
             "cold": {
                 "count": 10,
-                "mean_days_since": 58.4,
+                "mean_days_since": 56.4,
                 "std_dev": 26.567314923082122,
-                "median": 54.5,
-                "min": 32.0,
-                "max": 123.0
+                "median": 52.5,
+                "min": 30.0,
+                "max": 121.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -90,21 +90,21 @@
         "medium_cold_overlap": false,
         "categories_distinct": true,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 7.0,
-            "medium_cold_cutoff": 18.0
+            "hot_medium_cutoff": 5.0,
+            "medium_cold_cutoff": 16.0
         },
         "current_ranges": {
             "hot": {
-                "min": 2.0,
-                "max": 14.0
+                "min": 0.0,
+                "max": 12.0
             },
             "medium": {
-                "min": 18.0,
-                "max": 25.0
+                "min": 16.0,
+                "max": 23.0
             },
             "cold": {
-                "min": 32.0,
-                "max": 123.0
+                "min": 30.0,
+                "max": 121.0
             }
         }
     },
