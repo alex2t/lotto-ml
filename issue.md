@@ -164,11 +164,35 @@ Carried from the code review's improvement list, kept here so the register is co
    anything. Note the current sum ∈ [84,206] and 3-odd/3-even filters push the *opposite* way,
    toward the most commonly played combinations — keep them for the match-3/4 tiers, not for
    jackpot EV.
-4. **Establish whether the freshness pattern is worth enforcing.** The target is now correctly
-   computed (F-1), binding (F-8) and feasible (F-13), but nothing has ever shown it improves
-   outcomes. It cannot be measured from `model_comparison.csv`, which scores the models, not the
-   selection - it needs a backtest of generated lines against actual draws. If it carries no signal,
-   delete the mechanism rather than maintain it; three defects have now been fixed in it.
+4. **FROZEN - establish whether the freshness pattern is worth enforcing before changing it again.**
+
+   > **Change freeze, 2026-09-18.** No further work on the freshness-pattern mechanism -
+   > `get_optimal_pattern_distribution()`, `reachable_pattern()`, the bin ranking in
+   > `pick_line_hybrid()`, or the freshness bin categorisation - until its value is established.
+   > Watch and monitor only. A defect found in it is logged here and left open rather than fixed.
+   >
+   > **Why.** Three defects have been fixed in this one mechanism (F-1 target sized for 7 balls,
+   > F-8 target not binding, F-13 target unreachable), and nothing has ever shown it improves
+   > outcomes. It was mis-sized, then ignored, then infeasible, and across all of that no result
+   > would have looked different, because no measurement of it exists. Continuing to repair it
+   > spends effort on a feature that may not be worth having, and each fix adds coupling -
+   > `reachable_pattern()` must now mirror `pick_line_hybrid()`'s ordering or its shortfall message
+   > silently lies.
+   >
+   > **Lifting the freeze** requires the backtest below to return a result outside the noise band.
+   > If it returns a result inside the band, delete the mechanism instead of maintaining it.
+
+   **The backtest.** For each of the last ~60 draws `t`, build features conditioning only on draws
+   before `t` (the walk-forward engine already supports this), generate one line with freshness
+   enforcement and one without (probability rank + HMC ratio + ticket filters only), and score both
+   against the actual draw. Random expectation is 6 x 6/47 ~= 0.77 matches per line. Decide the rule
+   **before** running it: outside the noise band, keep; inside it, delete. Not "keep, inconclusive".
+
+   Note the cost asymmetry - line generation currently runs only for the next draw, so this needs a
+   walk-forward harness that does not exist. Building it is probably more work than deleting the
+   mechanism outright. That is a legitimate argument for deleting now, on the grounds that a fair
+   draw gives no reason to expect the pattern to help. The harness would, however, be reusable for
+   the same question about the HMC ratio and the diversity penalty.
 5. **MILP selection** (`review.md` §3.5) to replace greedy picking. Worth doing only once the
    probabilities mean something.
 
