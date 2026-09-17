@@ -282,8 +282,132 @@ Every item below was fixed and verified against the live pipeline.
 | F-2 | Bonus and bonus-to-main models had no validation split | `quickpick.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `trainer.py` |
 | F-3 | Decision threshold tuned and scored on the same validation rows | `model_metrics.py` |
 | F-4 | Probability array built conditionally while every consumer indexed it positionally | `predictor.py` |
+| F-10 | Dead look-ahead guard printed a false reassurance; contradictory split constant | `hmc_analyzer.py`, `lotto_analysis/config/config.py` |
+| F-11 | HMC categorization measured days against wall-clock today | `hmc_categorization_analyzer.py` |
+| F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-11 — HMC categorization measured days against wall-clock today
+
+**Root cause.** `hmc_categorization_analyzer.calculate_days_since_date()` used `datetime.now()` as
+the reference, while the rest of the layer references the most recent draw
+(`frequency_analyzer.calculate_days_since_last_hit`). Three call sites were affected
+(`calculate_category_anova`, `calculate_pairwise_comparisons`, `calculate_threshold_validation`).
+
+`data/lotto_hmc_categorization_validated.json` therefore changed **every calendar day** with no new
+draw and no code change. Observed: the copy committed 2026-09-17 (generated on the 16th) had
+`hot.min = 2.0`; a re-run on the 17th gave `3.0`, every statistic +1, `std_dev` byte-identical — the
+signature of a moving reference rather than changed data.
+
+There was a second effect, not noticed when the defect was logged. `suggested_thresholds` is read
+against `HMC_HOT_THRESHOLD = 13` / `HMC_COLD_THRESHOLD = 27`, which are **draw-relative**. The
+validated thresholds were on a clock-relative scale, so the two drifted further apart the longer the
+gap since the last draw. They are now on the same basis.
+
+**Fix.** Added `latest_last_seen(hmc_data)`, which derives the reference from the most recent
+`last_seen` in the data, and made `calculate_days_since_date(date_str, reference)` take it
+explicitly. Computed once per function and passed at all three call sites. No `datetime.now()`
+remains in the path.
+
+**Measured before/after** (run 2026-09-17, last draw 2026-09-14, so a -3 day shift):
+
+| Category | Before (clock) | After (last draw) |
+|:--|:--|:--|
+| hot | mean 8.133, min 3, max 15 | mean 5.133, min 0, max 12 |
+| medium | mean 21.857, min 19, max 26 | mean 18.857, min 16, max 23 |
+| cold | mean 59.400, min 33, max 124 | mean 56.400, min 30, max 121 |
+
+`std_dev` byte-identical (`4.150058855696763`) and `p_value` identical (`1.2947678031855394e-13`),
+confirming a pure constant shift with the ANOVA verdict unchanged. `hot.min` is now 0, the correct
+answer for a number drawn in the most recent draw. `suggested_thresholds` 8.0/19.0 -> 5.0/16.0.
+Picks and all six model metrics unchanged.
+
+**Tests.** No new test. The defect only reproduces across a calendar day boundary, so a meaningful
+regression test would have to inject a reference date; the fix removes the clock from the path
+entirely, which `grep -n "datetime.now()"` over the module now confirms. Covered by the existing 79.
+
+---
+
+### F-12 — A tie-break over a set made an artifact non-deterministic
+
+**Root cause.** `max(set(values), key=values.count)` at four sites -
+`bonus_to_main_analyzer.py:128,136` and `generate_bonus_to_main_json.py:122,128`. `max()` returns the
+first maximal element in iteration order, and set iteration order varies between processes under
+hash randomisation (`sys.flags.hash_randomization` is 1). On a tie the winner changed run to run, so
+`data/lotto_bonus_to_main_patterns.json` differed between identical runs, dirtying the working tree
+and masking real diffs. It already cost time during the F-10 verification, where a genuine
+comparison had to be separated from this noise.
+
+**Fix.** `sorted()` around the set at all four sites, so ties resolve to the first candidate in
+sorted order. Each site carries a comment stating the call is load-bearing - this class has now
+recurred three times (C-2, N-4, F-12) and an uncommented `sorted()` reads as removable noise.
+
+**Measured before/after.** Three `drawpick.py` runs under `PYTHONHASHSEED` 1, 2 and 12345 now produce
+a byte-identical artifact (`bbc69db8bd522d90b9da4b689c5a0ffc`); before the fix the same file varied
+between runs at a fixed seed.
+
+Three values changed and are now pinned. All five numbers that had ever varied were verified to be
+genuine ties, so no majority is overruled:
+
+| Number | Counts | Tied | Now |
+|--:|:--|:--|:--|
+| 2 | hot 4, cold 4, medium 4 | three-way | cold |
+| 6 | cold 3, medium 3, hot 2 | cold/medium | cold |
+| 21 | cold 2, medium 2, hot 1 | cold/medium | cold |
+| 1 | hot 7, medium 7, cold 2 | hot/medium | hot |
+| 40 | medium 4, hot 4, cold 3 | hot/medium | hot |
+
+Picks and all six model metrics unchanged.
+
+**Tests.** No new test. Reproducing it requires a subprocess with a forced `PYTHONHASHSEED`, since
+hash randomisation is fixed within a process - a same-process test cannot fail. Verified empirically
+across three seeds. A permanent guard would be worth adding if this class recurs a fourth time.
+
+### F-10 — The HMC look-ahead guard was dead code printing a false reassurance
+
+**Root cause.** `hmc_analyzer.py` sliced `all_draws[:train_end_index]` to exclude the validation
+window from the final HMC category assignment. With `VALIDATION_SPLIT_RATIO = 1.0` in
+`lotto_analysis/config/config.py`, `train_end_index` equalled `len(all_draws)`, so the slice excluded
+nothing. The guard ran and did nothing while printing `Calculating final categories WITHOUT
+look-ahead bias` and `Validation draws excluded: 0`.
+
+The guard was the leftover, not the ratio. `final_categories` is consumed by **serving** only - it
+reaches `lotto_trigger_periods.json` via `num_to_category` (`drawpick.py:231`) and
+`ml_lotto/features/extractor.py` reads it to build the row for the next draw, where conditioning on
+all history is correct. Training never reads it: `walk_forward.py:225-227` derives `category` itself,
+point-in-time. The mechanism survived from a design that assumed these categories fed model fitting.
+
+Three numbers also described one concept: the comment said 80/20, the constant was 100/0, and
+`ml_lotto/config.py:57` is 85/15. The comment claimed `(matches ml_lotto/config.py)`, which was
+false, and acting on it - setting this side to 0.85 - would have changed HMC categorisation for the
+last 15% of draws, changed `lotto_trigger_periods.json`, and broken train/serve parity while training
+stayed put.
+
+**Fix.** Removed the dead slice and the misleading log lines; `calculate_days_since_last_hit` is now
+called on `all_draws` with a comment stating why that is correct and that training does not consume
+the value. Removed the now-unused `VALIDATION_SPLIT_RATIO` import from `hmc_analyzer.py` and the
+dead constant from `lotto_analysis/config/config.py`, replacing it with a note pointing at
+`ml_lotto/config.py` as the only split that exists. **Neither ratio was changed.**
+
+**Measured before/after.** Behaviour-preserving by construction, and verified:
+
+- Category distribution unchanged: Hot=30, Medium=7, Cold=10.
+- `data/lotto_trigger_periods.json` byte-identical.
+- Isolation test: `drawpick.py` run with the fix applied and with it reverted produced the identical
+  hash for every artifact (`c4e8a85...` for `lotto_hmc_categorization_validated.json`). The drift
+  against the committed copy predates this change - the committed `data/` was already stale.
+- `lottery_picks.txt` Line 1 unchanged: `[2, 4, 5, 27, 42, 43]` + bonus 45.
+- All six models unchanged to 4 dp: AUC 0.5074 / 0.5011 / 0.5118 / 0.5257 / 0.4979 / 0.5454, overfit
+  gaps 0.0190 / 0.0197 / 0.0511 / 0.0534 / 0.0331 / 0.0051.
+
+**Tests.** No new test - there is no behaviour to assert, the change removes code. Covered by the
+existing 79: `test_walk_forward_parity.py` (parity across the artifacts this touches),
+`test_no_constant_features.py`, `test_model_capacity.py`. All 79 pass after the change.
+
+**Note for the future.** The system is deliberately **not** 85/15 end to end. ML training holds out
+15% (`ml_lotto/config.py`). The analysis layer computes over all draws, which is correct for
+serving-time artifacts. Do not "harmonise" them.
 | N-3 | Top-K computed globally instead of per draw; overfit gap zero by construction | `model_metrics.py` |
 | N-4 | Bonus-pool tie-break non-deterministic | `bonus_predictor.py` |
 | N-5 | Two models could be assigned the same bonus ball | `quickpick.py` |
