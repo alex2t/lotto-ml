@@ -117,16 +117,20 @@ def calculate_per_number_profiles(draw_history, max_number=47):
             last_bonus_obj = datetime.strptime(profile['last_bonus_date'], "%Y-%m-%d")
             profile['days_since_last_bonus'] = (latest_date_obj - last_bonus_obj).days
 
-        # Most common category/freshness when bonus
+        # Most common category/freshness when bonus.
+        # sorted() is required, not cosmetic: max() returns the first maximal element in iteration
+        # order, and set iteration order varies between processes under hash randomisation. Without
+        # it a tie resolves differently on each run. Must match
+        # lotto_analysis/analyzers/bonus_to_main_analyzer.py.
         if profile['category_when_bonus']:
             profile['most_common_category'] = max(
-                set(profile['category_when_bonus']),
+                sorted(set(profile['category_when_bonus'])),
                 key=profile['category_when_bonus'].count
             )
 
         if profile['freshness_when_bonus']:
             profile['most_common_freshness'] = max(
-                set(profile['freshness_when_bonus']),
+                sorted(set(profile['freshness_when_bonus'])),
                 key=profile['freshness_when_bonus'].count
             )
 

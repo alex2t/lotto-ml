@@ -24,21 +24,37 @@ from scipy import stats
 import numpy as np
 
 
-def calculate_days_since_date(date_str: str) -> int:
+def latest_last_seen(hmc_data: Dict[str, Any]) -> datetime:
     """
-    Calculate days since a given date string.
+    Reference date for every days-since calculation: the most recent `last_seen` in the data.
+
+    Derived from the data, never from the clock. Using `datetime.now()` here made this artifact
+    change every calendar day with no new draw and no code change, which produced diffs nobody
+    made and masked real ones. Matches the convention in
+    frequency_analyzer.calculate_days_since_last_hit, which references the most recent draw.
+    """
+    dates = [
+        datetime.strptime(data['last_seen'], "%Y/%m/%d")
+        for num_str, data in hmc_data.items()
+        if num_str != 'analysis' and data.get('last_seen')
+    ]
+    return max(dates)
+
+
+def calculate_days_since_date(date_str: str, reference: datetime) -> int:
+    """
+    Calculate days from `date_str` to `reference`.
 
     Args:
         date_str: Date string in format "YYYY/MM/DD"
+        reference: Date to measure against, from latest_last_seen()
 
     Returns:
-        Number of days since the date
+        Number of days between the two dates
     """
     try:
         date_obj = datetime.strptime(date_str, "%Y/%m/%d")
-        today = datetime.now()
-        delta = today - date_obj
-        return delta.days
+        return (reference - date_obj).days
     except (ValueError, AttributeError):
         return 0
 
@@ -56,6 +72,8 @@ def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dictionary with ANOVA results
     """
+    reference = latest_last_seen(hmc_data)
+
     # Separate numbers by category
     hot_frequencies = []
     medium_frequencies = []
@@ -69,7 +87,7 @@ def calculate_category_anova(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
             category = data.get('category', 'unknown')
             # Calculate days_since from last_seen date
             last_seen = data.get('last_seen', '')
-            days_since = calculate_days_since_date(last_seen) if last_seen else 0
+            days_since = calculate_days_since_date(last_seen, reference) if last_seen else 0
 
             if category == 'hot':
                 hot_frequencies.append(days_since)
@@ -158,6 +176,8 @@ def calculate_pairwise_comparisons(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dictionary with pairwise comparison results
     """
+    reference = latest_last_seen(hmc_data)
+
     # Separate numbers by category
     hot_frequencies = []
     medium_frequencies = []
@@ -171,7 +191,7 @@ def calculate_pairwise_comparisons(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
             category = data.get('category', 'unknown')
             # Calculate days_since from last_seen date
             last_seen = data.get('last_seen', '')
-            days_since = calculate_days_since_date(last_seen) if last_seen else 0
+            days_since = calculate_days_since_date(last_seen, reference) if last_seen else 0
 
             if category == 'hot':
                 hot_frequencies.append(days_since)
@@ -292,6 +312,7 @@ def calculate_threshold_validation(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
     Returns:
         Dictionary with threshold validation results
     """
+    reference = latest_last_seen(hmc_data)
     hot_days = []
     medium_days = []
     cold_days = []
@@ -304,7 +325,7 @@ def calculate_threshold_validation(hmc_data: Dict[str, Any]) -> Dict[str, Any]:
             category = data.get('category', 'unknown')
             # Calculate days_since from last_seen date
             last_seen = data.get('last_seen', '')
-            days_since = calculate_days_since_date(last_seen) if last_seen else 0
+            days_since = calculate_days_since_date(last_seen, reference) if last_seen else 0
 
             if category == 'hot':
                 hot_days.append(days_since)

@@ -7,9 +7,10 @@ TOTAL_DRAWS = None         # Total number of draws to analyze (None = analyze al
 TRAINING_DATA = 100        # Initial training window size for HMC analysis
 NUM_DRAWS = None           # Dynamically calculated from available draws (len - TRAINING_DATA)
 
-# Train/Validation Split Configuration (matches ml_lotto/config.py)
-# For production: Use ALL data to capture latest lottery patterns
-VALIDATION_SPLIT_RATIO = 1.0  # 100% train - predictions update with each new draw
+# No train/validation split lives here. This layer computes statistics over all available draws,
+# which is correct for the artifacts it writes: they are consumed at serving time to build the row
+# for the next draw, and the next draw has no future to leak from. The ML train/validation split is
+# ml_lotto/config.py:VALIDATION_SPLIT_RATIO and applies only to model fitting.
 
 # =============== FILE PATHS ===============
 CSV_FILE = 'data/irish500.csv'  # Path to CSV file
