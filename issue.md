@@ -79,9 +79,10 @@ with running moments.
 `scripts/train_with_all_features.py` and three test scripts. `quickpick.py` never imports it, so no
 ensembling happens in the path that produces `lottery_picks.txt`.
 
-`review.md` §3.2 proposes soft voting as an improvement, apparently unaware that hard voting already
-exists but is unreachable. `ENSEMBLE_MODE = False` in `ml_lotto/config.py` is commented "not used
-currently", confirming it.
+`review.md` used to propose soft voting as an improvement, apparently unaware that hard voting
+already existed but was unreachable. That proposal was removed on 2026-09-18 - averaging four models
+at chance yields a model at chance. `ENSEMBLE_MODE = False` in `ml_lotto/config.py` is commented
+"not used currently", confirming the module is dead either way.
 
 **Fix.** Decide whether ensembling is wanted: wire it into `quickpick.py`, or delete the module and
 the config flag rather than leaving 341 lines that look load-bearing. With all four models at
@@ -193,7 +194,7 @@ Carried from the code review's improvement list, kept here so the register is co
    mechanism outright. That is a legitimate argument for deleting now, on the grounds that a fair
    draw gives no reason to expect the pattern to help. The harness would, however, be reusable for
    the same question about the HMC ratio and the diversity penalty.
-5. **MILP selection** (`review.md` §3.5) to replace greedy picking. Worth doing only once the
+5. **MILP selection** (`review.md` §3.2) to replace greedy picking. Worth doing only once the
    probabilities mean something.
 
 ---
