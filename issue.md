@@ -20,7 +20,7 @@ effect. A fix is not finished until this file says so.
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-8** | Freshness target barely constrains selection; bin 0 absorbs every slot | Medium | M |
+| 1 | **F-13** | Freshness target and HMC ratio are set independently and can be mutually unsatisfiable | Medium | M |
 | 2 | **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
 | 3 | **C-15a** | Feature engine rebuilt 3-4x per run; O(N^2) gap memory | Low | S |
 | 4 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
@@ -32,44 +32,53 @@ effect. A fix is not finished until this file says so.
 
 ---
 
-## 1. F-8 — The freshness target barely constrains selection
+## 1. F-13 — The freshness target and the HMC ratio can be mutually unsatisfiable
 
-**Severity: Medium.** Found while verifying the F-1 fix.
+**Severity: Medium.** Found while fixing F-8; it is the reason F-8 could only be partly fixed.
 
-The target is now correct, but selection largely ignores it. `pick_from_hmc_pool`
-(`ml_lotto/prediction/selection.py`) computes the bin priority **once per HMC category**:
+`target_pattern` comes from `get_optimal_pattern_distribution()` and each model's hot/medium/cold
+counts come from `ml_lotto/config.py`. **Nothing reconciles the two.** They can demand incompatible
+things, and no selection algorithm can satisfy both.
 
-```python
-freshness_priority = sorted(
-    freshness_needed.keys(),
-    key=lambda f: freshness_needed[f] - freshness_counts[f],
-    reverse=True,
-)
-```
+The freshness bins are not spread evenly across HMC categories. Measured 2026-09-17:
 
-then drains the highest-priority bin until `count_needed` is met. Bin 0 holds 24 of the 47
-candidates right now (`{0: 24, 1: 16, 2: 7}`), so it never runs out and the loop never reaches
-bin 1. The target is consulted for ordering and then effectively discarded.
+| HMC category | bin 0 | bin 1 | bin 2+ | total |
+|:--|--:|--:|--:|--:|
+| hot | 7 | 16 | 7 | 30 |
+| medium | 7 | 0 | 0 | 7 |
+| cold | 10 | 0 | 0 | 10 |
+| **total** | **24** | **16** | **7** | **47** |
 
-The gap between target and outcome in the current run:
+Every bin 1 and bin 2 candidate is **hot**. A line can therefore hold at most as many non-bin-0
+numbers as it has hot slots, whatever the target says:
 
-```
-target            C0=3, C1=2, C_GE_2=1
-Line 1 achieved   C0=6, C1=0, C_GE_2=0
-Line 2 achieved   C0=6, C1=0, C_GE_2=0
-Line 3 achieved   C0=4, C1=2, C_GE_2=0
-```
+| Model | Hot slots | Max non-bin-0 | Target needs | Reachable? |
+|:--|--:|--:|--:|:--|
+| Momentum Specialist | 4 | 4 | 3 | yes |
+| Jackpot Optimizer | 3 | 3 | 3 | exactly |
+| Complexity Explorer | 2 | 2 | 3 | **no** |
 
-Two of three lines are entirely bin 0. Whatever the freshness pattern is worth, the system is not
-currently getting it.
+Model 3 cannot reach `C0=3, C1=2, C_GE_2=1` under any selection strategy. After the F-8 fix it sits
+at `C0=4, C1=2` - its structural optimum, not a selection failure.
 
-**Fix.** Recompute the priority after each pick, or cap per-bin intake at the target count and only
-overflow once a bin's quota is met. Either turns `freshness_needed` into a real constraint rather
-than a one-time sort key. Worth measuring before and after with the noise floor — if enforcing the
-target does not move Top-K lift, the honest conclusion is that the freshness pattern carries no
-signal and the whole mechanism should be dropped rather than fixed.
+This is also not stable: the split depends on how recency happens to line up with the freshness
+window, so a model that is satisfiable this week may not be next week, silently.
+
+**Fix.** Options, in rough order of honesty:
+
+1. Derive the target *conditionally on the HMC ratio* rather than globally, so each model gets a
+   pattern it can actually reach.
+2. Have `get_optimal_pattern_distribution()` return a target plus a feasibility check, and log
+   loudly when a model's ratio makes it unreachable, instead of silently missing.
+3. Establish whether the freshness pattern is worth enforcing at all. If it carries no signal, both
+   the target and this whole reconciliation problem should be deleted rather than solved.
+
+Option 3 should come first. See the note under F-8 in Appendix A - this cannot be measured from
+`model_comparison.csv`, which scores the models, not the selection. It needs a backtest of generated
+lines against actual draws.
 
 ---
+
 ## 2. F-5 — `assign_bonus_to_models` divides by zero on an empty list
 
 **Severity: Low, latent.**
@@ -255,11 +264,56 @@ Every item below was fixed and verified against the live pipeline.
 | F-3 | Decision threshold tuned and scored on the same validation rows | `model_metrics.py` |
 | F-4 | Probability array built conditionally while every consumer indexed it positionally | `predictor.py` |
 | F-10 | Dead look-ahead guard printed a false reassurance; contradictory split constant | `hmc_analyzer.py`, `lotto_analysis/config/config.py` |
+| F-8 | Freshness target was consulted for ordering then discarded; bin 0 absorbed every slot | `selection.py` |
 | F-9 | Serving features fell back to 0 for a column the model was trained on | `predictor.py`, `bonus_predictor.py` |
 | F-11 | HMC categorization measured days against wall-clock today | `hmc_categorization_analyzer.py` |
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-8 — The freshness target was consulted for ordering, then discarded
+
+**Root cause, two parts.** `pick_from_hmc_pool` ranked the freshness bins **once** per HMC category
+and then drained the top bin until the slot count was met. Bin 0 holds 24 of 47 candidates, so it
+never ran out and the loop never reached bin 1. The target was a sort key, not a constraint.
+
+Fixing the ranking alone was **not sufficient**, and the first attempt made Line 3 worse. The second
+part is call order. Every bin 1 and bin 2 candidate is hot (see F-13); medium and cold can supply
+only bin 0. Picking hot first spent the bin 0 quota on the one category that could have supplied the
+scarce bins, after which medium and cold overshot bin 0 because they had nowhere else to go.
+
+**Fix.** Re-rank the bins before every pick, so each slot goes to the bin with the largest unmet gap,
+and take the HMC categories **most-constrained-first**, so a category that can only supply one bin
+claims its quota before the flexible category spends it. `freshness_counts` is shared across the
+three calls, so the target applies to the line rather than per category. HMC categories are disjoint,
+so the reordering changes only which bins get claimed, never which numbers a category may use.
+
+**Measured before/after** (target `C0=3, C1=2, C_GE_2=1`):
+
+| Line | Before | Ranking fix only | Both fixes |
+|:--|:--|:--|:--|
+| 1 Momentum Specialist | C0=6, C1=0 | C0=5, C1=1 | **C0=3, C1=2, C_GE_2=1** |
+| 2 Jackpot Optimizer | C0=6, C1=0 | C0=5, C1=1 | **C0=3, C1=2, C_GE_2=1** |
+| 3 Complexity Explorer | C0=4, C1=2 | C0=6, C1=0 | C0=4, C1=2 |
+
+Two lines now hit the target exactly. Line 3 has only 2 hot slots and therefore at most 2 non-bin-0
+numbers, so `C0=4, C1=2` is its structural optimum - see F-13, which is the open half of this.
+
+All three lines still pass the ticket filters unrepaired (sums 142/116/176, spans 38/33/38, odd
+counts 4/4/2). A side effect worth noting: bin 0 concentration was itself *causing* filter failures -
+in a controlled reproduction the old code produced an all-bin-0 line that was 6 odd / 0 even, failed
+`odd_even_balance`, and had to be repaired, which scrambled the freshness distribution further. The
+two mechanisms were working against each other.
+
+**Tests.** Verified with a controlled reproduction on a pool deliberately skewed like the real one
+(bin 0 oversupplied): the old code returns `{0:2, 1:3, 2:0}` plus a repaired number and fails the
+filters, the new code returns `{0:3, 1:2, 2:1}` and passes. The existing 79 pass. Model metrics are
+unchanged and cannot change - selection is downstream of them.
+
+**Not answered.** Whether enforcing the target is worth anything. `model_comparison.csv` scores the
+models, not the selection, so it cannot settle this; it needs a backtest of generated lines against
+actual draws. If the freshness pattern carries no signal the mechanism should be deleted rather than
+fixed, and F-13 disappears with it.
 
 ### F-9 — Serving features fell back to 0 for a column the model was trained on
 
