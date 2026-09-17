@@ -1,3 +1,6 @@
+<!-- Status: current. Verified 2026-09-17 against app.py - all 8 pages match. -->
+<!-- Audience: human operator of the dashboard. Not a spec for the code. -->
+
 # Irish Lotto ML Analysis Dashboard - User Manual
 
 ## Table of Contents
