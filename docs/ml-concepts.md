@@ -1,3 +1,8 @@
+<!-- Status: background reading, not project spec. Written 2025-11. -->
+<!-- Audience: human. General ML explanation (logistic regression, XGBoost, statistical testing). -->
+<!-- It describes ML concepts in general, NOT what this system currently does or achieves. -->
+<!-- For what this system does: models.md, features.md, metrics.md. Those win on any conflict. -->
+
 # Machine Learning Concepts Guide for Lottery Prediction System
 
 **A Comprehensive Guide for Students New to Machine Learning**
@@ -1321,6 +1326,11 @@ AUC = 0.8  → Good
 AUC = 0.7  → Fair
 AUC = 0.5  → Random guessing (useless!)
 ```
+
+> **This general scale does not apply to this project.** Irish Lotto is a fair draw, so ~0.50 is the
+> correct and expected result, not a failure. All six models sit at 0.498-0.545. An AUC of 0.7+ here
+> would mean a bug - lookahead, leakage, or a model that has memorised the training set. Do not treat
+> the scale above as a target. See `metrics.md` for the real numbers and the noise floor.
 
 ---
 
