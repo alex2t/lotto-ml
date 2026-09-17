@@ -13,6 +13,71 @@ from sklearn.calibration import CalibratedClassifierCV
 from collections import defaultdict
 from ml_lotto.features.extractor import expand_feature_selection
 from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
+from ml_lotto.models.model_metrics import calculate_comprehensive_metrics
+
+
+def _build_bonus_to_main_dataset(
+    engine: PointInTimeFeatureEngine,
+    all_draws: List[Dict],
+    bonus_to_main_features: Dict,
+    feature_names: List[str],
+    start_draw: int,
+    end_draw: int
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Build a point-in-time dataset over draws [start_draw, end_draw).
+
+    One row per number in each draw's 10-draw bonus window, labelled 1 if that
+    number was drawn as a main number.
+
+    Returns:
+        Tuple of (X, y, draw_index) where draw_index gives each row's draw, so
+        Top-K can be scored within a draw despite the variable window size.
+    """
+    X = []
+    y = []
+    draw_index = []
+
+    for draw_idx in range(max(start_draw, 10), end_draw):
+        current_draw = all_draws[draw_idx]
+        feats_at_draw = engine.extract_features_at_draw(draw_idx)
+
+        # Build recent bonus list from previous 10 draws
+        recent_bonus_numbers = []
+        recent_bonus_positions = {}  # number -> draws since it was the bonus
+        for prev_idx in range(max(0, draw_idx - 10), draw_idx):
+            prev_draw = all_draws[prev_idx]
+            # Check both 'bonus_number' and 'bonus' keys for compatibility
+            bonus_num = prev_draw.get('bonus_number') or prev_draw.get('bonus')
+            if bonus_num and bonus_num not in recent_bonus_numbers:
+                recent_bonus_numbers.append(bonus_num)
+                recent_bonus_positions[bonus_num] = draw_idx - prev_idx - 1
+
+        current_main_numbers = current_draw.get('numbers', [])
+
+        for num in recent_bonus_numbers:
+            base_features = feats_at_draw.get(num) or bonus_to_main_features.get(num, {})
+            if not base_features:
+                continue
+
+            draws_since_bonus = recent_bonus_positions.get(num, -1)
+
+            # Override window-specific features for this historical point
+            feature_vector = []
+            for fname in feature_names:
+                if fname == 'is_in_bonus_window':
+                    feature_vector.append(1.0)
+                elif fname == 'draws_since_bonus':
+                    feature_vector.append(float(draws_since_bonus))
+                else:
+                    val = base_features.get(fname, 0.0)
+                    feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
+
+            X.append(feature_vector)
+            y.append(1 if num in current_main_numbers else 0)
+            draw_index.append(draw_idx)
+
+    return np.array(X), np.array(y), np.array(draw_index)
 
 
 def train_bonus_to_main_model(
@@ -35,7 +100,8 @@ def train_bonus_to_main_model(
         validation_start_draw: Index to start validation from
 
     Returns:
-        Tuple of (trained_pipeline, feature_list)
+        Tuple of (trained_pipeline, feature_list, validation_metrics).
+        validation_metrics is None when no validation_start_draw was given.
     """
     if training_end_draw is None:
         training_end_draw = len(all_draws)
@@ -52,14 +118,10 @@ def train_bonus_to_main_model(
     feature_spec = model_config['features']
     feature_names = expand_feature_selection(feature_spec, all_available_features)
 
-    print(f"Feature expansion: {len(feature_spec)} spec items → {len(feature_names)} actual features")
+    print(f"Feature expansion: {len(feature_spec)} spec items -> {len(feature_names)} actual features")
     print(f"Features: {len(feature_names)}")
     for fname in feature_names:
         print(f"  - {fname}")
-
-    # Build training data
-    X_train = []
-    y_train = []
 
     print(f"\nBuilding TRAINING dataset...")
     print(f"  Total draws available: {len(all_draws)}")
@@ -67,85 +129,19 @@ def train_bonus_to_main_model(
     print(f"  Training end index: {training_end_draw}")
     print(f"  Training draws: {training_end_draw - training_start_draw}")
 
-    # Check first draw structure
-    if all_draws:
-        print(f"  Sample draw keys: {list(all_draws[0].keys())}")
-
-    # Initialize engine for point-in-time features
     engine = PointInTimeFeatureEngine(all_draws, bonus_to_main_features)
 
-    # For each draw starting from training_start_draw
-    for draw_idx in range(training_start_draw, training_end_draw):
-        current_draw = all_draws[draw_idx]
-        feats_at_draw = engine.extract_features_at_draw(draw_idx)
+    X_train, y_train, _ = _build_bonus_to_main_dataset(
+        engine, all_draws, bonus_to_main_features, feature_names,
+        training_start_draw, training_end_draw
+    )
 
-        # Get numbers in recent bonus window for this draw
-        # We need to look at previous draw's recent bonus list
-        if draw_idx < 10:
-            continue
-
-        # Get recent bonus list from current draw metadata
-        recent_bonus_numbers = []
-        recent_bonus_positions = {}  # track position in window
-
-        # Build recent bonus list from previous 10 draws
-        lookback_start = max(0, draw_idx - 10)
-        for prev_idx in range(lookback_start, draw_idx):
-            prev_draw = all_draws[prev_idx]
-            # Check both 'bonus_number' and 'bonus' keys for compatibility
-            bonus_num = prev_draw.get('bonus_number') or prev_draw.get('bonus')
-            if bonus_num:
-                # Only add if not already in window (most recent appearance matters)
-                if bonus_num not in recent_bonus_numbers:
-                    recent_bonus_numbers.append(bonus_num)
-                    # Position: 0 = most recent, 9 = 10 draws ago
-                    draws_ago = draw_idx - prev_idx - 1
-                    recent_bonus_positions[bonus_num] = draws_ago
-
-        # For each number in recent bonus list, check if it appeared as main
-        current_main_numbers = current_draw.get('numbers', [])
-
-        for num in recent_bonus_numbers:
-            base_features = feats_at_draw.get(num) or bonus_to_main_features.get(num, {})
-            if not base_features:
-                continue
-
-            # Override window-specific features for this historical point
-            draws_since_bonus = recent_bonus_positions.get(num, -1)
-
-            # Build feature vector with overridden values
-            feature_vector = []
-            for fname in feature_names:
-                if fname == 'is_in_bonus_window':
-                    feature_vector.append(1.0)  # It's in the window
-                elif fname == 'draws_since_bonus':
-                    feature_vector.append(float(draws_since_bonus))
-                elif fname == 'timing_decay_weight':
-                    # Calculate timing weight for this position
-                    timing_weights = bonus_to_main_features.get(1, {})  # Any number has timing data
-                    draw_offset = draws_since_bonus + 1
-                    timing_key = f'timing_decay_weight'
-                    # We need to get this from the config, but for now use base feature
-                    val = base_features.get(fname, 0.0)
-                    feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
-                else:
-                    val = base_features.get(fname, 0.0)
-                    feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
-
-            X_train.append(feature_vector)
-
-            # Label: 1 if appeared as main, 0 otherwise
-            y_train.append(1 if num in current_main_numbers else 0)
-
-    X_train = np.array(X_train)
-    y_train = np.array(y_train)
+    if len(X_train) == 0:
+        raise ValueError("No training data generated")
 
     print(f"\nTraining data: {len(X_train)} samples")
     print(f"  Positive class (appeared as main): {sum(y_train)} ({sum(y_train)/len(y_train)*100:.1f}%)")
     print(f"  Negative class: {len(y_train) - sum(y_train)} ({(len(y_train)-sum(y_train))/len(y_train)*100:.1f}%)")
-
-    if len(X_train) == 0:
-        raise ValueError("No training data generated")
 
     # Train model
     algorithm = model_config['algorithm']
@@ -171,84 +167,37 @@ def train_bonus_to_main_model(
         pipeline = base_model
 
     pipeline.fit(X_train, y_train)
+    print(f"\nTraining complete")
 
-    # Calculate training accuracy
-    train_pred = pipeline.predict(X_train)
-    train_acc = np.mean(train_pred == y_train)
-
-    print(f"\n✓ Training complete!")
-    print(f"  Training accuracy: {train_acc*100:.1f}%")
-
-    # Build validation dataset if specified
+    # Evaluate on the held-out validation set, with the same metrics as the main models
+    metrics = None
     if validation_start_draw is not None:
         print(f"\nBuilding VALIDATION dataset...")
         print(f"  Validation start index: {validation_start_draw}")
         print(f"  Validation draws: {len(all_draws) - validation_start_draw}")
 
-        X_val = []
-        y_val = []
-
-        for draw_idx in range(validation_start_draw, len(all_draws)):
-            current_draw = all_draws[draw_idx]
-            feats_at_draw = engine.extract_features_at_draw(draw_idx)
-
-            if draw_idx < 10:
-                continue
-
-            recent_bonus_numbers = []
-            recent_bonus_positions = {}
-
-            lookback_start = max(0, draw_idx - 10)
-            for prev_idx in range(lookback_start, draw_idx):
-                prev_draw = all_draws[prev_idx]
-                bonus_num = prev_draw.get('bonus_number') or prev_draw.get('bonus')
-                if bonus_num:
-                    if bonus_num not in recent_bonus_numbers:
-                        recent_bonus_numbers.append(bonus_num)
-                        draws_ago = draw_idx - prev_idx - 1
-                        recent_bonus_positions[bonus_num] = draws_ago
-
-            current_main_numbers = current_draw.get('numbers', [])
-
-            for num in recent_bonus_numbers:
-                base_features = feats_at_draw.get(num) or bonus_to_main_features.get(num, {})
-                if not base_features:
-                    continue
-                draws_since_bonus = recent_bonus_positions.get(num, -1)
-
-                feature_vector = []
-                for fname in feature_names:
-                    if fname == 'is_in_bonus_window':
-                        feature_vector.append(1.0)
-                    elif fname == 'draws_since_bonus':
-                        feature_vector.append(float(draws_since_bonus))
-                    elif fname == 'timing_decay_weight':
-                        val = base_features.get(fname, 0.0)
-                        feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
-                    else:
-                        val = base_features.get(fname, 0.0)
-                        feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
-
-                X_val.append(feature_vector)
-                y_val.append(1 if num in current_main_numbers else 0)
+        X_val, y_val, val_draw_index = _build_bonus_to_main_dataset(
+            engine, all_draws, bonus_to_main_features, feature_names,
+            validation_start_draw, len(all_draws)
+        )
 
         if len(X_val) > 0:
-            X_val = np.array(X_val)
-            y_val = np.array(y_val)
-
-            val_pred = pipeline.predict(X_val)
-            val_acc = np.mean(val_pred == y_val)
-
-            print(f"\n📊 Train Accuracy: {train_acc:.4f}")
-            print(f"📊 Validation Accuracy: {val_acc:.4f}")
             print(f"  Validation samples: {len(X_val)}")
-
-            if train_acc - val_acc > 0.05:
-                print(f"  ⚠️  Warning: Possible overfitting detected (diff: {train_acc - val_acc:.4f})")
+            metrics = calculate_comprehensive_metrics(
+                pipeline=pipeline,
+                X_train=X_train,
+                y_train=y_train,
+                X_val=X_val,
+                y_val=y_val,
+                model_name=model_config['name'],
+                save_plots=True,
+                output_dir='model_metrics',
+                topk_groups=val_draw_index
+            )
         else:
-            print("  ⚠️  No validation samples generated")
+            print("  No validation samples generated")
 
-    return pipeline, feature_names
+    return pipeline, feature_names, metrics
 
 
 def extract_bonus_to_main_features_for_number(

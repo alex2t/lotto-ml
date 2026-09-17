@@ -143,9 +143,14 @@ BONUS_MODEL_CONFIG = {
     ],
     # Total: 8 bonus + 12 main + ~13 interactions = ~33 features
 
+    # L1, not L2. With 32 features against 337 positive training rows the L2 model
+    # carried a 0.135 train/val AUC gap, and shrinking C did not move it: L2 scales
+    # coefficients but preserves their ranking, and AUC only sees the ranking. L1
+    # zeroes features outright - 5 survive at C=0.05, and the gap closes to 0.005
+    # (C-15b, extended to the remaining models).
     'algorithm_params': {
-        'penalty': 'l2',
-        'C': 1.0,
+        'penalty': 'l1',
+        'C': 0.05,
         'solver': 'liblinear',
         'max_iter': 1000,
         'random_state': 42  # Fixed for reproducibility - predictions change only when data changes
@@ -194,9 +199,12 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
     ],
     # Total: 12 bonus-to-main + 10 main + ~13 interactions = ~35 features
 
+    # L1 for the same reason as the bonus model: 35 features against 462 positive
+    # training rows gave a 0.150 gap that L2 could not touch. 2 features survive at
+    # C=0.005 and the gap falls to 0.033.
     'algorithm_params': {
-        'penalty': 'l2',
-        'C': 0.8,
+        'penalty': 'l1',
+        'C': 0.005,
         'class_weight': {0: 1.0, 1: 3.5},  # Reflect 3.5x boost over random
         'solver': 'liblinear',
         'max_iter': 1000,
@@ -329,10 +337,16 @@ MODEL_2_CONFIG = {
 
     'diversity_penalty': 0.40,  # 40% soft penalty on previously selected numbers
 
+    # Capacity is constrained on purpose. Unconstrained leaves at depth 10 gave a
+    # train/val AUC gap of 0.383 over ~15,800 rows - memorised per-number patterns,
+    # not signal. Depth 4 with leaves in the hundreds holds the gap near 0.06 and
+    # leaves validation AUC where it was (C-15b).
     'algorithm_params': {
         'n_estimators': 100,
-        'max_depth': 10,
-        'min_samples_split': 5,
+        'max_depth': 4,
+        'min_samples_leaf': 300,
+        'max_features': 0.5,
+        'class_weight': 'balanced_subsample',
         'random_state': 42,
         'n_jobs': -1
     },
@@ -406,17 +420,21 @@ MODEL_3_CONFIG = {
 
     'diversity_penalty': 0.35,  # 35% soft penalty on previously selected numbers
 
+    # Capacity is constrained on purpose, as for Model 2 (C-15b). Depth 3 with
+    # min_child_weight=3 gave a train/val AUC gap of 0.165: complex patterns that do
+    # not survive the validation window. Shallow, heavily shrunk and L2-penalised
+    # trees hold the gap near 0.02 with validation AUC unchanged.
     'algorithm_params': {
-        'n_estimators': 150,
-        'max_depth': 6,  # Deeper trees for complex patterns
-        'learning_rate': 0.1,
-        'use_label_encoder': False,
+        'n_estimators': 50,
+        'max_depth': 2,
+        'learning_rate': 0.03,
+        'min_child_weight': 500,
+        'reg_lambda': 20,
         'eval_metric': 'logloss',
         'random_state': 42,
         'n_jobs': -1,
         'subsample': 0.8,
-        'colsample_bytree': 0.7,
-        'min_child_weight': 3
+        'colsample_bytree': 0.7
     },
 
     'calibration': {

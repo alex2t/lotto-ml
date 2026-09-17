@@ -66,21 +66,26 @@ def get_random_forest_grid(quick: bool = False) -> Dict[str, List]:
     Returns:
         Parameter grid dictionary
     """
+    # Every candidate is capacity-constrained. CV scores here sit at chance (~0.51),
+    # so the search cannot tell the candidates apart and its pick is effectively
+    # arbitrary - an unconstrained candidate in the grid means an unconstrained model
+    # gets picked, which is how the 0.383 train/val gap survived (C-15b). Leaves in
+    # the hundreds are ~2-4% of the 15,800 training rows.
     if quick:
         return {
-            'classifier__estimator__n_estimators': [50, 100],
-            'classifier__estimator__max_depth': [5, 10, None],
-            'classifier__estimator__min_samples_split': [2, 5],
-            'classifier__estimator__class_weight': ['balanced', 'balanced_subsample']
+            'classifier__estimator__n_estimators': [100],
+            'classifier__estimator__max_depth': [4, 6],
+            'classifier__estimator__min_samples_leaf': [200, 300, 500],
+            'classifier__estimator__max_features': [0.5, 'sqrt'],
+            'classifier__estimator__class_weight': ['balanced_subsample']
         }
     else:
         return {
-            'classifier__estimator__n_estimators': [50, 100, 200, 300],
-            'classifier__estimator__max_depth': [5, 10, 15, 20, None],
-            'classifier__estimator__min_samples_split': [2, 5, 10],
-            'classifier__estimator__min_samples_leaf': [1, 2, 4],
-            'classifier__estimator__max_features': ['sqrt', 'log2', None],
-            'classifier__estimator__class_weight': ['balanced', 'balanced_subsample', None]
+            'classifier__estimator__n_estimators': [100, 200, 300],
+            'classifier__estimator__max_depth': [3, 4, 5, 6],
+            'classifier__estimator__min_samples_leaf': [100, 200, 300, 500],
+            'classifier__estimator__max_features': [0.3, 0.5, 'sqrt'],
+            'classifier__estimator__class_weight': ['balanced', 'balanced_subsample']
         }
 
 
@@ -94,22 +99,30 @@ def get_xgboost_grid(quick: bool = False) -> Dict[str, List]:
     Returns:
         Parameter grid dictionary
     """
+    # Constrained for the same reason as the random-forest grid: the CV scores here
+    # sit at chance (~0.511), so the search picks arbitrarily among its candidates and
+    # an unconstrained one wins as often as not. `scale_pos_weight` stays at 1 because
+    # that is the operating point the gap was measured at; isotonic calibration handles
+    # the class ratio downstream.
     if quick:
         return {
             'classifier__estimator__n_estimators': [50, 100],
-            'classifier__estimator__max_depth': [3, 5],
-            'classifier__estimator__learning_rate': [0.01, 0.1],
-            'classifier__estimator__scale_pos_weight': [1, 3, 5]
+            'classifier__estimator__max_depth': [2, 3],
+            'classifier__estimator__learning_rate': [0.03, 0.05],
+            'classifier__estimator__min_child_weight': [200, 500],
+            'classifier__estimator__reg_lambda': [20],
+            'classifier__estimator__scale_pos_weight': [1]
         }
     else:
         return {
-            'classifier__estimator__n_estimators': [50, 100, 200, 300],
-            'classifier__estimator__max_depth': [3, 5, 7, 9],
-            'classifier__estimator__learning_rate': [0.01, 0.05, 0.1, 0.2],
-            'classifier__estimator__subsample': [0.6, 0.8, 1.0],
-            'classifier__estimator__colsample_bytree': [0.6, 0.8, 1.0],
-            'classifier__estimator__scale_pos_weight': [1, 2, 3, 5, 7],
-            'classifier__estimator__gamma': [0, 0.1, 0.2]
+            'classifier__estimator__n_estimators': [50, 100, 200],
+            'classifier__estimator__max_depth': [2, 3, 4],
+            'classifier__estimator__learning_rate': [0.01, 0.03, 0.05],
+            'classifier__estimator__min_child_weight': [100, 200, 500],
+            'classifier__estimator__reg_lambda': [10, 20, 50],
+            'classifier__estimator__subsample': [0.6, 0.8],
+            'classifier__estimator__colsample_bytree': [0.6, 0.8],
+            'classifier__estimator__scale_pos_weight': [1]
         }
 
 

@@ -26,7 +26,7 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Only these five files are real tests (46 of them, ~8s). Everything else in `tests/` is a legacy
+Only these nine files are real tests (79 of them, ~15s). Everything else in `tests/` is a legacy
 print-script that runs model training at import — **do not run `pytest tests/` bare.**
 
 ```bash
@@ -107,10 +107,13 @@ always-0. Note the package dependency direction is ml_lotto -> lotto_analysis; d
 
 ## Working on this codebase
 
-**Measure before refactoring.** All four main models sit at validation AUC 0.49-0.53 with Top-7 lift
-near 1.0 over 60 draws — chance, which is the correct answer for a fair draw. A change that does not
-move those numbers has not helped. `model_metrics/model_comparison.csv` is the scoreboard; the
-2 SE noise floor is ~0.031 AUC and ~0.227 Top-7 AvgCaught.
+**Measure before refactoring.** All six models sit at validation AUC 0.50-0.55 with Top-7 lift
+1.01-1.12 over the same 60 draws — chance, which is the correct answer for a fair draw. A change
+that does not move those numbers has not helped. `model_metrics/model_comparison.csv` is the
+scoreboard; the 2 SE noise floor is ~0.031 AUC and ~0.227 Top-7 AvgCaught. Train/validation AUC
+gaps are 0.005-0.053; a model whose gap climbs back above ~0.1 has been given capacity to memorise
+with, and the constrained parameters in `config.py` plus the tuning grids in
+`hyperparameter_tuning.py` must both be kept that way.
 
 **Distrust silent defaults.** Most bugs found here were `.get(key, 0)` fabricating a constant for a
 field that did not exist — phantom `total_count` and `recent_14` columns, vacuous interaction
@@ -127,3 +130,15 @@ advertised but unimplemented, resolution matrices for fixes not made). Check `lo
 
 **Do not use emoji in new code**, matching the user's global instruction — though note much of the
 existing code already prints them.
+
+**`issue.md` is part of the work, not a report about it.** Every defect found and every defect fixed
+updates it in the same change:
+
+- **Found a bug** — give it the next free `F-n`, add a row to the **Priority summary** table in
+  severity order, and write a section with file:line evidence and the failing case. This applies to
+  anything noticed in passing, not only to what was asked for.
+- **Fixed a bug** — delete its Priority summary row (the summary lists open items only), renumber
+  the remaining sections, add it to the Appendix A table, and write up the root cause, the measured
+  before/after and the tests that now cover it.
+- Never leave a resolved ID in the Priority summary, and never leave a found defect only in the
+  conversation.

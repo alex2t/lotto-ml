@@ -18,6 +18,7 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.pipeline import Pipeline
 from ml_lotto.features.extractor import expand_feature_selection
 from ml_lotto.features.walk_forward import build_walk_forward_bonus_dataset
+from ml_lotto.models.model_metrics import calculate_comprehensive_metrics
 
 
 def build_bonus_training_dataset(
@@ -67,7 +68,7 @@ def train_bonus_model(
     training_start_draw: int = 100,
     training_end_draw: int = None,
     validation_start_draw: int = None
-) -> Tuple[Pipeline, List[str]]:
+) -> Tuple[Pipeline, List[str], Dict[str, Any]]:
     """
     Train bonus ball prediction model with optional validation evaluation.
 
@@ -80,7 +81,8 @@ def train_bonus_model(
         validation_start_draw: Starting draw index for validation
 
     Returns:
-        Tuple of (trained_pipeline, selected_features)
+        Tuple of (trained_pipeline, selected_features, validation_metrics).
+        validation_metrics is None when no validation_start_draw was given.
     """
     print("\n" + "="*70)
     print("TRAINING BONUS BALL PREDICTION MODEL")
@@ -141,21 +143,18 @@ def train_bonus_model(
     pipeline.fit(X_train, y_train)
     print(f"  ✓ Bonus model training complete")
 
-    # Evaluate on validation set if provided
+    # Evaluate on the held-out validation set, with the same metrics as the main models
+    metrics = None
     if val_df is not None and len(val_df) > 0:
-        X_val = val_df[selected_features].values
-        y_val = val_df['is_bonus'].values
+        metrics = calculate_comprehensive_metrics(
+            pipeline=pipeline,
+            X_train=X_train,
+            y_train=y_train,
+            X_val=val_df[selected_features].values,
+            y_val=val_df['is_bonus'].values,
+            model_name=bonus_model_config['name'],
+            save_plots=True,
+            output_dir='model_metrics'
+        )
 
-        val_predictions = pipeline.predict(X_val)
-        val_accuracy = (val_predictions == y_val).sum() / len(y_val)
-
-        train_predictions = pipeline.predict(X_train)
-        train_accuracy = (train_predictions == y_train).sum() / len(y_train)
-
-        print(f"  📊 Train Accuracy: {train_accuracy:.4f}")
-        print(f"  📊 Validation Accuracy: {val_accuracy:.4f}")
-
-        if train_accuracy - val_accuracy > 0.05:
-            print(f"  ⚠️  Warning: Possible overfitting detected (diff: {train_accuracy - val_accuracy:.4f})")
-
-    return pipeline, selected_features
+    return pipeline, selected_features, metrics

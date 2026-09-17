@@ -137,7 +137,7 @@ from ml_lotto.features.history import extract_win_bias_ratio_from_history
 from ml_lotto.features.bonus_features import extract_bonus_features_from_json, create_unified_bonus_features
 from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
 
-from ml_lotto.models.trainer import train_all_models
+from ml_lotto.models.trainer import train_all_models, calculate_train_val_split
 from ml_lotto.models.bonus_trainer import train_bonus_model
 from ml_lotto.models.bonus_to_main_trainer import train_bonus_to_main_model
 
@@ -584,13 +584,22 @@ def main():
         print("\nStep 3: Training BONUS BALL prediction model...")
         bonus_training_start = time.time()
         
+        # Same chronological hold-out as the main models, so every model is
+        # scored out-of-sample on the same scoreboard (F-2)
+        train_end_idx, val_start_idx = calculate_train_val_split(len(all_draws))
+        aux_metrics = {}
+
         try:
-            bonus_pipeline, bonus_features = train_bonus_model(
+            bonus_pipeline, bonus_features, bonus_metrics = train_bonus_model(
                 BONUS_MODEL_CONFIG,
                 all_draws,
                 bonus_features_dict,
-                TRAINING_START_DRAW
+                TRAINING_START_DRAW,
+                train_end_idx,
+                val_start_idx
             )
+            if bonus_metrics is not None:
+                aux_metrics[BONUS_MODEL_CONFIG['name']] = bonus_metrics
             print(f"✓ Bonus model training completed in {time.time() - bonus_training_start:.2f} seconds")
         except Exception as e:
             print(f"✗ Error training bonus model: {e}")
@@ -661,12 +670,16 @@ def main():
         bonus_to_main_training_start = time.time()
 
         try:
-            bonus_to_main_pipeline, bonus_to_main_features = train_bonus_to_main_model(
+            bonus_to_main_pipeline, bonus_to_main_features, bonus_to_main_metrics = train_bonus_to_main_model(
                 BONUS_TO_MAIN_MODEL_CONFIG,
                 all_draws,
                 bonus_to_main_features_dict,
-                TRAINING_START_DRAW
+                TRAINING_START_DRAW,
+                train_end_idx,
+                val_start_idx
             )
+            if bonus_to_main_metrics is not None:
+                aux_metrics[BONUS_TO_MAIN_MODEL_CONFIG['name']] = bonus_to_main_metrics
             print(f"✓ Bonus-to-main model training completed in {time.time() - bonus_to_main_training_start:.2f} seconds")
         except Exception as e:
             print(f"✗ Error training bonus-to-main model: {e}")
@@ -714,7 +727,8 @@ def main():
                 enable_hyperparameter_tuning=ENABLE_HYPERPARAMETER_TUNING,
                 tuning_mode=TUNING_MODE,
                 tuning_cv_splits=TUNING_CV_SPLITS,
-                tuning_scoring=TUNING_SCORING
+                tuning_scoring=TUNING_SCORING,
+                extra_metrics=aux_metrics
             )
             print(f"\n✓ Main model training completed in {time.time() - training_start:.2f} seconds")
 
