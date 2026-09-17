@@ -3,12 +3,17 @@
 scripts/scrape_lotto.py
 =======================
 Automated web scraper for the Irish National Lottery results.
-Scrapes the most recent draw (including Monday, Wednesday, Saturday draws)
-and updates data/irish500.csv atomically.
+Scrapes the most recent draws (Monday, Wednesday and Saturday) and updates
+data/irish500.csv atomically.
 
-Supports:
-- Primary source: https://irish.national-lottery.com/irish-lotto/results-archive-2026
-- Backup / Alternative parser: https://www.lottery.ie/results/lotto/history
+Two sources, both implemented:
+- Primary: https://irish.national-lottery.com/irish-lotto/results-archive-YYYY
+- Fallback: https://www.lottery.ie/results/lotto/history
+
+Whichever source is used for the data, the other is used to verify it: dates present
+in both must carry identical numbers or nothing is written. Both parsers reject any
+row that is not the main Lotto draw - the same page carries Lotto Plus 1 and Plus 2,
+which share the draw date.
 """
 
 import sys
@@ -22,58 +27,185 @@ from typing import List, Dict, Tuple, Optional
 
 CSV_FILE = Path("data/irish500.csv")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+MAX_BALL = 47
+
+PRIMARY_NAME = "irish.national-lottery.com"
+FALLBACK_NAME = "lottery.ie"
+FALLBACK_URL = "https://www.lottery.ie/results/lotto/history"
+
+# The archive table marks each ball with its game. Lotto Plus rows carry
+# 'irish-lotto-plus-1' / '-plus-2', so the token must match exactly.
+ARCHIVE_GAME_TOKEN = "irish-lotto"
+
+# lottery.ie renders every ball with this class, for all three games.
+LOTTERY_IE_BALL = r'<div class="flex font-bold rounded-full[^"]*">(\d{1,2})</div>'
 
 
 def fetch_url(url: str, timeout: int = 15) -> str:
-    """Fetch URL with browser User-Agent."""
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    """Fetch URL with browser headers."""
+    req = urllib.request.Request(url, headers={
+        "User-Agent": USER_AGENT,
+        "Accept-Language": "en-IE,en-US;q=0.9",
+    })
     with urllib.request.urlopen(req, timeout=timeout) as response:
         return response.read().decode("utf-8", errors="ignore")
 
 
-def parse_archive_table(html: str) -> List[Dict]:
-    """Parse draw results from the results archive table."""
-    draws = []
-    draw_blocks = re.findall(r'<tr[^>]*>(.*?)</tr>', html, re.DOTALL | re.IGNORECASE)
+def build_draw(dt: datetime, main_balls: List[int], bonus_balls: List[int]) -> Optional[Dict]:
+    """
+    Validate one parsed draw and format it for the CSV.
 
-    for block in draw_blocks:
+    Returns None if the draw is not a well-formed main Lotto result: 6 main balls,
+    1 bonus, all within 1-47 and all seven distinct.
+    """
+    if len(main_balls) != 6 or len(bonus_balls) != 1:
+        return None
+
+    all_nums = main_balls + bonus_balls
+    if not all(1 <= n <= MAX_BALL for n in all_nums) or len(set(all_nums)) != 7:
+        return None
+
+    date_str = dt.strftime("%d %b %Y")
+    main_formatted = [f"{n:02d}" for n in main_balls]
+    return {
+        "dt": dt,
+        "date_str": date_str,
+        "main": main_balls,
+        "bonus": bonus_balls[0],
+        "csv_row": f"{date_str},{','.join(main_formatted)},{bonus_balls[0]:02d}",
+    }
+
+
+def parse_archive_table(html: str) -> List[Dict]:
+    """
+    Parse draw results from the results-archive table.
+
+    Main-draw verification: the row's date link carries the game in its path
+    (`/irish-lotto/results-...`, so a Plus row's link does not match), the row must
+    hold exactly one ball list so the link and the balls cannot refer to different
+    games, and every ball must carry the `irish-lotto` class token.
+    """
+    draws = []
+
+    for block in re.findall(r'<tr[^>]*>(.*?)</tr>', html, re.DOTALL | re.IGNORECASE):
         date_match = re.search(r'/irish-lotto/results-(\d{2})-(\d{2})-(\d{4})', block)
         if not date_match:
             continue
         day, month, year = date_match.groups()
         dt = datetime(int(year), int(month), int(day))
-        date_str = dt.strftime("%d %b %Y")
 
-        balls_ul = re.search(r'<ul class="balls">(.*?)</ul>', block, re.DOTALL)
-        if not balls_ul:
+        balls_lists = re.findall(r'<ul class="balls">(.*?)</ul>', block, re.DOTALL)
+        if len(balls_lists) != 1:
+            if balls_lists:
+                print(f"  Skipping {dt:%d %b %Y}: row holds {len(balls_lists)} ball lists, "
+                      f"cannot tell which game the link belongs to")
             continue
 
-        lis = re.findall(r'<li class="([^"]*)">(\d+)</li>', balls_ul.group(1))
         main_balls = []
         bonus_balls = []
-        for cls, num in lis:
-            if 'bonus-ball' in cls:
+        wrong_game = False
+        for cls, num in re.findall(r'<li class="([^"]*)">(\d+)</li>', balls_lists[0]):
+            tokens = cls.split()
+            if ARCHIVE_GAME_TOKEN not in tokens:
+                wrong_game = True
+                break
+            if 'bonus-ball' in tokens:
                 bonus_balls.append(int(num))
             else:
                 main_balls.append(int(num))
 
-        if len(main_balls) == 6 and len(bonus_balls) == 1:
-            # Validate ranges and uniqueness across all 7 balls (C-14 fix)
-            all_nums = main_balls + bonus_balls
-            if all(1 <= n <= 47 for n in all_nums) and len(set(all_nums)) == 7:
-                main_formatted = [f"{n:02d}" for n in main_balls]
-                bonus_formatted = f"{bonus_balls[0]:02d}"
-                csv_row = f"{date_str},{','.join(main_formatted)},{bonus_formatted}"
-                draws.append({
-                    "dt": dt,
-                    "date_str": date_str,
-                    "main": main_balls,
-                    "bonus": bonus_balls[0],
-                    "csv_row": csv_row
-                })
+        if wrong_game:
+            print(f"  Skipping {dt:%d %b %Y}: balls are not tagged {ARCHIVE_GAME_TOKEN}")
+            continue
+
+        draw = build_draw(dt, main_balls, bonus_balls)
+        if draw:
+            draws.append(draw)
 
     draws.sort(key=lambda x: x["dt"], reverse=True)
     return draws
+
+
+def parse_lottery_ie(html: str) -> List[Dict]:
+    """
+    Parse draw results from the lottery.ie history page.
+
+    Each draw section holds three games in order - Lotto, then Lotto Plus 1 and
+    Plus 2 - under repeated 'Winning numbers' / 'Bonus' labels with no game heading
+    to key on. The main draw is the first pair. If a Plus marker appears before it the
+    order has changed, and the section is skipped rather than guessed at.
+    """
+    draws = []
+    headers = list(re.finditer(r'<h2 aria-label="Draw, ([^"]+)"', html))
+
+    for i, header in enumerate(headers):
+        end = headers[i + 1].start() if i + 1 < len(headers) else len(html)
+        section = html[header.start():end]
+
+        label = re.sub(r'(\d+)(st|nd|rd|th)', r'\1', header.group(1))
+        try:
+            dt = datetime.strptime(label, "%A, %B %d, %Y")
+        except ValueError:
+            print(f"  Skipping section: cannot parse date {header.group(1)!r}")
+            continue
+
+        main_at = section.find('>Winning numbers<')
+        bonus_at = section.find('>Bonus<')
+        if main_at == -1 or bonus_at <= main_at:
+            continue
+        if 'Plus' in section[:main_at]:
+            print(f"  Skipping {dt:%d %b %Y}: a Plus game precedes the main draw block")
+            continue
+
+        main_balls = [int(n) for n in re.findall(LOTTERY_IE_BALL, section[main_at:bonus_at])]
+        bonus_balls = [int(n) for n in re.findall(LOTTERY_IE_BALL, section[bonus_at:])[:1]]
+
+        draw = build_draw(dt, main_balls, bonus_balls)
+        if draw:
+            draws.append(draw)
+
+    draws.sort(key=lambda x: x["dt"], reverse=True)
+    return draws
+
+
+def scrape(name: str, url: str, parser) -> List[Dict]:
+    """Fetch and parse one source. Returns [] if it is unreachable or unparseable."""
+    print(f"Fetching {name}: {url}")
+    try:
+        html = fetch_url(url)
+    except Exception as e:
+        print(f"  {name} unreachable: {type(e).__name__}: {e}")
+        return []
+
+    draws = parser(html)
+    print(f"  {name}: parsed {len(draws)} valid main-draw result(s)")
+    return draws
+
+
+def cross_check(draws: List[Dict], other: List[Dict]) -> Tuple[int, List[str]]:
+    """
+    Compare two sources on the dates they share.
+
+    Returns (dates_agreed, mismatches). A date held by only one source is not a
+    mismatch - the fallback page carries only the most recent draws.
+    """
+    other_by_date = {d["dt"].date(): d for d in other}
+    agreed = 0
+    mismatches = []
+
+    for draw in draws:
+        twin = other_by_date.get(draw["dt"].date())
+        if not twin:
+            continue
+        if sorted(draw["main"]) == sorted(twin["main"]) and draw["bonus"] == twin["bonus"]:
+            agreed += 1
+        else:
+            mismatches.append(
+                f"{draw['date_str']}: {sorted(draw['main'])}+{draw['bonus']} "
+                f"vs {sorted(twin['main'])}+{twin['bonus']}"
+            )
+
+    return agreed, mismatches
 
 
 def get_existing_dates(csv_path: Path) -> Tuple[str, set]:
@@ -111,7 +243,7 @@ def update_csv_with_draws(csv_path: Path, new_draws: List[Dict], dry_run: bool =
 
     # Filter out draws that already exist (check both string and date object)
     draws_to_add = [
-        d for d in new_draws 
+        d for d in new_draws
         if d["date_str"] not in existing_dates and d["dt"].date() not in existing_dates
     ]
     if not draws_to_add:
@@ -143,38 +275,52 @@ def update_csv_with_draws(csv_path: Path, new_draws: List[Dict], dry_run: bool =
         f.write("\n".join(all_lines) + "\n")
 
     os.replace(temp_path, csv_path)
-    print(f"✓ Successfully updated {csv_path} (Total draws: {len(all_lines) - 1})")
+    print(f"Updated {csv_path} (Total draws: {len(all_lines) - 1})")
     return len(draws_to_add)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape latest Irish Lotto winning numbers")
     parser.add_argument("--dry-run", action="store_true", help="Check for new draws without updating CSV")
-    parser.add_argument("--year", type=int, default=2026, help="Year archive to scrape (default: 2026)")
+    parser.add_argument("--year", type=int, default=datetime.now().year, help="Year archive to scrape")
+    parser.add_argument("--skip-verify", action="store_true",
+                        help="Use one source only, without cross-checking the other")
     args = parser.parse_args()
 
-    url = f"https://irish.national-lottery.com/irish-lotto/results-archive-{args.year}"
-    print(f"Fetching Irish Lotto results from: {url}")
+    primary_url = f"https://irish.national-lottery.com/irish-lotto/results-archive-{args.year}"
+    primary = scrape(PRIMARY_NAME, primary_url, parse_archive_table)
 
-    try:
-        html = fetch_url(url)
-        draws = parse_archive_table(html)
-        if not draws:
-            print(f"✗ Failed to parse any valid draws from {url}. Check connection, Cloudflare, or markup.")
-            sys.exit(1)
+    fallback = []
+    if not primary or not args.skip_verify:
+        fallback = scrape(FALLBACK_NAME, FALLBACK_URL, parse_lottery_ie)
 
-        print(f"Scraped {len(draws)} valid draws for {args.year}.")
-        latest = draws[0]
-        print(f"Latest draw found: {latest['date_str']} (Numbers: {latest['main']} + Bonus: {latest['bonus']})")
-
-        added = update_csv_with_draws(CSV_FILE, draws, dry_run=args.dry_run)
-        if added > 0 and not args.dry_run:
-            print("\nNext step: Run 'python drawpick.py' and 'python quickpick.py' to refresh models and analysis.")
-    except Exception as e:
-        print(f"✗ Error during scraping: {e}")
-        import traceback
-        traceback.print_exc()
+    if primary:
+        source, draws, other = PRIMARY_NAME, primary, fallback
+    elif fallback:
+        print(f"Primary source yielded nothing - falling back to {FALLBACK_NAME}")
+        source, draws, other = FALLBACK_NAME, fallback, []
+    else:
+        print("Both sources failed to yield a valid draw. Check connection, Cloudflare, or markup.")
         sys.exit(1)
+
+    if other:
+        agreed, mismatches = cross_check(draws, other)
+        if mismatches:
+            print(f"Sources disagree on {len(mismatches)} date(s) - refusing to write:")
+            for line in mismatches:
+                print(f"  ! {line}")
+            sys.exit(1)
+        print(f"Verified {agreed} shared date(s) against {FALLBACK_NAME}")
+    elif not args.skip_verify:
+        print(f"Unverified: {FALLBACK_NAME} returned no draws to cross-check against")
+
+    latest = draws[0]
+    print(f"Using {source}. Latest draw: {latest['date_str']} "
+          f"(Numbers: {latest['main']} + Bonus: {latest['bonus']})")
+
+    added = update_csv_with_draws(CSV_FILE, draws, dry_run=args.dry_run)
+    if added > 0 and not args.dry_run:
+        print("\nNext step: Run 'python drawpick.py' and 'python quickpick.py' to refresh models and analysis.")
 
 
 if __name__ == "__main__":

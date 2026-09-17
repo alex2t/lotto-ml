@@ -496,7 +496,8 @@ def train_all_models(
     enable_hyperparameter_tuning: bool = False,
     tuning_mode: str = 'quick',
     tuning_cv_splits: int = 3,
-    tuning_scoring: str = 'roc_auc'
+    tuning_scoring: str = 'roc_auc',
+    extra_metrics: Optional[Dict[str, Dict[str, Any]]] = None
 ) -> Tuple[Dict[str, Any], Dict[str, List[str]], Dict[str, Optional[List[Dict[str, Any]]]], Dict[str, Dict[str, Any]]]:
     """
     Train all configured models with comprehensive validation metrics and model comparison.
@@ -509,6 +510,8 @@ def train_all_models(
         tuning_mode: 'quick' or 'extensive' hyperparameter search (default: 'quick')
         tuning_cv_splits: Number of TimeSeriesSplit CV folds (default: 3)
         tuning_scoring: Metric to optimize ('f1', 'precision', 'recall', 'roc_auc') (default: 'f1')
+        extra_metrics: Validation metrics from models trained elsewhere (bonus, bonus-to-main),
+            merged into the comparison report so every model is scored on one scoreboard
 
     Returns:
         Tuple of (models_dict, model_features_dict, feature_importance_dict, all_metrics_dict)
@@ -603,7 +606,7 @@ def train_all_models(
     models = {}
     model_features = {}
     feature_importance = {}
-    all_metrics = {}
+    all_metrics = dict(extra_metrics) if extra_metrics else {}
 
     for idx, model_config in enumerate(model_configs, 1):
         model_name = f"model_{idx}"

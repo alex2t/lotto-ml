@@ -1,340 +1,39 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-16
-**Scope:** the single record of outstanding defects. The code-review history it grew out of has
-been retired; Appendix A lists what was fixed and Appendix B keeps the one write-up worth holding on to.
+**Last updated:** 2026-09-17
+**Scope:** the single record of outstanding defects.
 
-This is the open-issues register. Everything in §1–§12 is **unfixed**. Items carried from the code
-review keep their original IDs (C-nn / N-n); items found in the final review pass are numbered F-n.
-Appendix A indexes what is resolved; Appendix B keeps the full C-5 write-up for reference.
+Sections 1-8 are **open**, ordered by severity. Items carried from the retired code review keep
+their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
+Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
+
+**Keeping this file true.** The Priority summary lists **open items only** — a resolved ID never
+appears in it. When a defect is found: give it the next free F-n, add a row to the Priority summary,
+and write a section with file:line evidence. When one is fixed: delete its summary row, renumber the
+remaining sections, add it to the Appendix A table, and write up the root cause and the measured
+effect. A fix is not finished until this file says so.
 
 ---
 
 ## Priority summary
 
-| ID | Issue | Severity | Effort |
-|:--|:--|:--|:--|
-| **F-2** | Bonus and bonus-to-main models have no validation split | High | S |
-| **F-3** | Decision threshold is tuned and scored on the same validation set | Medium | S |
-| **C-15b** | Jackpot Optimizer Random Forest badly overfits (gap 0.383) | Medium | S |
-| **F-4** | `probabilities[num-1]` assumes all 47 numbers are present | Medium (latent) | S |
-| **C-14** | Scraper has no fallback source and no main-draw verification | Medium | M |
-| **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
-| **C-15a** | Feature engine rebuilt 3–4× per run; O(N²) gap memory | Low | S |
-| **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
-| **C-6b** | Serving reference date differs between the two feature paths | Low | S |
-| **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
-| **F-8** | Freshness target barely constrains selection; bin 0 absorbs every slot | Medium | M |
+| # | ID | Issue | Severity | Effort |
+|--:|:--|:--|:--|:--|
+| 1 | **F-8** | Freshness target barely constrains selection; bin 0 absorbs every slot | Medium | M |
+| 2 | **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
+| 3 | **F-9** | Serving features fall back to 0 for a column the model was trained on | Low (latent) | XS |
+| 4 | **C-15a** | Feature engine rebuilt 3-4x per run; O(N^2) gap memory | Low | S |
+| 5 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
+| 6 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
+| 7 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
+| 8 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+
+**8 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
-## 1. F-1 — The freshness target sums to 7 but a line has 6 slots  — **RESOLVED**
-
-**Resolved 2026-09-16.** `lotto_7_number_freshness_results.json` now carries a second
-distribution, `distribution_analysis_6_main`, built from the 6 main balls only, and
-`get_optimal_pattern_distribution` reads that instead of the 7-ball one. The target went from
-`{0:4, 1:2, 2:1}` (sums to 7) to `{0:3, 1:2, 2:1}` (sums to 6) — the genuine mode of the main-ball
-distribution, 69 of 497 draws. The function now raises if the key is missing or the target is the
-wrong width, rather than silently using a 7-wide one, and `predictor.py` no longer claims a
-proportional adjustment it never made. Nine tests in `tests/test_freshness_target.py` cover it.
-
-Generated lines did **not** change on current data: both the old and new targets yield the same
-initial bin priority `[0, 1, 2]`, so selection picked identically. The fix removes a real defect and
-pins the contract; it did not improve the picks. Investigating that turned up **F-8**.
-
-<details><summary>Original report</summary>
-
-**Severity: High.** Silently biases every line the system generates.
-
-`ml_lotto/prediction/constraints.py:34-46` returns the target distribution straight from
-`lotto_7_number_freshness_results.json`, which describes the freshness split of the **7 drawn
-balls**. Every model picks **6** numbers.
-
-```
-c_max_threshold : 2
-target_pattern  : {0: 4, 1: 2, 2: 1}   SUM = 7
-numbers picked per model                    6
-```
-
-`predictor.py:137` prints:
-
-```
-NOTE: Each model picks 6 main numbers (adjusted proportionally from 7-number pattern)
-```
-
-No such adjustment exists — `grep -rn "proportion" ml_lotto/` matches only that print statement.
-The raw 7-number counts are passed to `pick_line_hybrid` as `freshness_needed`, and
-`pick_from_hmc_pool` orders freshness bins by `freshness_needed[f] - freshness_counts[f]`. With one
-extra number's worth of demand spread across the bins, that gap is overstated throughout selection
-and bin priority is systematically skewed.
-
-**Fix.** Decide what the 6-number target should be and compute it rather than asserting it in a log
-line: either scale the 7-number distribution to 6 (rounding under the constraint that counts sum to
-6), or derive the distribution from the main 6 balls — note the source JSON is explicitly a
-7-number analysis, so a 6-ball equivalent may need generating. Then assert
-`sum(target.values()) == 6` so it cannot drift again.
-
-</details>
-
----
-
-## 2. F-2 — The bonus and bonus-to-main models train on 100% of the data
-
-**Severity: High.** Two of the six models have no validation at all.
-
-Both trainers accept validation parameters:
-
-```python
-# ml_lotto/models/bonus_trainer.py:68-69
-training_end_draw: int = None,
-validation_start_draw: int = None
-
-# ml_lotto/models/bonus_to_main_trainer.py:23-24
-training_end_draw: int = None,
-validation_start_draw: int = None
-```
-
-`quickpick.py` never passes either — `train_bonus_model(...)` and `train_bonus_to_main_model(...)`
-are both called with four positional arguments, so both default to `None` and both fit every draw.
-
-C-10 restored `VALIDATION_SPLIT_RATIO = 0.85` for the four main models only. Consequences:
-
-- No held-out metrics, so there is no evidence either model works.
-- The probabilities written to `lottery_picks.txt` (bonus 2.8–3.1%, bonus-to-main up to 12.2%) are
-  **in-sample** and are not comparable with the main models' out-of-sample numbers.
-- They are exempt from the check that caught every other problem in this codebase.
-
-**Fix.** Pass `calculate_train_val_split(len(all_draws))` through to both and route their validation
-frames into `calculate_comprehensive_metrics`, so they appear in `model_comparison.csv` with
-everything else. Expect the same verdict as the main models; the point is to be able to see it.
-
----
-
-## 3. F-3 — The decision threshold is chosen on the validation set and then scored on it
-
-**Severity: Medium.** Makes the reported operating-point metrics optimistic.
-
-`ml_lotto/models/model_metrics.py:196-199`:
-
-```python
-precisions_temp, recalls_temp, pr_thresholds_temp = precision_recall_curve(y_val, val_proba)
-f1_scores_temp = 2 * (precisions_temp * recalls_temp) / (precisions_temp + recalls_temp + 1e-10)
-optimal_idx = np.argmax(f1_scores_temp)
-optimal_threshold = pr_thresholds_temp[optimal_idx] ...
-```
-
-`optimal_threshold` is the F1-maximising threshold **on `y_val`**, and lines 215-216 compute the
-reported Precision / Recall / F1 / Accuracy on that same `y_val` at that threshold. The threshold is
-fitted to the data it is evaluated on.
-
-Compounding it: maximising F1 at a ~15% positive rate drives the threshold down to roughly the base
-rate, which is why every model reports Recall ≈ 1.0 with Precision ≈ the base rate. Those columns
-describe a classifier that answers "yes" to nearly everything.
-
-**Fix.** Either select the threshold on a slice of the training data and report it on untouched
-validation, or drop the operating-point columns. AUC, PR-AUC and the per-draw Top-K lift are
-threshold-free and already carry the signal.
-
----
-
-## 4. C-15b — The Jackpot Optimizer memorises the training set
-
-**Severity: Medium.** Carried from the code review.
-
-```
-Train AUC 0.911  vs  Val AUC 0.528   ->  gap 0.383
-```
-
-`MODEL_2_CONFIG['algorithm_params']` is `n_estimators=100, max_depth=10, min_samples_split=5`, with
-no `min_samples_leaf` and no `max_features` constraint, over ~15,800 rows. A depth-10 forest has
-ample capacity to memorise per-number patterns.
-
-Rev 4 briefly showed 0.148, but that came from *removing* features, not from fixing the model; Rev 6
-restored informative main-6 features and the gap returned. Validation AUC is unaffected (0.5078
-baseline → 0.5284), so this is wasted capacity rather than a correctness bug — but it makes the
-model's training behaviour useless as a diagnostic.
-
-**Fix.** Constrain the forest (`max_depth` 4–6, `min_samples_leaf` in the hundreds, `max_features`
-below 1.0) and confirm the gap falls without validation AUC dropping. Worth reviewing for all four
-models — Complexity Explorer sits at 0.165.
-
----
-
-## 5. F-4 — Probability arrays are indexed by number without guaranteeing all 47 exist
-
-**Severity: Medium, currently latent.**
-
-`ml_lotto/prediction/predictor.py:53-62` builds the prediction matrix conditionally:
-
-```python
-for num in range(1, MAX_NUMBER + 1):
-    if num in features_dict:
-        X_pred_list.append(record)
-X_pred = np.array(X_pred_list)
-probabilities = pipeline.predict_proba(X_pred)[:, 1]
-```
-
-Every consumer then indexes positionally by number — `probabilities[num - 1]` in `penalties.py:41`
-and `:56`, `pool_generator.py:55`, `filters.py`, `selection.py:140`. If `features_dict` were ever
-missing a number the array would be 46 long and **every number above the gap would silently receive
-another number's probability**. There is no length check.
-
-It does not fire today because `extract_features_from_hmc_json` always emits all 47. But the guard
-`if num in features_dict` exists precisely because absence was considered possible, and the two
-halves disagree about what happens then.
-
-**Fix.** Drop the conditional and let a missing number raise, or return a dict keyed by number
-instead of a positional array. The one-line version is
-`assert len(probabilities) == MAX_NUMBER` after `predict_proba`.
-
----
-
-## 6. C-14 — Scraper resilience
-
-**Severity: Medium.** Carried from the code review; partially addressed.
-
-`scripts/scrape_lotto.py`:
-
-- **No fallback source.** The module docstring advertises `lottery.ie` as a backup parser; only
-  `irish.national-lottery.com` is implemented. `review.md` §4 specifies a two-source design.
-- **No main-draw verification.** Rows are matched on a `results-DD-MM-YYYY` link and a `balls`
-  list. If the archive page also carries Lotto Plus 1 / Plus 2 rows they share the draw date, and
-  deduplication is by date, so whichever parses first wins. Nothing checks that a row belongs to the
-  main Lotto draw.
-
-Already fixed: 7-ball uniqueness, date-object deduplication, non-zero exit on failure.
-
-**Fix.** Assert the row's draw-type label before accepting it, and implement the documented
-fallback — or remove the claim from the docstring.
-
----
-
-## 7. F-5 — `assign_bonus_to_models` divides by zero on an empty list
-
-**Severity: Low, latent.**
-
-`ml_lotto/prediction/bonus_predictor.py:150`:
-
-```python
-bonus_idx = (model_idx - 1) % len(bonus_predictions)
-```
-
-`ZeroDivisionError` when `bonus_predictions` is empty. `generate_bonus_predictions` builds
-`available_pool` by excluding every number with `was_bonus_last_10 == 1`; it returns fewer than
-`num_predictions` entries when the pool is thin, and could in principle return none.
-
-**Fix.** Return an empty assignment dict when there are no predictions and let Step 10's existing
-`None` handling take over.
-
----
-
-## 8. C-15a — The feature engine is rebuilt several times per run
-
-**Severity: Low** (performance and memory only). Carried from the code review.
-
-`PointInTimeFeatureEngine` is constructed in `train_all_models`, again inside
-`build_walk_forward_dataset` when the legacy `build_training_dataset` wrapper is used, again in
-`build_walk_forward_bonus_dataset`, and again in `quickpick.py` for the bonus serving row. Each
-construction re-runs `_precompute_matrices` and `_precompute_timeline_state`.
-
-`_precompute_timeline_state` also stores a full copy of every number's gap list at every draw:
-
-```python
-'gaps': {num: list(appearance_gaps[num]) for num in range(1, MAX_NUMBER + 1)}
-```
-
-That is O(N² × 47) memory for quantities that could be maintained as running moments (count, sum,
-sum of squares, max) in O(N × 47).
-
-**Fix.** Build the engine once in `quickpick.py` and pass it down; replace the gap-list snapshots
-with running moments.
-
----
-
-## 9. F-6 — The ensemble machinery cannot be reached from the pipeline
-
-**Severity: Low.**
-
-`ml_lotto/prediction/ensemble.py` (341 lines) is imported only by `scripts/ensemble_predict.py`,
-`scripts/train_with_all_features.py` and three test scripts. `quickpick.py` never imports it, so no
-ensembling happens in the path that produces `lottery_picks.txt`.
-
-`review.md` §3.2 proposes soft voting as an improvement, apparently unaware that hard voting already
-exists but is unreachable. `ENSEMBLE_MODE = False` in `ml_lotto/config.py` is commented "not used
-currently", confirming it.
-
-**Fix.** Decide whether ensembling is wanted: wire it into `quickpick.py`, or delete the module and
-the config flag rather than leaving 341 lines that look load-bearing. With all four models at
-chance, ensembling them will not help — resolve the modelling question first.
-
----
-
-## 10. C-6b — The two feature paths use different serving reference dates
-
-**Severity: Low.** Carried from the code review.
-
-- `walk_forward.py` anchors the serving row (`t = N`) to an **estimated next-draw date** (last draw
-  + median inter-draw gap, currently 3 days), matching how every training row uses its own draw's
-  date.
-- `extractor.py:90-97` anchors the main path to the **latest draw's date**.
-
-Both are internally consistent and reproducible (C-6 fixed the wall-clock dependency), but they sit
-about 3 days apart. `days_since_last` is Model 1's top feature and the HMC bands are 13 / 27 days,
-so a 3-day offset can move numbers across a category boundary.
-
-**Fix.** Use one anchor. The engine's convention is more defensible — features for the draw being
-predicted should be measured as of that draw — so move `extractor.py` onto the estimated next-draw
-date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
-
----
-
-## 11. C-17b — The legacy test files are not tests
-
-**Severity: Low.** Carried from the code review.
-
-Seven of the thirteen pre-existing files in `tests/` contain zero `assert` statements — they are
-print scripts that pass by not raising. Their work also happens at module import, so collecting them
-under pytest executes data loading and model training:
-
-```
-test_better_metrics.py  test_ensemble.py  test_interactions.py
-test_model_specific_features.py  test_rolling_integration.py
-test_rolling_stats_integration.py  test_smote_threshold.py
-```
-
-The four files added during this review (`test_walk_forward_parity.py`,
-`test_selection_invariants.py`, `test_metrics.py`, `test_no_constant_features.py` — 37 tests) are
-real and run in about 5 seconds. A plain `pytest tests/` still cannot be used because of the others.
-
-**Fix.** Convert the useful ones to assertions inside functions, delete the rest, and add a
-`pytest.ini` so `pytest` runs clean from the repo root.
-
----
-
-## 12. F-7 — Standalone analysis scripts read a window that has never existed
-
-**Severity: Low.** Carried from the code review, confirmed in the final pass.
-
-`analysis/bonus_to_main_analysis.py:109,121` and `analysis/feature_stability_scorer.py:82` read:
-
-```python
-'recent_14': recent_counts.get('last_14', 0)
-```
-
-`SCENARIOS` produces windows 5/6/10/25, i.e. `last_4`, `last_5`, `last_9`, `last_24`. There is no
-`last_14`, so these silently read 0 for every number — the same defect that produced the dead
-interaction features that were fixed earlier (see Appendix A).
-
-None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction path is unaffected.
-
-**Fix.** Point them at `last_24` or remove the field. Better, have them fail on a missing key rather
-than defaulting to 0, which is what let this hide.
-
----
-
-## 12b. F-8 — The freshness target barely constrains selection
+## 1. F-8 — The freshness target barely constrains selection
 
 **Severity: Medium.** Found while verifying the F-1 fix.
 
@@ -372,8 +71,151 @@ target does not move Top-K lift, the honest conclusion is that the freshness pat
 signal and the whole mechanism should be dropped rather than fixed.
 
 ---
+## 2. F-5 — `assign_bonus_to_models` divides by zero on an empty list
 
-## 13. Improvements (not defects)
+**Severity: Low, latent.**
+
+`ml_lotto/prediction/bonus_predictor.py:150`:
+
+```python
+bonus_idx = (model_idx - 1) % len(bonus_predictions)
+```
+
+`ZeroDivisionError` when `bonus_predictions` is empty. `generate_bonus_predictions` builds
+`available_pool` by excluding every number with `was_bonus_last_10 == 1`; it returns fewer than
+`num_predictions` entries when the pool is thin, and could in principle return none.
+
+**Fix.** Return an empty assignment dict when there are no predictions and let Step 10's existing
+`None` handling take over.
+
+---
+## 3. F-9 — Serving features fall back to 0 for a column the model was trained on
+
+**Severity: Low, currently latent.** Found while fixing F-4, in the same four lines.
+
+`ml_lotto/prediction/predictor.py:60` builds each serving row with a silent default:
+
+```python
+X_pred_list.append([feat.get(col, 0) for col in features_for_model])
+```
+
+`features_for_model` is the exact column list the model was fitted on. If a column were ever absent
+from the serving `features_dict` — a renamed feature, an analyzer that stopped emitting a key, a
+`drawpick.py` run that did not happen — every number would be served a constant 0 for it, and the
+model would apply a coefficient fitted on real values to a column that no longer exists. Nothing
+would print, and train/serve parity would break silently. This is the same `.get(key, 0)` pattern
+that produced the phantom `total_count` and `recent_14` columns and the vacuous interaction
+thresholds.
+
+Measured 2026-09-17: 0 of 47 numbers are missing any column, for all four main models, so no value
+is being fabricated today.
+
+**Fix.** `feat[col]`, so a missing column raises where it happens. The only reason it is not done
+already is that it widens F-4's blast radius from "a missing number" to "a missing column", and it
+deserves its own verification run.
+
+---
+
+## 4. C-15a — The feature engine is rebuilt several times per run
+
+**Severity: Low** (performance and memory only). Carried from the code review.
+
+`PointInTimeFeatureEngine` is constructed in `train_all_models`, again inside
+`build_walk_forward_dataset` when the legacy `build_training_dataset` wrapper is used, again in
+`build_walk_forward_bonus_dataset`, and again in `quickpick.py` for the bonus serving row. Each
+construction re-runs `_precompute_matrices` and `_precompute_timeline_state`.
+
+`_precompute_timeline_state` also stores a full copy of every number's gap list at every draw:
+
+```python
+'gaps': {num: list(appearance_gaps[num]) for num in range(1, MAX_NUMBER + 1)}
+```
+
+That is O(N² × 47) memory for quantities that could be maintained as running moments (count, sum,
+sum of squares, max) in O(N × 47).
+
+**Fix.** Build the engine once in `quickpick.py` and pass it down; replace the gap-list snapshots
+with running moments.
+
+---
+## 5. F-6 — The ensemble machinery cannot be reached from the pipeline
+
+**Severity: Low.**
+
+`ml_lotto/prediction/ensemble.py` (341 lines) is imported only by `scripts/ensemble_predict.py`,
+`scripts/train_with_all_features.py` and three test scripts. `quickpick.py` never imports it, so no
+ensembling happens in the path that produces `lottery_picks.txt`.
+
+`review.md` §3.2 proposes soft voting as an improvement, apparently unaware that hard voting already
+exists but is unreachable. `ENSEMBLE_MODE = False` in `ml_lotto/config.py` is commented "not used
+currently", confirming it.
+
+**Fix.** Decide whether ensembling is wanted: wire it into `quickpick.py`, or delete the module and
+the config flag rather than leaving 341 lines that look load-bearing. With all four models at
+chance, ensembling them will not help — resolve the modelling question first.
+
+---
+## 6. C-6b — The two feature paths use different serving reference dates
+
+**Severity: Low.** Carried from the code review.
+
+- `walk_forward.py` anchors the serving row (`t = N`) to an **estimated next-draw date** (last draw
+  + median inter-draw gap, currently 3 days), matching how every training row uses its own draw's
+  date.
+- `extractor.py:90-97` anchors the main path to the **latest draw's date**.
+
+Both are internally consistent and reproducible (C-6 fixed the wall-clock dependency), but they sit
+about 3 days apart. `days_since_last` is Model 1's top feature and the HMC bands are 13 / 27 days,
+so a 3-day offset can move numbers across a category boundary.
+
+**Fix.** Use one anchor. The engine's convention is more defensible — features for the draw being
+predicted should be measured as of that draw — so move `extractor.py` onto the estimated next-draw
+date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
+
+---
+## 7. C-17b — The legacy test files are not tests
+
+**Severity: Low.** Carried from the code review.
+
+Seven of the thirteen pre-existing files in `tests/` contain zero `assert` statements — they are
+print scripts that pass by not raising. Their work also happens at module import, so collecting them
+under pytest executes data loading and model training:
+
+```
+test_better_metrics.py  test_ensemble.py  test_interactions.py
+test_model_specific_features.py  test_rolling_integration.py
+test_rolling_stats_integration.py  test_smote_threshold.py
+```
+
+The four files added during this review (`test_walk_forward_parity.py`,
+`test_selection_invariants.py`, `test_metrics.py`, `test_no_constant_features.py` — 37 tests) are
+real and run in about 5 seconds. A plain `pytest tests/` still cannot be used because of the others.
+
+**Fix.** Convert the useful ones to assertions inside functions, delete the rest, and add a
+`pytest.ini` so `pytest` runs clean from the repo root.
+
+---
+## 8. F-7 — Standalone analysis scripts read a window that has never existed
+
+**Severity: Low.** Carried from the code review, confirmed in the final pass.
+
+`analysis/bonus_to_main_analysis.py:109,121` and `analysis/feature_stability_scorer.py:82` read:
+
+```python
+'recent_14': recent_counts.get('last_14', 0)
+```
+
+`SCENARIOS` produces windows 5/6/10/25, i.e. `last_4`, `last_5`, `last_9`, `last_24`. There is no
+`last_14`, so these silently read 0 for every number — the same defect that produced the dead
+interaction features that were fixed earlier (see Appendix A).
+
+None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction path is unaffected.
+
+**Fix.** Point them at `last_24` or remove the field. Better, have them fail on a missing key rather
+than defaulting to 0, which is what let this hide.
+
+---
+## 9. Improvements (not defects)
 
 Carried from the code review's improvement list, kept here so the register is complete.
 
@@ -396,13 +238,21 @@ Carried from the code review's improvement list, kept here so the register is co
 
 ## Reality check
 
-All four main models sit at **validation AUC 0.49–0.53 with Top-7 lift ≈ 1.0 over 60 draws**. None
-of the fixes above will change that, and none should be expected to. A fair lottery is not
-predictable, and the measurement now says so honestly — which is the real result of the review and
-fix work.
+All six models are now measured out-of-sample on the same 60-draw hold-out, and all six sit at
+**validation AUC 0.498-0.545 with Top-7 lift 1.01-1.12**. The 2 SE noise floor is 0.031 AUC and
+0.227 Top-7 AvgCaught, so every one of them is at chance. That is the correct answer for a fair
+draw, and it is the real result of the review and fix work.
 
-F-1, F-2 and F-3 are worth fixing because they are the remaining places where the system reports
-something that is not true. The rest is hygiene.
+Train/validation AUC gaps are now 0.005-0.053 across all six, down from a 0.383 worst case, so the
+training numbers can be trusted as a diagnostic rather than reflecting memorised noise.
+
+Read the scoreboard in this order: AUC, PR-AUC lift and per-draw Top-K lift first, since they are
+threshold-free; the precision / recall / F1 columns last, because maximising F1 at a ~15% positive
+rate parks the threshold near the base rate by construction.
+
+None of the open items above will move those numbers, and none should be expected to. What is left
+is hygiene, latent crashes and one honest question (F-8) about whether the freshness mechanism earns
+its place at all.
 
 ---
 
@@ -425,8 +275,13 @@ Every item below was fixed and verified against the live pipeline.
 | C-11 | `pick_from_hmc_pool` returned 1 number for a request of 0 | `selection.py` |
 | C-12 | Safety top-up could duplicate a pre-assigned number | `selection.py` |
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
+| C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
+| C-15b | Tree models memorised the training set (train/val AUC gap 0.383) | `config.py`, `hyperparameter_tuning.py` |
 | C-16 | Non-deterministic feature column order | `extractor.py` |
 | F-1 | Freshness target sized for 7 balls while a line has 6 slots | `freshness_analyzer_7_numbers.py`, `constraints.py`, `drawpick.py` |
+| F-2 | Bonus and bonus-to-main models had no validation split | `quickpick.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `trainer.py` |
+| F-3 | Decision threshold tuned and scored on the same validation rows | `model_metrics.py` |
+| F-4 | Probability array built conditionally while every consumer indexed it positionally | `predictor.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
 | N-3 | Top-K computed globally instead of per draw; overfit gap zero by construction | `model_metrics.py` |
@@ -437,6 +292,262 @@ Every item below was fixed and verified against the live pipeline.
 | — | Interaction thresholds: phantom features, vacuous splits, empty cells, mismatched recency | `feature_interaction_analyzer.py`, `interaction_thresholds.py` |
 | — | Duplicate interaction script overwriting pipeline output | `feature_interaction_explorer.py` |
 | — | main-6 / all-7 split corrupting the freshness selection target | `drawpick.py`, `walk_forward.py` |
+
+The six fixed on 2026-09-16/17 — **F-1**, **F-2**, **F-3**, **F-4**, **C-14**, **C-15b** — are written up
+below in full, because each one's root cause is the kind that comes back. The original reports are
+in git history.
+
+### F-1 — The freshness target was sized for 7 balls while a line has 6 slots
+
+**Resolved 2026-09-16.** `lotto_7_number_freshness_results.json` now carries a second
+distribution, `distribution_analysis_6_main`, built from the 6 main balls only, and
+`get_optimal_pattern_distribution` reads that instead of the 7-ball one. The target went from
+`{0:4, 1:2, 2:1}` (sums to 7) to `{0:3, 1:2, 2:1}` (sums to 6) — the genuine mode of the main-ball
+distribution, 69 of 497 draws. The function now raises if the key is missing or the target is the
+wrong width, rather than silently using a 7-wide one, and `predictor.py` no longer claims a
+proportional adjustment it never made. Nine tests in `tests/test_freshness_target.py` cover it.
+
+Generated lines did **not** change on current data: both the old and new targets yield the same
+initial bin priority `[0, 1, 2]`, so selection picked identically. The fix removes a real defect and
+pins the contract; it did not improve the picks. Investigating that turned up **F-8**.
+
+### F-2 — The bonus and bonus-to-main models trained on 100% of the data
+
+**Resolved 2026-09-17.** `quickpick.py` now calls `calculate_train_val_split(len(all_draws))` once
+and passes `training_end_draw` / `validation_start_draw` into both `train_bonus_model` and
+`train_bonus_to_main_model`. Both build a chronological validation set, score it with
+`calculate_comprehensive_metrics`, and return those metrics; `train_all_models` takes them as
+`extra_metrics` and merges them into `compare_models`, so all six models now sit in
+`model_metrics/model_comparison.csv` on the same 60-draw hold-out.
+
+`calculate_topk_accuracy` gained a `groups` argument for this. The bonus-to-main model scores only
+the numbers in the current bonus window, so its rows per draw vary (9-10, not 47) and the old fixed
+reshape would have collapsed the whole validation set into one "draw". Passing the per-row draw
+index makes Top-K a real within-draw metric for it.
+
+First out-of-sample numbers for the two models, on 60 validation draws:
+
+| Model | Val AUC | PR-AUC Lift | Top-7 Lift |
+|:--|--:|--:|--:|
+| Bonus Ball Predictor | 0.461 | 0.90 | 0.67 |
+| Bonus-to-Main Transition Predictor | 0.434 | 0.93 | 0.94 |
+
+Same verdict as the four main models — chance, slightly below it here — which is the expected
+answer for a fair draw. The point was to be able to see it.
+
+Both models now fit 85% of the draws rather than 100%, so the probabilities in `lottery_picks.txt`
+changed (bonus top pick 21 -> 10, bonus-to-main #1 27 at 23.0% rather than 33.9%). Main-number
+picks are unchanged. The bonus-to-main trainer's duplicated training/validation loop was folded
+into one `_build_bonus_to_main_dataset` helper.
+
+### F-3 — The decision threshold was chosen and scored on the same rows
+
+**Resolved 2026-09-17.** `calculate_comprehensive_metrics` now splits the validation window
+chronologically on draw boundaries (`split_threshold_tuning_rows`): the earlier 30 draws pick the
+F1-maximising threshold, the later 30 carry every threshold-dependent number — accuracy, precision,
+recall, F1, both confusion matrices and the classification report. The default-threshold columns
+moved to the same held-out half, so the "Default vs Optimal" table compares like with like.
+AUC, PR-AUC, Top-K and calibration are threshold-free and still use the whole 60-draw window.
+
+For the bonus-to-main model the split reuses the per-row draw index added for F-2, since its
+candidate pool varies by draw; it lands at 281 tuning / 286 reporting rows rather than a clean half.
+
+Effect on the scoreboard — the threshold-free columns are unchanged to the last digit, which is
+what confirms only the operating point moved:
+
+| Model | F1 before | F1 after | Recall before | Recall after |
+|:--|--:|--:|--:|--:|
+| Momentum Specialist | 0.261 | 0.247 | 1.00 | 0.84 |
+| Complexity Explorer | 0.261 | 0.254 | 0.90 | 0.86 |
+| Conservative Pool Generator | 0.260 | 0.247 | 1.00 | 0.91 |
+| Jackpot Optimizer | 0.229 | 0.217 | 0.83 | 0.71 |
+| Bonus Ball Predictor | 0.046 | 0.038 | 0.98 | 0.67 |
+| Bonus-to-Main Transition Predictor | 0.256 | 0.247 | 1.00 | 0.61 |
+
+Every model's reported F1 fell once the threshold stopped being scored on its own tuning data.
+Selection never used these thresholds, so `lottery_picks.txt` is unchanged.
+
+The compounding half of the original report is **not** fixed and was not a defect: maximising F1
+at a ~15% positive rate still drives the threshold to roughly the base rate, so recall stays high
+and precision stays near the base rate. That is what F1-maximisation does on imbalanced data, and
+the columns should still be read after AUC, PR-AUC and Top-K lift, not before them.
+
+`tests/test_threshold_holdout.py` covers it (6 tests): the split is chronological, disjoint and on
+draw boundaries, it handles the variable-width bonus-to-main draws, and a model that separates
+winners in the tuning half but ranks them last in the reporting half now reports recall 0.0 where
+the old code reported 0.50.
+
+### F-4 — The probability array was built conditionally but read positionally
+
+**Resolved 2026-09-17.** `generate_predictions` in `ml_lotto/prediction/predictor.py` now builds one
+row per number unconditionally, indexing `features_dict[num]` directly, so the array is
+`MAX_NUMBER` long by construction and row *i* is always number *i+1*. A missing number raises a
+`KeyError` naming it, at the point where it is missing.
+
+The defect was a disagreement between two halves of the same file: the builder skipped absent
+numbers (`if num in features_dict`) while `penalties.py`, `pool_generator.py` and `selection.py` all
+read the result as `probabilities[num - 1]`. Demonstrated on a dict missing number 23: the array
+comes back 46 long and `probabilities[24 - 1]` returns **number 25's** probability — every number
+above the gap shifts down one, silently, with no length check anywhere.
+
+Latent, and confirmed latent before the change: at the point `train_all_models` is called, all 47
+numbers are present and no model is missing a single feature column. Re-running the pipeline
+produced a `lottery_picks.txt` identical to the previous one apart from its timestamp, which is the
+expected result — the fix removes a hazard, it does not change behaviour.
+
+`tests/test_prediction_alignment.py` covers it (3 tests): every number keeps its own probability, a
+missing number raises rather than shifting the array, and a `features_dict` built in reverse order
+still yields a number-ordered array.
+
+The same four lines still carry `feat.get(col, 0)`, a silent default for a missing *column* rather
+than a missing number. That is logged separately as **F-9** rather than folded in here.
+
+### C-14 — The scraper had one source and no main-draw check
+
+**Resolved 2026-09-17.** Both halves of the report are now implemented in
+`scripts/scrape_lotto.py`, and the docstring describes what the code does.
+
+**Main-draw verification.** Both result pages carry Lotto Plus 1 and Plus 2 next to the main draw,
+sharing its date, and deduplication is by date — so whichever game parsed first won, and nothing
+checked which game it was. The two pages need different checks, because they identify the game
+differently:
+
+- *Archive table.* The game is in the row's link path (`/irish-lotto/results-...`), and every ball
+  carries a class token per game, so a Plus row's balls read `irish-lotto-plus-1`. The parser now
+  requires the exact `irish-lotto` token on every ball, and requires the row to hold **exactly one**
+  `<ul class="balls">` — with two lists, the link and the balls could refer to different games.
+- *lottery.ie.* Verified against the live page: the three games appear in order under repeated
+  `Winning numbers` / `Bonus` labels with **no game heading to key on**. The main draw is the first
+  pair, and the parser refuses the section if a `Plus` marker appears before it rather than guessing.
+
+**Fallback source.** `parse_lottery_ie` implements the second parser the docstring had advertised
+since the beginning. It is used as the data source when the primary yields nothing, and otherwise as
+a check on it: dates present in both must carry identical numbers or **nothing is written** and the
+run exits non-zero. A date only one source has is not a mismatch — the fallback page holds only the
+most recent draws.
+
+Verified against both live sites on 2026-09-17: 76 main draws parsed from the archive, 4 from
+lottery.ie, and all 4 shared dates agreed ball for ball.
+
+```
+Verified 4 shared date(s) against lottery.ie
+Using irish.national-lottery.com. Latest draw: 16 Sep 2026 (Numbers: [4, 7, 19, 20, 35, 42] + Bonus: 31)
+Found 1 new draw(s) to add:
+  + 16 Sep 2026,04,07,19,20,35,42,31
+```
+
+`tests/test_scraper_sources.py` covers it (11 tests) against markup captured verbatim from both
+live pages into `tests/fixtures/`. The Plus cases are produced by editing that real markup rather
+than inventing a shape the sites do not use: a row retagged `irish-lotto-plus-1` yields no draws, a
+row holding two ball lists is dropped while its neighbours survive, the lottery.ie section returns
+the Lotto numbers and not Plus 1's, and a reordered section is skipped.
+
+Already fixed earlier: 7-ball uniqueness, date-object deduplication, non-zero exit on failure.
+
+### C-15b — The tree models memorised their training sets
+
+**Resolved 2026-09-17.** Gap 0.383 -> 0.053, validation AUC unchanged within noise.
+
+| | Train AUC | Val AUC | Gap | Top-7 Lift |
+|:--|--:|--:|--:|--:|
+| before | 0.911 | 0.528 | 0.383 | 1.175 |
+| after | 0.579 | 0.526 | **0.053** | 1.119 |
+
+Validation moved -0.003 AUC against a 2 SE noise floor of 0.031, and Top-7 AvgCaught moved well
+inside its 0.227 floor. Nothing was gained or lost in predictive terms; the wasted capacity is gone.
+
+**Root cause, and why the obvious fix would have been inert.** `ENABLE_HYPERPARAMETER_TUNING` is
+`True` in `quickpick.py:28`, so `MODEL_2_CONFIG['algorithm_params']` is only a starting point —
+`get_random_forest_grid(quick=True)` overrode it every run. That grid offered
+`max_depth: [5, 10, None]` with no `min_samples_leaf` and no `max_features`, and its CV roc_auc came
+out at 0.5103, i.e. chance. A search that cannot tell its candidates apart picks arbitrarily among
+them, and it kept landing on `max_depth=10` with `min_samples_leaf=1`. Editing only the config would
+have changed nothing that runs.
+
+**Fix.** Both places are constrained: `MODEL_2_CONFIG['algorithm_params']` is now
+`max_depth=4, min_samples_leaf=300, max_features=0.5, class_weight='balanced_subsample'`, and both
+random-forest grids search only within that envelope (depths 3-6, leaves 100-500, `max_features`
+0.3-sqrt). The grid now picks `max_depth=4, min_samples_leaf=500`; 12 fits instead of 24, 38s
+instead of 71s.
+
+Measured on the exact Model 2 frames a real run builds (15,839 train / 2,820 val rows). The
+selection rule was lowest train/val gap among candidates whose validation AUC did not fall — all
+validation differences below are noise:
+
+| Forest | Train AUC | Val AUC | Gap |
+|:--|--:|--:|--:|
+| depth 10, leaf 1 (the grid winner) | 0.912 | 0.528 | 0.383 |
+| depth 6, leaf 50, mf 0.5 | 0.689 | 0.530 | 0.160 |
+| depth 6, leaf 100, mf 0.5 | 0.652 | 0.529 | 0.123 |
+| depth 5, leaf 200, mf 0.5 | 0.619 | 0.521 | 0.098 |
+| depth 4, leaf 300, mf 0.5 | 0.595 | 0.535 | 0.060 |
+| depth 4, leaf 500, sqrt | 0.577 | 0.521 | 0.056 |
+
+`lottery_picks.txt` changed: Model 2's line is `[6, 23, 37, 39, 41, 46]` rather than
+`[6, 17, 37, 39, 41, 46]` — a different model picks differently. Model 3's line moved 23 -> 17 as a
+consequence, which is the cross-model diversity penalty releasing 17 once Model 2 took 23, not a
+second change.
+
+`tests/test_model_capacity.py` covers it (4 tests). The behavioural one fits the configured
+pipeline on features that carry no information about the label: the constrained forest scores 0.61
+on its own training rows, the old one 0.878. The others pin the config and assert no tuning
+candidate — quick or extensive — escapes the envelope, since one unconstrained candidate is enough
+to bring the memorising model back.
+
+#### The other models — done 2026-09-17, same pass
+
+The report's closing line, "worth reviewing for all four models", is now done. Every model's gap is
+at or below 0.054; no validation AUC fell.
+
+| Model | Gap before | Gap after | Val AUC before | Val AUC after |
+|:--|--:|--:|--:|--:|
+| Jackpot Optimizer (random forest) | 0.383 | 0.053 | 0.528 | 0.526 |
+| Complexity Explorer (XGBoost) | 0.165 | **0.019** | 0.507 | 0.507 |
+| Bonus-to-Main (logistic) | 0.150 | **0.033** | 0.434 | 0.498 |
+| Bonus Ball (logistic) | 0.135 | **0.005** | 0.461 | 0.545 |
+| Conservative Pool Generator (CatBoost) | 0.051 | 0.051 | 0.512 | 0.512 |
+| Momentum Specialist (logistic) | 0.020 | 0.020 | 0.501 | 0.501 |
+
+**Complexity Explorer.** Same shape of fix as Model 2, in the same two places. Config is now
+`max_depth=2, n_estimators=50, learning_rate=0.03, min_child_weight=500, reg_lambda=20`, and both
+XGBoost grids search inside that envelope. `scale_pos_weight` is pinned to 1 in the quick grid
+because that is the operating point the gap was measured at. The dead `use_label_encoder` parameter
+was dropped — XGBoost has ignored it for several releases and warned on every fit.
+
+| Forest of stumps | Train AUC | Val AUC | Gap |
+|:--|--:|--:|--:|
+| depth 3, min_child_weight 3 (the grid winner) | 0.672 | 0.507 | 0.165 |
+| depth 3, mcw 200, lr 0.05, L2 10 | 0.568 | 0.520 | 0.049 |
+| depth 2, mcw 300, lr 0.03, L2 20 | 0.545 | 0.515 | 0.030 |
+| depth 2, mcw 500, lr 0.03, L2 20, 50 trees | 0.526 | 0.507 | 0.019 |
+
+**The two logistic models needed a different lever, and finding out why mattered.** Sweeping `C`
+downward barely moved either gap — 0.135 -> 0.110 for the bonus model across two orders of
+magnitude. L2 shrinks coefficients but preserves their ranking, and AUC sees only the ranking, so
+L2 cannot reduce a rank-metric gap however hard it is applied. The capacity is in the feature
+count: 32 features against 337 positive training rows, and 35 against 462.
+
+The gap is real optimism rather than an unlucky validation window. Refitting the bonus model on the
+first 80% of its training window scores 0.614 in-sample, 0.511 on the held-out tail of the *training*
+window and 0.503 on the validation window — the drop reproduces on a slice that is not the
+validation set.
+
+So both moved to L1, which zeroes features outright: bonus `C=0.05` (5 of 32 features survive),
+bonus-to-main `C=0.005` (2 of 35).
+
+**A cost worth knowing about.** The bonus model's probabilities now span 1.9%-2.5%, so all six
+entries in `lottery_picks.txt` print as `2.4%`. The ranking behind them is still well defined (241
+distinct values across the validation rows) but the displayed figures no longer discriminate. That
+is what a model with no signal honestly looks like; if the printed spread matters more than the
+gap, `C=0.1` keeps 17 features and a 1.1%-3.5% spread at a gap of 0.096.
+
+**These choices were informed by the same 60 validation draws they are reported on**, so the
+validation AUC rises above (bonus +0.084, bonus-to-main +0.064) are not evidence of a better model.
+The criterion was the train/val gap, with a guard that validation must not fall; the AUCs remain at
+chance, which is the correct answer for a fair draw.
+
+All four main lines and both auxiliary predictions changed in `lottery_picks.txt`, since four of the
+six models are different models now.
 
 ---
 
@@ -723,7 +834,7 @@ The leak is only genuinely gone when both of these hold:
    still carrying outcome information from the validation window and the leak was not closed.
 
 The second check is the one that actually proves it, and it is worth building once — it is the same
-harness described in §13 for answering whether any edge exists at all.
+harness described in the Improvements section (§9) for answering whether any edge exists at all.
 
 ---
 

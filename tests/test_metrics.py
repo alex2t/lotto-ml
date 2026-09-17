@@ -77,3 +77,53 @@ def test_falls_back_to_a_single_block_when_shape_does_not_divide():
     m = calculate_topk_accuracy(y, np.array([0.1, 0.9, 0.2, 0.8, 0.3]), k_values=[2])
     assert m['topk_n_draws'] == 1
     assert m['top2_winners'] == pytest.approx(2.0)
+
+
+def test_groups_override_the_fixed_block_size(labels):
+    """A group index must partition rows exactly as the fixed reshape does."""
+    groups = np.repeat(np.arange(N_DRAWS), NUMBERS_PER_DRAW)
+    rng = np.random.default_rng(2)
+    scores = rng.random(labels.size)
+
+    fixed = calculate_topk_accuracy(labels.ravel(), scores, k_values=[7])
+    grouped = calculate_topk_accuracy(labels.ravel(), scores, k_values=[7], groups=groups)
+
+    assert grouped['topk_n_draws'] == fixed['topk_n_draws']
+    assert grouped['top7_winners'] == pytest.approx(fixed['top7_winners'])
+    assert grouped['top7_expected'] == pytest.approx(fixed['top7_expected'])
+    assert grouped['top7_lift'] == pytest.approx(fixed['top7_lift'])
+
+
+def test_variable_sized_draws_are_scored_within_the_draw():
+    """
+    The bonus-to-main model scores only the numbers in the bonus window, so its
+    rows per draw vary. Without groups these rows do not divide by 47 and the whole
+    validation set collapses into one draw.
+    """
+    # draw 0: 3 candidates, 1 winner; draw 1: 5 candidates, 2 winners
+    y = np.array([0, 1, 0, 1, 0, 0, 1, 0])
+    proba = np.array([0.1, 0.9, 0.2, 0.7, 0.1, 0.2, 0.8, 0.3])
+    groups = np.array([0, 0, 0, 1, 1, 1, 1, 1])
+
+    m = calculate_topk_accuracy(y, proba, k_values=[2], groups=groups)
+
+    assert m['topk_n_draws'] == 2
+    # Top-2 catches the single winner in draw 0 and both winners in draw 1
+    assert m['top2_winners'] == pytest.approx(1.5)
+    assert m['top2_hit'] == pytest.approx(1.0)
+    # Expectation uses each draw's own pool size: (2*1/3 + 2*2/5) / 2
+    assert m['top2_expected'] == pytest.approx((2 / 3 + 4 / 5) / 2)
+
+
+def test_k_is_capped_by_the_smallest_draw():
+    """K larger than a draw's candidate pool must not inflate the expectation."""
+    y = np.array([0, 1, 1, 0, 1, 0])
+    proba = np.array([0.1, 0.9, 0.8, 0.2, 0.7, 0.3])
+    groups = np.array([0, 0, 0, 1, 1, 1])
+
+    m = calculate_topk_accuracy(y, proba, k_values=[10], groups=groups)
+
+    # Every candidate is in the top-10 of its own draw, so lift is exactly 1.0
+    assert m['top10_winners'] == pytest.approx(1.5)
+    assert m['top10_expected'] == pytest.approx(1.5)
+    assert m['top10_lift'] == pytest.approx(1.0)

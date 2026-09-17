@@ -55,9 +55,13 @@ fitted on one distribution and applied to another. If parity fails, you changed 
 over **all 7**, and both sides must agree.
 
 **Metric moves under the noise floor mean nothing.** The floor is ~0.031 AUC and ~0.227 Top-7
-AvgCaught over the 60-draw validation window. All four models sit at chance (AUC 0.49-0.53, Top-7
-lift ≈ 1.0), which is the correct answer for a fair draw. Do not report a sub-2-SE move as an
+AvgCaught over the 60-draw validation window. All six models sit at chance (AUC 0.50-0.55, Top-7
+lift 1.01-1.12), which is the correct answer for a fair draw. Do not report a sub-2-SE move as an
 improvement, and do not tune until something exceeds it.
+
+**Watch the overfit gap as well as the AUC.** All six models sit at a train/validation AUC gap of
+0.005-0.053. A gap back above ~0.1 means capacity was handed back to a model, not that it learned
+something.
 
 **A constant feature is a defect.** `test_no_constant_features.py` fails if a model trains on a
 value that never changes: per-number constants leak outcome information from the validation window,
@@ -65,6 +69,15 @@ globally constant ones carry no information at all.
 
 ## After verifying
 
-Record anything you could not fix in [`issue.md`](../../../issue.md) with file:line evidence, rather
-than leaving it in conversation. Architecture and the automation plans are in
-[`review.md`](../../../review.md).
+Update [`issue.md`](../../../issue.md) before reporting back — it is the register, and a change is
+not finished until it is current:
+
+- **Anything found**, including what this run could not fix and anything noticed in passing: next
+  free `F-n`, a row in the **Priority summary** in severity order, and a section with file:line
+  evidence.
+- **Anything fixed**: remove its Priority summary row, renumber the remaining sections, add it to
+  the Appendix A table and write up root cause, measured before/after, and the covering tests.
+- The Priority summary lists **open items only**. A resolved ID appearing there is itself a defect
+  in the register.
+
+Architecture and the automation plans are in [`review.md`](../../../review.md).

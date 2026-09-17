@@ -27,6 +27,10 @@ TEST_FILES = [
     'tests/test_metrics.py',
     'tests/test_no_constant_features.py',
     'tests/test_freshness_target.py',
+    'tests/test_threshold_holdout.py',
+    'tests/test_model_capacity.py',
+    'tests/test_prediction_alignment.py',
+    'tests/test_scraper_sources.py',
 ]
 
 # Validation window: 60 draws, 47 numbers, 7 winners per draw

@@ -50,15 +50,17 @@ def generate_predictions(
         pipeline = model_data['pipeline']
         features_for_model = model_features[model_name]
         
+        # Every consumer indexes this array positionally as probabilities[num - 1],
+        # so row i must be number i+1. Build one row per number unconditionally and
+        # let a missing number raise here rather than shifting every number above the
+        # gap onto another number's probability (F-4).
         X_pred_list = []
         for num in range(1, MAX_NUMBER + 1):
-            if num in features_dict:
-                feat = features_dict[num]
-                record = [feat.get(col, 0) for col in features_for_model]
-                X_pred_list.append(record)
-        
+            feat = features_dict[num]
+            X_pred_list.append([feat.get(col, 0) for col in features_for_model])
+
         X_pred = np.array(X_pred_list)
-        
+
         probabilities = pipeline.predict_proba(X_pred)[:, 1]
         all_probabilities[model_name] = probabilities
         print(f"  ✓ {model_name} predictions generated")

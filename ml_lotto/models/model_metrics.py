@@ -44,11 +44,62 @@ from sklearn.metrics import (
 from sklearn.calibration import calibration_curve
 
 
+def split_rows_into_draws(
+    n_rows: int,
+    numbers_per_draw: int = 47,
+    groups: np.ndarray = None
+) -> list:
+    """
+    Partition validation rows into per-draw index arrays.
+
+    Rows are built draw-major, so a fixed block of `numbers_per_draw` rows is one
+    draw. Models whose candidate pool varies by draw pass `groups` instead, a
+    per-row draw index. Falls back to a single block when neither applies.
+
+    Returns:
+        List of index arrays, one per draw, in chronological order
+    """
+    if groups is not None:
+        groups = np.asarray(groups)
+        # np.unique sorts, and draw indices increase with time
+        return [np.flatnonzero(groups == g) for g in np.unique(groups)]
+    if numbers_per_draw and n_rows % numbers_per_draw == 0 and n_rows >= numbers_per_draw:
+        return [np.arange(i, i + numbers_per_draw) for i in range(0, n_rows, numbers_per_draw)]
+    return [np.arange(n_rows)]
+
+
+def split_threshold_tuning_rows(
+    n_rows: int,
+    groups: np.ndarray = None,
+    numbers_per_draw: int = 47
+) -> tuple:
+    """
+    Split validation rows into a threshold-tuning half and a reporting half.
+
+    A threshold picked by maximising F1 is fitted to whatever rows it sees, so those
+    rows cannot also be the ones it is scored on. The split is chronological and on
+    draw boundaries: the earlier draws tune, the later draws report.
+
+    Returns:
+        Tuple of (tune_indices, report_indices)
+    """
+    draws = split_rows_into_draws(n_rows, numbers_per_draw, groups)
+
+    if len(draws) < 2:
+        # No draw structure to split on; fall back to halving the rows
+        cut = n_rows // 2
+        return np.arange(cut), np.arange(cut, n_rows)
+
+    cut = len(draws) // 2
+    return np.concatenate(draws[:cut]), np.concatenate(draws[cut:])
+
+
 def calculate_topk_accuracy(
     y_true: np.ndarray,
     y_proba: np.ndarray,
     k_values: list = [7, 10, 15, 20],
-    numbers_per_draw: int = 47
+    numbers_per_draw: int = 47,
+    groups: np.ndarray = None
 ) -> Dict[str, float]:
     """
     Calculate Top-K accuracy: whether any of the top K predictions are actual winners.
@@ -60,6 +111,10 @@ def calculate_topk_accuracy(
         y_true: True binary labels (1 = winning number, 0 = not winning)
         y_proba: Predicted probabilities for each number
         k_values: List of K values to test (default: [7, 10, 15, 20])
+        numbers_per_draw: Rows per draw when every draw has the same candidate pool
+        groups: Per-row draw index, for models whose candidate pool varies by draw
+            (the bonus-to-main model scores only the numbers in the bonus window).
+            Takes precedence over numbers_per_draw.
 
     Returns:
         Dictionary with Top-K accuracy for each K value
@@ -67,40 +122,38 @@ def calculate_topk_accuracy(
     topk_metrics = {}
     y_true = np.asarray(y_true)
     y_proba = np.asarray(y_proba)
-
-    # Validation rows are built draw-major: `numbers_per_draw` consecutive rows per
-    # draw. Top-K is only meaningful WITHIN a draw, so reshape and average across
-    # draws rather than taking one global top-K over the flattened validation set.
     n = len(y_true)
-    if numbers_per_draw and n % numbers_per_draw == 0 and n >= numbers_per_draw:
-        n_draws = n // numbers_per_draw
-        true_m = y_true.reshape(n_draws, numbers_per_draw)
-        proba_m = y_proba.reshape(n_draws, numbers_per_draw)
-    else:
-        n_draws = 1
-        true_m = y_true.reshape(1, -1)
-        proba_m = y_proba.reshape(1, -1)
-        numbers_per_draw = n
 
-    winners_per_draw = float(true_m.sum(axis=1).mean()) if n_draws else 0.0
+    # Top-K is only meaningful WITHIN a draw, so score each draw separately and
+    # average across draws rather than taking one global top-K over the flattened
+    # validation set.
+    draws = split_rows_into_draws(n, numbers_per_draw, groups)
+
+    n_draws = len(draws)
 
     for k in k_values:
-        k_eff = min(k, numbers_per_draw)
-        # Rank within each draw; stable sort makes ties deterministic
-        order = np.argsort(-proba_m, axis=1, kind='stable')[:, :k_eff]
-        caught = np.take_along_axis(true_m, order, axis=1).sum(axis=1)
+        caught = []
+        expected = []
+        k_effs = []
+        for idx in draws:
+            size = len(idx)
+            k_eff = min(k, size)
+            true_d = y_true[idx]
+            # Rank within each draw; stable sort makes ties deterministic
+            order = np.argsort(-y_proba[idx], kind='stable')[:k_eff]
+            caught.append(float(true_d[order].sum()))
+            expected.append(k_eff * float(true_d.sum()) / size if size else 0.0)
+            k_effs.append(k_eff)
 
-        avg_caught = float(caught.mean())
-        hit_rate = float((caught > 0).mean())
+        avg_caught = float(np.mean(caught)) if caught else 0.0
+        avg_expected = float(np.mean(expected)) if expected else 0.0
+        avg_k = float(np.mean(k_effs)) if k_effs else 0.0
 
-        # Hypergeometric expectation for picking k_eff of numbers_per_draw
-        expected = k_eff * winners_per_draw / numbers_per_draw if numbers_per_draw else 0.0
-
-        topk_metrics[f'top{k}_hit'] = hit_rate
+        topk_metrics[f'top{k}_hit'] = float(np.mean([c > 0 for c in caught])) if caught else 0.0
         topk_metrics[f'top{k}_winners'] = avg_caught
-        topk_metrics[f'top{k}_expected'] = expected
-        topk_metrics[f'top{k}_lift'] = (avg_caught / expected) if expected > 0 else 0.0
-        topk_metrics[f'top{k}_accuracy'] = avg_caught / k_eff if k_eff else 0.0
+        topk_metrics[f'top{k}_expected'] = avg_expected
+        topk_metrics[f'top{k}_lift'] = (avg_caught / avg_expected) if avg_expected > 0 else 0.0
+        topk_metrics[f'top{k}_accuracy'] = avg_caught / avg_k if avg_k else 0.0
 
     topk_metrics['topk_n_draws'] = n_draws
     return topk_metrics
@@ -159,7 +212,8 @@ def calculate_comprehensive_metrics(
     y_val: np.ndarray,
     model_name: str,
     save_plots: bool = True,
-    output_dir: str = "model_metrics"
+    output_dir: str = "model_metrics",
+    topk_groups: np.ndarray = None
 ) -> Dict[str, Any]:
     """
     Calculate comprehensive evaluation metrics for a trained model.
@@ -173,9 +227,13 @@ def calculate_comprehensive_metrics(
         model_name: Name of the model (for display and saving)
         save_plots: Whether to save visualization plots
         output_dir: Directory to save plots
+        topk_groups: Per-row draw index for Top-K, when the candidate pool varies by draw
 
     Returns:
-        Dictionary containing all metrics
+        Dictionary containing all metrics. Threshold-dependent entries (accuracy,
+        precision, recall, F1, confusion matrices) are measured on the later half of
+        the validation window, which the tuned threshold never saw; AUC, PR-AUC,
+        Top-K and calibration use the whole window.
     """
     import os
     if save_plots:
@@ -192,34 +250,49 @@ def calculate_comprehensive_metrics(
     # ========================================
     # 2. FIND OPTIMAL THRESHOLD (EARLY)
     # ========================================
-    # Find optimal threshold that maximizes F1 on validation set
-    precisions_temp, recalls_temp, pr_thresholds_temp = precision_recall_curve(y_val, val_proba)
+    # The threshold is fitted, so it cannot be scored on the rows it was fitted to.
+    # Split the validation window chronologically: pick the threshold on the earlier
+    # half, report every threshold-dependent number on the later half, which neither
+    # the model nor the threshold has seen. Threshold-free metrics (AUC, PR-AUC,
+    # Top-K, calibration) still use the whole window.
+    tune_idx, report_idx = split_threshold_tuning_rows(len(y_val), topk_groups)
+
+    y_tune, proba_tune = y_val[tune_idx], val_proba[tune_idx]
+    y_report, proba_report = y_val[report_idx], val_proba[report_idx]
+
+    precisions_temp, recalls_temp, pr_thresholds_temp = precision_recall_curve(y_tune, proba_tune)
     f1_scores_temp = 2 * (precisions_temp * recalls_temp) / (precisions_temp + recalls_temp + 1e-10)
     optimal_idx = np.argmax(f1_scores_temp)
     optimal_threshold = pr_thresholds_temp[optimal_idx] if optimal_idx < len(pr_thresholds_temp) else 0.5
 
+    metrics['threshold_tune_rows'] = len(tune_idx)
+    metrics['threshold_report_rows'] = len(report_idx)
+
     print(f"\n{'='*70}")
     print(f"  📊 MODEL EVALUATION: {model_name}")
     print(f"{'='*70}")
-    print(f"  ⚙️  Optimal Threshold: {optimal_threshold:.4f} (maximizes F1-score)")
+    print(f"  ⚙️  Optimal Threshold: {optimal_threshold:.4f} "
+          f"(maximizes F1 on {len(tune_idx)} tuning rows)")
     print(f"  ⚙️  Default Threshold: 0.5")
+    print(f"  ⚙️  Operating-point metrics reported on {len(report_idx)} held-out rows")
 
     # ========================================
     # 3. BASIC ACCURACY METRICS - WITH BOTH THRESHOLDS
     # ========================================
-    # Default threshold (0.5)
+    # Both operating points are scored on the same held-out rows, so the comparison
+    # below is like-for-like.
     train_pred_default = pipeline.predict(X_train)
-    val_pred_default = pipeline.predict(X_val)
+    val_pred_default = (proba_report >= 0.5).astype(int)
 
     # Optimal threshold
     train_pred_optimal = (train_proba >= optimal_threshold).astype(int)
-    val_pred_optimal = (val_proba >= optimal_threshold).astype(int)
+    val_pred_optimal = (proba_report >= optimal_threshold).astype(int)
 
     train_accuracy_default = (train_pred_default == y_train).sum() / len(y_train)
-    val_accuracy_default = (val_pred_default == y_val).sum() / len(y_val)
+    val_accuracy_default = (val_pred_default == y_report).sum() / len(y_report)
 
     train_accuracy_optimal = (train_pred_optimal == y_train).sum() / len(y_train)
-    val_accuracy_optimal = (val_pred_optimal == y_val).sum() / len(y_val)
+    val_accuracy_optimal = (val_pred_optimal == y_report).sum() / len(y_report)
 
     # Store default threshold metrics (for backwards compatibility)
     metrics['train_accuracy'] = train_accuracy_default
@@ -291,14 +364,14 @@ def calculate_comprehensive_metrics(
     # 4. PRECISION-RECALL METRICS - WITH BOTH THRESHOLDS
     # ========================================
     # Default threshold (0.5)
-    precision_val_default = precision_score(y_val, val_pred_default, zero_division=0)
-    recall_val_default = recall_score(y_val, val_pred_default, zero_division=0)
-    f1_val_default = f1_score(y_val, val_pred_default, zero_division=0)
+    precision_val_default = precision_score(y_report, val_pred_default, zero_division=0)
+    recall_val_default = recall_score(y_report, val_pred_default, zero_division=0)
+    f1_val_default = f1_score(y_report, val_pred_default, zero_division=0)
 
     # Optimal threshold
-    precision_val_optimal = precision_score(y_val, val_pred_optimal, zero_division=0)
-    recall_val_optimal = recall_score(y_val, val_pred_optimal, zero_division=0)
-    f1_val_optimal = f1_score(y_val, val_pred_optimal, zero_division=0)
+    precision_val_optimal = precision_score(y_report, val_pred_optimal, zero_division=0)
+    recall_val_optimal = recall_score(y_report, val_pred_optimal, zero_division=0)
+    f1_val_optimal = f1_score(y_report, val_pred_optimal, zero_division=0)
 
     # Average precision (independent of threshold) - PR-AUC
     avg_precision_val = average_precision_score(y_val, val_proba)
@@ -350,7 +423,9 @@ def calculate_comprehensive_metrics(
     # 4.5. TOP-K ACCURACY (LOTTERY-SPECIFIC) ⭐
     # ========================================
     print(f"\n  🎰 Top-K Accuracy (per draw, averaged over the validation period):")
-    topk_metrics = calculate_topk_accuracy(y_val, val_proba, k_values=[7, 10, 15, 20])
+    topk_metrics = calculate_topk_accuracy(
+        y_val, val_proba, k_values=[7, 10, 15, 20], groups=topk_groups
+    )
 
     # Store in main metrics dict
     metrics.update(topk_metrics)
@@ -396,11 +471,11 @@ def calculate_comprehensive_metrics(
     # 5. CONFUSION MATRIX - WITH BOTH THRESHOLDS
     # ========================================
     # Default threshold
-    cm_default = confusion_matrix(y_val, val_pred_default)
+    cm_default = confusion_matrix(y_report, val_pred_default)
     tn_default, fp_default, fn_default, tp_default = cm_default.ravel()
 
     # Optimal threshold
-    cm_optimal = confusion_matrix(y_val, val_pred_optimal)
+    cm_optimal = confusion_matrix(y_report, val_pred_optimal)
     tn_optimal, fp_optimal, fn_optimal, tp_optimal = cm_optimal.ravel()
 
     # Store default threshold confusion matrix (for backwards compatibility)
@@ -489,7 +564,7 @@ def calculate_comprehensive_metrics(
     # 7. DETAILED CLASSIFICATION REPORT (OPTIMAL THRESHOLD)
     # ========================================
     print(f"\n  📋 Detailed Classification Report (Using Optimal Threshold {optimal_threshold:.4f}):")
-    report = classification_report(y_val, val_pred_optimal, target_names=['No Win', 'Win'], digits=4)
+    report = classification_report(y_report, val_pred_optimal, target_names=['No Win', 'Win'], digits=4)
     print("     " + "\n     ".join(report.split('\n')))
 
     # ========================================
