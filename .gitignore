@@ -9,3 +9,6 @@ trend_analysis/
 
 # Test artifacts
 model_metrics/Test_*
+
+# CatBoost training telemetry - rewritten on every quickpick.py run, not source
+catboost_info/

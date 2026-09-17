@@ -34,6 +34,10 @@ is playable and repairs it if not. Keep those two jobs separate.
 - Invariants are covered by `../../tests/test_selection_invariants.py` and
   `../../tests/test_prediction_alignment.py`. A filter you cannot express as a test on a generated
   line probably belongs somewhere else.
+- **Build serving rows with `feat[col]`, never `feat.get(col, 0)`.** The column list is the exact one
+  the pipeline was fitted on, so a silent 0 applies a coefficient fitted on real values to a constant
+  and breaks parity with no error. Both sites - `predictor.py` and `bonus_predictor.py` - carry a
+  comment saying so; do not "harden" them back into defaults. See F-9 in `issue.md`.
 - Verify claims against `lottery_picks.txt`. Filters have been advertised in logs and docs here
   without being implemented.
 
