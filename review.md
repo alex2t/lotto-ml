@@ -137,7 +137,8 @@ odd/even failure.
 
 **Sequencing.** Worth doing only once it is settled which constraints should exist. Encoding the
 freshness target into a solver while that mechanism is under change freeze would harden a rule that
-may be deleted - see F-18 in `issue.md`. Resolve that first, then encode what survives.
+may be deleted - see F-18 in `issue.md`. Resolve that first, then encode what survives. (Resolved
+2026-09-19: F-18 found bins do differ in hit rate, p = 0.031, so the constraint stays.)
 
 ---
 

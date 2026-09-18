@@ -156,7 +156,7 @@ updates it in the same change:
   the remaining sections, add it to the Appendix A table, and write up the root cause, the measured
   before/after and the tests that now cover it.
 - **Planned an improvement** - it is tracked exactly like a defect: next free `F-n`, a Priority
-  summary row with severity `Improvement`, its own section. When done, it moves to section 8.
+  summary row with severity `Improvement`, its own section. When done, it moves to section 7.
 - Never leave a resolved ID in the Priority summary, and never leave a found defect only in the
   conversation.
 
