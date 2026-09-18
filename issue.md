@@ -4,7 +4,7 @@
 **Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
-Sections 1-8 are **open**: defects by severity, then improvements not yet started. Section 9 lists
+Sections 1-7 are **open**: defects by severity, then improvements not yet started. Section 8 lists
 improvements already done. Items carried from the retired code review keep
 their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
 Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
@@ -17,7 +17,7 @@ effect. A fix is not finished until this file says so.
 
 **Improvements are tracked the same way.** Planned work that is not a defect also gets the next
 free F-n, a Priority summary row with severity `Improvement`, and its own section. When done, it
-moves to section 9 (Improvements done). Nothing open lives only in a list or in `review.md`.
+moves to section 8 (Improvements done). Nothing open lives only in a list or in `review.md`.
 
 ---
 
@@ -30,11 +30,10 @@ moves to section 9 (Improvements done). Nothing open lives only in a list or in 
 | 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
 | 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
-| 6 | **F-17** | No label-permutation check - nothing shows whether any edge exists | Improvement | S |
-| 7 | **F-18** | Freshness pattern enforced without evidence (change freeze; needs backtest) | Improvement | M |
-| 8 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
+| 6 | **F-18** | Freshness pattern enforced without evidence (change freeze; needs backtest) | Improvement | M |
+| 7 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
 
-**5 open defects, nothing High; 3 improvements not started.** Everything resolved is in Appendix A and appears nowhere above.
+**5 open defects, nothing High; 2 improvements not started.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -134,21 +133,7 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 6. F-17 — No label-permutation check: nothing shows whether any edge exists
-
-**Type: Improvement, not started.** Effort S. Carried from the code review's improvement list.
-
-Every model sits at validation AUC 0.498-0.545, but no run establishes what AUC this feature set
-produces when there is *nothing* to learn. Without that null distribution, a 0.54 cannot be told
-apart from noise except by the 2 SE rule of thumb.
-
-**How.** Shuffle `hit` within each draw, retrain with the production configs, record validation AUC;
-repeat ~20 times. Compare the real AUCs against that distribution. ~30 lines on top of
-`trainer.train_model`. Do this before any further modelling work - it decides whether there is
-modelling work to do.
-
----
-## 7. F-18 — The freshness pattern is enforced without evidence it helps (change freeze)
+## 6. F-18 — The freshness pattern is enforced without evidence it helps (change freeze)
 
 **Type: Improvement, not started; mechanism frozen.** Effort M.
 
@@ -183,7 +168,7 @@ draw gives no reason to expect the pattern to help. The harness would, however, 
 the same question about the HMC ratio and the diversity penalty.
 
 ---
-## 8. F-19 — Lines are not steered away from popular combinations
+## 7. F-19 — Lines are not steered away from popular combinations
 
 **Type: Improvement, not started.** Effort S.
 
@@ -198,10 +183,32 @@ count of numbers >=32), which the ILP makes a small change. Decide first which t
 for, since the two goals pull in opposite directions.
 
 ---
-## 9. Improvements done
+## 8. Improvements done
 
 Kept for the record; each is complete and covered by tests.
 
+- **2026-09-18 - F-17, label-permutation check: no model has an edge.**
+  `ml_lotto/models/permutation_check.py`, run as `python quickpick.py --permutation-check 20`. Each
+  main model is trained once on real labels and 20 times with the training labels shuffled within
+  each draw (hit counts kept, number-outcome link destroyed), through the exact production pipeline
+  - features, selection, tuning, calibration - and every run is scored on the real validation
+  labels. The rule was fixed before running: an edge needs p < 0.05, i.e. beating all 20 shuffled
+  runs.
+
+  | Model | Real val AUC | Shuffled: mean +/- sd (range) | Shuffled >= real | p |
+  |:--|--:|:--|--:|--:|
+  | Momentum Specialist | 0.5011 | 0.4967 +/- 0.0151 (0.454-0.522) | 9 / 20 | 0.476 |
+  | Jackpot Optimizer | 0.5257 | 0.5066 +/- 0.0163 (0.483-0.551) | 2 / 20 | 0.143 |
+  | Complexity Explorer | 0.5074 | 0.4891 +/- 0.0132 (0.471-0.532) | 2 / 20 | 0.143 |
+  | Conservative Pool Generator | 0.5118 | 0.4928 +/- 0.0119 (0.470-0.516) | 1 / 20 | 0.095 |
+
+  No model passes. Model 1 sits mid-null; the best, Model 4, is beaten by 1 of 20 shuffled runs. The
+  shuffled sd of 0.012-0.016 independently confirms the +/- 0.031 noise floor. Four real AUCs above
+  their null means is not evidence either: the models share one validation window, so the four are
+  not independent draws. The answer to "is there any edge?" is no, as expected for a fair draw -
+  further model tuning has nothing to find. To support this, `trainer.build_main_datasets()` was
+  extracted and `train_model(output_dir=None)` writes no artifacts. Tests:
+  `tests/test_permutation_check.py`.
 - **2026-09-18 - Wheel the Model 4 pool.** `ml_lotto/prediction/wheel.py` covers every 3-subset of the
   pool's top 8 with 4 lines (C(8,6,3) = 4): 3+ winners in the top 8 guarantees a match-3, which
   happens in ~5.3% of draws. Written to `lottery_picks.txt` as `Wheel Line 1-4`, guarded by

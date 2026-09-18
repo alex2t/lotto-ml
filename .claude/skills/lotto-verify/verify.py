@@ -32,6 +32,7 @@ TEST_FILES = [
     'tests/test_prediction_alignment.py',
     'tests/test_scraper_sources.py',
     'tests/test_wheel.py',
+    'tests/test_permutation_check.py',
 ]
 
 # Validation window: 60 draws, 47 numbers, 7 winners per draw
