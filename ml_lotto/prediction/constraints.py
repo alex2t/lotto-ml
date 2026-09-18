@@ -93,7 +93,7 @@ def categorize_numbers_by_freshness(
 def build_dual_categorized_pools(
     features_dict: Dict[int, Dict[str, Any]],
     number_categories: Dict[int, int],
-    adjusted_probs: Any,  # numpy array
+    probabilities: Any,  # numpy array
     exclude_numbers: set = None
 ) -> Dict[str, Dict[int, List]]:
     """
@@ -102,7 +102,7 @@ def build_dual_categorized_pools(
     Args:
         features_dict: Number features including HMC category
         number_categories: Freshness bin for each number
-        adjusted_probs: Adjusted probability array
+        probabilities: Model probability array
         exclude_numbers: Optional set of numbers to exclude from pools (e.g., pre-assigned)
 
     Returns:
@@ -128,7 +128,7 @@ def build_dual_categorized_pools(
 
         hmc_cat = features_dict[num].get('category', 'cold')
         fresh_cat = number_categories.get(num, 0)
-        prob = adjusted_probs[num - 1]
+        prob = probabilities[num - 1]
 
         if hmc_cat in pools:
             pools[hmc_cat][fresh_cat].append((prob, num))

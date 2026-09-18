@@ -263,8 +263,6 @@ MODEL_1_CONFIG = {
         'importance_threshold': 0.01     # More aggressive (remove features <1% importance)
     },
 
-    'diversity_penalty': 0.30,  # 30% soft penalty on previously selected numbers
-
     'algorithm_params': {
         'penalty': 'l2',
         'solver': 'liblinear',
@@ -329,8 +327,6 @@ MODEL_2_CONFIG = {
         'enable': False,  # ⭐ Use explicit feature list as-is
         # Let model handle all stability signals
     },
-
-    'diversity_penalty': 0.40,  # 40% soft penalty on previously selected numbers
 
     # Capacity is constrained on purpose. Unconstrained leaves at depth 10 gave a
     # train/val AUC gap of 0.383 over ~15,800 rows - memorised per-number patterns,
@@ -412,8 +408,6 @@ MODEL_3_CONFIG = {
         'enable': False,  # ⭐ Use ALL features - complexity needs interactions
     },
 
-    'diversity_penalty': 0.35,  # 35% soft penalty on previously selected numbers
-
     # Capacity is constrained on purpose, as for Model 2 (C-15b). Depth 3 with
     # min_child_weight=3 gave a train/val AUC gap of 0.165: complex patterns that do
     # not survive the validation window. Shallow, heavily shrunk and L2-penalised
@@ -472,8 +466,6 @@ MODEL_4_CONFIG = {
         'importance_threshold': 0.02     # ⭐ VERY aggressive (only features >2% importance)
     },
 
-    'diversity_penalty': 0.25,  # 25% soft penalty (for pool generator)
-
     'algorithm_params': {
         'iterations': 100,
         'depth': 6,
@@ -497,6 +489,5 @@ ACTIVE_MODELS = [
     MODEL_4_CONFIG,  # Add Model 4
 ]
 
-SHOW_DETAILED_PENALTIES = True
 SHOW_OVERLAP_ANALYSIS = True
 SHOW_DATA_SOURCE_SUMMARY = False

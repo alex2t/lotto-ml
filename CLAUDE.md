@@ -72,7 +72,7 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Ten files are real tests (100 of them, ~30s). Everything else in `tests/` is a legacy print-script
+Ten files are real tests (105 of them, ~50s). Everything else in `tests/` is a legacy print-script
 that runs model training at import - **do not run `pytest tests/` bare.** The full list, and what
 each one guards, is in `tests/CLAUDE.md`. `/lotto-verify` runs them all.
 
@@ -156,7 +156,7 @@ updates it in the same change:
   the remaining sections, add it to the Appendix A table, and write up the root cause, the measured
   before/after and the tests that now cover it.
 - **Planned an improvement** - it is tracked exactly like a defect: next free `F-n`, a Priority
-  summary row with severity `Improvement`, its own section. When done, it moves to section 10.
+  summary row with severity `Improvement`, its own section. When done, it moves to section 9.
 - Never leave a resolved ID in the Priority summary, and never leave a found defect only in the
   conversation.
 

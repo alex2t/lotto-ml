@@ -340,8 +340,6 @@ def train_model(
     if 'hot_count' in model_config:
         print(f"  HMC Configuration: {model_config['hot_count']}H-{model_config['medium_count']}M-"
               f"{model_config['cold_count']}C+{model_config['generic_count']}G")
-    if 'diversity_penalty' in model_config:
-        print(f"  Diversity Penalty: {model_config['diversity_penalty']*100:.0f}%")
 
     # Prepare training data
     X_train = train_df[selected_features].values
