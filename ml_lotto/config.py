@@ -134,14 +134,13 @@ BONUS_MODEL_CONFIG = {
         # === MAIN FEATURES - BASELINE (3) ===
         'total_count',                  # Overall popularity as main ball
         'appearance_volatility',        # Frequency consistency
-        'category',                     # HMC category (for interactions)
         'freshness_bin',                # Freshness bin (for interactions)
 
         # === INTERACTION FEATURES (~13) ===
         'PAIRWISE_INTERACTIONS',        # Critical for logistic regression!
         'TRIPLE_INTERACTIONS',          # Category × freshness × recency patterns
     ],
-    # Total: 8 bonus + 12 main + ~13 interactions = ~33 features
+    # Total: 8 bonus + 11 main + ~13 interactions = ~32 features
 
     # L1, not L2. With 32 features against 337 positive training rows the L2 model
     # carried a 0.135 train/val AUC gap, and shrinking C did not move it: L2 scales
@@ -239,8 +238,7 @@ MODEL_1_CONFIG = {
         'rolling_trend_20',             # Trend confirmation
 
         # RECENT ACTIVITY WINDOWS
-        'recent_4',                     # Last 4 draws
-        'recent_14',                    # Last 14 draws
+        'recent_4',                     # Main-ball hits over the last 5 draws (off by one by design)
 
         # GAP PATTERNS
         'gap_consistency_score',        # Consistent appearance pattern
@@ -253,12 +251,10 @@ MODEL_1_CONFIG = {
         'recency_zone_score',           # Optimal window detection
         'appearance_volatility',        # Temporal consistency
 
-        # CONSTRAINTS (ensure valid draws)
-
         'PAIRWISE_INTERACTIONS',       # Critical for logistic regression!
         'TRIPLE_INTERACTIONS',         # Category × freshness × timing patterns
     ],
-    # Total: ~17 features focused on WHEN numbers appear
+    # Total: 12 named features + interaction keywords = 25 columns before feature selection
 
     # FEATURE SELECTION: Aggressive filtering for focused momentum signals
     'feature_selection': {
@@ -319,7 +315,6 @@ MODEL_2_CONFIG = {
 
         # TIMING (conservative)
         'recency_zone_score',           # Optimal window
-        'recent_14',                    # Longer window for stability
 
         # CONSTRAINTS
 
@@ -386,7 +381,6 @@ MODEL_3_CONFIG = {
 
         # ALL RECENT ACTIVITY
         'recent_4',
-        'recent_14',
 
         # ALL GAP PATTERNS
         'gap_consistency_score',

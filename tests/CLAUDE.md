@@ -4,7 +4,7 @@
 thirteen are legacy print-scripts that run model training at import and will take minutes, hang, or
 fail on missing artifacts.
 
-## The ten real tests (99 tests, ~30s)
+## The ten real tests (100 tests, ~30s)
 
 ```bash
 python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py \

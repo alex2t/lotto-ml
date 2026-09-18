@@ -4,7 +4,8 @@
 **Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
-Sections 1-7 are **open**, ordered by severity. Items carried from the retired code review keep
+Sections 1-9 are **open**: defects by severity, then improvements not yet started. Section 10 lists
+improvements already done. Items carried from the retired code review keep
 their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
 Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
 
@@ -13,6 +14,10 @@ appears in it. When a defect is found: give it the next free F-n, add a row to t
 and write a section with file:line evidence. When one is fixed: delete its summary row, renumber the
 remaining sections, add it to the Appendix A table, and write up the root cause and the measured
 effect. A fix is not finished until this file says so.
+
+**Improvements are tracked the same way.** Planned work that is not a defect also gets the next
+free F-n, a Priority summary row with severity `Improvement`, and its own section. When done, it
+moves to section 10 (Improvements done). Nothing open lives only in a list or in `review.md`.
 
 ---
 
@@ -25,10 +30,12 @@ effect. A fix is not finished until this file says so.
 | 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
 | 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
-| 6 | **F-15** | Models 1-3 name `recent_14`, which serving never produces; dropped silently | Low | XS |
-| 7 | **F-16** | Diversity penalty applied twice; the configured percentage barely matters | Low | S |
+| 6 | **F-16** | Diversity penalty applied twice; the configured percentage barely matters | Low | S |
+| 7 | **F-17** | No label-permutation check - nothing shows whether any edge exists | Improvement | S |
+| 8 | **F-18** | Freshness pattern enforced without evidence (change freeze; needs backtest) | Improvement | M |
+| 9 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
 
-**7 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
+**6 open defects, nothing High; 3 improvements not started.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -128,32 +135,7 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 6. F-15 — Models 1-3 name a feature that never reaches them
-
-**Severity: Low.** Found 2026-09-18 while assessing the `review.md` roadmap.
-
-`ml_lotto/config.py:243` (Model 1), `:322` (Model 2) and `:389` (Model 3) list `recent_14`. The
-walk-forward engine produces it (`walk_forward.py:361`), but the serving path does not - the SCENARIOS
-windows give `last_4/5/9/24`, no `last_14`. `trainer.py` expands each config against the serving
-feature names, and `expand_feature_selection` keeps a name only if present:
-
-```python
-# ml_lotto/features/extractor.py:477
-if item in all_features:
-    expanded.append(item)
-```
-
-So `recent_14` is dropped with no message: Model 1 prints `Initial features (25)` without it. Model 1's
-comments also misdescribe the config - "Total: ~17 features", `recent_4` as "Last 4 draws" (5 draws),
-and an empty `# CONSTRAINTS` block. The bonus model's `recent_14` is fine: its training and serving
-rows both come from the engine.
-
-**Fix.** Remove `recent_14` from the three main configs and correct Model 1's comments. Make
-`expand_feature_selection` raise on a name that is neither a keyword nor an available feature. No
-metric change expected - the feature was never used.
-
----
-## 7. F-16 — The diversity penalty is applied twice
+## 6. F-16 — The diversity penalty is applied twice
 
 **Severity: Low.** Found 2026-09-18.
 
@@ -174,60 +156,84 @@ the `diversity_penalty` keys, and give the solver raw probabilities. Models 2 an
 change; metrics will not.
 
 ---
-## 8. Improvements (not defects)
+## 7. F-17 — No label-permutation check: nothing shows whether any edge exists
 
-Carried from the code review's improvement list, kept here so the register is complete.
+**Type: Improvement, not started.** Effort S. Carried from the code review's improvement list.
 
-1. **Label-permutation check.** Shuffle `hit` within each draw, retrain, compare the AUC
-   distribution to the real 0.49–0.53. Settles whether any edge exists for this feature family, in
-   ~30 lines. Do this before further modelling work.
-2. **DONE 2026-09-18 - Wheel the Model 4 pool.** `ml_lotto/prediction/wheel.py` covers every
-   3-subset of the pool's top 8 with 4 lines (C(8,6,3) = 4): 3+ winners in the top 8 guarantees a
-   match-3, which happens in ~5.3% of draws. Written to `lottery_picks.txt` as `Wheel Line 1-4`,
-   guarded by `tests/test_wheel.py`. A guarantee over the whole 20 does not fit a 4-8 line budget -
-   even "all 6 winners in the pool" needs more than 8 lines and fires in 0.36% of draws. It is not an
-   edge and does not reduce blanks: 4 unrelated lines catch a match-3 in ~7.2% of draws.
-3. **Bias toward unpopular combinations.** Expected *payout* is not uniform even when probability
-   is: birthday numbers (≤31), calendar patterns and arithmetic sequences are heavily played and
-   share jackpots more often. Steering toward numbers ≥32 raises expected value without predicting
-   anything. Note the current sum ∈ [84,206] and 3-odd/3-even filters push the *opposite* way,
-   toward the most commonly played combinations — keep them for the match-3/4 tiers, not for
-   jackpot EV.
-4. **FROZEN - establish whether the freshness pattern is worth enforcing before changing it again.**
+Every model sits at validation AUC 0.498-0.545, but no run establishes what AUC this feature set
+produces when there is *nothing* to learn. Without that null distribution, a 0.54 cannot be told
+apart from noise except by the 2 SE rule of thumb.
 
-   > **Change freeze, 2026-09-18.** No further work on the freshness-pattern mechanism -
-   > `get_optimal_pattern_distribution()`, `reachable_pattern()`, or the freshness bin
-   > categorisation - until its value is established. (The greedy bin ranking in
-   > `pick_line_hybrid()` was replaced by the ILP on 2026-09-18, which enforces the same reachable
-   > target unchanged as constraints.)
-   > Watch and monitor only. A defect found in it is logged here and left open rather than fixed.
-   >
-   > **Why.** Three defects have been fixed in this one mechanism (F-1 target sized for 7 balls,
-   > F-8 target not binding, F-13 target unreachable), and nothing has ever shown it improves
-   > outcomes. It was mis-sized, then ignored, then infeasible, and across all of that no result
-   > would have looked different, because no measurement of it exists. Continuing to repair it
-   > spends effort on a feature that may not be worth having, and each fix adds coupling -
-   > `reachable_pattern()` had to mirror `pick_line_hybrid()`'s ordering or its shortfall message
-   > silently lies.
-   >
-   > **Lifting the freeze** requires the backtest below to return a result outside the noise band.
-   > If it returns a result inside the band, delete the mechanism instead of maintaining it.
+**How.** Shuffle `hit` within each draw, retrain with the production configs, record validation AUC;
+repeat ~20 times. Compare the real AUCs against that distribution. ~30 lines on top of
+`trainer.train_model`. Do this before any further modelling work - it decides whether there is
+modelling work to do.
 
-   **The backtest.** For each of the last ~60 draws `t`, build features conditioning only on draws
-   before `t` (the walk-forward engine already supports this), generate one line with freshness
-   enforcement and one without (probability rank + HMC ratio + ticket filters only), and score both
-   against the actual draw. Random expectation is 6 x 6/47 ~= 0.77 matches per line. Decide the rule
-   **before** running it: outside the noise band, keep; inside it, delete. Not "keep, inconclusive".
+---
+## 8. F-18 — The freshness pattern is enforced without evidence it helps (change freeze)
 
-   Note the cost asymmetry - line generation currently runs only for the next draw, so this needs a
-   walk-forward harness that does not exist. Building it is probably more work than deleting the
-   mechanism outright. That is a legitimate argument for deleting now, on the grounds that a fair
-   draw gives no reason to expect the pattern to help. The harness would, however, be reusable for
-   the same question about the HMC ratio and the diversity penalty.
-5. **DONE 2026-09-18 - MILP selection** (`review.md` §3.2). `ml_lotto/prediction/ilp_selection.py`
-   replaces greedy picking and the filter repair pass with `scipy.optimize.milp`: HMC quotas, the
-   reachable freshness target and the ticket rules are constraints, so a line meets all of them or
-   the solver raises. Not a prediction change - it removed a defect surface (F-14).
+**Type: Improvement, not started; mechanism frozen.** Effort M.
+
+> **Change freeze, 2026-09-18.** No further work on the freshness-pattern mechanism -
+> `get_optimal_pattern_distribution()`, `reachable_pattern()`, or the freshness bin
+> categorisation - until its value is established. (The greedy bin ranking in
+> `pick_line_hybrid()` was replaced by the ILP on 2026-09-18, which enforces the same reachable
+> target unchanged as constraints.)
+> Watch and monitor only. A defect found in it is logged here and left open rather than fixed.
+>
+> **Why.** Three defects have been fixed in this one mechanism (F-1 target sized for 7 balls,
+> F-8 target not binding, F-13 target unreachable), and nothing has ever shown it improves
+> outcomes. It was mis-sized, then ignored, then infeasible, and across all of that no result
+> would have looked different, because no measurement of it exists. Continuing to repair it
+> spends effort on a feature that may not be worth having, and each fix adds coupling -
+> `reachable_pattern()` had to mirror `pick_line_hybrid()`'s ordering or its shortfall message
+> silently lies.
+>
+> **Lifting the freeze** requires the backtest below to return a result outside the noise band.
+> If it returns a result inside the band, delete the mechanism instead of maintaining it.
+
+**The backtest.** For each of the last ~60 draws `t`, build features conditioning only on draws
+before `t` (the walk-forward engine already supports this), generate one line with freshness
+enforcement and one without (probability rank + HMC ratio + ticket filters only), and score both
+against the actual draw. Random expectation is 6 x 6/47 ~= 0.77 matches per line. Decide the rule
+**before** running it: outside the noise band, keep; inside it, delete. Not "keep, inconclusive".
+
+Note the cost asymmetry - line generation currently runs only for the next draw, so this needs a
+walk-forward harness that does not exist. Building it is probably more work than deleting the
+mechanism outright. That is a legitimate argument for deleting now, on the grounds that a fair
+draw gives no reason to expect the pattern to help. The harness would, however, be reusable for
+the same question about the HMC ratio and the diversity penalty.
+
+---
+## 9. F-19 — Lines are not steered away from popular combinations
+
+**Type: Improvement, not started.** Effort S.
+
+Expected *payout* is not uniform even when probability is: birthday numbers (<=31), calendar
+patterns and arithmetic sequences are heavily played and share jackpots more often. Steering toward
+numbers >=32 raises expected value without predicting anything. Note the current sum in [84, 206]
+and 2-4 odd rules push the *opposite* way, toward the most commonly played combinations - keep them
+for the match-3/4 tiers, not for jackpot EV.
+
+**How.** One more constraint or objective term in `ilp_selection.solve_line` (for example a minimum
+count of numbers >=32), which the ILP makes a small change. Decide first which tier the lines are
+for, since the two goals pull in opposite directions.
+
+---
+## 10. Improvements done
+
+Kept for the record; each is complete and covered by tests.
+
+- **2026-09-18 - Wheel the Model 4 pool.** `ml_lotto/prediction/wheel.py` covers every 3-subset of the
+  pool's top 8 with 4 lines (C(8,6,3) = 4): 3+ winners in the top 8 guarantees a match-3, which
+  happens in ~5.3% of draws. Written to `lottery_picks.txt` as `Wheel Line 1-4`, guarded by
+  `tests/test_wheel.py`. A guarantee over the whole 20 does not fit a 4-8 line budget - even "all 6
+  winners in the pool" needs more than 8 lines and fires in 0.36% of draws. It is not an edge and
+  does not reduce blanks: 4 unrelated lines catch a match-3 in ~7.2% of draws.
+- **2026-09-18 - MILP selection** (`review.md` §3.2). `ml_lotto/prediction/ilp_selection.py` replaces
+  greedy picking and the filter repair pass with `scipy.optimize.milp`: HMC quotas, the reachable
+  freshness target and the ticket rules are constraints, so a line meets all of them or the solver
+  raises. Not a prediction change - it removed a defect surface (F-14).
 
 ---
 
@@ -272,6 +278,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-15 | Config feature names the serving path never produces were dropped silently | `config.py`, `extractor.py` |
 | C-15b | Tree models memorised the training set (train/val AUC gap 0.383) | `config.py`, `hyperparameter_tuning.py` |
 | C-16 | Non-deterministic feature column order | `extractor.py` |
 | F-1 | Freshness target sized for 7 balls while a line has 6 slots | `freshness_analyzer_7_numbers.py`, `constraints.py`, `drawpick.py` |
@@ -287,6 +294,28 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-15 — Config feature names were dropped silently
+
+**Root cause.** `expand_feature_selection` (`ml_lotto/features/extractor.py`) kept a config name only
+`if item in all_features` and skipped anything else without a word. A run with every call
+instrumented found two such names: `recent_14` in Models 1, 2 and 3 (the walk-forward engine
+produces it, the main serving path has no 15-draw window) and `category` in `BONUS_MODEL_CONFIG`
+(the bonus dataset excludes the raw category string; the model uses `category_weight`). Model 1's
+comments also misdescribed its config: "~17 features" for 25, `recent_4` as "last 4 draws" for 5, and
+an empty `# CONSTRAINTS` block.
+
+**Fix.** The four dead names are removed from the configs, Model 1's comments corrected, and
+`expand_feature_selection` now raises `ValueError` on a name that is neither a keyword nor an
+available feature. The bonus model's `recent_14` stays - it is produced on both of its paths.
+
+**Measured before/after.** No model's features changed - Model 1 25, Model 2 16, Model 3 26, Model 4 5,
+bonus 32 columns, identical to before - because the names were never reaching a model. Picks
+unchanged; the largest metric move is 1.9e-5 in Model 2's overfit gap, run-to-run noise.
+
+**Tests.** `tests/test_no_constant_features.py` expands every main config against the engine's
+features, so an unknown name now fails it; a new test asserts the raise directly. A full
+`quickpick.py` run exercises all six configs against the serving features.
 
 ### C-15a — The feature engine was rebuilt five times per run
 
@@ -379,7 +408,7 @@ each model chases a different pattern, which is no longer the observed distribut
 represents; and changing the HMC ratios would be tuning the models to satisfy a mechanism whose value
 is unestablished.
 
-**Still open, as improvement 5.** Whether the freshness pattern is worth enforcing at all. If it
+**Still open, as F-18.** Whether the freshness pattern is worth enforcing at all. If it
 carries no signal, the target, `reachable_pattern` and the whole reconciliation problem should be
 deleted rather than maintained.
 
@@ -1127,7 +1156,7 @@ The leak is only genuinely gone when both of these hold:
    still carrying outcome information from the validation window and the leak was not closed.
 
 The second check is the one that actually proves it, and it is worth building once — it is the same
-harness described in the Improvements section (§9) for answering whether any edge exists at all.
+harness described in F-17 for answering whether any edge exists at all.
 
 ---
 
