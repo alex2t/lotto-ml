@@ -83,6 +83,7 @@ def _build_bonus_to_main_dataset(
 def train_bonus_to_main_model(
     model_config: Dict,
     all_draws: List[Dict],
+    base_engine: PointInTimeFeatureEngine,
     bonus_to_main_features: Dict,
     training_start_draw: int,
     training_end_draw: int = None,
@@ -94,6 +95,7 @@ def train_bonus_to_main_model(
     Args:
         model_config: Model configuration dictionary
         all_draws: List of all historical draws
+        base_engine: The run's shared feature engine over all_draws
         bonus_to_main_features: Feature dictionary for all numbers
         training_start_draw: Index to start training from
         training_end_draw: Index to end training (exclusive). If None, uses all available draws.
@@ -129,7 +131,7 @@ def train_bonus_to_main_model(
     print(f"  Training end index: {training_end_draw}")
     print(f"  Training draws: {training_end_draw - training_start_draw}")
 
-    engine = PointInTimeFeatureEngine(all_draws, bonus_to_main_features)
+    engine = base_engine.with_base_features(bonus_to_main_features)
 
     X_train, y_train, _ = _build_bonus_to_main_dataset(
         engine, all_draws, bonus_to_main_features, feature_names,

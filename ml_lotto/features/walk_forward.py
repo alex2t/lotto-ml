@@ -17,6 +17,7 @@ VERSION: 1.0 (Leak-Free Dynamic Panel Edition)
 - Dynamic pairwise and triple feature interactions
 """
 
+import copy
 import time
 from collections import defaultdict, deque
 from typing import Dict, Any, List, Tuple, Optional
@@ -61,6 +62,18 @@ class PointInTimeFeatureEngine:
 
         self._precompute_matrices()
         self._precompute_timeline_state()
+
+    def with_base_features(self, base_features_dict: Dict[int, Dict[str, Any]]) -> 'PointInTimeFeatureEngine':
+        """
+        Return a view of this engine with different static base features.
+
+        The precomputed draw state is shared, not rebuilt, so one engine per run can serve
+        the main, bonus and bonus-to-main models (C-15a).
+        """
+        view = copy.copy(self)
+        view.base_features_dict = base_features_dict or {}
+        view._reported_fallbacks = False
+        return view
 
     def _precompute_matrices(self):
         """Vectorize draw history into binary occurrence matrices."""
@@ -126,7 +139,9 @@ class PointInTimeFeatureEngine:
         last_seen_date = {num: first_date for num in range(1, MAX_NUMBER + 1)}
         last_seen_draw_idx = {num: None for num in range(1, MAX_NUMBER + 1)}
         last_bonus_date = {num: None for num in range(1, MAX_NUMBER + 1)}
-        appearance_gaps = {num: [] for num in range(1, MAX_NUMBER + 1)}
+        # Running gap moments (count, sum, sum of squares, max) instead of the gap lists:
+        # snapshotting every list at every draw cost O(N^2) memory (C-15a).
+        gap_stats = {num: (0, 0, 0, 0) for num in range(1, MAX_NUMBER + 1)}
         recent_bonus_deque = deque(maxlen=10)
 
         # One extra iteration (t == N) builds the state for the upcoming, undrawn draw.
@@ -139,7 +154,7 @@ class PointInTimeFeatureEngine:
                 'days_since_bonus': {},
                 'bonus_window': list(recent_bonus_deque),
                 'elapsed_days': max((current_date - first_date).days, 1),
-                'gaps': {num: list(appearance_gaps[num]) for num in range(1, MAX_NUMBER + 1)}
+                'gap_stats': dict(gap_stats)
             }
             for num in range(1, MAX_NUMBER + 1):
                 if last_seen_draw_idx[num] is not None:
@@ -166,7 +181,8 @@ class PointInTimeFeatureEngine:
             for num in np.where(self.matrix_all[t] == 1)[0]:
                 if last_seen_draw_idx[num] is not None:
                     gap = t - last_seen_draw_idx[num]
-                    appearance_gaps[num].append(gap)
+                    n, s, ss, mx = gap_stats[num]
+                    gap_stats[num] = (n + 1, s + gap, ss + gap * gap, max(mx, gap))
                 last_seen_date[num] = current_date
                 last_seen_draw_idx[num] = t
 
@@ -280,13 +296,13 @@ class PointInTimeFeatureEngine:
 
             accel = (r10_all - r20_10_all) / 10.0
 
-            gaps = state['gaps'][num]
-            if len(gaps) > 1:
-                g_mean = float(np.mean(gaps))
-                g_var = float(np.var(gaps))
-                g_std = float(np.std(gaps))
+            n_gaps, g_sum, g_sumsq, g_max = state['gap_stats'][num]
+            if n_gaps > 1:
+                g_mean = g_sum / n_gaps
+                g_var = (n_gaps * g_sumsq - g_sum * g_sum) / (n_gaps * n_gaps)
+                g_std = float(np.sqrt(g_var))
                 g_cv = g_std / g_mean if g_mean > 0 else 0.0
-                max_g_ratio = max(gaps) / g_mean if g_mean > 0 else 1.0
+                max_g_ratio = g_max / g_mean if g_mean > 0 else 1.0
             else:
                 g_mean = 0.0
                 g_var = 0.0
@@ -515,7 +531,7 @@ def build_walk_forward_dataset(
 
 
 def build_walk_forward_bonus_dataset(
-    all_draws: List[Dict[str, Any]],
+    base_engine: PointInTimeFeatureEngine,
     bonus_features_dict: Dict[int, Dict[str, Any]],
     training_start_draw: int = 100,
     training_end_draw: Optional[int] = None
@@ -525,7 +541,7 @@ def build_walk_forward_bonus_dataset(
     """
     sample_num = next(iter(bonus_features_dict.keys())) if bonus_features_dict else 1
     feature_names = [k for k in bonus_features_dict.get(sample_num, {}).keys() if k != 'category']
-    engine = PointInTimeFeatureEngine(all_draws, bonus_features_dict)
+    engine = base_engine.with_base_features(bonus_features_dict)
     return engine.build_bonus_dataset(
         all_feature_names=feature_names,
         start_index=training_start_draw,

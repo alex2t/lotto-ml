@@ -8,9 +8,10 @@ on one distribution and applied to another. These tests pin the agreement.
 
 import json
 
+import numpy as np
 import pytest
 
-from ml_lotto.config import MAX_NUMBER
+from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW
 from ml_lotto.data.loader import load_draw_history_with_bias_ratios
 from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
 
@@ -137,3 +138,34 @@ def test_engine_rejects_indices_past_the_next_draw(engine):
         engine.extract_features_at_draw(engine.N + 1)
     with pytest.raises(ValueError):
         engine.extract_features_at_draw(-1)
+
+
+def test_gap_statistics_match_the_draw_history(engine, draws):
+    """
+    Gap features come from running moments, not stored gap lists (C-15a). They must still
+    equal the statistics of the actual gaps between a number's appearances.
+    """
+    features = engine.extract_features_for_next_draw()
+    checked = 0
+    for num in NUMBERS:
+        seen = [t for t, d in enumerate(draws) if num in d['numbers']]
+        gaps = np.diff(seen)
+        if len(gaps) < 2:
+            continue
+        checked += 1
+        assert features[num]['gap_variance'] == pytest.approx(np.var(gaps), rel=1e-12)
+        assert features[num]['gap_cv'] == pytest.approx(np.std(gaps) / np.mean(gaps), rel=1e-12)
+        assert features[num]['max_gap_ratio'] == pytest.approx(gaps.max() / np.mean(gaps), rel=1e-12)
+    assert checked == MAX_NUMBER
+
+
+def test_engine_view_matches_a_freshly_built_engine(engine, draws):
+    """One engine per run serves every model through views; a view must equal a rebuild."""
+    base = {num: {'win_bias_ratio': 1.0 + num / 100} for num in NUMBERS}
+    view = engine.with_base_features(base)
+
+    assert view.draw_states is engine.draw_states, "view must share state, not rebuild it"
+    assert engine.base_features_dict == {}, "making a view must not alter the base engine"
+    fresh = PointInTimeFeatureEngine(draws, base)
+    for t in (TRAINING_START_DRAW, engine.N):
+        assert view.extract_features_at_draw(t) == fresh.extract_features_at_draw(t)

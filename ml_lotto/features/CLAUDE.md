@@ -22,16 +22,21 @@ A mismatch means a model is fitted on one distribution and applied to another. I
 | `rolling_rate_*`, `rolling_trend_*`, `total_count`, gap stats | all 7 balls | `walk_forward.py` `cum_all`, `rolling_stats.py` |
 
 **Window naming is off by one by design.** `recent_4` counts over 5 draws, `recent_9` over 10,
-`recent_24` over 25 - see `cum_main[t] - cum_main[t-5]` at `walk_forward.py:209`.
+`recent_24` over 25 - see `cum_main[t] - cum_main[t-5]` at `walk_forward.py:225`.
 
 **Only `extract_features_for_next_draw()` builds a correct serving row** (`t = N`).
 `extract_features_at_draw(N-1)` conditions on draws `0..N-2` and silently drops the most recent draw.
+
+**One engine per run.** `quickpick.py` builds a single `PointInTimeFeatureEngine` and each model
+uses `engine.with_base_features(its_dict)` - a view sharing the precomputed draw state. Do not
+construct another engine inside a trainer; pass `base_engine` down. Gap statistics are running
+moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N). See C-15a.
 
 ## Modules
 
 | File | Role |
 |:--|:--|
-| `walk_forward.py` | point-in-time engine; no lookahead. `build_walk_forward_dataset()` is the training entry point |
+| `walk_forward.py` | point-in-time engine; no lookahead. `with_base_features()` gives each model a view of the one engine per run |
 | `extractor.py` | serving orchestrator for the four main models, reads the JSON artifacts |
 | `base.py` | `total_count`, `days_since_last`, category; dynamic key detection from HMC data |
 | `rolling_stats.py` | `rolling_rate_*` / `rolling_trend_*`, counted over all 7 |
