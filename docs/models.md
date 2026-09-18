@@ -9,12 +9,12 @@ Configs live in `ml_lotto/config.py`. Training runs from `quickpick.py` via
 
 Four main models in `ACTIVE_MODELS`, each producing a 6-number line:
 
-| Config | Name | Algorithm | Hot/Med/Cold | Diversity penalty | Labels |
-|:--|:--|:--|:--|--:|:--|
-| `MODEL_1_CONFIG` | Momentum Specialist | logistic_regression | 4 / 1 / 1 | 0.30 | all 7 positions |
-| `MODEL_2_CONFIG` | Jackpot Optimizer | random_forest | 3 / 1 / 2 | 0.40 | main 6 only |
-| `MODEL_3_CONFIG` | Complexity Explorer | xgboost | 2 / 2 / 2 | 0.35 | all 7 positions |
-| `MODEL_4_CONFIG` | Conservative Pool Generator | catboost | 10 / 5 / 5 | 0.25 | all 7 positions |
+| Config | Name | Algorithm | Hot/Med/Cold | Labels |
+|:--|:--|:--|:--|:--|
+| `MODEL_1_CONFIG` | Momentum Specialist | logistic_regression | 4 / 1 / 1 | all 7 positions |
+| `MODEL_2_CONFIG` | Jackpot Optimizer | random_forest | 3 / 1 / 2 | main 6 only |
+| `MODEL_3_CONFIG` | Complexity Explorer | xgboost | 2 / 2 / 2 | all 7 positions |
+| `MODEL_4_CONFIG` | Conservative Pool Generator | catboost | 10 / 5 / 5 | all 7 positions |
 
 Model 2 sets `exclude_bonus=True`, so it labels only the main 6 balls. Its PR-AUC baseline is
 therefore ~0.128 rather than ~0.149, and its Top-7 expected value is lower. Do not compare its
@@ -25,6 +25,10 @@ directly. Model 4's 10/5/5 defines a **20-number ranked pool** consumed by
 `ml_lotto/prediction/pool_generator.py`. It is not a broken config - do not "fix" it to sum to 6.
 `ml_lotto/prediction/wheel.py` turns the pool's top 8 into 4 wheel lines covering every 3-subset
 (verified 2026-09-18 against `lottery_picks.txt` and `tests/test_wheel.py`).
+
+Lines are kept apart by one rule: a number used by an earlier line is avoided unless no feasible
+line avoids it (a flat cost in `ilp_selection.py`). There is no per-model diversity setting
+(verified 2026-09-18, F-16).
 
 Two auxiliary models, both logistic regression:
 

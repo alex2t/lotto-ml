@@ -50,29 +50,6 @@ def display_overlap_analysis(lines: List[Dict[str, Any]]):
     print(f"\nTotal unique numbers across all models: {len(all_numbers)}")
 
 
-def display_rank_aware_explanation(model_configs: List[Dict[str, Any]]):
-    """Display explanation of rank-aware penalty system."""
-    # Find the highest penalty for examples
-    max_penalty = max([config['diversity_penalty'] for config in model_configs])
-    
-    if max_penalty == 0:
-        return
-    
-    print("\n" + "=" * 70)
-    print("RANK-AWARE PENALTY EXPLANATION")
-    print("=" * 70)
-    print("\nHow rank-aware penalties work:")
-    print("  • Top-ranked numbers (model's strongest picks) get HIGHER penalties")
-    print("  • Low-ranked numbers (uncertain picks) get LOWER penalties")
-    print("  • Formula: penalty = base × (0.5 + 0.5 × rank_weight)")
-    print(f"\nWith {max_penalty*100:.0f}% base penalty:")
-    print(f"  • Rank #1:  ~{max_penalty*100:.1f}% penalty (full strength)")
-    print(f"  • Rank #10: ~{max_penalty*0.9*100:.1f}% penalty")
-    print(f"  • Rank #25: ~{max_penalty*0.75*100:.1f}% penalty")
-    print(f"  • Rank #40: ~{max_penalty*0.55*100:.1f}% penalty")
-    print("\nBenefit: Encourages diversity while allowing flexibility for uncertain picks")
-
-
 def display_data_source_summary():
     """Display comprehensive data source explanation."""
     if not SHOW_DATA_SOURCE_SUMMARY:
@@ -135,7 +112,6 @@ def display_feature_configuration(model_configs: List[Dict[str, Any]]):
         else:
             print(f"  Features: {', '.join(feature_spec)}")
         print(f"  Algorithm: {config['algorithm']}")
-        print(f"  Diversity Penalty: {config['diversity_penalty']*100:.0f}%")
 
 
 def display_pool_analysis(pool_data: Dict[str, Any]):
