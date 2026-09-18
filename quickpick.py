@@ -143,6 +143,7 @@ from ml_lotto.models.bonus_to_main_trainer import train_bonus_to_main_model
 
 from ml_lotto.prediction.predictor import generate_predictions, generate_all_picks, generate_pool_picks
 from ml_lotto.prediction.bonus_predictor import generate_bonus_predictions, assign_bonus_to_models
+from ml_lotto.prediction.wheel import WHEEL_SIZE
 from ml_lotto.prediction.bonus_to_main_predictor import generate_bonus_to_main_predictions, assign_bonus_to_main_to_models
 
 from ml_lotto.display import (
@@ -922,6 +923,12 @@ def main():
                         f.write(f"Total Candidates: {pool_data['pool_size']}\n")
                         f.write(f"Quality Score: {pool_data['quality_score']:.0f}/100\n\n")
                         f.write(f"Full Pool (ranked by probability): {pool_data['pool']}\n\n")
+
+                        f.write(f"Wheel (top {WHEEL_SIZE} of pool, every 3-subset covered):\n")
+                        for idx, wheel_line in enumerate(pool_data['wheel_lines'], 1):
+                            f.write(f"  Wheel Line {idx}: {wheel_line}\n")
+                        f.write(f"  Guarantee: 3+ winners in the top {WHEEL_SIZE} -> some line matches 3+ (about 5.3% of draws).\n")
+                        f.write("  Not an edge: expected value is unchanged; lines are not filtered.\n\n")
 
                         # HMC Category Breakdown
                         f.write("HMC Category Breakdown:\n")

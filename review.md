@@ -38,7 +38,7 @@ The repository implements an end-to-end lottery analysis, machine learning predi
    - **Model 3 (`Complexity Explorer`)**: XGBoost trained on all features across all 7 drawn balls to capture non-linear feature interactions.
    - **Model 4 (`Pool Generator`)**: CatBoost model trained on high-importance features to output a 20-number candidate pool.
    - **Auxiliary Models**: Dedicated Bonus Ball Logistic Regressor and Bonus-to-Main Transition Predictor (capturing the empirical 74% 10-draw transition rate).
-   - **Selection Layer (`selection.py`, `filters.py`, `constraints.py`)**: Hybrid selection balancing HMC ratios, freshness constraints, and mathematical bounds (sum range 84–206, odd/even balance 2:4 to 4:2, range dispersion).
+   - **Selection Layer (`ilp_selection.py`, `filters.py`, `constraints.py`)**: ILP selection balancing HMC ratios, freshness constraints, and mathematical bounds (sum range 84–206, odd/even balance 2:4 to 4:2, range dispersion).
 4. **Visual Dashboard (`app.py` & `view/pages/`)**:
    - 8-page Streamlit application providing trigger analysis, draw history, statistical distributions, freshness matrices, prediction validation, deep number insights, pattern similarity, and post-draw model evaluation.
 
@@ -63,7 +63,12 @@ requires the models to predict anything.**
 
 ### 1. Combinatorial Line Generation from the Model 4 Pool (Covering Designs / Wheeling)
 
-* **Current state:** Model 4 emits a ranked 20-number pool and **no lines at all**. Converting it into tickets is left to the user, by hand.
+> **Implemented 2026-09-18.** `ml_lotto/prediction/wheel.py` wheels the top 8 of the pool into 4
+> lines covering every 3-subset, guarded by `tests/test_wheel.py`. Two claims below turned out wrong
+> and are corrected in place: a guarantee over the full 20 does not fit 4-8 lines, and a wheel does
+> not mean fewer blanks.
+
+* **Previous state:** Model 4 emitted a ranked 20-number pool and **no lines at all**. Converting it into tickets was left to the user, by hand.
 * **Improvement:** Apply covering designs to turn the pool into a stated budget of lines (e.g. 4-8) carrying a provable guarantee - for instance, that if enough winners fall inside the 20, at least one line catches 3 of them.
 
 **Why this is worth doing.** It is the only item here whose benefit is **proved rather than hoped
@@ -78,19 +83,36 @@ possibility.
 
 **Be honest about what it is not.** It does not increase expected value, which stays negative.
 Expected winners in any 20 of 47 is 2.553 - identical for a random 20, since Model 4's AUC of 0.5118
-is inside the +/-0.031 noise band. Wheeling reshapes the outcome distribution (more frequent small
-wins, fewer blanks) at the cost of more lines per draw. It is variance management, matching the
-"portfolio-allocation" role stated above, and should never be presented as an edge.
+is inside the +/-0.031 noise band. Wheeling reshapes the outcome distribution, but toward **fewer,
+clustered** wins, not fewer blanks: every line sits inside the same few numbers, so 4 wheel lines
+catch a match-3 in ~5.3% of draws where 4 unrelated lines do in ~7.2%, at identical expected value.
+It is variance management, matching the "portfolio-allocation" role stated above, and should never
+be presented as an edge.
 
-**Design note.** Pick the line budget first, then the covering design that fits it. The trigger
-condition matters: 5+ winners landing in a 20-number pool happens in only **4.26% of draws** (1 in
-23), while 3+ happens in 51% and 4+ in 20%. A guarantee written against the 5+ case fires about twice
-a year. The guarantee is also directly unit-testable - assert that every 3-subset of the pool appears
-in some generated line - which makes it one of the few features here with a meaningful test.
+**Design note.** Pick the line budget first, then the covering design that fits it. Covering every
+3-subset of the full 20 needs 60+ lines, and even the weakest useful guarantee - all 6 winners in
+the pool - needs more than 8 lines and fires in 0.36% of draws. What fits the budget is a full
+3-cover of the pool's top *k*:
+
+| Top-k | Lines | Guarantee fires (3+ winners in top-k) |
+|--:|--:|--:|
+| 8 | 4 | 5.3% |
+| 9 | 7 | 7.5% |
+| 10 | 10 | 10.1% |
+| 12 | 15 | 16.4% |
+
+Top-8 / 4 lines was chosen. The unit test asserts every 3-subset of the top 8 appears in some line.
 
 ---
 
 ### 2. Multi-Objective Constraint Optimization (Integer Linear Programming)
+
+> **Implemented 2026-09-18.** `ml_lotto/prediction/ilp_selection.py` replaces `selection.py` and the
+> repair pass, using `scipy.optimize.milp`. HMC quotas stay exact per model (the dashboard in `view/`
+> keeps showing HMC categories unchanged). On sequencing, the freshness target is encoded **as it
+> is** - the reachable pattern `constraints.reachable_pattern()` already computed - so the frozen
+> mechanism is enforced, not changed. Deleting it later means deleting one constraint block. See F-14
+> in `issue.md` for the before/after.
 
 * **Improvement:** Replace greedy HMC picking in `selection.py` with an ILP solver (`scipy.optimize.milp` or `pulp`):
   $$\max \sum_{i=1}^{47} P_i \cdot x_i$$

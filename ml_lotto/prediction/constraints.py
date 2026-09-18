@@ -188,8 +188,9 @@ def reachable_pattern(
     like a selection failure and hides the real constraint (F-13).
 
     Allocates scarce bins first, and within a bin draws on the most constrained HMC category
-    first - the same ordering `selection.pick_line_hybrid` uses, so the result is attainable
-    rather than merely optimistic. Leftover slots fall to whichever bins can still absorb them.
+    first, so the result is attainable rather than merely optimistic. Leftover slots fall to
+    whichever bins can still absorb them. `ilp_selection.solve_line` enforces the result as
+    per-bin lower bounds and raises if it cannot be met alongside the ticket rules.
 
     Returns a pattern summing to the same number of slots as the model's quotas.
     """
