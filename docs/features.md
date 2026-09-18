@@ -63,9 +63,11 @@ count, not the config length.
 **Core** - `total_count` (all 7 balls), `days_since_last`, `category` (hot/medium/cold by recency).
 Computed in `features/base.py`.
 
-**Recent activity windows** - `recent_4`, `recent_9`, `recent_14`, `recent_24`, counted over the
+**Recent activity windows** - `recent_4`, `recent_5`, `recent_9`, `recent_24`, counted over the
 **main 6 balls**. The names are off by one by design: `recent_4` counts over 5 draws, `recent_9` over
-10, `recent_24` over 25.
+10, `recent_24` over 25. `recent_14` (15 draws) exists only in the walk-forward engine, so only the
+bonus model - trained and served from that engine - can use it; the main models' serving path has no
+such window (verified 2026-09-18, F-15).
 
 **Rolling statistics** - `rolling_rate_10/20/50`, `rolling_trend_10/20/50`, counted over **all 7
 balls**. `features/rolling_stats.py`.

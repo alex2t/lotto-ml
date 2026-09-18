@@ -73,7 +73,7 @@ Credit where due - this is a competent document and several parts are correct an
   from `metrics.md` (+/-0.031 AUC, +/-0.227 Top-7).
 - **The label-permutation test is the best idea in the document.** Shuffling labels within each draw
   and confirming AUC collapses to chance is a genuine leakage detector, and it is cheap. It is
-  already improvement 1 in `issue.md`.
+  already F-17 in `issue.md`.
 - The phase ordering - baseline, cleanup, implement, verify parity, retrain, smoke-test - is sensible
   and matches how the fixes in Appendix A were actually done.
 

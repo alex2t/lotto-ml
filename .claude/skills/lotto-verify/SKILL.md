@@ -34,7 +34,7 @@ regression — `matplotlib.use('Agg')` must come before `import matplotlib.pyplo
 python .claude/skills/lotto-verify/verify.py
 ```
 
-This runs the 99 real tests across the ten real test files, re-derives train/serve parity from the
+This runs the 100 real tests across the ten real test files, re-derives train/serve parity from the
 data, validates every generated ticket, and prints the validation metrics with the 2 SE noise floor.
 It exits non-zero if anything fails. The ten files, and what each one guards, are listed in
 [`tests/CLAUDE.md`](../../../tests/CLAUDE.md) - if you add a real test, add it to both that list and

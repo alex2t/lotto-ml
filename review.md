@@ -137,7 +137,7 @@ odd/even failure.
 
 **Sequencing.** Worth doing only once it is settled which constraints should exist. Encoding the
 freshness target into a solver while that mechanism is under change freeze would harden a rule that
-may be deleted - see improvement 4 in `issue.md`. Resolve that first, then encode what survives.
+may be deleted - see F-18 in `issue.md`. Resolve that first, then encode what survives.
 
 ---
 
@@ -364,7 +364,7 @@ these steps were never committed, so each is judged by what the code does today.
 | Phase | Step | Status | Go ahead? |
 |:--|:--|:--|:--|
 | 1 | Fix `selection.py` fallback, eliminate hard exclusion deadlocks | **Done, then superseded** | - |
-| 1 | Harmonise Model 1 parameters with documentation | **Not started** - logged as F-15 | Yes, small |
+| 1 | Harmonise Model 1 parameters with documentation | **Done** 2026-09-18 (F-15) | - |
 | 1 | Resolve double diversity penalty in `predictor.py` | **Not started** - logged as F-16 | Yes, small |
 | 2 | True walk-forward training dataset | **Done** | - |
 | 2 | Soft-voting probability ensemble | **Rejected** | No |
@@ -376,7 +376,7 @@ were fixed. `selection.py` itself is now gone: the ILP (§3.2) replaced it, and 
 a penalised number is avoided but never banned, and an impossible set of constraints raises instead
 of returning a short line.
 
-**Phase 1 - harmonise Model 1's config: not started (F-15).** Models 1, 2 and 3 list `recent_14`,
+**Phase 1 - harmonise Model 1's config: done 2026-09-18 (F-15), notes kept below.** Models 1, 2 and 3 listed `recent_14`,
 which the serving path never produces, so `expand_feature_selection` drops it without a word (Model 1
 trains on 25 features, none of them `recent_14`). Model 1's comments also misdescribe it: "~17
 features", `recent_4` as "last 4 draws" (it is 5), and an empty "CONSTRAINTS" block.
@@ -409,7 +409,7 @@ there whether to delete it.
 top 8 into 4 covering lines (§3.1). They are deliberately *not* passed through the ticket filters:
 repairing one line would break the guarantee.
 
-**Next:** F-15 and F-16 finish Phase 1 and are both cheap. Phase 3 (scraper) is already largely
+**Next:** F-16 finishes Phase 1 and is cheap. Phase 3 (scraper) is already largely
 built - `scripts/scrape_lotto.py` has two sources and tests (C-14) - so Phase 4 automation is the
 next substantive work.
 
