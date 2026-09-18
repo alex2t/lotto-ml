@@ -4,7 +4,7 @@
 **Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
-Sections 1-7 are **open**: defects by severity, then improvements not yet started. Section 8 lists
+Sections 1-6 are **open**: defects by severity, then improvements not yet started. Section 7 lists
 improvements already done. Items carried from the retired code review keep
 their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
 Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
@@ -17,7 +17,7 @@ effect. A fix is not finished until this file says so.
 
 **Improvements are tracked the same way.** Planned work that is not a defect also gets the next
 free F-n, a Priority summary row with severity `Improvement`, and its own section. When done, it
-moves to section 8 (Improvements done). Nothing open lives only in a list or in `review.md`.
+moves to section 7 (Improvements done). Nothing open lives only in a list or in `review.md`.
 
 ---
 
@@ -30,10 +30,9 @@ moves to section 8 (Improvements done). Nothing open lives only in a list or in 
 | 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
 | 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
-| 6 | **F-18** | Freshness pattern enforced without evidence (change freeze; needs backtest) | Improvement | M |
-| 7 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
+| 6 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
 
-**5 open defects, nothing High; 2 improvements not started.** Everything resolved is in Appendix A and appears nowhere above.
+**5 open defects, nothing High; 1 improvement not started.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -133,42 +132,7 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 6. F-18 — The freshness pattern is enforced without evidence it helps (change freeze)
-
-**Type: Improvement, not started; mechanism frozen.** Effort M.
-
-> **Change freeze, 2026-09-18.** No further work on the freshness-pattern mechanism -
-> `get_optimal_pattern_distribution()`, `reachable_pattern()`, or the freshness bin
-> categorisation - until its value is established. (The greedy bin ranking in
-> `pick_line_hybrid()` was replaced by the ILP on 2026-09-18, which enforces the same reachable
-> target unchanged as constraints.)
-> Watch and monitor only. A defect found in it is logged here and left open rather than fixed.
->
-> **Why.** Three defects have been fixed in this one mechanism (F-1 target sized for 7 balls,
-> F-8 target not binding, F-13 target unreachable), and nothing has ever shown it improves
-> outcomes. It was mis-sized, then ignored, then infeasible, and across all of that no result
-> would have looked different, because no measurement of it exists. Continuing to repair it
-> spends effort on a feature that may not be worth having, and each fix adds coupling -
-> `reachable_pattern()` had to mirror `pick_line_hybrid()`'s ordering or its shortfall message
-> silently lies.
->
-> **Lifting the freeze** requires the backtest below to return a result outside the noise band.
-> If it returns a result inside the band, delete the mechanism instead of maintaining it.
-
-**The backtest.** For each of the last ~60 draws `t`, build features conditioning only on draws
-before `t` (the walk-forward engine already supports this), generate one line with freshness
-enforcement and one without (probability rank + HMC ratio + ticket filters only), and score both
-against the actual draw. Random expectation is 6 x 6/47 ~= 0.77 matches per line. Decide the rule
-**before** running it: outside the noise band, keep; inside it, delete. Not "keep, inconclusive".
-
-Note the cost asymmetry - line generation currently runs only for the next draw, so this needs a
-walk-forward harness that does not exist. Building it is probably more work than deleting the
-mechanism outright. That is a legitimate argument for deleting now, on the grounds that a fair
-draw gives no reason to expect the pattern to help. The harness would, however, be reusable for
-the same question about the HMC ratio and the diversity penalty.
-
----
-## 7. F-19 — Lines are not steered away from popular combinations
+## 6. F-19 — Lines are not steered away from popular combinations
 
 **Type: Improvement, not started.** Effort S.
 
@@ -183,10 +147,35 @@ count of numbers >=32), which the ILP makes a small change. Decide first which t
 for, since the two goals pull in opposite directions.
 
 ---
-## 8. Improvements done
+## 7. Improvements done
 
 Kept for the record; each is complete and covered by tests.
 
+- **2026-09-19 - F-18, is the freshness pattern worth enforcing? Kept; change freeze lifted.**
+  Enforcing a bin pattern can only help if a number's freshness bin changes its chance of being
+  drawn, so that was tested directly instead of the two-line backtest first proposed (60 draws, noise
+  ~ +/- 0.27 matches - it could only have seen a huge effect). `analysis/freshness_hit_rate.py`: for
+  draws 5..496, each number's bin as it stood before the draw - the engine's `min(recent_4, 2)`,
+  identical to the serving `current_freshness_bin` selection enforces (`last_4`, C_max 2) - against
+  whether it was a main ball. Rule fixed before running: chi-square p < 0.05 keeps the mechanism,
+  otherwise its enforcement is deleted.
+
+  | Bin | Exposures | Hits | Hit rate | Expected hits |
+  |--:|--:|--:|--:|--:|
+  | 0 | 11,714 | 1,499 | 0.1280 | 1,495.4 |
+  | 1 | 8,526 | 1,045 | 0.1226 | 1,088.4 |
+  | 2 | 2,884 | 408 | 0.1415 | 368.2 |
+
+  chi2 = 6.94, dof 2, **p = 0.031 - keep**. The excess is in bin 2 (drawn 2+ times in the last 5
+  draws): +11% over its share. Checked not to be a data artifact: 497 draws on 497 distinct dates, no
+  duplicated draw, consecutive-draw overlaps match a fair draw (3 shared numbers 13 times vs 9.8
+  expected, 4+ never).
+
+  **Read it with care.** p = 0.031 is weak - one test in twenty passes at that level by chance - and
+  the effect is small: one bin-2 number per line is worth about +0.015 expected matches. The rule said
+  keep, so the mechanism stays and the freeze is lifted by its own condition. Re-run the script as
+  draws accumulate; it takes seconds. If p rises above 0.05, delete the enforcement - the decision was
+  made on this evidence, and it should follow the evidence.
 - **2026-09-18 - F-17, label-permutation check: no model has an edge.**
   `ml_lotto/models/permutation_check.py`, run as `python quickpick.py --permutation-check 20`. Each
   main model is trained once on real labels and 20 times with the training labels shuffled within
@@ -418,9 +407,8 @@ each model chases a different pattern, which is no longer the observed distribut
 represents; and changing the HMC ratios would be tuning the models to satisfy a mechanism whose value
 is unestablished.
 
-**Still open, as F-18.** Whether the freshness pattern is worth enforcing at all. If it
-carries no signal, the target, `reachable_pattern` and the whole reconciliation problem should be
-deleted rather than maintained.
+**Resolved by F-18 (2026-09-19): kept.** Freshness bins do differ in hit rate (p = 0.031), so the
+target and `reachable_pattern` stay. See section 7.
 
 ### F-8 — The freshness target was consulted for ordering, then discarded
 
