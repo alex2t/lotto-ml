@@ -33,7 +33,7 @@ What each one covers:
 | Folder guide | Covers |
 |:--|:--|
 | `ml_lotto/features/CLAUDE.md` | the train/serve parity contract - the highest-risk file in the repo |
-| `tests/CLAUDE.md` | the ten real test files vs the thirteen legacy print-scripts |
+| `tests/CLAUDE.md` | the eleven real test files vs the thirteen legacy print-scripts |
 | `lotto_analysis/analyzers/CLAUDE.md` | the 16 analysis phases and which JSON each writes |
 | `ml_lotto/models/CLAUDE.md` | the six model configs, the noise floor, the overfit gap |
 | `ml_lotto/prediction/CLAUDE.md` | selection vs filters, the playable-ticket boundary |
@@ -72,7 +72,7 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Ten files are real tests (105 of them, ~50s). Everything else in `tests/` is a legacy print-script
+Eleven files are real tests (112 of them, ~50s). Everything else in `tests/` is a legacy print-script
 that runs model training at import - **do not run `pytest tests/` bare.** The full list, and what
 each one guards, is in `tests/CLAUDE.md`. `/lotto-verify` runs them all.
 
@@ -156,7 +156,7 @@ updates it in the same change:
   the remaining sections, add it to the Appendix A table, and write up the root cause, the measured
   before/after and the tests that now cover it.
 - **Planned an improvement** - it is tracked exactly like a defect: next free `F-n`, a Priority
-  summary row with severity `Improvement`, its own section. When done, it moves to section 9.
+  summary row with severity `Improvement`, its own section. When done, it moves to section 8.
 - Never leave a resolved ID in the Priority summary, and never leave a found defect only in the
   conversation.
 

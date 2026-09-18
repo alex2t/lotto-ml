@@ -72,8 +72,8 @@ Credit where due - this is a competent document and several parts are correct an
 - **R-05, the noise fallacy, is the right risk to lead with**, and it correctly cites the 2 SE bands
   from `metrics.md` (+/-0.031 AUC, +/-0.227 Top-7).
 - **The label-permutation test is the best idea in the document.** Shuffling labels within each draw
-  and confirming AUC collapses to chance is a genuine leakage detector, and it is cheap. It is
-  already F-17 in `issue.md`.
+  and confirming AUC collapses to chance is a genuine leakage detector, and it is cheap. Done as
+  F-17 on 2026-09-18: no model beat its shuffled-label runs - see `metrics.md`.
 - The phase ordering - baseline, cleanup, implement, verify parity, retrain, smoke-test - is sensible
   and matches how the fixes in Appendix A were actually done.
 

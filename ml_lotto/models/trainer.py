@@ -246,7 +246,8 @@ def train_model(
     enable_hyperparameter_tuning: bool = False,
     tuning_mode: str = 'quick',
     tuning_cv_splits: int = 3,
-    tuning_scoring: str = 'roc_auc' 
+    tuning_scoring: str = 'roc_auc',
+    output_dir: Optional[str] = 'model_metrics'
 ) -> Tuple[Any, List[str], Optional[List[Dict[str, Any]]], Optional[Dict[str, Any]], Optional[Dict[str, Any]]]:
     """
     Train a single model based on its configuration with comprehensive validation metrics.
@@ -268,6 +269,7 @@ def train_model(
         tuning_mode: 'quick' or 'extensive' tuning (default: 'quick')
         tuning_cv_splits: Number of CV splits for tuning (default: 3)
         tuning_scoring: Scoring metric for tuning (default: 'f1')
+        output_dir: Where plots and tuning results are written; None writes nothing
 
     Returns:
         Tuple of (trained_pipeline, selected_features, feature_importance_data, metrics, tuning_results)
@@ -444,8 +446,8 @@ def train_model(
                     pipeline.fit(X_train, y_train)
 
                 # Save tuning results
-                if tuning_results:
-                    save_tuning_results(tuning_results, model_config['name'])
+                if tuning_results and output_dir is not None:
+                    save_tuning_results(tuning_results, model_config['name'], output_dir)
 
             except Exception as e:
                 print(f"  ⚠️  Hyperparameter tuning failed: {e}")
@@ -473,8 +475,8 @@ def train_model(
             X_val=X_val,
             y_val=y_val,
             model_name=model_config['name'],
-            save_plots=True,
-            output_dir='model_metrics'
+            save_plots=output_dir is not None,
+            output_dir=output_dir
         )
 
         # Feature Importance Analysis
@@ -485,6 +487,85 @@ def train_model(
         )
 
     return pipeline, selected_features, feature_importance_data, metrics, tuning_results
+
+
+def excludes_bonus(model_index: int) -> bool:
+    """Model 2 is labelled on the main 6 balls only; every other main model on all 7."""
+    return model_index == 2
+
+
+def build_main_datasets(
+    model_configs: List[Dict[str, Any]],
+    base_engine: PointInTimeFeatureEngine,
+    features_dict: Dict[int, Dict[str, Any]],
+    n_draws: int
+) -> Tuple[Dict[bool, Tuple[pd.DataFrame, pd.DataFrame]], List[str]]:
+    """
+    Build the train/validation datasets every main model is fitted and scored on.
+
+    Returns ({exclude_bonus: (train_df, val_df)}, all_feature_names). Rows come in blocks
+    of MAX_NUMBER per draw, in draw order.
+    """
+    train_end_idx, val_start_idx = calculate_train_val_split(n_draws)
+    # Get all available feature names
+    all_feature_names = get_all_feature_names(features_dict)
+    print(f"  Available features: {len(all_feature_names)}")
+
+    # Only materialise columns some model actually selects. all_feature_names stays the
+    # full list because keyword expansion (PAIRWISE_INTERACTIONS, RECENT_ALL, ...) filters
+    # against it, but the training matrix does not need the rest.
+    dataset_features = sorted({
+        feature
+        for config in model_configs
+        for feature in expand_feature_selection(config['features'], all_feature_names)
+    })
+    unused = len(all_feature_names) - len(dataset_features)
+    print(f"  Selected by at least one model: {len(dataset_features)} ({unused} unused columns not built)")
+
+    # Build FOUR datasets from the run's shared engine (state precomputed once per run, C-15a)
+    engine = base_engine.with_base_features(features_dict)
+
+    print("\n1. Building standard TRAINING dataset (Models 1, 3, 4)...")
+    train_df_standard = engine.build_main_dataset(
+        all_feature_names=dataset_features,
+        start_index=TRAINING_START_DRAW,
+        end_index=train_end_idx,
+        exclude_bonus=False  # All 7 positions
+    )
+    print(f"  ✓ Standard training dataset created: {len(train_df_standard)} records")
+
+    print("\n2. Building standard VALIDATION dataset (Models 1, 3, 4)...")
+    val_df_standard = engine.build_main_dataset(
+        all_feature_names=dataset_features,
+        start_index=val_start_idx,
+        end_index=n_draws,
+        exclude_bonus=False  # All 7 positions
+    )
+    print(f"  ✓ Standard validation dataset created: {len(val_df_standard)} records")
+
+    print("\n3. Building specialized TRAINING dataset (Model 2)...")
+    train_df_model2 = engine.build_main_dataset(
+        all_feature_names=dataset_features,
+        start_index=TRAINING_START_DRAW,
+        end_index=train_end_idx,
+        exclude_bonus=True  # Main 6 only ⭐
+    )
+    print(f"  ✓ Model 2 training dataset created: {len(train_df_model2)} records")
+
+    print("\n4. Building specialized VALIDATION dataset (Model 2)...")
+    val_df_model2 = engine.build_main_dataset(
+        all_feature_names=dataset_features,
+        start_index=val_start_idx,
+        end_index=n_draws,
+        exclude_bonus=True  # Main 6 only ⭐
+    )
+    print(f"  ✓ Model 2 validation dataset created: {len(val_df_model2)} records")
+
+    datasets = {
+        False: (train_df_standard, val_df_standard),
+        True: (train_df_model2, val_df_model2),
+    }
+    return datasets, all_feature_names
 
 
 def train_all_models(
@@ -547,59 +628,7 @@ def train_all_models(
     else:
         print(f"  ℹ️  100% of data used for training (no validation set held out)")
 
-    # Get all available feature names
-    all_feature_names = get_all_feature_names(features_dict)
-    print(f"  Available features: {len(all_feature_names)}")
-
-    # Only materialise columns some model actually selects. all_feature_names stays the
-    # full list because keyword expansion (PAIRWISE_INTERACTIONS, RECENT_ALL, ...) filters
-    # against it, but the training matrix does not need the rest.
-    dataset_features = sorted({
-        feature
-        for config in model_configs
-        for feature in expand_feature_selection(config['features'], all_feature_names)
-    })
-    unused = len(all_feature_names) - len(dataset_features)
-    print(f"  Selected by at least one model: {len(dataset_features)} ({unused} unused columns not built)")
-
-    # Build FOUR datasets from the run's shared engine (state precomputed once per run, C-15a)
-    engine = base_engine.with_base_features(features_dict)
-
-    print("\n1. Building standard TRAINING dataset (Models 1, 3, 4)...")
-    train_df_standard = engine.build_main_dataset(
-        all_feature_names=dataset_features,
-        start_index=TRAINING_START_DRAW,
-        end_index=train_end_idx,
-        exclude_bonus=False  # All 7 positions
-    )
-    print(f"  ✓ Standard training dataset created: {len(train_df_standard)} records")
-
-    print("\n2. Building standard VALIDATION dataset (Models 1, 3, 4)...")
-    val_df_standard = engine.build_main_dataset(
-        all_feature_names=dataset_features,
-        start_index=val_start_idx,
-        end_index=len(all_draws),
-        exclude_bonus=False  # All 7 positions
-    )
-    print(f"  ✓ Standard validation dataset created: {len(val_df_standard)} records")
-
-    print("\n3. Building specialized TRAINING dataset (Model 2)...")
-    train_df_model2 = engine.build_main_dataset(
-        all_feature_names=dataset_features,
-        start_index=TRAINING_START_DRAW,
-        end_index=train_end_idx,
-        exclude_bonus=True  # Main 6 only ⭐
-    )
-    print(f"  ✓ Model 2 training dataset created: {len(train_df_model2)} records")
-
-    print("\n4. Building specialized VALIDATION dataset (Model 2)...")
-    val_df_model2 = engine.build_main_dataset(
-        all_feature_names=dataset_features,
-        start_index=val_start_idx,
-        end_index=len(all_draws),
-        exclude_bonus=True  # Main 6 only ⭐
-    )
-    print(f"  ✓ Model 2 validation dataset created: {len(val_df_model2)} records")
+    datasets, all_feature_names = build_main_datasets(model_configs, base_engine, features_dict, len(all_draws))
 
     # Train each model with proper train/validation split
     models = {}
@@ -610,15 +639,8 @@ def train_all_models(
     for idx, model_config in enumerate(model_configs, 1):
         model_name = f"model_{idx}"
 
-        # Use specialized dataset for Model 2
-        if idx == 2:
-            train_df_to_use = train_df_model2
-            val_df_to_use = val_df_model2
-            exclude_bonus = True
-        else:
-            train_df_to_use = train_df_standard
-            val_df_to_use = val_df_standard
-            exclude_bonus = False
+        exclude_bonus = excludes_bonus(idx)
+        train_df_to_use, val_df_to_use = datasets[exclude_bonus]
 
         pipeline, selected_features, importance_data, metrics, tuning_results = train_model(
             model_config,
