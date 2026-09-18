@@ -45,8 +45,9 @@ the back door. `../../tests/test_model_capacity.py` covers this.
 
 - Playable-ticket constraints (sum, span, odd count) belong in `../prediction/filters.py`, never in a
   feature list or a model.
-- A feature named in a config that neither `../features/walk_forward.py` nor `../features/extractor.py`
-  produces is silently absent, not an error. Check both.
+- A feature named in a config must be produced by both `../features/walk_forward.py` and
+  `../features/extractor.py`. A name the serving features lack raises in `expand_feature_selection`
+  (F-15) - fix the config, do not catch the error.
 - `model_metrics/` is regenerated output. Read it, do not hand-edit it.
 
 ## After changing anything here

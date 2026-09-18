@@ -61,8 +61,9 @@ moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N)
   let it fail.
 - **A feature that never varies is a bug.** `../../tests/test_no_constant_features.py` enforces it.
   Per-number constants over full history leak outcome information from the validation window.
-- Adding a feature name to a model's `features` list in `../config.py` does nothing unless both
-  `walk_forward.py` and `extractor.py` produce it.
+- A feature name in a model's `features` list in `../config.py` must be produced by both
+  `walk_forward.py` and `extractor.py`. `expand_feature_selection` raises on a name the serving
+  features lack (F-15); a name only serving produces still falls back to the base features in training.
 
 ## After changing anything here
 

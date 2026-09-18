@@ -42,7 +42,7 @@ let a constraint look satisfied while not binding (F-8, F-14).
   at most 2 non-bin-0 numbers, whatever the target asks for. `constraints.reachable_pattern()`
   computes what a model can actually achieve and `predictor.py` passes that to the solver, printing
   the shortfall. A missed bin there is a structural limit - see F-13. The freshness mechanism is
-  frozen (improvement 4 in `issue.md`): the solver enforces the reachable target as given, do not
+  frozen (F-18 in `issue.md`): the solver enforces the reachable target as given, do not
   change how it is computed.
 - The `hot/medium/cold/generic_count` keys mean different things per model. Models 1-3 sum to 6 -
   they are the composition of the line (4/1/1, 3/1/2, 2/2/2). **Model 4 is a pool generator**: its
