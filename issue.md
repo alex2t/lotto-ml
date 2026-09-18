@@ -4,7 +4,7 @@
 **Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
-Sections 1-9 are **open**: defects by severity, then improvements not yet started. Section 10 lists
+Sections 1-8 are **open**: defects by severity, then improvements not yet started. Section 9 lists
 improvements already done. Items carried from the retired code review keep
 their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
 Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
@@ -17,7 +17,7 @@ effect. A fix is not finished until this file says so.
 
 **Improvements are tracked the same way.** Planned work that is not a defect also gets the next
 free F-n, a Priority summary row with severity `Improvement`, and its own section. When done, it
-moves to section 10 (Improvements done). Nothing open lives only in a list or in `review.md`.
+moves to section 9 (Improvements done). Nothing open lives only in a list or in `review.md`.
 
 ---
 
@@ -30,12 +30,11 @@ moves to section 10 (Improvements done). Nothing open lives only in a list or in
 | 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
 | 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
-| 6 | **F-16** | Diversity penalty applied twice; the configured percentage barely matters | Low | S |
-| 7 | **F-17** | No label-permutation check - nothing shows whether any edge exists | Improvement | S |
-| 8 | **F-18** | Freshness pattern enforced without evidence (change freeze; needs backtest) | Improvement | M |
-| 9 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
+| 6 | **F-17** | No label-permutation check - nothing shows whether any edge exists | Improvement | S |
+| 7 | **F-18** | Freshness pattern enforced without evidence (change freeze; needs backtest) | Improvement | M |
+| 8 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
 
-**6 open defects, nothing High; 3 improvements not started.** Everything resolved is in Appendix A and appears nowhere above.
+**5 open defects, nothing High; 3 improvements not started.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -135,28 +134,7 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 6. F-16 — The diversity penalty is applied twice
-
-**Severity: Low.** Found 2026-09-18.
-
-`ml_lotto/prediction/predictor.py:218` scales each penalised number's probability down by the
-config's `diversity_penalty` (0.25-0.40, rank-aware, `penalties.py:57`). Those adjusted probabilities
-go to `solve_line` (`predictor.py:252`), which *also* charges 1 per penalised number
-(`ilp_selection.py:80`). The flat cost dominates, so the configured percentage only orders penalised
-numbers among themselves when one cannot be avoided - a config advertising "30% soft penalty" is in
-effect a near-hard rule. The greedy picker had the same stack (percentage plus an unpenalised-first
-pass); the ILP carried it over unchanged.
-
-The flat cost is lexicographic only while probability spreads are small: it outweighs a line
-rearrangement when six numbers' probabilities differ by less than 1 in total, which holds for
-calibrated probabilities near 0.13.
-
-**Fix.** Keep one mechanism. Recommended: keep the flat cost, delete `apply_rank_aware_penalty` and
-the `diversity_penalty` keys, and give the solver raw probabilities. Models 2 and 3's picks may
-change; metrics will not.
-
----
-## 7. F-17 — No label-permutation check: nothing shows whether any edge exists
+## 6. F-17 — No label-permutation check: nothing shows whether any edge exists
 
 **Type: Improvement, not started.** Effort S. Carried from the code review's improvement list.
 
@@ -170,7 +148,7 @@ repeat ~20 times. Compare the real AUCs against that distribution. ~30 lines on 
 modelling work to do.
 
 ---
-## 8. F-18 — The freshness pattern is enforced without evidence it helps (change freeze)
+## 7. F-18 — The freshness pattern is enforced without evidence it helps (change freeze)
 
 **Type: Improvement, not started; mechanism frozen.** Effort M.
 
@@ -205,7 +183,7 @@ draw gives no reason to expect the pattern to help. The harness would, however, 
 the same question about the HMC ratio and the diversity penalty.
 
 ---
-## 9. F-19 — Lines are not steered away from popular combinations
+## 8. F-19 — Lines are not steered away from popular combinations
 
 **Type: Improvement, not started.** Effort S.
 
@@ -220,7 +198,7 @@ count of numbers >=32), which the ILP makes a small change. Decide first which t
 for, since the two goals pull in opposite directions.
 
 ---
-## 10. Improvements done
+## 9. Improvements done
 
 Kept for the record; each is complete and covered by tests.
 
@@ -278,6 +256,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-16 | Diversity penalty applied twice; the configured percentage barely mattered | `ilp_selection.py`, `predictor.py` (deletes `penalties.py`) |
 | F-15 | Config feature names the serving path never produces were dropped silently | `config.py`, `extractor.py` |
 | C-15b | Tree models memorised the training set (train/val AUC gap 0.383) | `config.py`, `hyperparameter_tuning.py` |
 | C-16 | Non-deterministic feature column order | `extractor.py` |
@@ -294,6 +273,30 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-16 — The diversity penalty was applied twice
+
+**Root cause.** `predictor.py` scaled each number used by an earlier line down by the model's
+`diversity_penalty` (25-40%, rank-aware, `penalties.py`), then `solve_line` also charged a flat 1 per
+such number. The flat cost dominated, so the configured percentages only ordered reused numbers
+among themselves when one was unavoidable - a config advertising "30% soft penalty" was in effect a
+near-hard rule. Model 4's key was never read at all. The greedy picker had the same stack; the ILP
+carried it over.
+
+**Fix.** One mechanism: the flat cost, now `PENALTY_COST = LINE_SIZE`. Scores are probabilities
+below 1, so two lines' sums differ by less than 6 and the cost is exactly lexicographic - fewest
+reused numbers first, then best probability - whatever the probability spread. The cost of 1 relied
+on spreads being small. The solver gets raw probabilities. Deleted: `penalties.py`, the four
+`diversity_penalty` keys, `SHOW_DETAILED_PENALTIES` and the rank-aware explanation display. The run
+now prints how many numbers each line avoids and any it had to reuse.
+
+**Measured before/after.** Picks unchanged - `[5, 13, 15, 24, 42, 43]`, `[6, 8, 9, 23, 31, 39]`,
+`[7, 22, 32, 38, 40, 47]`, still disjoint - which confirms the percentage was not affecting the
+result. Metrics untouched: selection does not feed training.
+
+**Tests.** `tests/test_selection_invariants.py`: in a random and four skewed score worlds, the
+unpenalised optimum is penalised and the solver must match a brute-force lexicographic optimum.
+Dropping the cost to 0.1 fails two of the five.
 
 ### F-15 — Config feature names were dropped silently
 

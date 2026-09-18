@@ -365,7 +365,7 @@ these steps were never committed, so each is judged by what the code does today.
 |:--|:--|:--|:--|
 | 1 | Fix `selection.py` fallback, eliminate hard exclusion deadlocks | **Done, then superseded** | - |
 | 1 | Harmonise Model 1 parameters with documentation | **Done** 2026-09-18 (F-15) | - |
-| 1 | Resolve double diversity penalty in `predictor.py` | **Not started** - logged as F-16 | Yes, small |
+| 1 | Resolve double diversity penalty in `predictor.py` | **Done** 2026-09-18 (F-16) | - |
 | 2 | True walk-forward training dataset | **Done** | - |
 | 2 | Soft-voting probability ensemble | **Rejected** | No |
 | 2 | Model 4 pool -> combinatorial line generator | **Done** | - |
@@ -385,7 +385,7 @@ features", `recent_4` as "last 4 draws" (it is 5), and an empty "CONSTRAINTS" bl
 next typo fails loudly. *Worth it:* yes - under an hour, no model changes (the feature was never
 used), and it closes the silent-default class this repo keeps hitting.
 
-**Phase 1 - double diversity penalty: not started (F-16).** `predictor.py` lowers each penalised
+**Phase 1 - double diversity penalty: done 2026-09-18 (F-16), notes kept below.** `predictor.py` lowers each penalised
 number's probability by the configured `diversity_penalty` (25-40%, rank-aware), then `solve_line`
 also subtracts 1 per penalised number. The flat 1 dominates, so the configured percentages barely
 matter: they only order penalised numbers among themselves when one is unavoidable.
@@ -409,7 +409,7 @@ there whether to delete it.
 top 8 into 4 covering lines (§3.1). They are deliberately *not* passed through the ticket filters:
 repairing one line would break the guarantee.
 
-**Next:** F-16 finishes Phase 1 and is cheap. Phase 3 (scraper) is already largely
+**Next:** Phase 1 is complete. Phase 3 (scraper) is already largely
 built - `scripts/scrape_lotto.py` has two sources and tests (C-14) - so Phase 4 automation is the
 next substantive work.
 

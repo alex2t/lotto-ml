@@ -9,8 +9,7 @@ UPDATED: v3.6 - Modified for 5 main numbers (bonus assigned separately)
 
 import numpy as np
 from typing import Dict, Any, List
-from ml_lotto.config import MAX_NUMBER, SHOW_DETAILED_PENALTIES
-from ml_lotto.prediction.penalties import apply_rank_aware_penalty
+from ml_lotto.config import MAX_NUMBER
 from ml_lotto.prediction.constraints import (
     get_optimal_pattern_distribution,
     categorize_numbers_by_freshness,
@@ -164,7 +163,6 @@ def generate_all_picks(
         m = model_config['medium_count']
         c = model_config['cold_count']
         g = model_config['generic_count']
-        penalty = model_config['diversity_penalty']
 
         # If pre-assigned numbers exist, adjust HMC targets
         if model_pre_assigned:
@@ -209,24 +207,18 @@ def generate_all_picks(
         else:
             print(f"  HMC Ratio: {h}H + {m}M + {c}C + {g}G = {h+m+c+g} numbers")
         
-        # Apply diversity penalty, but EXCLUDE pre-assigned numbers
-        penalty_set_for_model = penalty_numbers - set(model_pre_assigned) if model_pre_assigned else penalty_numbers
-
-        if penalty_set_for_model and penalty > 0:
-            print(f"  Diversity Penalty: {penalty*100:.0f}% on {len(penalty_set_for_model)} numbers")
-
-        adjusted_probs, penalty_details = apply_rank_aware_penalty(
-            probabilities,
-            penalty_set_for_model if penalty_set_for_model else set(),
-            penalty
-        )
+        # Numbers on earlier lines are avoided unless unavoidable - the solver's flat
+        # penalty is the only diversity mechanism (F-16). Pre-assigned numbers are exempt.
+        penalty_set_for_model = penalty_numbers - set(model_pre_assigned)
+        if penalty_set_for_model:
+            print(f"  Diversity: avoiding {len(penalty_set_for_model)} numbers used by earlier lines")
 
         # Build pools, excluding pre-assigned numbers from selection
         exclude_from_selection = set(model_pre_assigned) if model_pre_assigned else set()
         pools = build_dual_categorized_pools(
             features_dict,
             number_categories,
-            adjusted_probs,
+            probabilities,
             exclude_numbers=exclude_from_selection
         )
         
@@ -250,7 +242,7 @@ def generate_all_picks(
             print(f"  Target unreachable for this HMC ratio, using {model_target} ({shortfall})")
 
         selected_numbers = solve_line(
-            adjusted_probs,
+            probabilities,
             {num: features_dict[num]['category'] for num in range(1, MAX_NUMBER + 1)},
             number_categories,
             {'hot': h, 'medium': m, 'cold': c},
@@ -271,13 +263,9 @@ def generate_all_picks(
             print(f"  Selected: {selected_numbers}")
 
         print(f"  Achieved Pattern: {achieved_pattern}")
-
-        if SHOW_DETAILED_PENALTIES and penalty_details:
-            print(f"  Rank-aware penalties applied:")
-            penalty_details.sort(key=lambda x: x['rank'])
-            for detail in penalty_details[:3]:
-                print(f"    #{detail['num']} (Rank {detail['rank']}): "
-                      f"{detail['penalty_pct']:.1f}% penalty")
+        reused = sorted(set(selected_numbers) & penalty_set_for_model)
+        if reused:
+            print(f"  Reused from earlier lines (no feasible line avoided them): {reused}")
 
         lines.append({
             'model_name': model_config['name'],
