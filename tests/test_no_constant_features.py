@@ -145,3 +145,10 @@ def test_the_removed_c5_features_stay_out_of_every_model(produced):
     for label, config in MODELS:
         back = sorted(removed & set(selected_for(config, produced)))
         assert not back, f"{label} has re-introduced full-history feature(s): {back}"
+
+
+def test_a_config_name_that_is_not_produced_raises(produced):
+    """A feature named in a config but produced by neither path must fail, not vanish (F-15)."""
+    with pytest.raises(ValueError, match="recent_14x"):
+        expand_feature_selection(['days_since_last', 'recent_14x'], produced)
+    assert expand_feature_selection(['days_since_last'], produced) == ['days_since_last']

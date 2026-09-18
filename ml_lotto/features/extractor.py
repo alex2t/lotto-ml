@@ -402,7 +402,7 @@ def get_all_feature_names(features_dict: Dict[int, Dict[str, Any]]) -> List[str]
 
 
 def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List[str]:
-    """Expand feature specification into actual feature list."""
+    """Expand feature specification into actual feature list; raise on an unknown name."""
 
     # Filter to only include recent_<number> features, exclude others like recent_vs_baseline
     recent_features = sorted([f for f in all_features if f.startswith('recent_') and f.split('_')[1].isdigit()],
@@ -473,9 +473,14 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         for item in feature_spec:
             if item in custom_keywords:
                 expanded.extend(custom_keywords[item])
+            elif item in all_features:
+                expanded.append(item)
             else:
-                if item in all_features:
-                    expanded.append(item)
+                # Dropping it silently is how recent_14 sat in three configs unused (F-15)
+                raise ValueError(
+                    f"Feature {item!r} is neither a keyword nor a produced feature. "
+                    f"Remove it from the config or produce it on both feature paths."
+                )
         return sorted(set(expanded))
 
     return []
