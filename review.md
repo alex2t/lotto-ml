@@ -356,6 +356,63 @@ Phase 5: VPS Deployment & Production Hardening
   └── Configure Nginx reverse proxy with SSL (Certbot) and security headers
 ```
 
+### Where Phases 1 and 2 stand (verified 2026-09-18)
+
+Checked against the code, `issue.md` and a full `quickpick.py` run. The original write-ups behind
+these steps were never committed, so each is judged by what the code does today.
+
+| Phase | Step | Status | Go ahead? |
+|:--|:--|:--|:--|
+| 1 | Fix `selection.py` fallback, eliminate hard exclusion deadlocks | **Done, then superseded** | - |
+| 1 | Harmonise Model 1 parameters with documentation | **Not started** - logged as F-15 | Yes, small |
+| 1 | Resolve double diversity penalty in `predictor.py` | **Not started** - logged as F-16 | Yes, small |
+| 2 | True walk-forward training dataset | **Done** | - |
+| 2 | Soft-voting probability ensemble | **Rejected** | No |
+| 2 | Model 4 pool -> combinatorial line generator | **Done** | - |
+
+**Phase 1 - selection fallback and deadlocks: done.** The hard lockout was removed (C-9), the
+fallback that overfilled a line (C-11) and the top-up that duplicated a pre-assigned number (C-12)
+were fixed. `selection.py` itself is now gone: the ILP (§3.2) replaced it, and it cannot deadlock -
+a penalised number is avoided but never banned, and an impossible set of constraints raises instead
+of returning a short line.
+
+**Phase 1 - harmonise Model 1's config: not started (F-15).** Models 1, 2 and 3 list `recent_14`,
+which the serving path never produces, so `expand_feature_selection` drops it without a word (Model 1
+trains on 25 features, none of them `recent_14`). Model 1's comments also misdescribe it: "~17
+features", `recent_4` as "last 4 draws" (it is 5), and an empty "CONSTRAINTS" block.
+*How:* delete `recent_14` from the three configs, correct the comments, and make
+`expand_feature_selection` raise on a name that is neither a keyword nor a produced feature, so the
+next typo fails loudly. *Worth it:* yes - under an hour, no model changes (the feature was never
+used), and it closes the silent-default class this repo keeps hitting.
+
+**Phase 1 - double diversity penalty: not started (F-16).** `predictor.py` lowers each penalised
+number's probability by the configured `diversity_penalty` (25-40%, rank-aware), then `solve_line`
+also subtracts 1 per penalised number. The flat 1 dominates, so the configured percentages barely
+matter: they only order penalised numbers among themselves when one is unavoidable.
+*How:* keep one mechanism. Recommended: keep the flat cost (lines as disjoint as the constraints
+allow), delete `apply_rank_aware_penalty` and the `diversity_penalty` keys, and pass raw probabilities
+to the solver. With every model at chance, rank carries no information; disjoint lines at least
+cover more numbers for the same stake. *Worth it:* yes, but for honesty rather than results - the
+config should not advertise a 30% soft penalty that is effectively a near-hard rule. Picks may change
+for Models 2 and 3; metrics will not.
+
+**Phase 2 - walk-forward training dataset: done.** `ml_lotto/features/walk_forward.py` builds every
+training row from draws before it (C-3, C-4, C-5, N-1, N-1b), `tests/test_walk_forward_parity.py`
+pins train/serve agreement, and since C-15a one engine serves the whole run. The follow-on proposal
+(Dynamic Walk-Forward for the remaining static features) was assessed and dropped - see §3.
+
+**Phase 2 - soft-voting ensemble: rejected.** Averaging four models that are all at chance gives a
+model at chance (§3). Do not implement. The dead hard-voting code it would build on is F-6 - decide
+there whether to delete it.
+
+**Phase 2 - Model 4 pool to line generator: done.** `ml_lotto/prediction/wheel.py` turns the pool's
+top 8 into 4 covering lines (§3.1). They are deliberately *not* passed through the ticket filters:
+repairing one line would break the guarantee.
+
+**Next:** F-15 and F-16 finish Phase 1 and are both cheap. Phase 3 (scraper) is already largely
+built - `scripts/scrape_lotto.py` has two sources and tests (C-14) - so Phase 4 automation is the
+next substantive work.
+
 ---
 
 *Sections 2 and 7 (the logic-error audit and the code-review response) have been removed.
