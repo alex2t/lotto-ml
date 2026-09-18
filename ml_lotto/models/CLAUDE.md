@@ -10,6 +10,7 @@ Training and evaluation. Called by `quickpick.py` after `drawpick.py` has writte
 | `model_metrics.py` | AUC, PR-AUC, Top-K, calibration; writes `model_metrics/` |
 | `bonus_trainer.py` | auxiliary bonus-ball model |
 | `bonus_to_main_trainer.py` | auxiliary bonus-to-main transition model |
+| `permutation_check.py` | F-17 label-permutation check: `python quickpick.py --permutation-check N` |
 
 ## The six models
 
@@ -34,6 +35,10 @@ That is chance, and chance is the correct answer for a fair draw. The scoreboard
 
 **Noise floor (2 SE): ~0.031 AUC, ~0.227 Top-7 AvgCaught.** A move smaller than that is not a
 result. Do not report it as an improvement and do not tune against it.
+
+**The permutation check says there is no edge** (F-17, 2026-09-18). Retrained 20 times on shuffled
+labels, every model's real validation AUC fell inside the noise range (p 0.095-0.476). A claimed gain
+is not real until `python quickpick.py --permutation-check 20` says so - see `docs/metrics.md`.
 
 **Watch the overfit gap.** Train/validation AUC gaps are currently 0.005-0.053. A gap back above
 ~0.1 means a model was handed capacity to memorise with, not that it learned something. The

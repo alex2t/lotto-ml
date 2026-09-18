@@ -38,6 +38,26 @@ Over 60 validation draws, the 2 SE noise band is approximately:
 A change smaller than that is not a result. Do not report it as an improvement and do not tune
 against it. Two models differing by 0.02 AUC are indistinguishable.
 
+## The permutation check
+
+`python quickpick.py --permutation-check 20` retrains each main model 20 times with its training
+labels shuffled within each draw - the exact production pipeline with nothing to learn - and scores
+every run on the real validation labels. Results go to `model_metrics/permutation_check.json`.
+
+Run 2026-09-18 (F-17), rule fixed beforehand: an edge needs p < 0.05, i.e. beating all 20 shuffled
+runs.
+
+| Model | Real val AUC | Shuffled: mean +/- sd (range) | Shuffled >= real | p |
+|:--|--:|:--|--:|--:|
+| Momentum Specialist | 0.5011 | 0.4967 +/- 0.0151 (0.454-0.522) | 9 / 20 | 0.476 |
+| Jackpot Optimizer | 0.5257 | 0.5066 +/- 0.0163 (0.483-0.551) | 2 / 20 | 0.143 |
+| Complexity Explorer | 0.5074 | 0.4891 +/- 0.0132 (0.471-0.532) | 2 / 20 | 0.143 |
+| Conservative Pool Generator | 0.5118 | 0.4928 +/- 0.0119 (0.470-0.516) | 1 / 20 | 0.095 |
+
+**No model has an edge.** Every real AUC sits inside the range noise produces. The shuffled runs
+spread with sd 0.012-0.016, so 2 sd is 0.024-0.033 - an independent confirmation of the +/- 0.031
+floor above. Re-run it after any change that claims to add signal.
+
 ## The metrics, and why each one is here
 
 **AUC-ROC** - probability the model ranks a random drawn number above a random undrawn one. 0.5 is
