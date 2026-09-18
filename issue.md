@@ -4,7 +4,7 @@
 **Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
-Sections 1-6 are **open**, ordered by severity. Items carried from the retired code review keep
+Sections 1-7 are **open**, ordered by severity. Items carried from the retired code review keep
 their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
 Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
 
@@ -25,8 +25,10 @@ effect. A fix is not finished until this file says so.
 | 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
 | 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 6 | **F-15** | Models 1-3 name `recent_14`, which serving never produces; dropped silently | Low | XS |
+| 7 | **F-16** | Diversity penalty applied twice; the configured percentage barely matters | Low | S |
 
-**5 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
+**7 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -126,7 +128,53 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 6. Improvements (not defects)
+## 6. F-15 — Models 1-3 name a feature that never reaches them
+
+**Severity: Low.** Found 2026-09-18 while assessing the `review.md` roadmap.
+
+`ml_lotto/config.py:243` (Model 1), `:322` (Model 2) and `:389` (Model 3) list `recent_14`. The
+walk-forward engine produces it (`walk_forward.py:361`), but the serving path does not - the SCENARIOS
+windows give `last_4/5/9/24`, no `last_14`. `trainer.py` expands each config against the serving
+feature names, and `expand_feature_selection` keeps a name only if present:
+
+```python
+# ml_lotto/features/extractor.py:477
+if item in all_features:
+    expanded.append(item)
+```
+
+So `recent_14` is dropped with no message: Model 1 prints `Initial features (25)` without it. Model 1's
+comments also misdescribe the config - "Total: ~17 features", `recent_4` as "Last 4 draws" (5 draws),
+and an empty `# CONSTRAINTS` block. The bonus model's `recent_14` is fine: its training and serving
+rows both come from the engine.
+
+**Fix.** Remove `recent_14` from the three main configs and correct Model 1's comments. Make
+`expand_feature_selection` raise on a name that is neither a keyword nor an available feature. No
+metric change expected - the feature was never used.
+
+---
+## 7. F-16 — The diversity penalty is applied twice
+
+**Severity: Low.** Found 2026-09-18.
+
+`ml_lotto/prediction/predictor.py:218` scales each penalised number's probability down by the
+config's `diversity_penalty` (0.25-0.40, rank-aware, `penalties.py:57`). Those adjusted probabilities
+go to `solve_line` (`predictor.py:252`), which *also* charges 1 per penalised number
+(`ilp_selection.py:80`). The flat cost dominates, so the configured percentage only orders penalised
+numbers among themselves when one cannot be avoided - a config advertising "30% soft penalty" is in
+effect a near-hard rule. The greedy picker had the same stack (percentage plus an unpenalised-first
+pass); the ILP carried it over unchanged.
+
+The flat cost is lexicographic only while probability spreads are small: it outweighs a line
+rearrangement when six numbers' probabilities differ by less than 1 in total, which holds for
+calibrated probabilities near 0.13.
+
+**Fix.** Keep one mechanism. Recommended: keep the flat cost, delete `apply_rank_aware_penalty` and
+the `diversity_penalty` keys, and give the solver raw probabilities. Models 2 and 3's picks may
+change; metrics will not.
+
+---
+## 8. Improvements (not defects)
 
 Carried from the code review's improvement list, kept here so the register is complete.
 
