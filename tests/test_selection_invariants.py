@@ -66,12 +66,15 @@ def test_line_is_six_distinct_numbers_meeting_every_constraint(world, q):
         assert count(line, bins, b) == target
 
 
-def brute_force_best(world):
-    """Best score over every 4H+1M+1C line meeting the filters and freshness target."""
+def brute_force_best(world, penalties=frozenset()):
+    """
+    Best (fewest penalised, then highest score) over every 4H+1M+1C line meeting the
+    filters and freshness target. Returns (penalised count, score, line).
+    """
     scores, categories, bins = world
     by_cat = {cat: [n for n in range(1, MAX_NUMBER + 1) if categories[n] == cat]
               for cat in ('hot', 'medium', 'cold')}
-    best = -1.0
+    best = (MAX_NUMBER, -1.0, None)
     for hot in combinations(by_cat['hot'], 4):
         for med in by_cat['medium']:
             for cold in by_cat['cold']:
@@ -80,7 +83,9 @@ def brute_force_best(world):
                     continue
                 if any(count(line, bins, b) != t for b, t in TARGET_PATTERN.items()):
                     continue
-                best = max(best, sum(scores[n - 1] for n in line))
+                key = (len(penalties & set(line)), -sum(scores[n - 1] for n in line))
+                if key < (best[0], -best[1]):
+                    best = (key[0], -key[1], line)
     return best
 
 
@@ -88,7 +93,22 @@ def brute_force_best(world):
 def test_line_is_the_optimum_over_every_feasible_line(world, shape):
     world = world if shape == 'random' else make_world(SKEWED[shape])
     line = solve(world, quotas(4, 1, 1))
-    assert sum(world[0][n - 1] for n in line) == pytest.approx(brute_force_best(world))
+    assert sum(world[0][n - 1] for n in line) == pytest.approx(brute_force_best(world)[1])
+
+
+@pytest.mark.parametrize('shape', ['random', *SKEWED])
+def test_penalised_numbers_are_avoided_before_any_score_is_weighed(world, shape):
+    """
+    The diversity penalty is lexicographic: fewest penalised numbers first, then the best
+    score (F-16). Penalising the unpenalised optimum forces a trade-off in every world.
+    """
+    world = world if shape == 'random' else make_world(SKEWED[shape])
+    penalties = frozenset(brute_force_best(world)[2])
+    count_best, score_best, _ = brute_force_best(world, penalties)
+
+    line = solve(world, quotas(4, 1, 1), penalties=penalties)
+    assert len(penalties & set(line)) == count_best
+    assert sum(world[0][n - 1] for n in line) == pytest.approx(score_best)
 
 
 @pytest.mark.parametrize('shape', SKEWED)

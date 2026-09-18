@@ -149,7 +149,6 @@ from ml_lotto.prediction.bonus_to_main_predictor import generate_bonus_to_main_p
 from ml_lotto.display import (
     display_final_picks,
     display_overlap_analysis,
-    display_rank_aware_explanation,
     display_data_source_summary,
     display_feature_configuration,
     display_completion_message,
@@ -884,7 +883,6 @@ def main():
                 display_pool_analysis(pool_data)
 
             display_overlap_analysis(lines)
-            display_rank_aware_explanation(ACTIVE_MODELS)
             display_feature_configuration(ACTIVE_MODELS)
             display_data_source_summary()
             

@@ -3,7 +3,7 @@ ilp_selection.py
 ================
 Pick a line by integer linear programming instead of greedy picking plus repair.
 
-    maximise   sum(score_n * x_n) - sum(x_n for penalised n)
+    maximise   sum(score_n * x_n) - PENALTY_COST * sum(x_n for penalised n)
     subject to 6 numbers in total, pre-assigned numbers fixed in
                each HMC category  >= its quota          (selected numbers only)
                each freshness bin >= its target count   (selected numbers only)
@@ -11,8 +11,10 @@ Pick a line by integer linear programming instead of greedy picking plus repair.
                MIN_ODD <= odd numbers     <= MAX_ODD
                max - min >= MIN_SPAN
 
-A penalty of 1 outweighs any probability sum, so a penalised number is taken only
-when no feasible line avoids it. The span is linearised with two marker vectors:
+This is the only diversity mechanism (F-16). Scores are probabilities below 1, so two
+lines' score sums differ by less than LINE_SIZE; a PENALTY_COST of LINE_SIZE therefore
+makes the penalty lexicographic - a penalised number is taken only when no feasible
+line avoids it, whatever the probabilities. The span is linearised with two marker vectors:
 z picks one selected number as the top, w one as the bottom, and their values must
 differ by MIN_SPAN - which holds exactly when the line's span does.
 
@@ -30,6 +32,7 @@ from ml_lotto.prediction.constraints import LINE_SIZE
 from ml_lotto.prediction.filters import MAX_ODD, MAX_SUM, MIN_ODD, MIN_SPAN, MIN_SUM
 
 NUMBERS = np.arange(1, MAX_NUMBER + 1)
+PENALTY_COST = float(LINE_SIZE)
 
 
 def solve_line(
@@ -77,7 +80,7 @@ def solve_line(
     add(row(zeros, z=NUMBERS.astype(float), w=-NUMBERS.astype(float)), MIN_SPAN, np.inf)
 
     penalised = np.isin(NUMBERS, list(penalty_numbers))
-    gain = np.where(free, scores - penalised, 0.0)
+    gain = np.where(free, scores - PENALTY_COST * penalised, 0.0)
     cost = row(-gain)
 
     lb = row(fixed.astype(float))

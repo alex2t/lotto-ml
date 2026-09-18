@@ -8,7 +8,6 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 | `ilp_selection.py` | `solve_line()` - picks the best line by integer linear programming |
 | `constraints.py` | HMC and freshness pattern constraints feeding selection |
 | `filters.py` | the ticket-rule bounds and `validate_line()`; no repair |
-| `penalties.py` | rank-aware diversity penalty (`diversity_penalty` in each model config) |
 | `pool_generator.py` | ranked candidate pool for Model 4 |
 | `wheel.py` | 4-line covering-design wheel over the pool's top 8 |
 | `ensemble.py` | majority / threshold / weighted / unanimous voting |
@@ -36,8 +35,10 @@ let a constraint look satisfied while not binding (F-8, F-14).
 - **The ticket rules apply to the whole ticket**, pre-assigned numbers included. HMC quotas and
   the freshness target count the selected numbers only, as `predictor.py` adjusts the quotas for
   what is pre-assigned.
-- **A diversity penalty costs 1 per number**, which outweighs any probability sum, so a penalised
-  number is taken only when no feasible line avoids it.
+- **Diversity is one lexicographic rule.** `solve_line` charges `PENALTY_COST` (= `LINE_SIZE`) per
+  number already on an earlier line, which exceeds any difference in probability sums, so a reused
+  number is taken only when no feasible line avoids it. There is no percentage penalty and no
+  per-model setting - two stacked mechanisms made the configured one meaningless (F-16).
 - **A model's HMC ratio can make the freshness target unreachable.** With 2 hot slots a line can hold
   at most 2 non-bin-0 numbers, whatever the target asks for. `constraints.reachable_pattern()`
   computes what a model can actually achieve and `predictor.py` passes that to the solver, printing
