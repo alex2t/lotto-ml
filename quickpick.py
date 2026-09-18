@@ -138,6 +138,7 @@ from ml_lotto.features.bonus_features import extract_bonus_features_from_json, c
 from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
 
 from ml_lotto.models.trainer import train_all_models, calculate_train_val_split
+from ml_lotto.models.permutation_check import run_permutation_check
 from ml_lotto.models.bonus_trainer import train_bonus_model
 from ml_lotto.models.bonus_to_main_trainer import train_bonus_to_main_model
 
@@ -299,8 +300,13 @@ def print_model_picks_detailed(model_name, model_desc, picks, bonus, bonus_to_ma
     print()
 
 
-def main():
-    """Main execution function with bonus ball prediction."""
+def main(permutation_runs: int = 0):
+    """
+    Main execution function with bonus ball prediction.
+
+    With permutation_runs > 0, runs the label-permutation check instead of generating
+    picks, and writes nothing but model_metrics/permutation_check.json.
+    """
     start_time = time.time()
 
     # Initialize random seed based on mode
@@ -560,7 +566,25 @@ def main():
 
         feature_time = time.time() - feature_start
         print(f"✓ Main feature extraction completed in {feature_time:.2f} seconds")
-        
+
+        if permutation_runs:
+            print(f"\nPERMUTATION CHECK: {permutation_runs} shuffled-label runs per main model (F-17)")
+            run_permutation_check(
+                ACTIVE_MODELS,
+                PointInTimeFeatureEngine(all_draws),
+                features_dict,
+                len(all_draws),
+                permutation_runs,
+                tuning={
+                    'enable_hyperparameter_tuning': ENABLE_HYPERPARAMETER_TUNING,
+                    'tuning_mode': TUNING_MODE,
+                    'tuning_cv_splits': TUNING_CV_SPLITS,
+                    'tuning_scoring': TUNING_SCORING,
+                },
+            )
+            print("\nPermutation results written to model_metrics/permutation_check.json")
+            return
+
         print("\nStep 2b: Creating UNIFIED BONUS BALL features...")
         print("  (Combining: Bonus-specific + Main features + Interactions)")
         bonus_feature_start = time.time()
@@ -1006,4 +1030,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="Train models and generate lottery picks.")
+    parser.add_argument('--permutation-check', type=int, default=0, metavar='N',
+                        help='run the label-permutation check with N shuffled runs per model instead (F-17)')
+    main(permutation_runs=parser.parse_args().permutation_check)
