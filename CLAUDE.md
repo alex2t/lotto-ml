@@ -33,7 +33,7 @@ What each one covers:
 | Folder guide | Covers |
 |:--|:--|
 | `ml_lotto/features/CLAUDE.md` | the train/serve parity contract - the highest-risk file in the repo |
-| `tests/CLAUDE.md` | the nine real test files vs the thirteen legacy print-scripts |
+| `tests/CLAUDE.md` | the ten real test files vs the thirteen legacy print-scripts |
 | `lotto_analysis/analyzers/CLAUDE.md` | the 16 analysis phases and which JSON each writes |
 | `ml_lotto/models/CLAUDE.md` | the six model configs, the noise floor, the overfit gap |
 | `ml_lotto/prediction/CLAUDE.md` | selection vs filters, the playable-ticket boundary |
@@ -72,7 +72,7 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Nine files are real tests (79 of them, ~15s). Everything else in `tests/` is a legacy print-script
+Ten files are real tests (97 of them, ~25s). Everything else in `tests/` is a legacy print-script
 that runs model training at import - **do not run `pytest tests/` bare.** The full list, and what
 each one guards, is in `tests/CLAUDE.md`. `/lotto-verify` runs them all.
 

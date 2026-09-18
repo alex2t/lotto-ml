@@ -23,6 +23,8 @@ absolute numbers against the others without accounting for that.
 **Model 4 is the exception to the counts rule.** Models 1-3 sum to 6 because they compose a line
 directly. Model 4's 10/5/5 defines a **20-number ranked pool** consumed by
 `ml_lotto/prediction/pool_generator.py`. It is not a broken config - do not "fix" it to sum to 6.
+`ml_lotto/prediction/wheel.py` turns the pool's top 8 into 4 wheel lines covering every 3-subset
+(verified 2026-09-18 against `lottery_picks.txt` and `tests/test_wheel.py`).
 
 Two auxiliary models, both logistic regression:
 

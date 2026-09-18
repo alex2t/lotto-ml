@@ -11,6 +11,8 @@ where users can manually/automatically select combinations.
 import numpy as np
 from typing import Dict, Any, List
 
+from ml_lotto.prediction.wheel import wheel_lines
+
 
 def generate_pool_from_model(
     model_config: Dict[str, Any],
@@ -114,6 +116,7 @@ def generate_pool_from_model(
         'pool_config': pool_config,
         'freshness_distribution': freshness_distribution,
         'quality_score': quality_score,
+        'wheel_lines': wheel_lines(pool_numbers),
         'all_candidates': all_candidates  # For detailed display
     }
 

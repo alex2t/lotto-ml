@@ -5,11 +5,12 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 | File | Role |
 |:--|:--|
 | `predictor.py` | orchestrator - generates predictions and picks from the trained models |
-| `selection.py` | `pick_line_hybrid()` - picks by HMC category and freshness bin |
+| `ilp_selection.py` | `solve_line()` - picks the best line by integer linear programming |
 | `constraints.py` | HMC and freshness pattern constraints feeding selection |
-| `filters.py` | playable-ticket validation with repair |
+| `filters.py` | the ticket-rule bounds and `validate_line()`; no repair |
 | `penalties.py` | rank-aware diversity penalty (`diversity_penalty` in each model config) |
 | `pool_generator.py` | ranked candidate pool for Model 4 |
+| `wheel.py` | 4-line covering-design wheel over the pool's top 8 |
 | `ensemble.py` | majority / threshold / weighted / unanimous voting |
 | `bonus_predictor.py` | 3 diverse bonus-ball predictions |
 | `bonus_to_main_predictor.py` | bonus-to-main transition picks |
@@ -20,29 +21,38 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 2-4 odd. A model must not be taught to satisfy a rule that a filter already enforces - that spends
 model capacity on a deterministic check and makes the feature set harder to reason about.
 
-`selection.py` chooses *which* numbers by category; `filters.py` decides whether the resulting line
-is playable and repairs it if not. Keep those two jobs separate.
+`ilp_selection.py` solves for the whole line at once with `scipy.optimize.milp`: maximise the
+penalised probability sum subject to the HMC quotas, the freshness target and the ticket rules,
+with pre-assigned numbers fixed in. The rule bounds (`MIN_SUM`, `MAX_SUM`, `MIN_SPAN`, `MIN_ODD`,
+`MAX_ODD`) are constants in `filters.py`, shared by the solver and `validate_line()`. The solver
+returns a line meeting every constraint or raises - there is no repair pass, which is what used to
+let a constraint look satisfied while not binding (F-8, F-14).
 
 ## Rules
 
-- **The freshness bins are not spread evenly across HMC categories**, so selection order matters.
-  Currently every bin 1 and bin 2 candidate is hot; medium and cold can supply only bin 0. So
-  `selection.py` takes the most-constrained category first **and** re-ranks the bins before every
-  pick. Both halves are needed - ranking alone still lets hot spend the bin 0 quota that medium and
-  cold have no alternative to. See F-8 in `issue.md`.
+- **Constraints are declarative.** Add or change a rule as a constraint in `solve_line()`, never as a
+  post-hoc fix-up of its output. An infeasible combination must raise, not return a short or
+  rule-breaking line.
+- **The ticket rules apply to the whole ticket**, pre-assigned numbers included. HMC quotas and
+  the freshness target count the selected numbers only, as `predictor.py` adjusts the quotas for
+  what is pre-assigned.
+- **A diversity penalty costs 1 per number**, which outweighs any probability sum, so a penalised
+  number is taken only when no feasible line avoids it.
 - **A model's HMC ratio can make the freshness target unreachable.** With 2 hot slots a line can hold
   at most 2 non-bin-0 numbers, whatever the target asks for. `constraints.reachable_pattern()`
-  computes what a model can actually achieve and `predictor.py` passes that to selection, printing
-  the shortfall. A missed bin there is a structural limit, not a selection bug - do not rewrite
-  selection chasing it. See F-13.
-- **`reachable_pattern()` must stay consistent with `pick_line_hybrid()`.** It predicts what
-  selection will do by mirroring its ordering - scarce bins first, most-constrained category first.
-  Change one and the other is wrong, and the shortfall message starts lying. It is validated against
-  the achieved patterns, not against the target.
+  computes what a model can actually achieve and `predictor.py` passes that to the solver, printing
+  the shortfall. A missed bin there is a structural limit - see F-13. The freshness mechanism is
+  frozen (improvement 4 in `issue.md`): the solver enforces the reachable target as given, do not
+  change how it is computed.
 - The `hot/medium/cold/generic_count` keys mean different things per model. Models 1-3 sum to 6 -
   they are the composition of the line (4/1/1, 3/1/2, 2/2/2). **Model 4 is a pool generator**: its
   10/5/5 defines a 20-number ranked pool that `pool_generator.py` consumes, not a line. Do not
   "fix" it to sum to 6.
+- **Wheel lines bypass `filters.py` on purpose.** `wheel.py` turns the top 8 of Model 4's pool into
+  4 lines covering every 3-subset: 3+ winners in the top 8 guarantees a match-3 (~5.3% of draws).
+  Repairing one line would break the cover, so they are written as `Wheel Line n:` - a format
+  `/lotto-verify` does not parse as a model ticket. It is variance management, not an edge: 4
+  unrelated lines catch a match-3 more often (~7.2%) at the same expected value.
 - `ENSEMBLE_MODE` in `../config.py` is `False`; `ensemble.py` is reachable from
   `scripts/ensemble_predict.py` but is not part of the default `quickpick.py` run.
 - Invariants are covered by `../../tests/test_selection_invariants.py` and
