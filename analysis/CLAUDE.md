@@ -25,6 +25,7 @@ Run by hand, not imported by the pipeline:
 | `trend_analyzer.py` | `trend_analysis/*.csv` |
 | `bonus_to_main_analysis.py`, `generate_bonus_to_main_json.py` | `data/analysis/bonus_to_main_analysis.json` |
 | `validate_bonus.py` | checks the `was_recent_bonus` feature is live |
+| `freshness_hit_rate.py` | F-18: hit rate by freshness bin, chi-square; decides whether the freshness constraint stays |
 | `ensemble.py` | exploratory; distinct from `ml_lotto/prediction/ensemble.py` |
 
 `trend_analysis/` holds their CSV output, which is regenerated, not source.

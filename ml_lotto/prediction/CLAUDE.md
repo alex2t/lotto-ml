@@ -42,9 +42,10 @@ let a constraint look satisfied while not binding (F-8, F-14).
 - **A model's HMC ratio can make the freshness target unreachable.** With 2 hot slots a line can hold
   at most 2 non-bin-0 numbers, whatever the target asks for. `constraints.reachable_pattern()`
   computes what a model can actually achieve and `predictor.py` passes that to the solver, printing
-  the shortfall. A missed bin there is a structural limit - see F-13. The freshness mechanism is
-  frozen (F-18 in `issue.md`): the solver enforces the reachable target as given, do not
-  change how it is computed.
+  the shortfall. A missed bin there is a structural limit - see F-13. The freshness mechanism was
+  kept on evidence (F-18): bin 2 numbers are drawn ~11% more often, p = 0.031 - weak, and small in
+  effect. Re-run `analysis/freshness_hit_rate.py` as draws accumulate; if p rises above 0.05, delete
+  the enforcement rather than tuning it.
 - The `hot/medium/cold/generic_count` keys mean different things per model. Models 1-3 sum to 6 -
   they are the composition of the line (4/1/1, 3/1/2, 2/2/2). **Model 4 is a pool generator**: its
   10/5/5 defines a 20-number ranked pool that `pool_generator.py` consumes, not a line. Do not
