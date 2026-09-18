@@ -17,12 +17,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.pipeline import Pipeline
 from ml_lotto.features.extractor import expand_feature_selection
-from ml_lotto.features.walk_forward import build_walk_forward_bonus_dataset
+from ml_lotto.features.walk_forward import PointInTimeFeatureEngine, build_walk_forward_bonus_dataset
 from ml_lotto.models.model_metrics import calculate_comprehensive_metrics
 
 
 def build_bonus_training_dataset(
     all_draws: List[Dict[str, Any]],
+    base_engine: PointInTimeFeatureEngine,
     bonus_features_dict: Dict[int, Dict[str, Any]],
     training_start_draw: int = 100,
     training_end_draw: int = None
@@ -33,6 +34,7 @@ def build_bonus_training_dataset(
 
     Args:
         all_draws: Historical draw data with bonus balls
+        base_engine: The run's shared feature engine over all_draws
         bonus_features_dict: Unified bonus feature values for each number
         training_start_draw: Starting draw index for training
         training_end_draw: Ending draw index (exclusive). If None, uses all available draws.
@@ -48,7 +50,7 @@ def build_bonus_training_dataset(
     print(f"    Draw range: {training_start_draw} to {training_end_draw-1} ({training_end_draw - training_start_draw} draws)")
 
     train_df = build_walk_forward_bonus_dataset(
-        all_draws=all_draws,
+        base_engine=base_engine,
         bonus_features_dict=bonus_features_dict,
         training_start_draw=training_start_draw,
         training_end_draw=training_end_draw
@@ -64,6 +66,7 @@ def build_bonus_training_dataset(
 def train_bonus_model(
     bonus_model_config: Dict[str, Any],
     all_draws: List[Dict[str, Any]],
+    base_engine: PointInTimeFeatureEngine,
     bonus_features_dict: Dict[int, Dict[str, Any]],
     training_start_draw: int = 100,
     training_end_draw: int = None,
@@ -75,6 +78,7 @@ def train_bonus_model(
     Args:
         bonus_model_config: Bonus model configuration
         all_draws: Historical draw data
+        base_engine: The run's shared feature engine over all_draws
         bonus_features_dict: Bonus feature values
         training_start_draw: Starting draw index for training
         training_end_draw: Ending draw index for training (exclusive)
@@ -94,6 +98,7 @@ def train_bonus_model(
     # Build training dataset
     train_df = build_bonus_training_dataset(
         all_draws,
+        base_engine,
         bonus_features_dict,
         training_start_draw,
         training_end_draw
@@ -104,6 +109,7 @@ def train_bonus_model(
     if validation_start_draw is not None:
         val_df = build_bonus_training_dataset(
             all_draws,
+            base_engine,
             bonus_features_dict,
             validation_start_draw,
             None  # Use all remaining draws

@@ -590,10 +590,14 @@ def main():
         train_end_idx, val_start_idx = calculate_train_val_split(len(all_draws))
         aux_metrics = {}
 
+        # One point-in-time engine per run; each model takes a view with its own base features (C-15a)
+        base_engine = PointInTimeFeatureEngine(all_draws)
+
         try:
             bonus_pipeline, bonus_features, bonus_metrics = train_bonus_model(
                 BONUS_MODEL_CONFIG,
                 all_draws,
+                base_engine,
                 bonus_features_dict,
                 TRAINING_START_DRAW,
                 train_end_idx,
@@ -614,7 +618,7 @@ def main():
         
         try:
             # Generate point-in-time features for upcoming draw using the same engine as training (C-3 fix)
-            engine_bonus = PointInTimeFeatureEngine(all_draws, bonus_features_dict)
+            engine_bonus = base_engine.with_base_features(bonus_features_dict)
             bonus_pred_features = engine_bonus.extract_features_for_next_draw()
 
             bonus_predictions, bonus_top_6_data = generate_bonus_predictions(
@@ -674,6 +678,7 @@ def main():
             bonus_to_main_pipeline, bonus_to_main_features, bonus_to_main_metrics = train_bonus_to_main_model(
                 BONUS_TO_MAIN_MODEL_CONFIG,
                 all_draws,
+                base_engine,
                 bonus_to_main_features_dict,
                 TRAINING_START_DRAW,
                 train_end_idx,
@@ -724,6 +729,7 @@ def main():
             models, model_features, feature_importance, all_metrics = train_all_models(
                 ACTIVE_MODELS,
                 all_draws,
+                base_engine,
                 features_dict,
                 enable_hyperparameter_tuning=ENABLE_HYPERPARAMETER_TUNING,
                 tuning_mode=TUNING_MODE,

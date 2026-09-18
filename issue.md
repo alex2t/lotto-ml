@@ -4,7 +4,7 @@
 **Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
-Sections 1-8 are **open**, ordered by severity. Items carried from the retired code review keep
+Sections 1-6 are **open**, ordered by severity. Items carried from the retired code review keep
 their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
 Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
 
@@ -21,13 +21,12 @@ effect. A fix is not finished until this file says so.
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
 | 1 | **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
-| 2 | **C-15a** | Feature engine rebuilt 3-4x per run; O(N^2) gap memory | Low | S |
-| 3 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
-| 4 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
-| 5 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| 6 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 2 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
+| 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
+| 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
+| 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
 
-**6 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
+**5 open, nothing High.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -49,29 +48,7 @@ bonus_idx = (model_idx - 1) % len(bonus_predictions)
 `None` handling take over.
 
 ---
-## 2. C-15a — The feature engine is rebuilt several times per run
-
-**Severity: Low** (performance and memory only). Carried from the code review.
-
-`PointInTimeFeatureEngine` is constructed in `train_all_models`, again inside
-`build_walk_forward_dataset` when the legacy `build_training_dataset` wrapper is used, again in
-`build_walk_forward_bonus_dataset`, and again in `quickpick.py` for the bonus serving row. Each
-construction re-runs `_precompute_matrices` and `_precompute_timeline_state`.
-
-`_precompute_timeline_state` also stores a full copy of every number's gap list at every draw:
-
-```python
-'gaps': {num: list(appearance_gaps[num]) for num in range(1, MAX_NUMBER + 1)}
-```
-
-That is O(N² × 47) memory for quantities that could be maintained as running moments (count, sum,
-sum of squares, max) in O(N × 47).
-
-**Fix.** Build the engine once in `quickpick.py` and pass it down; replace the gap-list snapshots
-with running moments.
-
----
-## 3. F-6 — The ensemble machinery cannot be reached from the pipeline
+## 2. F-6 — The ensemble machinery cannot be reached from the pipeline
 
 **Severity: Low.**
 
@@ -89,7 +66,7 @@ the config flag rather than leaving 341 lines that look load-bearing. With all f
 chance, ensembling them will not help — resolve the modelling question first.
 
 ---
-## 4. C-6b — The two feature paths use different serving reference dates
+## 3. C-6b — The two feature paths use different serving reference dates
 
 **Severity: Low.** Carried from the code review.
 
@@ -107,7 +84,7 @@ predicted should be measured as of that draw — so move `extractor.py` onto the
 date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
 
 ---
-## 5. C-17b — The legacy test files are not tests
+## 4. C-17b — The legacy test files are not tests
 
 **Severity: Low.** Carried from the code review.
 
@@ -129,7 +106,7 @@ real and run in about 5 seconds. A plain `pytest tests/` still cannot be used be
 `pytest.ini` so `pytest` runs clean from the repo root.
 
 ---
-## 6. F-7 — Standalone analysis scripts read a window that has never existed
+## 5. F-7 — Standalone analysis scripts read a window that has never existed
 
 **Severity: Low.** Carried from the code review, confirmed in the final pass.
 
@@ -149,7 +126,7 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 7. Improvements (not defects)
+## 6. Improvements (not defects)
 
 Carried from the code review's improvement list, kept here so the register is complete.
 
@@ -246,6 +223,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-12 | Safety top-up could duplicate a pre-assigned number | `selection.py` |
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
+| C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
 | C-15b | Tree models memorised the training set (train/val AUC gap 0.383) | `config.py`, `hyperparameter_tuning.py` |
 | C-16 | Non-deterministic feature column order | `extractor.py` |
 | F-1 | Freshness target sized for 7 balls while a line has 6 slots | `freshness_analyzer_7_numbers.py`, `constraints.py`, `drawpick.py` |
@@ -261,6 +239,35 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### C-15a — The feature engine was rebuilt five times per run
+
+**Root cause.** Each trainer built its own `PointInTimeFeatureEngine` because the engine carried its
+static `base_features_dict` (main, bonus, bonus-to-main) alongside the draw state, so a different
+dict meant a new engine. Measured 2026-09-18 on a full `quickpick.py` run: 5 constructions - main
+trainer, bonus trainer twice (train and validation datasets), bonus serving row, bonus-to-main
+trainer - at ~0.5 s each. Separately, `_precompute_timeline_state` snapshotted every number's full
+gap list at every draw: 843,204 stored gaps, 12.8 MB retained per engine.
+
+**Fix.** Two parts.
+- `with_base_features()` returns a shallow view sharing the precomputed state and swapping only the
+  base features. `quickpick.py` builds one engine and passes it to all three trainers and the bonus
+  serving row as `base_engine`.
+- Gap lists are replaced by running moments `(count, sum, sum of squares, max)`; variance is
+  `(n*ss - s^2) / n^2` over exact integers.
+
+**Measured before/after.** Constructions 5 -> 1; engine time 2.43 s -> 0.49 s of a ~120 s run.
+Memory per engine 12.8 MB -> 5.1 MB. Feature output for every draw 0..N compared value by value:
+1,683,420 identical, 25,218 differing by at most 5.7e-14 (float rounding in the four gap-derived
+features only), 0 real differences. Picks unchanged; the largest metric move is 1.1e-5 in Model 2's
+overfit gap, run-to-run noise.
+
+**Tests.** `tests/test_walk_forward_parity.py`: gap variance, CV and max ratio checked against numpy
+over the gaps recomputed from the draw history; a view shares state and equals a freshly built
+engine. Both fail when the variance formula or the view is broken.
+
+**Not changed.** `build_walk_forward_dataset` / `trainer.build_training_dataset` still build their
+own engine; only `scripts/train_with_all_features.py` and a legacy print-script call them.
 
 ### F-14 — The filter repair overrode the diversity penalty and reported a stale pattern
 
@@ -489,7 +496,7 @@ look-ahead bias` and `Validation draws excluded: 0`.
 The guard was the leftover, not the ratio. `final_categories` is consumed by **serving** only - it
 reaches `lotto_trigger_periods.json` via `num_to_category` (`drawpick.py:231`) and
 `ml_lotto/features/extractor.py` reads it to build the row for the next draw, where conditioning on
-all history is correct. Training never reads it: `walk_forward.py:225-227` derives `category` itself,
+all history is correct. Training never reads it: `walk_forward.py:241-243` derives `category` itself,
 point-in-time. The mechanism survived from a design that assumed these categories fed model fitting.
 
 Three numbers also described one concept: the comment said 80/20, the constant was 100/0, and
