@@ -72,7 +72,7 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Ten files are real tests (97 of them, ~25s). Everything else in `tests/` is a legacy print-script
+Ten files are real tests (99 of them, ~30s). Everything else in `tests/` is a legacy print-script
 that runs model training at import - **do not run `pytest tests/` bare.** The full list, and what
 each one guards, is in `tests/CLAUDE.md`. `/lotto-verify` runs them all.
 

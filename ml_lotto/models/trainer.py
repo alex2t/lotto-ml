@@ -492,6 +492,7 @@ def train_model(
 def train_all_models(
     model_configs: List[Dict[str, Any]],
     all_draws: List[Dict[str, Any]],
+    base_engine: PointInTimeFeatureEngine,
     features_dict: Dict[int, Dict[str, Any]],
     enable_hyperparameter_tuning: bool = False,
     tuning_mode: str = 'quick',
@@ -505,6 +506,7 @@ def train_all_models(
     Args:
         model_configs: List of model configuration dictionaries
         all_draws: Historical draw data
+        base_engine: The run's shared feature engine over all_draws
         features_dict: Feature values for all numbers
         enable_hyperparameter_tuning: Enable automatic hyperparameter optimization (default: False)
         tuning_mode: 'quick' or 'extensive' hyperparameter search (default: 'quick')
@@ -562,9 +564,8 @@ def train_all_models(
     unused = len(all_feature_names) - len(dataset_features)
     print(f"  Selected by at least one model: {len(dataset_features)} ({unused} unused columns not built)")
 
-    # Build FOUR datasets using PointInTimeFeatureEngine (precomputes state once)
-    print("\nInitializing Point-in-Time Walk-Forward Feature Engine...")
-    engine = PointInTimeFeatureEngine(all_draws, features_dict)
+    # Build FOUR datasets from the run's shared engine (state precomputed once per run, C-15a)
+    engine = base_engine.with_base_features(features_dict)
 
     print("\n1. Building standard TRAINING dataset (Models 1, 3, 4)...")
     train_df_standard = engine.build_main_dataset(
