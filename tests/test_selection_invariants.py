@@ -1,152 +1,152 @@
 """
-Invariants for hybrid line selection.
+Invariants for ILP line selection.
 
-A generated line must always be a playable ticket: exactly the requested number of
-distinct numbers, never colliding with numbers pre-assigned to the same line.
+A generated line must always be a playable ticket: exactly 6 distinct numbers, never
+colliding with numbers pre-assigned to the same line, meeting the HMC quotas, the
+freshness target and every ticket filter - and it must be the best such line.
 """
+
+from itertools import combinations
 
 import numpy as np
 import pytest
 
 from ml_lotto.config import MAX_NUMBER
-from ml_lotto.prediction.selection import pick_line_hybrid
+from ml_lotto.prediction.filters import validate_line
+from ml_lotto.prediction.ilp_selection import solve_line
 
-TARGET_PATTERN = {0: 4, 1: 2, 2: 1}
+TARGET_PATTERN = {0: 3, 1: 2, 2: 1}
 
 
-def make_pools(probabilities, categories, freshness_bins, exclude=()):
-    """Build the {hmc: {freshness_bin: [(prob, num)]}} structure selection expects."""
-    pools = {cat: {b: [] for b in TARGET_PATTERN} for cat in ('hot', 'medium', 'cold')}
-    for num in range(1, MAX_NUMBER + 1):
-        if num in exclude:
-            continue
-        pools[categories[num]][freshness_bins[num]].append((probabilities[num - 1], num))
-    for cat in pools:
-        for b in pools[cat]:
-            pools[cat][b].sort(key=lambda x: (-x[0], x[1]))
-    return pools
+NUMS = np.arange(1, MAX_NUMBER + 1)
+
+# Score shapes whose unconstrained best line breaks one ticket filter each.
+SKEWED = {
+    'low': 1.0 / NUMS,                       # sum too low
+    'high': NUMS / MAX_NUMBER,                # sum too high
+    'odd': 0.1 + 0.8 * (NUMS % 2),            # too many odd numbers
+    'middle': 1.0 / (1 + np.abs(NUMS - 24)),  # span too narrow
+}
+
+
+def make_world(scores):
+    categories = {n: ('hot', 'medium', 'cold')[n % 3] for n in range(1, MAX_NUMBER + 1)}
+    freshness_bins = {n: (n // 3) % 3 for n in range(1, MAX_NUMBER + 1)}
+    return scores, categories, freshness_bins
 
 
 @pytest.fixture
 def world():
-    rng = np.random.default_rng(7)
-    probabilities = rng.random(MAX_NUMBER) * 0.1 + 0.1
-    categories = {n: ('hot', 'medium', 'cold')[n % 3] for n in range(1, MAX_NUMBER + 1)}
-    freshness_bins = {n: n % 3 for n in range(1, MAX_NUMBER + 1)}
-    features = {n: {'category': categories[n]} for n in range(1, MAX_NUMBER + 1)}
-    return probabilities, categories, freshness_bins, features
+    return make_world(np.random.default_rng(7).random(MAX_NUMBER) * 0.1 + 0.1)
 
 
-@pytest.mark.parametrize('config', [
-    {'hot_count': 4, 'medium_count': 1, 'cold_count': 1, 'generic_count': 0},
-    {'hot_count': 3, 'medium_count': 1, 'cold_count': 2, 'generic_count': 0},
-    {'hot_count': 2, 'medium_count': 2, 'cold_count': 2, 'generic_count': 0},
-    {'hot_count': 2, 'medium_count': 2, 'cold_count': 1, 'generic_count': 1},
-])
-def test_line_has_exactly_target_count_distinct_numbers(world, config):
-    probabilities, categories, freshness_bins, features = world
-    pools = make_pools(probabilities, categories, freshness_bins)
-    target = sum(config.values())
-
-    line, _, _ = pick_line_hybrid(
-        config, probabilities, features, freshness_bins, TARGET_PATTERN, pools
-    )
-
-    assert len(line) == target, f"expected {target} numbers, got {len(line)}: {line}"
-    assert len(set(line)) == target, f"duplicate numbers in line: {line}"
-    assert all(1 <= n <= MAX_NUMBER for n in line)
+def quotas(h, m, c):
+    return {'hot': h, 'medium': m, 'cold': c}
 
 
-def test_zero_count_category_contributes_nothing(world):
-    """
-    Regression: the bound check ran after the append, so a category asked for 0
-    numbers still returned 1, overfilling the line.
-    """
-    probabilities, categories, freshness_bins, features = world
-    pools = make_pools(probabilities, categories, freshness_bins)
-    config = {'hot_count': 6, 'medium_count': 0, 'cold_count': 0, 'generic_count': 0}
-
-    line, _, _ = pick_line_hybrid(
-        config, probabilities, features, freshness_bins, TARGET_PATTERN, pools
-    )
-
-    assert len(line) == 6
-    assert len(set(line)) == 6
+def solve(world, q, target=TARGET_PATTERN, penalties=(), pre=()):
+    scores, categories, bins = world
+    return solve_line(scores, categories, bins, q, target, set(penalties), list(pre))
 
 
-def test_pre_assigned_numbers_are_never_reselected(world):
-    """
-    Regression: the safety top-up scanned all 47 numbers and excluded only the
-    working line, so it could re-pick a number already pre-assigned to this ticket.
-    Combining the two lists then produced a ticket with a repeat.
-    """
-    probabilities, categories, freshness_bins, features = world
-    pre_assigned = [3, 11, 29]
-    # Starve the pools so the top-up path is the one under test
-    pools = make_pools(probabilities, categories, freshness_bins,
-                       exclude=set(range(6, MAX_NUMBER + 1)))
-    config = {'hot_count': 2, 'medium_count': 2, 'cold_count': 2, 'generic_count': 0}
+def count(numbers, lookup, key):
+    return sum(1 for n in numbers if lookup[n] == key)
 
-    line, _, _ = pick_line_hybrid(
-        config, probabilities, features, freshness_bins, TARGET_PATTERN, pools,
-        penalty_numbers=set(), pre_assigned_numbers=pre_assigned
-    )
 
-    assert not set(line) & set(pre_assigned), (
-        f"line {line} collides with pre-assigned {pre_assigned}"
-    )
-    combined = sorted(pre_assigned + line)
-    assert len(set(combined)) == len(combined), f"final ticket has duplicates: {combined}"
+@pytest.mark.parametrize('q', [quotas(4, 1, 1), quotas(3, 1, 2), quotas(2, 2, 2), quotas(6, 0, 0)])
+def test_line_is_six_distinct_numbers_meeting_every_constraint(world, q):
+    _, categories, bins = world
+    line = solve(world, q)
+
+    assert len(line) == 6 and len(set(line)) == 6
+    assert validate_line(line) == (True, [])
+    for cat, quota in q.items():
+        assert count(line, categories, cat) == quota
+    for b, target in TARGET_PATTERN.items():
+        assert count(line, bins, b) == target
+
+
+def brute_force_best(world):
+    """Best score over every 4H+1M+1C line meeting the filters and freshness target."""
+    scores, categories, bins = world
+    by_cat = {cat: [n for n in range(1, MAX_NUMBER + 1) if categories[n] == cat]
+              for cat in ('hot', 'medium', 'cold')}
+    best = -1.0
+    for hot in combinations(by_cat['hot'], 4):
+        for med in by_cat['medium']:
+            for cold in by_cat['cold']:
+                line = sorted(hot + (med, cold))
+                if not validate_line(line)[0]:
+                    continue
+                if any(count(line, bins, b) != t for b, t in TARGET_PATTERN.items()):
+                    continue
+                best = max(best, sum(scores[n - 1] for n in line))
+    return best
+
+
+@pytest.mark.parametrize('shape', ['random', *SKEWED])
+def test_line_is_the_optimum_over_every_feasible_line(world, shape):
+    world = world if shape == 'random' else make_world(SKEWED[shape])
+    line = solve(world, quotas(4, 1, 1))
+    assert sum(world[0][n - 1] for n in line) == pytest.approx(brute_force_best(world))
+
+
+@pytest.mark.parametrize('shape', SKEWED)
+def test_filters_bind_when_the_best_numbers_break_them(shape):
+    """The unconstrained top 6 fails the filters, so only a binding constraint can pass."""
+    world = make_world(SKEWED[shape])
+    top_six = sorted(int(n) for n in np.argsort(-world[0], kind='stable')[:6] + 1)
+    assert not validate_line(top_six)[0], f"{shape} world does not stress a filter: {top_six}"
+
+    assert validate_line(solve(world, quotas(2, 2, 2))) == (True, [])
+
+
+def test_pre_assigned_numbers_are_fixed_and_never_reselected(world):
+    _, categories, bins = world
+    pre = [3, 11]
+    q = quotas(2, 1, 1)
+    target = {0: 2, 1: 1, 2: 1}
+
+    selected = solve(world, q, target=target, pre=pre)
+    ticket = sorted(pre + selected)
+
+    assert len(selected) == 4 and not set(selected) & set(pre)
+    assert len(set(ticket)) == 6
+    assert validate_line(ticket) == (True, []), "filters apply to the whole ticket"
+    for cat, quota in q.items():
+        assert count(selected, categories, cat) == quota
+
+
+def test_penalised_numbers_are_avoided_when_an_alternative_exists(world):
+    scores, _, _ = world
+    top = [int(n) for n in np.argsort(-scores)[:10] + 1]
+    line = solve(world, quotas(2, 2, 2), penalties=top)
+    free_line = solve(world, quotas(2, 2, 2))
+
+    assert not set(line) & set(top)
+    assert set(free_line) & set(top), "the penalty must actually change the line"
 
 
 def test_penalised_numbers_are_deprioritised_but_not_banned(world):
-    """
-    A penalised number may still be selected when the unpenalised pool runs out -
-    the line must never come back short just because numbers were penalised.
-    """
-    probabilities, categories, freshness_bins, features = world
-    pools = make_pools(probabilities, categories, freshness_bins)
-    config = {'hot_count': 4, 'medium_count': 1, 'cold_count': 1, 'generic_count': 0}
-
-    # Penalise nearly everything; selection must still return a full line
+    """Penalising nearly everything must still return a full line."""
     penalties = set(range(1, MAX_NUMBER + 1)) - {5}
-    line, _, _ = pick_line_hybrid(
-        config, probabilities, features, freshness_bins, TARGET_PATTERN, pools,
-        penalty_numbers=penalties
-    )
-
-    assert len(line) == 6
+    line = solve(world, quotas(4, 1, 1), penalties=penalties)
     assert len(set(line)) == 6
 
 
-def test_selection_is_deterministic_for_identical_input(world):
-    probabilities, categories, freshness_bins, features = world
-    config = {'hot_count': 4, 'medium_count': 1, 'cold_count': 1, 'generic_count': 0}
+def test_infeasible_constraints_raise_instead_of_returning_a_short_line(world):
+    with pytest.raises(ValueError, match="No line satisfies"):
+        solve(world, quotas(4, 1, 1), target={0: 0, 1: 0, 2: 7})
 
-    runs = [
-        pick_line_hybrid(config, probabilities, features, freshness_bins, TARGET_PATTERN,
-                         make_pools(probabilities, categories, freshness_bins))[0]
-        for _ in range(3)
-    ]
+
+def test_selection_is_deterministic_for_identical_input(world):
+    runs = [solve(world, quotas(4, 1, 1)) for _ in range(3)]
     assert runs[0] == runs[1] == runs[2]
 
 
 def test_different_probabilities_produce_different_lines(world):
-    """
-    Guards the property the user cares about: when a new draw shifts the model's
-    probabilities, the picked line must actually move.
-    """
-    probabilities, categories, freshness_bins, features = world
-    config = {'hot_count': 4, 'medium_count': 1, 'cold_count': 1, 'generic_count': 0}
-
-    line_a, _, _ = pick_line_hybrid(
-        config, probabilities, features, freshness_bins, TARGET_PATTERN,
-        make_pools(probabilities, categories, freshness_bins)
-    )
-    reversed_probs = probabilities[::-1].copy()
-    line_b, _, _ = pick_line_hybrid(
-        config, reversed_probs, features, freshness_bins, TARGET_PATTERN,
-        make_pools(reversed_probs, categories, freshness_bins)
-    )
-
+    """When a new draw shifts the model's probabilities, the picked line must move."""
+    scores, categories, bins = world
+    line_a = solve(world, quotas(4, 1, 1))
+    line_b = solve((scores[::-1].copy(), categories, bins), quotas(4, 1, 1))
     assert line_a != line_b

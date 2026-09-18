@@ -6,6 +6,7 @@ Handles all output display formatting and analysis visualization.
 
 from typing import List, Dict, Any
 from ml_lotto.config import SHOW_OVERLAP_ANALYSIS, SHOW_DATA_SOURCE_SUMMARY
+from ml_lotto.prediction.wheel import WHEEL_SIZE
 
 
 def display_final_picks(lines: List[Dict[str, Any]]):
@@ -223,6 +224,12 @@ def display_pool_analysis(pool_data: Dict[str, Any]):
     # Display full pool (sorted by probability)
     pool_numbers = pool_data['pool']
     print(f"\nFULL POOL (ranked by probability): {pool_numbers}")
+
+    print(f"\nWHEEL (top {WHEEL_SIZE} of pool, every 3-subset covered):")
+    for idx, line in enumerate(pool_data['wheel_lines'], 1):
+        print(f"  Wheel Line {idx}: {line}")
+    print(f"  Guarantee: 3+ winners in the top {WHEEL_SIZE} -> some line matches 3+ (about 5.3% of draws).")
+    print("  Not an edge: expected value is unchanged; lines are not filtered.")
     print("=" * 70)
 
 

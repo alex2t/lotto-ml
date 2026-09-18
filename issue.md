@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-17
+**Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
 Sections 1-8 are **open**, ordered by severity. Items carried from the retired code review keep
@@ -156,9 +156,12 @@ Carried from the code review's improvement list, kept here so the register is co
 1. **Label-permutation check.** Shuffle `hit` within each draw, retrain, compare the AUC
    distribution to the real 0.49–0.53. Settles whether any edge exists for this feature family, in
    ~30 lines. Do this before further modelling work.
-2. **Wheel the Model 4 pool.** A covering design over the 20-number pool *guarantees* a match-3 if
-   enough winners land in the pool. The guarantee is combinatorial and does not depend on beating
-   randomness — the only item here with a provable payoff.
+2. **DONE 2026-09-18 - Wheel the Model 4 pool.** `ml_lotto/prediction/wheel.py` covers every
+   3-subset of the pool's top 8 with 4 lines (C(8,6,3) = 4): 3+ winners in the top 8 guarantees a
+   match-3, which happens in ~5.3% of draws. Written to `lottery_picks.txt` as `Wheel Line 1-4`,
+   guarded by `tests/test_wheel.py`. A guarantee over the whole 20 does not fit a 4-8 line budget -
+   even "all 6 winners in the pool" needs more than 8 lines and fires in 0.36% of draws. It is not an
+   edge and does not reduce blanks: 4 unrelated lines catch a match-3 in ~7.2% of draws.
 3. **Bias toward unpopular combinations.** Expected *payout* is not uniform even when probability
    is: birthday numbers (≤31), calendar patterns and arithmetic sequences are heavily played and
    share jackpots more often. Steering toward numbers ≥32 raises expected value without predicting
@@ -168,8 +171,10 @@ Carried from the code review's improvement list, kept here so the register is co
 4. **FROZEN - establish whether the freshness pattern is worth enforcing before changing it again.**
 
    > **Change freeze, 2026-09-18.** No further work on the freshness-pattern mechanism -
-   > `get_optimal_pattern_distribution()`, `reachable_pattern()`, the bin ranking in
-   > `pick_line_hybrid()`, or the freshness bin categorisation - until its value is established.
+   > `get_optimal_pattern_distribution()`, `reachable_pattern()`, or the freshness bin
+   > categorisation - until its value is established. (The greedy bin ranking in
+   > `pick_line_hybrid()` was replaced by the ILP on 2026-09-18, which enforces the same reachable
+   > target unchanged as constraints.)
    > Watch and monitor only. A defect found in it is logged here and left open rather than fixed.
    >
    > **Why.** Three defects have been fixed in this one mechanism (F-1 target sized for 7 balls,
@@ -177,7 +182,7 @@ Carried from the code review's improvement list, kept here so the register is co
    > outcomes. It was mis-sized, then ignored, then infeasible, and across all of that no result
    > would have looked different, because no measurement of it exists. Continuing to repair it
    > spends effort on a feature that may not be worth having, and each fix adds coupling -
-   > `reachable_pattern()` must now mirror `pick_line_hybrid()`'s ordering or its shortfall message
+   > `reachable_pattern()` had to mirror `pick_line_hybrid()`'s ordering or its shortfall message
    > silently lies.
    >
    > **Lifting the freeze** requires the backtest below to return a result outside the noise band.
@@ -194,8 +199,10 @@ Carried from the code review's improvement list, kept here so the register is co
    mechanism outright. That is a legitimate argument for deleting now, on the grounds that a fair
    draw gives no reason to expect the pattern to help. The harness would, however, be reusable for
    the same question about the HMC ratio and the diversity penalty.
-5. **MILP selection** (`review.md` §3.2) to replace greedy picking. Worth doing only once the
-   probabilities mean something.
+5. **DONE 2026-09-18 - MILP selection** (`review.md` §3.2). `ml_lotto/prediction/ilp_selection.py`
+   replaces greedy picking and the filter repair pass with `scipy.optimize.milp`: HMC quotas, the
+   reachable freshness target and the ticket rules are constraints, so a line meets all of them or
+   the solver raises. Not a prediction change - it removed a defect surface (F-14).
 
 ---
 
@@ -247,12 +254,42 @@ Every item below was fixed and verified against the live pipeline.
 | F-4 | Probability array built conditionally while every consumer indexed it positionally | `predictor.py` |
 | F-10 | Dead look-ahead guard printed a false reassurance; contradictory split constant | `hmc_analyzer.py`, `lotto_analysis/config/config.py` |
 | F-13 | Freshness target could be unreachable for a model's HMC ratio, and missed it silently | `constraints.py`, `predictor.py` |
+| F-14 | Filter repair overrode the diversity penalty and reported the pre-repair pattern | `ilp_selection.py` (replaces `selection.py`, `rebalance_line`) |
 | F-8 | Freshness target was consulted for ordering then discarded; bin 0 absorbed every slot | `selection.py` |
 | F-9 | Serving features fell back to 0 for a column the model was trained on | `predictor.py`, `bonus_predictor.py` |
 | F-11 | HMC categorization measured days against wall-clock today | `hmc_categorization_analyzer.py` |
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-14 — The filter repair overrode the diversity penalty and reported a stale pattern
+
+**Root cause.** `pick_line_hybrid()` chose numbers first and checked the ticket rules afterwards;
+a failing line went to `filters.rebalance_line()`, which swapped numbers by raw probability. Two
+consequences, both visible in the 2026-09-18 run:
+
+- **The penalty was bypassed.** Model 3's line `[10, 22, 32, 38, 40, 47]` failed odd/even (1 odd).
+  The repair swapped 22 for 9 - the rank-1 penalised number for Model 3 (35%) and already on Model 2's
+  line `[6, 8, 9, 23, 31, 39]` - because it ranked replacements on unpenalised `probabilities`.
+- **The printed pattern could be stale.** `pattern_str` was built before the repair phase ran
+  (old `selection.py`, pattern built above `# PHASE 3: Filter validation`), so `Achieved Pattern`
+  described the pre-repair line whenever a repair happened.
+
+**Fix.** Replaced by `ilp_selection.solve_line()`: one `scipy.optimize.milp` solve with the HMC
+quotas, the reachable freshness target, the sum/odd/span rules (on the whole ticket, pre-assigned
+included) and a 1-per-number penalty cost. `selection.py` and `rebalance_line` are deleted. The
+pattern is computed from the returned line.
+
+**Measured before/after.** Models 1 and 2 are unchanged (`[5, 13, 15, 24, 42, 43]`,
+`[6, 8, 9, 23, 31, 39]`) - the greedy line was already the optimum. Model 3 goes from
+`[9, 10, 32, 38, 40, 47]` to `[7, 22, 32, 38, 40, 47]`: still 2H/2M/2C and `C0=4, C1=2`, and the
+three lines now share no number. Validation metrics are untouched - selection does not feed training.
+
+**Tests.** `tests/test_selection_invariants.py`, rewritten for the solver (19 tests): every
+constraint met, the line equals a brute-force optimum in a random and four filter-stressing score
+shapes, pre-assigned numbers fixed and filters applied to the whole ticket, penalties avoided when
+possible but never shortening the line, infeasibility raises. Disabling any one constraint in the
+solver fails at least two tests.
 
 ### F-13 — The freshness target could be unreachable for a model's HMC ratio
 

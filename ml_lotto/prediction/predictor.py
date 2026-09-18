@@ -18,7 +18,7 @@ from ml_lotto.prediction.constraints import (
     display_available_numbers,
     reachable_pattern
 )
-from ml_lotto.prediction.selection import pick_line_hybrid
+from ml_lotto.prediction.ilp_selection import solve_line, pattern_string
 from ml_lotto.prediction.filters import (
     FILTERS_AVAILABLE,
     get_filter_statistics
@@ -249,16 +249,16 @@ def generate_all_picks(
             )
             print(f"  Target unreachable for this HMC ratio, using {model_target} ({shortfall})")
 
-        selected_numbers, _, achieved_pattern = pick_line_hybrid(
-            model_config_adjusted,
-            probabilities,
-            features_dict,
+        selected_numbers = solve_line(
+            adjusted_probs,
+            {num: features_dict[num]['category'] for num in range(1, MAX_NUMBER + 1)},
             number_categories,
+            {'hot': h, 'medium': m, 'cold': c},
             model_target,
-            pools,
-            penalty_set_for_model if penalty_set_for_model else set(),
-            pre_assigned_numbers=model_pre_assigned
+            penalty_set_for_model,
+            model_pre_assigned
         )
+        achieved_pattern = pattern_string(selected_numbers, number_categories, model_target)
 
         # Combine pre-assigned numbers with selected numbers
         if model_pre_assigned:
