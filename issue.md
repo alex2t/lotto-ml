@@ -222,6 +222,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-42 | Bonus-to-Main predictor returned a bare `[]` where callers unpack a 2-tuple | `bonus_to_main_predictor.py` |
 | F-39 | `validate_line` counted odd balls over 7 numbers while sum and span used the main 6 | `filters.py` |
 | F-41 | Bonus-to-Main selected `category`, a string every row turned into a constant 0.0 | `config.py`, `bonus_to_main_features.py` |
 | F-36 | A bonus ball repeated inside the 10-draw window was counted from its oldest appearance | `bonus_window.py` |
@@ -275,6 +276,31 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-42 — Bonus-to-Main predictor returned `[]` instead of its 2-tuple
+
+Raised by Antigravity, 2026-09-19; the evidence was accurate.
+
+**Root cause.** `generate_bonus_to_main_predictions` returns `(selected, top_6_data)`, but its
+empty-window guard returned a bare `[]` (there since the original bonus-to-main commit `f491afd`, and
+kept unchanged through the F-40 rewrite). `quickpick.py` unpacks two names, so the guard produced
+`ValueError: not enough values to unpack (expected 2, got 0)` - reported instead of the real problem.
+Latent: the branch needs ten consecutive draws with no bonus ball, and all 498 draws have one, so it
+has never fired.
+
+**Fix.** It raises `ValueError` naming the real fault, rather than returning `([], [])`, which would
+let a run continue and silently write no bonus-to-main picks. Same rule as F-5, where a pool too small
+for the request raises.
+
+**Measured.** `quickpick.py`: metrics and picks identical - the branch is unreachable on this data.
+
+**Tests.** `tests/test_bonus_predictor.py`, `test_empty_bonus_window_raises`: an empty window raises
+`ValueError`. It failed on the old code, which returned instead.
+
+**Not a defect.** The same report called the branch's emoji `print` a `UnicodeEncodeError` risk on
+Windows. `drawpick.py:8` and `quickpick.py:20` already `sys.stdout.reconfigure(encoding='utf-8',
+errors='replace')`, and a redirected `drawpick.py` run exits 0. Only a script importing these modules
+directly is exposed, which no supported entry point does.
 
 ### F-39 — `validate_line` counted odd balls over seven numbers
 
