@@ -58,6 +58,9 @@ Shared helpers are in `../utils/`: `data_loader.py` (cached artifact reads), `fo
   value no number has ever reached, and ran for months without firing (F-29). When adding a check to
   `../utils/anomaly_detector.py`, give `tests/test_anomaly_detector.py` a line that fires it.
 - **This layer is read-only.** Pages consume `data/*.json`, `lottery_picks.txt` and `model_metrics/`.
+  Never `data/irish500.csv` - that is `drawpick.py`'s input, and the React site will not have it. The
+  latest draw is the last of `data_loader.get_sorted_draw_dates(load_draw_history())`; Post Draw
+  Analysis parsed the CSV itself until F-35. `tests/test_draw_history_numbers.py` scans `view/` for it.
   Nothing here writes an artifact, trains a model, or recomputes a feature. If a page needs a number
   that does not exist, it is produced upstream in `lotto_analysis/` or `ml_lotto/`, not here.
 - A page that recomputes a statistic locally will drift from the analyzer that produces it. Load it

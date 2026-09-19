@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The nineteen real tests (175 tests, ~30s)
+## The nineteen real tests (177 tests, ~30s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -36,7 +36,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_wheel.py` | the Model 4 wheel covers every 3-subset of the pool's top 8 |
 | `test_permutation_check.py` | the F-17 shuffle keeps each draw's hit count and moves only the labels |
 | `test_high_number_distribution.py` | the F-19 count of main numbers >= 32 per draw that the dashboard shows |
-| `test_draw_history_numbers.py` | the draw history carries each draw's `main_numbers` and `bonus_number`, and Pattern Comparison finds a past draw as its exact match (F-25); past draws are classified with their pre-draw hot/medium/cold, not today's (F-27). Reads `data/*.json` |
+| `test_draw_history_numbers.py` | the draw history carries each draw's `main_numbers` and `bonus_number`, and Pattern Comparison finds a past draw as its exact match (F-25); past draws are classified with their pre-draw hot/medium/cold, not today's (F-27); Post Draw Analysis autofills the newest draw from it, and no module in `view/` reads `irish500.csv` (F-35). Reads `data/*.json` |
 | `test_site_wording.py` | the website describes how typical a line looks, never how likely it is to win: Prediction Validator (F-26), Pattern Comparison, Trigger Periods' sum check and every anomaly alert (F-28), Number Insights' profile and Draw History (F-30) carry no play/avoid/strong/risky advice and say every line is equally likely. Renders pages with Streamlit `AppTest`; reads `data/*.json` |
 | `test_bonus_transition_baseline.py` | on simulated fair draws the bonus-to-main analyzer reports its random baseline as 1 - (41/47)^10 and a boost of ~1.0, not 3.5x; the validator counts any recent bonus ball, with no transition-rate filter (F-30); a transition rate divides only by bonus balls with 10 draws after them (F-32) |
 | `test_trend_significance.py` | the "significant trend" flag flags about 5% of numbers on simulated fair draws (was 61%), still flags a real change in frequency, and flags nothing without an older window (F-31) |
