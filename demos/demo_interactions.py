@@ -28,7 +28,7 @@ try:
     print(f"✓ Calculator initialized")
     print(f"  - Pairwise interactions loaded: {len(calculator.pairwise_interactions)}")
     print(f"  - Triple interactions loaded: {len(calculator.triple_interactions)}")
-    print(f"  - Feature medians extracted: {len(calculator.feature_medians)}")
+    print(f"  - Feature split thresholds extracted: {len(calculator.feature_thresholds)}")
 except Exception as e:
     print(f"✗ Failed to initialize: {e}")
     exit(1)

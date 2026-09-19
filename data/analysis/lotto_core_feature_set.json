@@ -2,9 +2,9 @@
   "core_features": [
     "total_count",
     "recent_9",
-    "recent_14",
-    "recent_4",
     "days_since_last",
+    "recent_4",
+    "recent_24",
     "bonus_hit_contribution",
     "freshness_bin"
   ],
@@ -21,37 +21,37 @@
     {
       "feature": "recent_9",
       "stability_score": 0.987,
-      "correlation_stability": 0.994,
-      "mean_win_rate": 0.8614,
+      "correlation_stability": 0.986,
+      "mean_win_rate": 0.8599,
       "trend": "stable",
-      "composite_score": 1.893,
-      "recommendation": "core"
-    },
-    {
-      "feature": "recent_14",
-      "stability_score": 1.0,
-      "correlation_stability": 1.0,
-      "mean_win_rate": 0.8571,
-      "trend": "stable",
-      "composite_score": 1.893,
-      "recommendation": "core"
-    },
-    {
-      "feature": "recent_4",
-      "stability_score": 0.988,
-      "correlation_stability": 0.994,
-      "mean_win_rate": 0.8545,
-      "trend": "stable",
-      "composite_score": 1.882,
+      "composite_score": 1.888,
       "recommendation": "core"
     },
     {
       "feature": "days_since_last",
-      "stability_score": 0.984,
-      "correlation_stability": 0.871,
-      "mean_win_rate": 0.8562,
+      "stability_score": 0.979,
+      "correlation_stability": 0.988,
+      "mean_win_rate": 0.8585,
+      "trend": "stable",
+      "composite_score": 1.883,
+      "recommendation": "core"
+    },
+    {
+      "feature": "recent_4",
+      "stability_score": 0.983,
+      "correlation_stability": 0.991,
+      "mean_win_rate": 0.8519,
+      "trend": "stable",
+      "composite_score": 1.875,
+      "recommendation": "core"
+    },
+    {
+      "feature": "recent_24",
+      "stability_score": 0.981,
+      "correlation_stability": 0.993,
+      "mean_win_rate": 0.8534,
       "trend": "declining",
-      "composite_score": 1.796,
+      "composite_score": 1.827,
       "recommendation": "core"
     },
     {
@@ -65,11 +65,11 @@
     },
     {
       "feature": "freshness_bin",
-      "stability_score": 0.988,
+      "stability_score": 0.983,
       "correlation_stability": 0.5,
-      "mean_win_rate": 0.8545,
+      "mean_win_rate": 0.8519,
       "trend": "stable",
-      "composite_score": 1.734,
+      "composite_score": 1.728,
       "recommendation": "core"
     }
   ],

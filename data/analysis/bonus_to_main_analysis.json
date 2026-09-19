@@ -1,48 +1,48 @@
 {
   "analysis_summary": {
-    "total_bonuses": 399,
-    "appeared_as_main": 296,
-    "transition_rate": 74.19,
-    "validation": "74% matches claimed ~80% rate"
+    "total_bonuses": 487,
+    "appeared_as_main": 363,
+    "transition_rate": 74.54,
+    "validation": "75% matches claimed ~80% rate"
   },
   "timing_distribution": {
-    "8": 19,
-    "10": 15,
-    "3": 35,
-    "2": 49,
-    "1": 46,
-    "4": 33,
-    "6": 22,
-    "7": 28,
-    "5": 33,
-    "9": 16
+    "8": 21,
+    "10": 17,
+    "3": 45,
+    "2": 58,
+    "1": 57,
+    "4": 35,
+    "6": 33,
+    "7": 37,
+    "5": 40,
+    "9": 20
   },
   "category_distribution": {
+    "cold": {
+      "appeared": 108,
+      "total": 142
+    },
     "medium": {
-      "appeared": 67,
-      "total": 95
+      "appeared": 77,
+      "total": 109
     },
     "hot": {
-      "appeared": 139,
-      "total": 188
-    },
-    "cold": {
-      "appeared": 90,
-      "total": 116
+      "appeared": 178,
+      "total": 236
     }
   },
   "freshness_distribution": {
     "0": {
-      "appeared": 157,
-      "total": 209
+      "appeared": 184,
+      "total": 247
     },
     "1": {
-      "appeared": 107,
-      "total": 141
+      "appeared": 136,
+      "total": 176
     },
     "2": {
-      "appeared": 32,
-      "total": 49
+      "appeared": 43,
+      "total": 64
     }
   },
   "recommended_features": {
@@ -61,7 +61,7 @@
     "Recent Activity": [
       "recent_4_count",
       "recent_9_count",
-      "recent_14_count",
+      "recent_24_count",
       "recent_activity_trend"
     ],
     "Pattern Features": [
@@ -85,7 +85,7 @@
         "days_since_last": 28,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 8,
         "transitioned": 1
       },
@@ -96,7 +96,7 @@
         "days_since_last": 31,
         "recent_4": 0,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 10,
         "transitioned": 1
       },
@@ -107,7 +107,7 @@
         "days_since_last": 74,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 0,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -118,7 +118,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 5,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -129,7 +129,7 @@
         "days_since_last": 4,
         "recent_4": 2,
         "recent_9": 3,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 2,
         "transitioned": 1
       },
@@ -140,7 +140,7 @@
         "days_since_last": 7,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 5,
         "appearance_draw": 1,
         "transitioned": 1
       },
@@ -151,7 +151,7 @@
         "days_since_last": 21,
         "recent_4": 0,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 5,
         "appearance_draw": 2,
         "transitioned": 1
       },
@@ -162,7 +162,7 @@
         "days_since_last": 4,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 4,
         "transitioned": 1
       },
@@ -173,7 +173,7 @@
         "days_since_last": 49,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 6,
         "transitioned": 1
       },
@@ -184,7 +184,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 3,
         "appearance_draw": 2,
         "transitioned": 1
       },
@@ -195,7 +195,7 @@
         "days_since_last": 4,
         "recent_4": 2,
         "recent_9": 3,
-        "recent_14": 0,
+        "recent_24": 6,
         "appearance_draw": 4,
         "transitioned": 1
       },
@@ -206,7 +206,7 @@
         "days_since_last": 18,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 6,
         "transitioned": 1
       },
@@ -217,7 +217,7 @@
         "days_since_last": 17,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 1,
         "appearance_draw": 7,
         "transitioned": 1
       },
@@ -228,7 +228,7 @@
         "days_since_last": 56,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 4,
         "transitioned": 1
       },
@@ -239,7 +239,7 @@
         "days_since_last": 35,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 5,
         "appearance_draw": 8,
         "transitioned": 1
       },
@@ -250,7 +250,7 @@
         "days_since_last": 17,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 3,
         "appearance_draw": 5,
         "transitioned": 1
       },
@@ -261,7 +261,7 @@
         "days_since_last": 11,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 1,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -272,7 +272,7 @@
         "days_since_last": 35,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 1,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -283,8 +283,8 @@
         "days_since_last": 144,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
-        "appearance_draw": 10,
+        "recent_24": 0,
+        "appearance_draw": 9,
         "transitioned": 1
       },
       {
@@ -294,7 +294,7 @@
         "days_since_last": 10,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 5,
         "appearance_draw": 2,
         "transitioned": 1
       },
@@ -305,8 +305,8 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
-        "appearance_draw": 9,
+        "recent_24": 3,
+        "appearance_draw": 8,
         "transitioned": 1
       },
       {
@@ -316,8 +316,8 @@
         "days_since_last": 70,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
-        "appearance_draw": 4,
+        "recent_24": 1,
+        "appearance_draw": 3,
         "transitioned": 1
       },
       {
@@ -327,8 +327,8 @@
         "days_since_last": 4,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
-        "appearance_draw": 8,
+        "recent_24": 4,
+        "appearance_draw": 7,
         "transitioned": 1
       },
       {
@@ -338,18 +338,7 @@
         "days_since_last": 31,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
-        "appearance_draw": 2,
-        "transitioned": 1
-      },
-      {
-        "number": 47,
-        "category": "medium",
-        "freshness_bin": 0,
-        "days_since_last": -705,
-        "recent_4": 0,
-        "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 1,
         "appearance_draw": 1,
         "transitioned": 1
       },
@@ -360,7 +349,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 4,
         "transitioned": 1
       },
@@ -370,8 +359,8 @@
         "freshness_bin": 0,
         "days_since_last": 39,
         "recent_4": 0,
-        "recent_9": 0,
-        "recent_14": 0,
+        "recent_9": 1,
+        "recent_24": 2,
         "appearance_draw": 5,
         "transitioned": 1
       },
@@ -382,7 +371,7 @@
         "days_since_last": 38,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 1,
         "transitioned": 1
       },
@@ -392,8 +381,8 @@
         "freshness_bin": 2,
         "days_since_last": 4,
         "recent_4": 2,
-        "recent_9": 2,
-        "recent_14": 0,
+        "recent_9": 3,
+        "recent_24": 3,
         "appearance_draw": 5,
         "transitioned": 1
       },
@@ -404,7 +393,7 @@
         "days_since_last": 4,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 1,
         "transitioned": 1
       },
@@ -415,7 +404,7 @@
         "days_since_last": 42,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -426,7 +415,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 1,
         "appearance_draw": 7,
         "transitioned": 1
       },
@@ -437,7 +426,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 6,
         "appearance_draw": 6,
         "transitioned": 1
       },
@@ -448,7 +437,7 @@
         "days_since_last": 70,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 3,
         "appearance_draw": 5,
         "transitioned": 1
       },
@@ -459,7 +448,7 @@
         "days_since_last": 32,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 3,
         "appearance_draw": 7,
         "transitioned": 1
       },
@@ -470,7 +459,7 @@
         "days_since_last": 11,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 9,
         "transitioned": 1
       },
@@ -481,7 +470,7 @@
         "days_since_last": 32,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 9,
         "transitioned": 1
       },
@@ -492,7 +481,7 @@
         "days_since_last": 14,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 8,
         "transitioned": 1
       },
@@ -503,7 +492,7 @@
         "days_since_last": 49,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 4,
         "transitioned": 1
       },
@@ -514,7 +503,7 @@
         "days_since_last": 4,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -525,7 +514,7 @@
         "days_since_last": 11,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -536,7 +525,7 @@
         "days_since_last": 28,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -547,7 +536,7 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 1,
         "transitioned": 1
       },
@@ -558,7 +547,7 @@
         "days_since_last": 25,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 9,
         "transitioned": 1
       },
@@ -569,7 +558,7 @@
         "days_since_last": 35,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "appearance_draw": 10,
         "transitioned": 1
       },
@@ -580,7 +569,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 1,
         "appearance_draw": 5,
         "transitioned": 1
       },
@@ -591,7 +580,7 @@
         "days_since_last": 32,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 3,
         "transitioned": 1
       },
@@ -602,7 +591,7 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 3,
         "appearance_draw": 4,
         "transitioned": 1
       },
@@ -613,7 +602,7 @@
         "days_since_last": 46,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 4,
         "appearance_draw": 2,
         "transitioned": 1
       },
@@ -624,12 +613,33 @@
         "days_since_last": 56,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 5,
         "appearance_draw": 1,
+        "transitioned": 1
+      },
+      {
+        "number": 20,
+        "category": "medium",
+        "freshness_bin": 1,
+        "days_since_last": 18,
+        "recent_4": 1,
+        "recent_9": 1,
+        "recent_24": 4,
+        "appearance_draw": 10,
         "transitioned": 1
       }
     ],
     "no_transition": [
+      {
+        "number": 18,
+        "category": "cold",
+        "freshness_bin": 0,
+        "days_since_last": 39,
+        "recent_4": 0,
+        "recent_9": 0,
+        "recent_24": 3,
+        "transitioned": 0
+      },
       {
         "number": 3,
         "category": "hot",
@@ -637,7 +647,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -647,7 +657,7 @@
         "days_since_last": 17,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -657,7 +667,7 @@
         "days_since_last": 21,
         "recent_4": 0,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 5,
         "transitioned": 0
       },
       {
@@ -667,7 +677,7 @@
         "days_since_last": 35,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -677,7 +687,7 @@
         "days_since_last": 21,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -687,7 +697,7 @@
         "days_since_last": 7,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -697,7 +707,7 @@
         "days_since_last": 77,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -707,7 +717,7 @@
         "days_since_last": 14,
         "recent_4": 2,
         "recent_9": 4,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -717,7 +727,7 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -727,7 +737,7 @@
         "days_since_last": 10,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -737,7 +747,7 @@
         "days_since_last": 10,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -747,7 +757,7 @@
         "days_since_last": 4,
         "recent_4": 2,
         "recent_9": 3,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -757,7 +767,7 @@
         "days_since_last": 7,
         "recent_4": 2,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -767,7 +777,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -777,7 +787,7 @@
         "days_since_last": 66,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -787,7 +797,7 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -797,7 +807,7 @@
         "days_since_last": 14,
         "recent_4": 2,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 6,
         "transitioned": 0
       },
       {
@@ -807,7 +817,7 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 6,
         "transitioned": 0
       },
       {
@@ -817,7 +827,7 @@
         "days_since_last": 18,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 5,
         "transitioned": 0
       },
       {
@@ -827,7 +837,7 @@
         "days_since_last": 21,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -837,7 +847,7 @@
         "days_since_last": 7,
         "recent_4": 2,
         "recent_9": 3,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -847,7 +857,7 @@
         "days_since_last": 17,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -857,7 +867,7 @@
         "days_since_last": 28,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -867,7 +877,7 @@
         "days_since_last": 28,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 5,
         "transitioned": 0
       },
       {
@@ -877,7 +887,7 @@
         "days_since_last": 56,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -887,7 +897,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 5,
         "transitioned": 0
       },
       {
@@ -897,7 +907,7 @@
         "days_since_last": 10,
         "recent_4": 2,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 5,
         "transitioned": 0
       },
       {
@@ -907,7 +917,7 @@
         "days_since_last": 49,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -917,7 +927,7 @@
         "days_since_last": 52,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -927,7 +937,7 @@
         "days_since_last": 4,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -937,7 +947,7 @@
         "days_since_last": 4,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -947,7 +957,7 @@
         "days_since_last": 14,
         "recent_4": 2,
         "recent_9": 3,
-        "recent_14": 0,
+        "recent_24": 5,
         "transitioned": 0
       },
       {
@@ -957,7 +967,7 @@
         "days_since_last": 3,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 6,
         "transitioned": 0
       },
       {
@@ -967,7 +977,7 @@
         "days_since_last": 31,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 6,
         "transitioned": 0
       },
       {
@@ -977,7 +987,7 @@
         "days_since_last": 25,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -987,7 +997,7 @@
         "days_since_last": 25,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -997,7 +1007,7 @@
         "days_since_last": 38,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 6,
         "transitioned": 0
       },
       {
@@ -1007,7 +1017,7 @@
         "days_since_last": 24,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -1017,7 +1027,7 @@
         "days_since_last": 32,
         "recent_4": 0,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -1027,7 +1037,7 @@
         "days_since_last": 18,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 2,
         "transitioned": 0
       },
       {
@@ -1037,7 +1047,7 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -1047,7 +1057,7 @@
         "days_since_last": 7,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -1057,7 +1067,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 2,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -1067,7 +1077,7 @@
         "days_since_last": 42,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 3,
         "transitioned": 0
       },
       {
@@ -1077,7 +1087,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 3,
-        "recent_14": 0,
+        "recent_24": 5,
         "transitioned": 0
       },
       {
@@ -1087,7 +1097,7 @@
         "days_since_last": 56,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 1,
         "transitioned": 0
       },
       {
@@ -1097,7 +1107,7 @@
         "days_since_last": 25,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -1107,7 +1117,7 @@
         "days_since_last": 14,
         "recent_4": 1,
         "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       },
       {
@@ -1117,17 +1127,7 @@
         "days_since_last": 42,
         "recent_4": 0,
         "recent_9": 0,
-        "recent_14": 0,
-        "transitioned": 0
-      },
-      {
-        "number": 47,
-        "category": "hot",
-        "freshness_bin": 1,
-        "days_since_last": 14,
-        "recent_4": 1,
-        "recent_9": 1,
-        "recent_14": 0,
+        "recent_24": 4,
         "transitioned": 0
       }
     ]

@@ -5,10 +5,10 @@
     "classifier__estimator__class_weight": "balanced",
     "classifier__estimator__max_iter": 1000
   },
-  "best_score": 0.5033999071807758,
+  "best_score": 0.505676587790655,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 19.11873483657837,
+  "elapsed_time": 19.13905167579651,
   "total_fits": 6
 }

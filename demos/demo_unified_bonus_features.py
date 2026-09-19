@@ -14,8 +14,6 @@ import sys
 import json
 from pathlib import Path
 
-sys.path.insert(0, '/home/user/lotto-ml')
-
 from ml_lotto.features.bonus_features import (
     create_unified_bonus_features,
     get_unified_bonus_feature_names,

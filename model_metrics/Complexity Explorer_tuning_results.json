@@ -3,15 +3,15 @@
   "best_params": {
     "classifier__estimator__learning_rate": 0.03,
     "classifier__estimator__max_depth": 2,
-    "classifier__estimator__min_child_weight": 500,
+    "classifier__estimator__min_child_weight": 200,
     "classifier__estimator__n_estimators": 50,
     "classifier__estimator__reg_lambda": 20,
     "classifier__estimator__scale_pos_weight": 1
   },
-  "best_score": 0.5,
+  "best_score": 0.5037193689990761,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 9.36369514465332,
+  "elapsed_time": 9.206247806549072,
   "total_fits": 16
 }

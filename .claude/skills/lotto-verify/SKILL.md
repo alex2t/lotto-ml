@@ -58,11 +58,11 @@ over **all 7**, and both sides must agree.
 
 **Metric moves under the noise floor mean nothing.** The floor is ~0.031 AUC and ~0.227 Top-7
 AvgCaught over the 60-draw validation window. All six models sit at chance (AUC 0.50-0.55, Top-7
-lift 1.01-1.12), which is the correct answer for a fair draw. Do not report a sub-2-SE move as an
+lift 0.90-1.18), which is the correct answer for a fair draw. Do not report a sub-2-SE move as an
 improvement, and do not tune until something exceeds it.
 
 **Watch the overfit gap as well as the AUC.** All six models sit at a train/validation AUC gap of
-0.005-0.053. A gap back above ~0.1 means capacity was handed back to a model, not that it learned
+0.002-0.078. A gap back above ~0.1 means capacity was handed back to a model, not that it learned
 something.
 
 **A constant feature is a defect.** `test_no_constant_features.py` fails if a model trains on a
@@ -91,7 +91,7 @@ invariants and roadmap for Gemini, so a fact changed in a `CLAUDE.md` must chang
 | `ml_lotto/config.py` or `ml_lotto/models/` — a model config, params, grids | `ml_lotto/models/CLAUDE.md` |
 | `ml_lotto/prediction/` — a filter, or the selection/filters boundary | `ml_lotto/prediction/CLAUDE.md` |
 | `ml_lotto/data/` — an artifact added or a validation rule | `ml_lotto/data/CLAUDE.md` |
-| `tests/` — a test added, or a print-script promoted | `tests/CLAUDE.md` **and** `verify.py`'s list |
+| `tests/` — a test added, or a demo turned into one | `tests/CLAUDE.md` **and** `verify.py`'s list |
 | `view/` — a dashboard page | `view/pages/CLAUDE.md` **and** `app.py` |
 | `scripts/` or `analysis/` | that folder's `CLAUDE.md` |
 | a metric, feature, model or artifact a doc describes | the matching file in `docs/` |

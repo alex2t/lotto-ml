@@ -19,7 +19,7 @@ The project is structured around **two distinct audiences fed by a single data p
 2. **The ML Engineering Layer (`ml_lotto/`, `quickpick.py`) — For the System Author**:
    - A rigorous machine learning and software engineering sandbox applying the principles from Ed Donner's *AI Coder: Complete Claude Code & Coding Agents Course*.
    - Evaluates six models (logistic regression, random forest, XGBoost, CatBoost, and two auxiliary regressors).
-   - **The Honest Baseline**: All models sit at chance (validation AUC 0.498–0.545, Top-7 lift 1.01–1.12 over 60 held-out draws). A 20-run label-permutation test (`python quickpick.py --permutation-check 20`) confirms that no model outperforms shuffled noise ($p = 0.095\text{--}0.476$).
+   - **The Honest Baseline**: All models sit at chance (validation AUC 0.496–0.551, Top-7 lift 0.90–1.18 over 60 held-out draws). A 20-run label-permutation test (`python quickpick.py --permutation-check 20`) confirms that no model outperforms shuffled noise ($p = 0.095\text{--}0.476$).
    - The value of this layer is **engineering discipline, train/serve parity, strict validation, and declarative constraint satisfaction**, not gambling advantage.
 
 3. **The Data Core (`drawpick.py`)**:
@@ -178,8 +178,8 @@ Always execute commands inside the project's virtual environment:
 # Launch the Streamlit dashboard
 .\venv\Scripts\streamlit.exe run app.py
 
-# Execute the 13 verified test suites (135 tests, ~50s)
-.\venv\Scripts\python.exe -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py tests/test_metrics.py tests/test_no_constant_features.py tests/test_freshness_target.py tests/test_threshold_holdout.py tests/test_model_capacity.py tests/test_prediction_alignment.py tests/test_scraper_sources.py tests/test_wheel.py tests/test_permutation_check.py tests/test_high_number_distribution.py tests/test_bonus_predictor.py -q
+# Execute all 13 test files (135 tests, ~30s) - pytest.ini limits pytest to tests/
+.\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite
 .\venv\Scripts\python.exe .claude/skills/lotto-verify/verify.py
@@ -208,7 +208,8 @@ python .claude/skills/lotto-verify/verify.py
 | **`view/pages/`** | `app.py`, `view/pages/*.py` | 8-page Streamlit web dashboard. Strictly read-only; displays facts for user enjoyment. |
 | **`scripts/`** | `scrape_lotto.py`, `train_with_all_features.py` | Independent utilities; web scraper for new draw ingestion. |
 | **`analysis/`** | `bonus_analysis.py`, exploratory scripts | Phase 11 statistical analysis; exploratory data science scripts. |
-| **`tests/`** | 13 verified test files (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
+| **`tests/`** | 13 test files, nothing else (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
+| **`demos/`** | `demo_*.py` | Feature-discovery scripts moved out of `tests/` (C-17b). Not tests; run with `python -m demos.<name>`. Never write to `model_metrics/` or `data/`. |
 | **`docs/`** | `metrics.md`, `features.md`, `models.md`, `json-artifacts.md` | Reference documentation. Code and artifacts always supersede docs in conflicts. |
 | **`data/`** | `irish500.csv`, `*.json` | Ground-truth historical draws and generated analytical artifacts. |
 | **`model_metrics/`** | `model_comparison.csv`, `*.png` | Evaluation scoreboards, ROC/PR curves, and calibration plots. |

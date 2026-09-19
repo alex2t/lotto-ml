@@ -43,7 +43,7 @@ download. [`README.md`](README.md) holds the architecture overview.
 ## Folder guides
 
 Every substantial folder has its own `CLAUDE.md` holding the invariants that apply inside it. All
-nine are imported below, so they are in context from the start of every session:
+eleven are imported below, so they are in context from the start of every session:
 
 @ml_lotto/features/CLAUDE.md
 @tests/CLAUDE.md
@@ -54,6 +54,7 @@ nine are imported below, so they are in context from the start of every session:
 @view/pages/CLAUDE.md
 @scripts/CLAUDE.md
 @analysis/CLAUDE.md
+@demos/CLAUDE.md
 @docs/CLAUDE.md
 
 What each one covers:
@@ -61,7 +62,7 @@ What each one covers:
 | Folder guide | Covers |
 |:--|:--|
 | `ml_lotto/features/CLAUDE.md` | the train/serve parity contract - the highest-risk file in the repo |
-| `tests/CLAUDE.md` | the thirteen real test files vs the eleven legacy print-scripts |
+| `tests/CLAUDE.md` | the thirteen test files and what each one guards |
 | `lotto_analysis/analyzers/CLAUDE.md` | the 16 analysis phases and which JSON each writes |
 | `ml_lotto/models/CLAUDE.md` | the six model configs, the noise floor, the overfit gap |
 | `ml_lotto/prediction/CLAUDE.md` | selection vs filters, the playable-ticket boundary |
@@ -69,6 +70,7 @@ What each one covers:
 | `view/pages/CLAUDE.md` | the 8 dashboard pages; read-only layer |
 | `scripts/CLAUDE.md` | scraper and standalone utilities |
 | `analysis/CLAUDE.md` | exploratory scripts, and the one that is in the pipeline |
+| `demos/CLAUDE.md` | the feature-discovery scripts moved out of `tests/` - not tests, a source of ideas for the site |
 | `docs/CLAUDE.md` | reference material - and why a number in there is never a target |
 
 **They are imported rather than left to on-demand loading on purpose.** Claude Code will often load a
@@ -100,12 +102,14 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Thirteen files are real tests (135 of them, ~50s). Everything else in `tests/` is a legacy print-script
-that runs model training at import - **do not run `pytest tests/` bare.** The full list, and what
-each one guards, is in `tests/CLAUDE.md`. `/lotto-verify` runs them all.
+`tests/` holds only real tests: thirteen files, 135 tests, ~30s. `pytest.ini` points pytest there, so
+a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
+runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
+python -m pytest -q                                                              # all 135
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
+python -m demos.demo_interactions                                                # a demo, from the root
 ```
 
 ### Environment
@@ -151,10 +155,10 @@ feature families were silently always-1 or always-0.
 ## Working on this codebase
 
 **Measure before refactoring.** All six models sit at validation AUC 0.50-0.55 with Top-7 lift
-1.01-1.12 over the same 60 draws - chance, which is the correct answer for a fair draw. A change
+0.90-1.18 over the same 60 draws - chance, which is the correct answer for a fair draw. A change
 that does not move those numbers has not helped. `model_metrics/model_comparison.csv` is the
 scoreboard; the 2 SE noise floor is ~0.031 AUC and ~0.227 Top-7 AvgCaught. Train/validation AUC
-gaps are 0.005-0.053; a model whose gap climbs back above ~0.1 has been given capacity to memorise
+gaps are 0.002-0.078; a model whose gap climbs back above ~0.1 has been given capacity to memorise
 with, and the constrained parameters in `config.py` plus the tuning grids in
 `hyperparameter_tuning.py` must both be kept that way.
 
@@ -199,7 +203,7 @@ file at all - it gets trusted over the source. Specifically:
 | a counted-over convention, a window, or either feature path | `ml_lotto/features/CLAUDE.md` |
 | a model config, or the constrained params and grids | `ml_lotto/models/CLAUDE.md` |
 | a filter or the selection/filters boundary | `ml_lotto/prediction/CLAUDE.md` |
-| a test file promoted from print-script, or added one | `tests/CLAUDE.md` **and** `.claude/skills/lotto-verify/verify.py` |
+| added a test file, or turned a demo into one | `tests/CLAUDE.md` **and** `.claude/skills/lotto-verify/verify.py` |
 | a dashboard page | `view/pages/CLAUDE.md` and `app.py` |
 | a documented fact - metrics, features, models, artifacts | the matching file in `docs/`, verified against the code |
 | added a folder worth documenting | its own `CLAUDE.md`, an `@` import line **and** a row in the table above |
