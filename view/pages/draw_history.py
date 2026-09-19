@@ -12,7 +12,10 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
     draw_info = draw_data[draw_date]
     hmc_summary = draw_info.get('hmc_summary', {})
     winning_numbers = draw_info.get('winning_numbers_details', [])
-    recent_bonus_numbers = draw_info.get('recent_bonus_numbers', [])
+    # A draw's own list ends with its own bonus; the window before it is the previous draw's (F-33)
+    dates = sorted(draw_data)
+    position = dates.index(draw_date)
+    recent_bonus_numbers = draw_data[dates[position - 1]]['recent_bonus_numbers'] if position else []
     
     # 1. Determine the set of winning numbers (excluding bonus in this context, just the numbers drawn)
     # Note: winning_numbers_details contains all 7, including bonus. We'll use the 'number' field.
@@ -22,7 +25,7 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
     formatted_bonus_numbers = []
     for number in recent_bonus_numbers:
         if number in winning_number_set:
-            # Highlight if the number was one of the last 10 bonus numbers AND hit in this draw
+            # Highlight a bonus ball from the 10 draws before that came up in this draw
             formatted_number = f"""
                 <span style='background-color: #ffcccc; color: #cc0000; font-weight: bold; border-radius: 3px; padding: 2px 5px; margin: 0 1px; white-space: nowrap;'>
                     {number}
@@ -63,7 +66,7 @@ def create_draw_table_html(draw_data: Dict[str, Any], draw_date: str) -> str:
             
             <div style="margin-top: 10px; background-color: #ffe6f2; padding: 5px 10px; border-radius: 4px;">
                 <div style="display: flex; align-items: center; flex-wrap: wrap;">
-                    <strong style="margin-right: 10px;">Last 10 Bonus Numbers:</strong> {formatted_list_html}
+                    <strong style="margin-right: 10px;">Last 10 Bonus Balls Before This Draw:</strong> {formatted_list_html}
                 </div>
                 <div style="margin-top: 8px; font-size: 12px;">
                     <strong style="color: #666;">Copy to filter:</strong>

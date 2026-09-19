@@ -25,30 +25,10 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-33** | Every draw's "recent bonus numbers" includes its own bonus, so the repeat statistic always reads 100% | Low | XS |
 
-**1 open defect, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**No open defects; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
-
-## 1. F-33 — Every draw's "recent bonus numbers" includes its own bonus
-
-**Severity: Low.** Found 2026-09-19 while fixing F-32.
-
-`recent_bonus_numbers` in `data/lotto_draw_history.json` holds the last 10 bonus balls *including the
-draw's own*: 498 of 498 draws contain their own bonus (2026-09-16: bonus 31, list ends with 31).
-`lotto_analysis/analyzers/bonus_analyzer.py` `calculate_recent_bonus_exclusion` asks whether each
-bonus was in that list, so `recent_bonus_exclusion.was_bonus_last_10.rate` in
-`lotto_bonus_analysis.json` is 1.0 against an `expected_if_random` of 0.2128 - a statistic that cannot
-come out any other way. Measured against the previous 10 draws only, a bonus ball repeats 18.3% of the
-time; chance is 1 - (46/47)^10 = 19.4%.
-
-The main-number statistic in the same file (`main_from_recent_bonus`, boost 0.92) is not affected: a
-draw's own bonus is never one of its main numbers. The Draw History page labels the list "Last 10
-Bonus Numbers at time of draw", which includes that draw's bonus.
-
-**Fix.** Measure the repeat against the previous 10 draws' bonus balls, and say which window the Draw
-History label shows. Check which ML feature, if any, reads the per-draw list before changing it.
 
 ---
 ## 6. Improvements done
@@ -227,6 +207,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-33 | A draw's recent-bonus list ends with its own bonus; three bonus statistics read it as the pre-draw window | `bonus_analyzer.py`, `draw_history.py` |
 | F-32 | Bonus-to-main transition rate divided by bonus appearances with no 10-draw window | `bonus_to_main_analyzer.py` |
 | F-29 | Sum alerts used hard-coded mean/std from a key that never existed; the volatility alert could never fire | `anomaly_detector.py`, `pattern_comparison.py`, `prediction_validator.py` |
 | F-31 | The "significant trend" flag ran Kendall's tau on a smoothed rolling series and flagged 61% of numbers on fair draws | `advanced_pattern_analyzer.py` |
@@ -272,6 +253,34 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-33 — Bonus statistics read a list that ends with the draw's own bonus
+
+**Root cause.** `hmc_analyzer.py` stores each draw's `recent_bonus_numbers` after the draw, so it ends
+with that draw's bonus (498 of 498 draws) - correct as the window for the next draw, which serving
+reads. `bonus_analyzer.py` read it as the window *before* the draw in two places. The repeat statistic
+(`recent_bonus_exclusion.was_bonus_last_10`) therefore found every bonus in its own list: rate 1.0.
+The recency effect behind `predicted_bonus_score` did the same, giving a "penalty" of 1.0 / 0.2128 =
+4.7 that multiplied every recent bonus ball's score - all ten sat at the 1.0 cap, top of the ranking.
+Nothing reads `predicted_bonus_score`, so no model or page was affected. All three bonus statistics
+also used 10/47 as chance, assuming 10 distinct balls; a 10-draw window averages 9.22, so chance is
+19.6%. That alone made `main_from_recent_bonus` read a 0.92 "boost" for what is 1.00. The Draw History
+page showed the same list as "Last 10 Bonus Numbers", so a draw's own bonus was always highlighted.
+
+**Fix.** `pre_draw_bonus_window(sorted_draws, idx)` returns the previous draw's list; the repeat
+statistic and the recency effect use it, and all three statistics take chance as the window's
+distinct balls / 47. The stored list keeps its meaning - serving needs it. Draw History shows the
+previous draw's list as "Last 10 Bonus Balls Before This Draw".
+
+**Measured.** `drawpick.py`: only `lotto_bonus_analysis.json` changed - repeat rate 1.0 -> 0.183
+(expected 0.196, p = 0.25), `main_from_recent_bonus` boost 0.92 -> 1.00, `recency_penalty` 4.7 ->
+0.93, and the 10 capped `predicted_bonus_score`s dropped. `quickpick.py`: picks identical, largest
+metric change 1.2e-5. Draw History renders with `AppTest`, no exceptions or error boxes.
+
+**Tests.** `tests/test_bonus_window.py` (new, 5 tests): the pre-draw window equals the previous 10
+draws' bonus balls on the real data; on 3,000 simulated fair draws the repeat rate matches chance, the
+main boost is 0.95-1.05 and the recency penalty 0.85-1.15 (old code: 1.0, 0.92, 4.7); Draw History's
+latest table shows the previous draw's list.
 
 ### F-32 — Transition rate divided by bonus balls that could not yet transition
 

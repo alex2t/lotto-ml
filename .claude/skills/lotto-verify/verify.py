@@ -40,6 +40,7 @@ TEST_FILES = [
     'tests/test_bonus_transition_baseline.py',
     'tests/test_trend_significance.py',
     'tests/test_anomaly_detector.py',
+    'tests/test_bonus_window.py',
 ]
 
 # Validation window: 60 draws, 47 numbers, 7 winners per draw
