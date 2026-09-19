@@ -8,9 +8,10 @@ feature.
 
 ## Verified state
 
-Checked against the code on 2026-09-17:
+Checked against the code on 2026-09-19:
 
-- `PointInTimeFeatureEngine.extract_features_for_next_draw()` produces **73 keys** per number.
+- `PointInTimeFeatureEngine.extract_features_for_next_draw()` produces **65 keys** per number (73
+  before F-24 deleted the 8 unused full-history features).
 - Every named feature requested by the six model configs **is** produced. Zero missing.
 
 That second point matters. The historical failure mode here was a config naming a feature that no
@@ -81,10 +82,14 @@ balls**. `features/rolling_stats.py`.
 **Freshness** - `freshness_bin`, `freshness_weight`, `freshness_multiplier`,
 `freshness_weight_score`. Counted over the **main 6**. `features/freshness.py`.
 
-**Patterns** - `has_consecutive_partner`, `appearance_volatility`, `appearance_acceleration`,
-`window_saturation_penalty`. The saturation penalty is driven by
-`data/lotto_odds_results.json`, not by fixed values. It is still computed but no model uses it: the
-last one, Bonus-to-Main, dropped it on 2026-09-19 (F-21), as a C-5 full-history feature.
+**Patterns** - `has_consecutive_partner`, `appearance_volatility`, `appearance_acceleration`.
+
+**Deleted (F-24, 2026-09-19)** - `odd_even_json`, `range_spread_json`, `sum_contribution_json`,
+`series_total`, `series_recent`, `window_saturation_penalty`, `lt_category_alignment`,
+`lt_recency_weight` (and the unexported `lt_*` weights). Per-number statistics over the whole
+timeline, copied unchanged into every training row; no model used any of them after F-21. Their
+source JSON files still exist - the website reads them - only the ML feature code is gone.
+`tests/test_no_constant_features.py` keeps them out of every config.
 
 **Bonus** - `was_recent_bonus`, `was_bonus_last_10`, `total_bonus_count`, `avg_days_between_bonus`,
 `days_since_last_bonus`, `bonus_frequency_ratio`, `is_in_bonus_window`. `features/bonus*.py`.

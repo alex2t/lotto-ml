@@ -76,8 +76,6 @@ def display_data_source_summary():
     print("     • recent_6        - Appearances in last 6 draws")
     print("     • recent_9        - Appearances in last 9 draws")
     print("     • recent_14       - Appearances in last 14 draws")
-    print("     • series_total    - Total streak pattern occurrences")
-    print("     • series_recent   - Recent streak patterns (last 60 days)")
     print("     • category        - Hot/Medium/Cold classification")
     
     print("\n📄 FILE: lotto_odds_results.json")

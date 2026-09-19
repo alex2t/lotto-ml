@@ -19,7 +19,7 @@ VERSION: 3.16 (Pairwise & Triple Interaction Features - Dynamic JSON Loading)
 
 import pandas as pd
 from typing import Dict, Any, List, Tuple
-from ml_lotto.config import MAX_NUMBER, FRESHNESS_PATTERN_WEIGHTS, LONG_TERM_PATTERN_WEIGHTS
+from ml_lotto.config import MAX_NUMBER, FRESHNESS_PATTERN_WEIGHTS
 
 from ml_lotto.features.timing import calculate_recency_zone_score, load_recency_zones
 from ml_lotto.features.walk_forward import hmc_category
@@ -27,13 +27,10 @@ from ml_lotto.features.patterns import (
     calculate_has_consecutive_partner,
     calculate_consecutive_pair_affinity
 )
-from ml_lotto.features.window_saturation import calculate_window_saturation_score
 from ml_lotto.features.interactions import calculate_all_interaction_features, get_interaction_feature_names
-# NOTE: Removed duplicate calculated features - using JSON versions instead:
-# - calculate_bonus_hit_target_alignment → bonus_hit_contribution
-# - calculate_odd_even_affinity → odd_even_json
-# - calculate_sum_contribution_score → sum_contribution_json
-# - calculate_range_spread_affinity → range_spread_json
+# NOTE: calculate_bonus_hit_target_alignment was replaced by the JSON-loaded bonus_hit_contribution.
+# The C-5 full-history features (*_json, series_*, lt_*, window_saturation_penalty) were deleted
+# in F-24: no model used them. Their source JSON stays - the website reads it.
 
 
 def extract_features_from_hmc_json(
@@ -51,10 +48,6 @@ def extract_features_from_hmc_json(
     bonus_hit_contribution_data: Dict[int, float] = None,
     freshness_weight_data: Dict[int, float] = None,
     pair_frequency_data: Dict[int, float] = None,
-    range_spread_json_data: Dict[int, float] = None,
-    odd_even_json_data: Dict[int, float] = None,
-    sum_contribution_json_data: Dict[int, float] = None,
-    long_term_features: Dict[int, Dict[str, float]] = None,
     advanced_pattern_features: Dict[int, Dict[str, float]] = None,
     consecutive_pairs_validated: Dict[str, Any] = None,
     rolling_stats_features: Dict[int, Dict[str, float]] = None,
@@ -79,10 +72,6 @@ def extract_features_from_hmc_json(
         bonus_hit_contribution_data: NEW - Bonus hit contribution scores
         freshness_weight_data: NEW - Freshness weight scores
         pair_frequency_data: NEW - Pair frequency scores
-        range_spread_json_data: NEW - Range spread from JSON
-        odd_even_json_data: NEW - Odd/even affinity from JSON
-        sum_contribution_json_data: NEW - Sum contribution from JSON
-        long_term_features: NEW - Long-term pattern analysis features
         advanced_pattern_features: NEW - Volatility and trend features (v3.13)
         rolling_stats_features: NEW - Rolling statistics features (v3.14)
         reference_date: Date days are counted to - the engine's next_draw_date, so
@@ -149,31 +138,6 @@ def extract_features_from_hmc_json(
     else:
         print(f"  ✓ Loaded pair_frequency data")
     
-    if range_spread_json_data is None:
-        range_spread_json_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
-        print(f"  ⚠️  Using default range_spread_json values")
-    else:
-        print(f"  ✓ Loaded range_spread_json data")
-    
-    if odd_even_json_data is None:
-        odd_even_json_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
-        print(f"  ⚠️  Using default odd_even_json values")
-    else:
-        print(f"  ✓ Loaded odd_even_json data")
-    
-    if sum_contribution_json_data is None:
-        sum_contribution_json_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
-        print(f"  ⚠️  Using default sum_contribution_json values")
-    else:
-        print(f"  ✓ Loaded sum_contribution_json data")
-
-    # Load long-term pattern features
-    if long_term_features is None:
-        long_term_features = {}
-        print(f"  ⚠️  No long-term pattern features provided")
-    else:
-        print(f"  ✓ Loaded long-term pattern features")
-
     # Load advanced pattern features (v3.13)
     if advanced_pattern_features is None:
         advanced_pattern_features = {}
@@ -188,42 +152,18 @@ def extract_features_from_hmc_json(
     else:
         print(f"  ✓ Loaded rolling statistics features ({len(rolling_stats_features)} numbers)")
 
-    # Calculate window saturation scores (NEW v3.10)
-    print("  Calculating window_saturation_penalty feature...")
-    window_saturation_data = {}
-    if odds_data:
-        try:
-            window_saturation_data = calculate_window_saturation_score(
-                hmc_data,
-                odds_data,
-                MAX_NUMBER
-            )
-            print(f"  ✓ Window saturation penalties calculated for {len(window_saturation_data)} numbers")
-        except Exception as e:
-            print(f"  ⚠️  Error calculating window saturation: {e}")
-            window_saturation_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
-    else:
-        print(f"  ⚠️  No odds_data provided - using zero saturation penalties")
-        window_saturation_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
-
     print(f"\n✓ Extracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
-                     'series_total', 'series_recent', 'days_since_bonus',
+                     'days_since_bonus',
                      'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner',
                      'consecutive_pair_affinity',
-                     'bonus_hit_contribution', 'freshness_weight_score', 'pair_frequency_score',
-                     'range_spread_json', 'odd_even_json', 'sum_contribution_json']
+                     'bonus_hit_contribution', 'freshness_weight_score', 'pair_frequency_score']
     fresh_features_names = sorted([k for k in next(iter(freshness_features.values())).keys()
                                    if k.startswith('freshness_c') and k.endswith('_weight')]) if freshness_features and next(iter(freshness_features.values())) else []
-
-    lt_feature_names = ['lt_hot_weight', 'lt_medium_weight', 'lt_cold_weight',
-                        'lt_category_alignment', 'lt_recency_weight'] if long_term_features else []
 
     print(f"  Static features: {base_features}")
     print(f"  Freshness features: {fresh_features_names + ['current_freshness_bin']}")
     print(f"  Dynamic features: {ml_feature_names}")
-    if lt_feature_names:
-        print(f"  Long-term pattern features: {lt_feature_names}")
     
     for num_str in range(1, MAX_NUMBER + 1):
         num = num_str
@@ -234,9 +174,6 @@ def extract_features_from_hmc_json(
         
         current_freshness_bin = fresh_feat.get('current_freshness_bin', 0)
         freshness_weight_score = freshness_weight_data.get(current_freshness_bin, 0.33)
-
-        # Get long-term features for this number
-        lt_feat = long_term_features.get(num, {}) if long_term_features else {}
 
         # Get advanced pattern features for this number (v3.13)
         adv_feat = advanced_pattern_features.get(num, {}) if advanced_pattern_features else {}
@@ -255,8 +192,6 @@ def extract_features_from_hmc_json(
             'category': 'cold',
             'days_since_last': 999,
             'recency_zone_score': calculate_recency_zone_score(999, category='cold', recency_zones_json=recency_zones_json),
-            'series_total': 0,
-            'series_recent': 0,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
             'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
             'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
@@ -265,16 +200,12 @@ def extract_features_from_hmc_json(
             'bonus_hit_contribution': bonus_hit_contribution_data.get(num, 0.5),
             'freshness_weight_score': freshness_weight_score,
             'pair_frequency_score': pair_frequency_data.get(num, 0.5),
-            'range_spread_json': range_spread_json_data.get(num, 0.5),
-            'odd_even_json': odd_even_json_data.get(num, 0.5),
-            'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
             # NEW v3.12: Interaction features
             'freshness_momentum': freshness_momentum_default,
             'freshness_timing': freshness_timing_default,
             'freshness_category_interaction': freshness_category_interaction_default,
             **fresh_feat,
             **recent_fields,
-            **lt_feat,  # Add long-term pattern features
             **adv_feat,  # NEW v3.13: Add advanced pattern features
             **roll_feat,  # NEW v3.14: Add rolling statistics features
         }
@@ -302,28 +233,6 @@ def extract_features_from_hmc_json(
         for data_key, ml_feature_key in dynamic_recent_keys:
             recent_fields[ml_feature_key] = recent_data.get(data_key, 0)
         
-        series_total = 0
-        series_recent = 0
-        
-        if 'series' in num_data and 'series' in num_data['series']:
-            series_patterns = num_data['series']['series']
-            
-            for pattern_name, occurrences in series_patterns.items():
-                for occurrence in occurrences:
-                    series_total += occurrence.get('count', 0)
-                    
-                    try:
-                        end_date_str = occurrence.get('end_date', '').replace('/', '-')
-                        end_date = pd.to_datetime(end_date_str)
-                        days_ago = (current_timestamp - end_date).days
-                        if days_ago <= 60:
-                            series_recent += occurrence.get('count', 0)
-                    except:
-                        pass
-        
-        # Get long-term features for this number
-        lt_feat = long_term_features.get(num, {}) if long_term_features else {}
-
         # Get advanced pattern features for this number (v3.13)
         adv_feat = advanced_pattern_features.get(num, {}) if advanced_pattern_features else {}
 
@@ -351,8 +260,6 @@ def extract_features_from_hmc_json(
             'category': category,
             'days_since_last': days_since,
             'recency_zone_score': calculate_recency_zone_score(days_since, category=category, recency_zones_json=recency_zones_json),
-            'series_total': series_total,
-            'series_recent': series_recent,
             'days_since_bonus': days_since_bonus_data.get(num, 999),
             'win_bias_ratio': win_bias_ratio_data.get(num, 1.0) if win_bias_ratio_data else 1.0,
             'was_recent_bonus': was_recent_bonus_data.get(num, 0) if was_recent_bonus_data else 0,
@@ -361,17 +268,12 @@ def extract_features_from_hmc_json(
             'bonus_hit_contribution': bonus_hit_contribution_data.get(num, 0.5),
             'freshness_weight_score': freshness_weight_score,
             'pair_frequency_score': pair_frequency_data.get(num, 0.5),
-            'range_spread_json': range_spread_json_data.get(num, 0.5),
-            'odd_even_json': odd_even_json_data.get(num, 0.5),
-            'sum_contribution_json': sum_contribution_json_data.get(num, 0.5),
-            'window_saturation_penalty': window_saturation_data.get(num, 0.0),  # NEW v3.10
             # NEW v3.12: Interaction features for better freshness discrimination
             'freshness_momentum': freshness_momentum,
             'freshness_timing': freshness_timing,
             'freshness_category_interaction': freshness_category_interaction,
             **fresh_feat,
             **recent_fields,
-            **lt_feat,  # Add long-term pattern features
             **adv_feat,  # NEW v3.13: Add advanced pattern features
             **roll_feat,  # NEW v3.14: Add rolling statistics features
         }
@@ -419,10 +321,6 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'freshness_category_interaction'  # weight * category_performance
     ]
 
-    # REMOVED v3.13: lt_hot/medium/cold_weight (redundant with days_since_last + category)
-    # Category IS defined by recency in HMC system (perfect multicollinearity)
-    long_term_pattern_features = ['lt_category_alignment', 'lt_recency_weight']
-
     # NEW v3.13: Advanced pattern features (volatility and trend)
     advanced_pattern_features_list = [
         'appearance_volatility',     # Coefficient of variation of gaps
@@ -434,8 +332,7 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
     ]
 
     new_json_features = ['bonus_hit_contribution', 'freshness_weight_score',
-                         'pair_frequency_score', 'range_spread_json',
-                         'odd_even_json', 'sum_contribution_json']
+                         'pair_frequency_score']
 
     # NEW v3.16: Interaction features (dynamically loaded from JSON)
     # Get interaction feature names from the loaded data
@@ -456,7 +353,6 @@ def expand_feature_selection(feature_spec: Any, all_features: List[str]) -> List
         'BONUS_AWARE': ['days_since_bonus'],
         'FRESHNESS_PATTERN': freshness_weights_features_old,  # Old, kept for compatibility
         FRESHNESS_PATTERN_WEIGHTS: freshness_interaction_features,  # NEW v3.12: Use interaction features
-        LONG_TERM_PATTERN_WEIGHTS: long_term_pattern_features,  # UPDATED v3.13: Removed redundant features
         'ADVANCED_PATTERN_FEATURES': advanced_pattern_features_list,  # NEW v3.13: Volatility and trend
         'NEW_JSON_FEATURES': new_json_features,
         # NEW v3.16: Interaction feature keywords
