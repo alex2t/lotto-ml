@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The sixteen real tests (158 tests, ~30s)
+## The seventeen real tests (162 tests, ~30s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -15,7 +15,8 @@ python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invarian
                  tests/test_scraper_sources.py tests/test_wheel.py \
                  tests/test_permutation_check.py tests/test_high_number_distribution.py \
                  tests/test_bonus_predictor.py tests/test_draw_history_numbers.py \
-                 tests/test_site_wording.py tests/test_bonus_transition_baseline.py -q
+                 tests/test_site_wording.py tests/test_bonus_transition_baseline.py \
+                 tests/test_trend_significance.py -q
 ```
 
 This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two in sync.
@@ -37,6 +38,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_draw_history_numbers.py` | the draw history carries each draw's `main_numbers` and `bonus_number`, and Pattern Comparison finds a past draw as its exact match (F-25); past draws are classified with their pre-draw hot/medium/cold, not today's (F-27). Reads `data/*.json` |
 | `test_site_wording.py` | the website describes how typical a line looks, never how likely it is to win: Prediction Validator (F-26), Pattern Comparison, Trigger Periods' sum check and every anomaly alert (F-28), Number Insights' profile and Draw History (F-30) carry no play/avoid/strong/risky advice and say every line is equally likely. Renders pages with Streamlit `AppTest`; reads `data/*.json` |
 | `test_bonus_transition_baseline.py` | on simulated fair draws the bonus-to-main analyzer reports its random baseline as 1 - (41/47)^10 and a boost of ~1.0, not 3.5x; the validator counts any recent bonus ball, with no transition-rate filter (F-30) |
+| `test_trend_significance.py` | the "significant trend" flag flags about 5% of numbers on simulated fair draws (was 61%), still flags a real change in frequency, and flags nothing without an older window (F-31) |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5) |
 
 ## Not tests

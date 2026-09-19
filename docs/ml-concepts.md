@@ -1504,7 +1504,7 @@ optimal_weights = result.x
 - `savgol_filter`: Smooth noisy data
 - `detrend`: Remove long-term trends
 - `find_peaks`: Find peaks and troughs
-- `kendalltau`: Test trend significance
+- `fisher_exact`: Test whether a number came up more often in one window than another
 
 **Example:**
 ```python
@@ -1516,8 +1516,14 @@ raw_freq = [0.1, 0.3, 0.2, 0.4, 0.35, 0.5, 0.45, ...]
 # Smooth it
 smoothed = savgol_filter(raw_freq, window_length=11, polyorder=3)
 
-# Now we can detect real trends vs noise
+# Now we can see the shape of the series more easily
 ```
+
+**Do not test significance on the smoothed series.** A rolling window and a smoothing filter make
+neighbouring points share most of their data, so they are not independent - and every standard
+test assumes they are. This project once ran Kendall's tau on such a series: on simulated fair draws,
+where no trend exists, it called 61% of numbers "significant" instead of about 5%. Test the raw
+counts instead, and check any test on simulated data where you know the answer (F-31).
 
 ---
 
