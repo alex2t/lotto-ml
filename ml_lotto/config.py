@@ -28,25 +28,9 @@ VERSION: 3.16b (ML-Optimized Model 1 with Interaction Features)
 """
 
 # ============================================================================
-# RANDOM SEED CONFIGURATION - ENSEMBLE MODE
+# RANDOM SEED
 # ============================================================================
-# ENSEMBLE MODE: Run models multiple times with different random seeds
-# to identify numbers that are CONSISTENTLY ranked high across runs.
-#
-# Benefits of ensemble voting:
-#   - See which numbers are "robustly" strong picks
-#   - Numbers appearing in 80%+ of runs are very confident picks
-#   - Numbers appearing in 50% of runs are uncertain/borderline
-#   - More reliable than single random initialization
-#
-# Configuration:
-ENSEMBLE_MODE = False # Set to True to enable ensemble mode in quickpick.py (not used currently)
-ENSEMBLE_RUNS = 15    # Number of runs for ensemble.py script (recommend 10-20)
-RANDOM_SEED_BASE = 42 # Base seed - fixed for deterministic results
-
-# Dynamic random seed (will be updated for each ensemble run)
-# This is what model configs will use
-_CURRENT_RANDOM_SEED = RANDOM_SEED_BASE
+RANDOM_SEED_BASE = 42 # Fixed for deterministic results; quickpick.py seeds numpy and random with it
 
 TOTAL_DRAWS = None         # Total number of draws to analyze (None = all available)
 TRAINING_DATA = 100        # Initial training window size for HMC analysis

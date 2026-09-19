@@ -25,34 +25,15 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
-| 2 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
-| 3 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| 4 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 1 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
+| 2 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
+| 3 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
 
-**4 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
-
----
-
-## 1. F-6 — The ensemble machinery cannot be reached from the pipeline
-
-**Severity: Low.**
-
-`ml_lotto/prediction/ensemble.py` (341 lines) is imported only by `scripts/ensemble_predict.py`,
-`scripts/train_with_all_features.py` and three test scripts. `quickpick.py` never imports it, so no
-ensembling happens in the path that produces `lottery_picks.txt`.
-
-The old roadmap used to propose soft voting as an improvement, apparently unaware that hard voting
-already existed but was unreachable. That proposal was removed on 2026-09-18 - averaging four models
-at chance yields a model at chance. `ENSEMBLE_MODE = False` in `ml_lotto/config.py` is commented
-"not used currently", confirming the module is dead either way.
-
-**Fix.** Decide whether ensembling is wanted: wire it into `quickpick.py`, or delete the module and
-the config flag rather than leaving 341 lines that look load-bearing. With all four models at
-chance, ensembling them will not help — resolve the modelling question first.
+**3 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
-## 2. C-6b — The two feature paths use different serving reference dates
+
+## 1. C-6b — The two feature paths use different serving reference dates
 
 **Severity: Low.** Carried from the code review.
 
@@ -70,16 +51,16 @@ predicted should be measured as of that draw — so move `extractor.py` onto the
 date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
 
 ---
-## 3. C-17b — The legacy test files are not tests
+## 2. C-17b — The legacy test files are not tests
 
 **Severity: Low.** Carried from the code review.
 
-Seven of the thirteen pre-existing files in `tests/` contain zero `assert` statements — they are
-print scripts that pass by not raising. Their work also happens at module import, so collecting them
+Six of the eleven legacy files in `tests/` contain zero `assert` statements — they are
+print scripts that pass by not raising (counted 2026-09-19, after F-6 deleted two ensemble scripts). Their work also happens at module import, so collecting them
 under pytest executes data loading and model training:
 
 ```
-test_better_metrics.py  test_ensemble.py  test_interactions.py
+test_better_metrics.py  test_interactions.py
 test_model_specific_features.py  test_rolling_integration.py
 test_rolling_stats_integration.py  test_smote_threshold.py
 ```
@@ -92,7 +73,7 @@ real and run in about 5 seconds. A plain `pytest tests/` still cannot be used be
 `pytest.ini` so `pytest` runs clean from the repo root.
 
 ---
-## 4. F-7 — Standalone analysis scripts read a window that has never existed
+## 3. F-7 — Standalone analysis scripts read a window that has never existed
 
 **Severity: Low.** Carried from the code review, confirmed in the final pass.
 
@@ -262,6 +243,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-6 | Ensemble code was unreachable, and each entry point was broken | deletes `ensemble.py`, `ensemble_predict.py`, `analysis/ensemble.py`; `config.py`, `quickpick.py` |
 | F-20 | Bonus prediction 2 claimed category diversity it never applied | `bonus_predictor.py` |
 | F-5 | A too-small bonus pool crashed with a bare IndexError; the registered divide-by-zero was unreachable | `bonus_predictor.py` |
 | F-16 | Diversity penalty applied twice; the configured percentage barely mattered | `ilp_selection.py`, `predictor.py` (deletes `penalties.py`) |
@@ -281,6 +263,41 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-6 — Ensemble code was unreachable, and each entry point was broken
+
+**Root cause.** Ensembling was added (commit `85d3c41`, 2025-11-21) to combine the four main models
+by vote, but never wired into `quickpick.py`. Checked 2026-09-19, every way in was broken as well
+as unreachable:
+
+- `ml_lotto/prediction/ensemble.py` (341 lines, majority/threshold/weighted/unanimous voting) was
+  imported only by a demo script and legacy print-scripts.
+- `scripts/ensemble_predict.py`: `main()` printed two warnings and returned 0 - it never called
+  the voting code.
+- `ENSEMBLE_MODE = True` in `config.py` only printed a banner claiming "Each model runs 15x with
+  different seeds"; nothing reran anything.
+- `scripts/train_with_all_features.py` voted on `val_proba.argsort()` - row positions in the
+  validation table, not lotto numbers 1-47.
+- `analysis/ensemble.py` reran `quickpick.py` with seeds 42..56 by rewriting `ml_lotto/config.py`
+  in place (a crash mid-run left the source modified), left `lottery_picks.txt` and
+  `model_metrics/` from the last seed rather than 42, had a 120 s timeout against a ~108 s run, and
+  read only Models 1-3.
+
+Beyond the defects, the method cannot help here: averaging cancels independent errors of models
+that carry signal, and every model sits at chance (F-17).
+
+**Fix.** Deleted `ml_lotto/prediction/ensemble.py`, `scripts/ensemble_predict.py`,
+`analysis/ensemble.py`, and the print-scripts `tests/test_ensemble.py` and
+`tests/test_ensemble_predict.py`. Removed `ENSEMBLE_MODE`, `ENSEMBLE_RUNS` and the unused
+`_CURRENT_RANDOM_SEED` from `config.py` and the banner branch from `quickpick.py` (the deterministic
+seed path is now the only one). Stripped the voting step from `scripts/train_with_all_features.py`
+and `tests/test_train_with_all_features.py`. About 1,300 lines removed; recoverable from git.
+
+**Measured before/after.** `lottery_picks.txt` identical apart from its timestamp; metrics
+unchanged against the baseline. Nothing removed was on the path that produces either.
+
+**Tests.** None added - this deletes code rather than changing behaviour. The 127 real tests pass;
+`grep` finds no remaining import of the deleted modules or flags.
 
 ### F-20 — Bonus prediction 2 claimed category diversity it never applied
 

@@ -205,7 +205,7 @@ python .claude/skills/lotto-verify/verify.py
 | **`ml_lotto/models/`** | `trainer.py`, `pipelines.py`, `hyperparameter_tuning.py` | Model architectures, training loops, calibration, and constrained parameter spaces. |
 | **`ml_lotto/prediction/`** | `ilp_selection.py`, `filters.py`, `wheel.py`, `predictor.py` | MILP ticket selection, constraint verification, candidate pooling, and wheeling designs. |
 | **`view/pages/`** | `app.py`, `view/pages/*.py` | 8-page Streamlit web dashboard. Strictly read-only; displays facts for user enjoyment. |
-| **`scripts/`** | `scrape_lotto.py`, `ensemble_predict.py` | Independent utilities; web scraper for new draw ingestion. |
+| **`scripts/`** | `scrape_lotto.py`, `train_with_all_features.py` | Independent utilities; web scraper for new draw ingestion. |
 | **`analysis/`** | `bonus_analysis.py`, exploratory scripts | Phase 11 statistical analysis; exploratory data science scripts. |
 | **`tests/`** | 13 verified test files (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
 | **`docs/`** | `metrics.md`, `features.md`, `models.md`, `json-artifacts.md` | Reference documentation. Code and artifacts always supersede docs in conflicts. |
