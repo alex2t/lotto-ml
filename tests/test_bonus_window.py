@@ -19,6 +19,7 @@ from lotto_analysis.analyzers.bonus_analyzer import (
     calculate_recent_bonus_exclusion,
     pre_draw_bonus_window,
 )
+from ml_lotto.utils.bonus_window import bonus_window_positions
 from view.pages.draw_history import create_draw_table_html
 
 
@@ -84,3 +85,26 @@ def test_draw_history_shows_the_window_before_each_draw():
     previous = ', '.join(str(n) for n in history[dates[-2]]['recent_bonus_numbers'])
     assert 'Last 10 Bonus Balls Before This Draw' in html
     assert f'value="{previous}"' in html
+
+
+def test_a_repeated_bonus_ball_counts_from_its_most_recent_appearance():
+    """
+    draws_since_bonus is how long ago the ball was last the bonus, not the first time (F-36).
+
+    A 10-draw window averages ~9.2 distinct balls, so a repeat is common. Training and serving
+    both read this one function, so both were wrong the same way: number 5 below was served as
+    9 draws ago when it had been the bonus in the most recent draw.
+    """
+    draws = [{'bonus_number': b} for b in [5, 11, 12, 13, 14, 15, 16, 17, 18, 5]]
+    positions = bonus_window_positions(draws)
+    assert positions[5] == 0
+    assert positions[11] == 8
+    assert set(positions) == {5, 11, 12, 13, 14, 15, 16, 17, 18}
+
+
+def test_the_window_holds_the_last_ten_draws_only():
+    """Eleven draws back is outside a 10-draw window, however recently it was the bonus."""
+    draws = [{'bonus_number': b} for b in range(1, 13)]
+    positions = bonus_window_positions(draws)
+    assert set(positions) == set(range(3, 13))
+    assert positions[12] == 0
