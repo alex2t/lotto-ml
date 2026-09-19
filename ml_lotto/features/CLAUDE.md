@@ -53,8 +53,6 @@ moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N)
 | `timing.py` | `days_since_bonus`, `recency_zone_score` |
 | `patterns.py` | consecutive-partner and pair-affinity features |
 | `interactions.py` | applies mined pairwise/triple interactions |
-| `long_term_patterns.py` | reads `lotto_long_term_patterns.json`; its `lt_*` features are used by no model (C-5) - deletion is F-24 |
-| `window_saturation.py` | `window_saturation_penalty` from `lotto_odds_results.json`; used by no model since F-21 - deletion is F-24 |
 | `history.py` | `win_bias_ratio` |
 | `bonus.py`, `bonus_features.py`, `bonus_to_main_features.py` | the two auxiliary models' features |
 | `feature_selection.py` | correlation and importance filtering |

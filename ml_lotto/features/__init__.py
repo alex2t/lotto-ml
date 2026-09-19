@@ -43,11 +43,8 @@ from ml_lotto.features.freshness import (
     calculate_recency_weighted_pattern_score
 )
 
-# NOTE: Removed duplicate calculated features - using JSON versions instead:
-# - calculate_bonus_hit_target_alignment → bonus_hit_contribution
-# - calculate_odd_even_affinity → odd_even_json
-# - calculate_sum_contribution_score → sum_contribution_json
-# - calculate_range_spread_affinity → range_spread_json
+# NOTE: calculate_bonus_hit_target_alignment was replaced by the JSON-loaded bonus_hit_contribution.
+# The *_json, series_*, lt_* and window_saturation_penalty features were deleted in F-24.
 
 from ml_lotto.features.history import (
     extract_win_bias_ratio_from_history

@@ -18,7 +18,6 @@ import pytest
 from ml_lotto.config import (
     BONUS_MODEL_CONFIG,
     BONUS_TO_MAIN_MODEL_CONFIG,
-    LONG_TERM_PATTERN_WEIGHTS,
     MAX_NUMBER,
     MODEL_1_CONFIG,
     MODEL_2_CONFIG,
@@ -165,7 +164,8 @@ def test_the_removed_c5_features_stay_out_of_the_auxiliary_models(label, config)
     Regression: Bonus-to-Main kept window_saturation_penalty, trained on a static
     full-history copy and computed from categories dated at the last draw.
     """
-    back = sorted((C5_REMOVED | {LONG_TERM_PATTERN_WEIGHTS}) & set(config['features']))
+    # The group keyword that used to expand to the lt_* features (deleted in F-24)
+    back = sorted((C5_REMOVED | {'LONG_TERM_PATTERN_WEIGHTS'}) & set(config['features']))
     assert not back, f"{label} uses full-history feature(s) removed in C-5: {back}"
 
 

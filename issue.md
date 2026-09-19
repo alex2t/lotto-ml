@@ -27,9 +27,8 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 |--:|:--|:--|:--|:--|
 | 1 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | 2 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
-| 3 | **F-24** | Delete the full-history features that are computed but used by no model | Improvement | M |
 
-**2 open defects, nothing High; 1 improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -50,6 +49,11 @@ test_rolling_stats_integration.py  test_smote_threshold.py
 The four files added during this review (`test_walk_forward_parity.py`,
 `test_selection_invariants.py`, `test_metrics.py`, `test_no_constant_features.py` — 37 tests) are
 real and run in about 5 seconds. A plain `pytest tests/` still cannot be used because of the others.
+
+They also write real output. `tests/test_train_with_all_features.py` overwrites
+`model_metrics/model_comparison.csv` with two mock models (`Model_1_RF`, `Model_2_Logistic`) -
+found 2026-09-19 when a baseline copied from disk after running it turned out to be mock data.
+Take metric baselines from git until this is fixed.
 
 **Fix.** Convert the useful ones to assertions inside functions, delete the rest, and add a
 `pytest.ini` so `pytest` runs clean from the repo root.
@@ -75,30 +79,38 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 3. F-24 — Delete the full-history features that are computed but used by no model
-
-**Severity: Improvement.** Registered 2026-09-19 after F-21.
-
-Since F-21, no model uses any of the C-5 full-history features, but every run still computes them
-for all 47 numbers: `lt_category_alignment` and `lt_recency_weight` (`long_term_patterns.py`, wired
-in `quickpick.py:501` and `extractor.py`), `window_saturation_penalty` (`window_saturation.py`,
-`extractor.py:192-207`), and `series_*` / `*_json` (see `docs/feature_review.md`). The engine copies
-them into training rows as static values (`walk_forward.py` `static_feat`). They are the code that
-still reads the JSON category dated at the last draw (F-21), and they default missing keys
-(`.get('category', 'cold')`).
-
-`tests/test_no_constant_features.py` keeps them out of all six models, so nothing is wrong today -
-this is dead code that looks load-bearing.
-
-**Fix.** Delete the computations, their `extractor.py` keywords and parameters, the engine's
-`static_feat` lines and the `LONG_TERM_PATTERN_WEIGHTS` constant; keep `C5_REMOVED` in the test so
-none comes back. Check first whether the website reads `lotto_long_term_patterns.json` or
-`lotto_window_saturation_calculated.json` before touching the `drawpick.py` phases that write them.
-
----
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-19 - F-24, delete the ML code for features no model uses.**
+  After F-21 no model used any C-5 full-history feature, but every run still built them for all 47
+  numbers and the engine copied them into training rows as static values. Deleted from `ml_lotto/`
+  only: `features/long_term_patterns.py`, `features/window_saturation.py`, their wiring in
+  `extractor.py` and `quickpick.py`, the engine's `static_feat` lines, the `window_saturation_penalty`
+  copy in `bonus_to_main_features.py`, five loader functions nothing else called
+  (`load_range_spread_analysis`, `load_odd_even_analysis`, `load_sum_contribution_analysis`,
+  `load_long_term_patterns`, the deprecated `load_statistics_analysis`) and the
+  `LONG_TERM_PATTERN_WEIGHTS` / `LONG_TERM_PATTERNS_JSON` constants. The engine now produces 65 keys
+  per number, down from 73; every name the six configs request is still produced.
+
+  **The website is untouched by design.** `drawpick.py`, `data/*.json`, `view/` and `app.py` are
+  unchanged: four of the six source files are read by dashboard pages, and the other two are draw
+  facts the Next.js site may show. `quickpick.py` still loads the three `*_validated.json` files for
+  its scipy summary.
+
+  **Measured.** `lottery_picks.txt` identical to the committed version; all six models +0.0000 on
+  val AUC and Top-7 against the committed `model_comparison.csv`. All 8 dashboard pages rendered
+  headless with Streamlit `AppTest`: no exceptions, no error boxes, and identical element counts
+  before and after. 135 real tests pass. The legacy print-script
+  `tests/test_unified_bonus_to_main_features.py` asserted `window_saturation_penalty` was present;
+  it now asserts the feature is *not* carried through when the input contains it, with its counts
+  corrected (12 -> 11 base, 22 -> 21).
+
+  **Note.** Running the legacy print-script `tests/test_train_with_all_features.py` overwrites
+  `model_metrics/model_comparison.csv` with mock models (`Model_1_RF`, `Model_2_Logistic`). Save a
+  metrics baseline from git (`git show HEAD:model_metrics/model_comparison.csv`), not from disk,
+  after running it. Part of C-17b.
 
 - **2026-09-19 - F-19, steer lines away from popular combinations.**
   Expected *payout* is not uniform even when probability is: birthday numbers (<=31), calendar
