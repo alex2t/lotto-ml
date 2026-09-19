@@ -312,8 +312,8 @@ def show():
     # --- ODD/EVEN ANALYSIS ---
     st.header("⚖️ Odd/Even Pattern Analysis")
     st.markdown("""
-    **Why This Matters for Validation:**
-    - ML predictions should have realistic odd/even ratios
+    **What past draws looked like:**
+    - Most draws have 2-4 odd numbers
     - Historical data shows balanced distribution (≈50/50)
     - Some numbers have statistical preference for odd/even draws
     - Use this to validate your number selections
@@ -423,9 +423,9 @@ def show():
                     with col_val2:
                         st.metric("Even Numbers", even_count, delta=f"{even_pct:.1f}%")
                     with col_val3:
-                        # Check if ratio is realistic
+                        # How common the ratio has been
                         if (odd_count >= 2 and odd_count <= 4):
-                            st.success("✅ Realistic ratio")
+                            st.success("✅ Common ratio")
                         elif (odd_count == 1 or odd_count == 5):
                             st.warning("⚠️ Uncommon ratio")
                         else:

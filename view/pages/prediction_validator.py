@@ -37,7 +37,7 @@ def validate_odd_even(numbers: List[int]) -> Tuple[str, str, float]:
     even_count = 6 - odd_count
 
     if 2 <= odd_count <= 4:
-        return "✅", f"Realistic ratio: {odd_count} odd, {even_count} even", 100.0
+        return "✅", f"Common ratio: {odd_count} odd, {even_count} even", 100.0
     elif odd_count == 1 or odd_count == 5:
         return "⚠️", f"Uncommon ratio: {odd_count} odd, {even_count} even", 60.0
     else:
@@ -60,11 +60,11 @@ def validate_sum(numbers: List[int], sum_data: Dict) -> Tuple[str, str, float]:
     realistic_max = min(267, sum_mean + 2 * sum_std)
 
     if realistic_min <= selected_sum <= realistic_max:
-        return "✅", f"Realistic sum: {selected_sum} (expected: {realistic_min:.0f}-{realistic_max:.0f})", 100.0
+        return "✅", f"Typical sum: {selected_sum} (typical: {realistic_min:.0f}-{realistic_max:.0f})", 100.0
     elif sum_min <= selected_sum <= sum_max:
         return "⚠️", f"Uncommon sum: {selected_sum} (historical: {sum_min}-{sum_max})", 60.0
     else:
-        return "❌", f"Unrealistic sum: {selected_sum} (outside {sum_min}-{sum_max})", 20.0
+        return "❌", f"Sum never seen before: {selected_sum} (outside {sum_min}-{sum_max})", 20.0
 
 
 def validate_hmc_pattern(numbers: List[int], trigger_data: Dict, odds_data: Dict) -> Tuple[str, str, float]:
@@ -122,7 +122,7 @@ def validate_bonus_transition(numbers: List[int], bonus_data: Dict) -> Tuple[str
             candidates.append(num)
 
     if len(candidates) >= 1:
-        return "✅", f"Includes {len(candidates)} high-probability bonus transition candidate(s): {candidates}", 100.0
+        return "✅", f"Includes {len(candidates)} recent bonus transition candidate(s): {candidates}", 100.0
     else:
         return "⚠️", "No recent bonus transition candidates included", 70.0
 
@@ -150,30 +150,30 @@ def validate_range_spread(numbers: List[int]) -> Tuple[str, str, float]:
     max_in_bin = max(bins.values())
 
     if non_empty_bins >= 4 and max_in_bin <= 3:
-        return "✅", f"Good spread: {non_empty_bins} bins covered, range={number_range}", 100.0
+        return "✅", f"Wide spread: {non_empty_bins} bins covered, range={number_range}", 100.0
     elif non_empty_bins >= 3:
-        return "⚠️", f"Fair spread: {non_empty_bins} bins covered, range={number_range}", 70.0
+        return "⚠️", f"Moderate spread: {non_empty_bins} bins covered, range={number_range}", 70.0
     else:
-        return "❌", f"Poor spread: {non_empty_bins} bins covered, range={number_range}", 30.0
+        return "❌", f"Narrow spread: {non_empty_bins} bins covered, range={number_range}", 30.0
 
 
 def calculate_overall_score(scores: List[float]) -> Tuple[int, str, str]:
     """
-    Calculate overall confidence score.
+    Score how typical a line looks next to past draws. It is not a chance of winning (F-26).
     Returns: (score, grade, color)
     """
     avg_score = sum(scores) / len(scores)
 
     if avg_score >= 90:
-        return int(avg_score), "A+ Excellent", "green"
+        return int(avg_score), "A+ Very typical", "green"
     elif avg_score >= 80:
-        return int(avg_score), "A Good", "lightgreen"
+        return int(avg_score), "A Typical", "lightgreen"
     elif avg_score >= 70:
-        return int(avg_score), "B Fair", "yellow"
+        return int(avg_score), "B Fairly typical", "yellow"
     elif avg_score >= 60:
-        return int(avg_score), "C Risky", "orange"
+        return int(avg_score), "C Less typical", "orange"
     else:
-        return int(avg_score), "D Poor", "red"
+        return int(avg_score), "D Unusual", "red"
 
 
 def show_high_number_check(numbers: List[int]):
@@ -222,8 +222,8 @@ def show():
     **Comprehensive ML Prediction Validation Tool**
 
     Enter your 6 numbers (from quickpick.py or manual selection) to get instant validation
-    across multiple statistical dimensions. This tool helps you identify potential issues
-    before playing.
+    across multiple statistical dimensions. It shows how typical your line looks next to past
+    draws. Every line has the same chance of winning, whatever its score.
     """)
 
     # Load validation data
@@ -340,7 +340,7 @@ def show():
 
             # Automated Anomaly Detection
             st.markdown("---")
-            st.header("⚠️ Automated Anomaly Detection")
+            st.header("⚠️ What Looks Unusual")
 
             alerts, alert_summary = detect_anomalies(numbers)
 
@@ -352,22 +352,13 @@ def show():
                 st.metric("Total Alerts", total_alerts)
 
             with col_alert2:
-                critical_count = alert_summary.get('critical', 0)
-                if critical_count > 0:
-                    st.metric("🚨 Critical", critical_count, delta="High Risk", delta_color="inverse")
-                else:
-                    st.metric("🚨 Critical", critical_count)
+                st.metric("Very unusual", alert_summary['critical'])
 
             with col_alert3:
-                warning_count = alert_summary.get('warning', 0)
-                if warning_count > 0:
-                    st.metric("⚠️ Warning", warning_count, delta="Review", delta_color="off")
-                else:
-                    st.metric("⚠️ Warning", warning_count)
+                st.metric("Unusual", alert_summary['warning'])
 
             with col_alert4:
-                info_count = alert_summary.get('info', 0)
-                st.metric("ℹ️ Info", info_count)
+                st.metric("Note", alert_summary['info'])
 
             # Display individual alerts
             if alerts:
@@ -382,7 +373,7 @@ def show():
                 if critical_alerts:
                     for alert in critical_alerts:
                         with st.container():
-                            st.error(f"**🚨 {alert['category']}: {alert['message']}**")
+                            st.warning(f"**{alert['category']}: {alert['message']}**")
                             if alert.get('details'):
                                 st.caption(alert['details'])
 
@@ -390,7 +381,7 @@ def show():
                 if warning_alerts:
                     for alert in warning_alerts:
                         with st.container():
-                            st.warning(f"**⚠️ {alert['category']}: {alert['message']}**")
+                            st.info(f"**{alert['category']}: {alert['message']}**")
                             if alert.get('details'):
                                 st.caption(alert['details'])
 
@@ -398,12 +389,12 @@ def show():
                 if info_alerts:
                     for alert in info_alerts:
                         with st.container():
-                            st.info(f"**ℹ️ {alert['category']}: {alert['message']}**")
+                            st.info(f"**{alert['category']}: {alert['message']}**")
                             if alert.get('details'):
                                 st.caption(alert['details'])
 
             else:
-                st.success("✅ **No anomalies detected!** Your selection passes all automated checks.")
+                st.success("**Nothing unusual.** Your line looks like a typical past draw on every check.")
 
             # Overall Score
             st.markdown("---")
@@ -418,11 +409,11 @@ def show():
 
             with col_final2:
                 if final_score >= 80:
-                    st.success("✅ **RECOMMENDED** - Play with confidence!")
+                    st.success("**Typical of past draws**")
                 elif final_score >= 60:
-                    st.warning("⚠️ **CAUTION** - Consider adjustments")
+                    st.info("**Somewhat typical of past draws**")
                 else:
-                    st.error("❌ **NOT RECOMMENDED** - Regenerate numbers")
+                    st.info("**Unusual next to past draws**")
 
             with col_final3:
                 st.metric("Grade", grade)
@@ -437,12 +428,15 @@ def show():
                 })
                 st.dataframe(breakdown_df, hide_index=True, width=800)
 
-            # Recommendations
+            st.caption("The score measures resemblance to past draws, not your chance of winning. "
+                       "Every line is equally likely to win.")
+
+            # What makes the line less typical
             st.markdown("---")
-            st.subheader("💡 Recommendations")
+            st.subheader("💡 What Makes It Less Typical")
 
             if final_score < 80:
-                st.markdown("**Suggested Improvements:**")
+                st.markdown("**For a more typical-looking line, if you want one:**")
 
                 if score1 < 100:
                     st.write("- ⚖️ Adjust odd/even ratio to 2-4 odd numbers")
@@ -455,7 +449,7 @@ def show():
                 if score5 < 100:
                     st.write("- 📏 Spread numbers across more ranges (1-10, 11-20, etc.)")
             else:
-                st.success("✅ Your selection looks statistically sound! No improvements needed.")
+                st.success("Your line looks typical of past draws on every check.")
 
         except ValueError:
             st.error("❌ Invalid input. Please enter 6 numbers separated by commas.")
@@ -469,12 +463,12 @@ def show():
         with st.expander("📖 What Gets Validated?"):
             st.markdown("""
             **1. Odd/Even Ratio**
-            - Checks if you have a realistic mix of odd and even numbers
-            - Optimal: 2-4 odd numbers (most common historically)
+            - How common your mix of odd and even numbers has been
+            - Most common: 2-4 odd numbers
 
             **2. Sum Validation**
-            - Verifies the sum of your 6 numbers is realistic
-            - Optimal: 84-206 (mean ± 2 standard deviations)
+            - How typical the sum of your 6 numbers is
+            - Typical: 84-206 (mean ± 2 standard deviations)
 
             **3. HMC Pattern**
             - Validates your Hot-Medium-Cold distribution
@@ -488,9 +482,11 @@ def show():
             - Ensures numbers are well-distributed across 1-47
             - Optimal: Numbers in 4+ different range bins
 
-            **Overall Score:**
-            - A (80-100): Excellent, play with confidence
-            - B (70-79): Good, minor adjustments optional
-            - C (60-69): Fair, consider regenerating
-            - D (<60): Poor, definitely regenerate
+            **Overall Score** - how typical the line looks, not its chance of winning:
+            - A (80-100): typical of past draws
+            - B (70-79): fairly typical
+            - C (60-69): less typical
+            - D (<60): unusual next to past draws
+
+            Every line is equally likely to win, whatever its score.
             """)

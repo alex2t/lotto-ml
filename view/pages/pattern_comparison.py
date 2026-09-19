@@ -48,22 +48,19 @@ def load_comparison_data():
     return data
 
 
+def count_hmc(categories: List[str]) -> Tuple[int, int, int]:
+    """Count hot, medium and cold in a list of category names."""
+    return categories.count('hot'), categories.count('medium'), categories.count('cold')
+
+
 def get_hmc_pattern(numbers: List[int], trigger_data: Dict) -> Tuple[int, int, int]:
-    """Get HMC pattern for a set of numbers."""
-    hot_count = 0
-    medium_count = 0
-    cold_count = 0
+    """HMC pattern of the player's line, using the categories as of the latest draw."""
+    return count_hmc([trigger_data[str(num)]['category'] for num in numbers])
 
-    for num in numbers:
-        category = trigger_data.get(str(num), {}).get('category', 'medium')
-        if category == 'hot':
-            hot_count += 1
-        elif category == 'cold':
-            cold_count += 1
-        else:
-            medium_count += 1
 
-    return hot_count, medium_count, cold_count
+def get_draw_hmc_pattern(draw_data: Dict) -> Tuple[int, int, int]:
+    """HMC pattern of a past draw's main 6, using the categories in force before that draw (F-27)."""
+    return count_hmc([d['category'] for d in draw_data['winning_numbers_details'] if not d['is_bonus']])
 
 
 def get_odd_even_pattern(numbers: List[int]) -> Tuple[int, int]:
@@ -147,7 +144,7 @@ def calculate_similarity_score(pattern1: Dict, pattern2: Dict) -> float:
     return (score / max_score) * 100 if max_score > 0 else 0
 
 
-def find_similar_draws(prediction_pattern: Dict, draw_history: Dict, trigger_data: Dict, top_n: int = 10) -> List[Dict]:
+def find_similar_draws(prediction_pattern: Dict, draw_history: Dict, top_n: int = 10) -> List[Dict]:
     """Find the most similar historical draws."""
     similarities = []
 
@@ -158,7 +155,7 @@ def find_similar_draws(prediction_pattern: Dict, draw_history: Dict, trigger_dat
 
         # Calculate pattern for this historical draw
         draw_pattern = {
-            'hmc': get_hmc_pattern(main_numbers, trigger_data),
+            'hmc': get_draw_hmc_pattern(draw_data),
             'odd_even': get_odd_even_pattern(main_numbers),
             'sum': sum(main_numbers),
             'range_dist': get_range_pattern(main_numbers),
@@ -187,7 +184,8 @@ def show():
 
     st.markdown("""
     Enter your 6-number prediction to compare it against historical winning patterns.
-    This tool identifies similar past draws and helps validate your selection.
+    It finds past draws with a similar shape and shows how common your line's shape has been.
+    Every line is equally likely to win, whatever its shape.
     """)
 
     # Input section
@@ -263,9 +261,9 @@ def show():
         realistic_min = max(21, sum_mean - 2 * sum_std)
         realistic_max = min(267, sum_mean + 2 * sum_std)
         if realistic_min <= total_sum <= realistic_max:
-            st.caption("✅ Realistic")
+            st.caption("Typical")
         else:
-            st.caption("⚠️ Unusual")
+            st.caption("Unusual")
 
     with col4:
         st.metric("Consecutive", "Yes" if has_cons else "No")
@@ -289,7 +287,7 @@ def show():
     Similarity is calculated using HMC pattern, odd/even ratio, sum, range distribution, and consecutive numbers.
     """)
 
-    similar_draws = find_similar_draws(prediction_pattern, draw_history, trigger_data, top_n=15)
+    similar_draws = find_similar_draws(prediction_pattern, draw_history, top_n=15)
 
     if similar_draws:
         # Display top matches
@@ -327,7 +325,7 @@ def show():
 
         # Count how often this pattern has won
         hmc_matches = sum(1 for draw in draw_history.values()
-                          if get_hmc_pattern(draw['main_numbers'], trigger_data) == hmc)
+                          if get_draw_hmc_pattern(draw) == hmc)
 
         oe_matches = sum(1 for draw in draw_history.values()
                          if get_odd_even_pattern(draw['main_numbers']) == odd_even)
@@ -352,88 +350,84 @@ def show():
             )
             st.caption(f"Pattern: {odd_even[0]} Odd / {odd_even[1]} Even")
 
-        # Pattern strength assessment
+        # How typical the line's shape is - not a chance of winning (F-28)
         st.markdown("---")
-        st.header("💡 Pattern Assessment")
+        st.header("💡 How Typical Is This Shape")
 
         assessment_score = 0
-        strengths = []
-        weaknesses = []
+        common = []
+        uncommon = []
 
         # Assess HMC frequency
         hmc_freq_pct = (hmc_matches / total_draws * 100) if total_draws > 0 else 0
         if hmc_freq_pct >= 5:
             assessment_score += 25
-            strengths.append(f"✅ HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C appears in {hmc_freq_pct:.1f}% of wins (Common)")
+            common.append(f"HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C appears in {hmc_freq_pct:.1f}% of past draws (common)")
         elif hmc_freq_pct >= 2:
             assessment_score += 15
-            strengths.append(f"✅ HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C appears in {hmc_freq_pct:.1f}% of wins (Moderate)")
+            common.append(f"HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C appears in {hmc_freq_pct:.1f}% of past draws (moderately common)")
         elif hmc_freq_pct > 0:
             assessment_score += 5
-            weaknesses.append(f"⚠️ HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C is rare ({hmc_freq_pct:.1f}% of wins)")
+            uncommon.append(f"HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C is rare ({hmc_freq_pct:.1f}% of past draws)")
         else:
-            weaknesses.append(f"❌ HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C has NEVER won")
+            uncommon.append(f"HMC pattern {hmc[0]}H-{hmc[1]}M-{hmc[2]}C has not appeared in past draws")
 
         # Assess Odd/Even
         oe_freq_pct = (oe_matches / total_draws * 100) if total_draws > 0 else 0
         if oe_freq_pct >= 10:
             assessment_score += 25
-            strengths.append(f"✅ Odd/Even {odd_even[0]}/{odd_even[1]} is common ({oe_freq_pct:.1f}% of wins)")
+            common.append(f"Odd/Even {odd_even[0]}/{odd_even[1]} is common ({oe_freq_pct:.1f}% of past draws)")
         elif oe_freq_pct >= 5:
             assessment_score += 15
-            strengths.append(f"✅ Odd/Even {odd_even[0]}/{odd_even[1]} is moderate ({oe_freq_pct:.1f}% of wins)")
+            common.append(f"Odd/Even {odd_even[0]}/{odd_even[1]} is moderately common ({oe_freq_pct:.1f}% of past draws)")
         else:
-            weaknesses.append(f"⚠️ Odd/Even {odd_even[0]}/{odd_even[1]} is uncommon ({oe_freq_pct:.1f}% of wins)")
+            uncommon.append(f"Odd/Even {odd_even[0]}/{odd_even[1]} is uncommon ({oe_freq_pct:.1f}% of past draws)")
 
         # Assess sum
         if realistic_min <= total_sum <= realistic_max:
             assessment_score += 20
-            strengths.append(f"✅ Sum ({total_sum}) is within realistic range ({realistic_min:.0f}-{realistic_max:.0f})")
+            common.append(f"Sum ({total_sum}) is within the typical range ({realistic_min:.0f}-{realistic_max:.0f})")
         else:
-            weaknesses.append(f"⚠️ Sum ({total_sum}) is outside realistic range ({realistic_min:.0f}-{realistic_max:.0f})")
+            uncommon.append(f"Sum ({total_sum}) is outside the typical range ({realistic_min:.0f}-{realistic_max:.0f})")
 
         # Assess top similarity
         if best_match['similarity'] >= 80:
             assessment_score += 20
-            strengths.append(f"✅ Very strong match with historical win on {best_match['date']} ({best_match['similarity']:.1f}% similar)")
+            common.append(f"Close match to the draw on {best_match['date']} ({best_match['similarity']:.1f}% similar)")
         elif best_match['similarity'] >= 60:
             assessment_score += 10
-            strengths.append(f"✅ Good match with historical wins (best: {best_match['similarity']:.1f}% similar)")
+            common.append(f"Fairly close match to past draws (best: {best_match['similarity']:.1f}% similar)")
         else:
-            weaknesses.append(f"⚠️ Limited similarity to historical wins (best: {best_match['similarity']:.1f}%)")
+            uncommon.append(f"No close match among past draws (best: {best_match['similarity']:.1f}%)")
 
         # Assess range distribution
         range_values = list(range_dist.values())
         if 0 not in range_values and max(range_values) <= 3:
             assessment_score += 10
-            strengths.append("✅ Good range distribution across all segments")
+            common.append("Numbers spread across all five ranges")
         elif 0 in range_values:
-            weaknesses.append("⚠️ Some number ranges are not covered")
+            uncommon.append("Some number ranges are empty")
 
-        # Final verdict
         if assessment_score >= 75:
-            st.success(f"🌟 **STRONG PATTERN** (Score: {assessment_score}/100)")
-            st.markdown("This pattern has excellent historical precedent!")
+            st.info(f"**Very typical shape** (Score: {assessment_score}/100)")
         elif assessment_score >= 50:
-            st.info(f"👍 **GOOD PATTERN** (Score: {assessment_score}/100)")
-            st.markdown("This pattern shows reasonable historical alignment.")
+            st.info(f"**Typical shape** (Score: {assessment_score}/100)")
         elif assessment_score >= 25:
-            st.warning(f"⚖️ **MODERATE PATTERN** (Score: {assessment_score}/100)")
-            st.markdown("This pattern has some historical support but also concerns.")
+            st.info(f"**Less typical shape** (Score: {assessment_score}/100)")
         else:
-            st.error(f"⛔ **WEAK PATTERN** (Score: {assessment_score}/100)")
-            st.markdown("This pattern has limited historical precedent.")
+            st.info(f"**Unusual shape** (Score: {assessment_score}/100)")
+        st.caption("The score measures how much your line looks like past draws, not your chance of "
+                   "winning. Every line is equally likely to win.")
 
-        # Show details
-        if strengths:
-            st.markdown("**Pattern Strengths:**")
-            for strength in strengths:
-                st.markdown(f"- {strength}")
+        if common:
+            st.markdown("**Common in past draws:**")
+            for item in common:
+                st.markdown(f"- {item}")
 
-        if weaknesses:
-            st.markdown("**Pattern Considerations:**")
-            for weakness in weaknesses:
-                st.markdown(f"- {weakness}")
+        if uncommon:
+            st.markdown("**Less common in past draws:**")
+            for item in uncommon:
+                st.markdown(f"- {item}")
 
     else:
         st.warning("No similar historical draws found. This might indicate an unusual pattern.")
