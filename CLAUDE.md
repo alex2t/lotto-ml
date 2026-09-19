@@ -154,13 +154,13 @@ feature families were silently always-1 or always-0.
 
 ## Working on this codebase
 
-**Measure before refactoring.** All six models sit at validation AUC 0.50-0.55 with Top-7 lift
-0.90-1.18 over the same 60 draws - chance, which is the correct answer for a fair draw. A change
-that does not move those numbers has not helped. `model_metrics/model_comparison.csv` is the
-scoreboard; the 2 SE noise floor is ~0.031 AUC and ~0.227 Top-7 AvgCaught. Train/validation AUC
-gaps are 0.002-0.078; a model whose gap climbs back above ~0.1 has been given capacity to memorise
-with, and the constrained parameters in `config.py` plus the tuning grids in
-`hyperparameter_tuning.py` must both be kept that way.
+**Measure before refactoring.** All six models sit at chance - validation AUC close to 0.50 - which
+is the correct answer for a fair draw. A change that does not move the numbers by more than the noise
+floor has not helped. `model_metrics/model_comparison.csv` is the scoreboard; the 2 SE noise floor
+is ~0.031 AUC and ~0.227 Top-7 AvgCaught over the 60 validation draws. A model whose train/validation
+AUC gap climbs above ~0.1 has been given capacity to memorise with, and the constrained parameters
+in `config.py` plus the tuning grids in `hyperparameter_tuning.py` must both be kept that way. Example figures are in `docs/metrics.md`,
+the only file that quotes them - do not copy numbers from it into another file.
 
 **Distrust silent defaults.** Most bugs found here were `.get(key, 0)` fabricating a constant for a
 field that did not exist - phantom `total_count` and `recent_14` columns, vacuous interaction

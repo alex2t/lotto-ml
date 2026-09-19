@@ -25,11 +25,58 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
+| 1 | **F-25** | Pattern Comparison reads `main_numbers`, a key the draw history has never had | Medium | S |
+| 2 | **F-26** | Prediction Validator tells players "Play with confidence" | Low | XS |
 
-**No open defects; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
+## 1. F-25 — Pattern Comparison reads a key the draw history has never had
+
+**Severity: Medium.** A website feature has never worked. Found 2026-09-19 by rendering the page with
+real input.
+
+`data/lotto_draw_history.json` stores each draw's balls in `winning_numbers_details` (seven entries,
+the bonus flagged `is_bonus`). No entry has `main_numbers` or `bonus_number` - 0 of 498, and none in
+the version committed when the page was added (`70f053c`, 2025-11-23). Three dashboard reads use them
+with a silent default:
+
+- `view/pages/pattern_comparison.py:155` - `draw_data.get('main_numbers', [])` gives `[]` for every
+  draw, so `find_similar_draws` skips all 498 and returns nothing. The page answers every line - even
+  the actual 14 Sep 2026 draw, typed in exactly - with "No similar historical draws found. This might
+  indicate an unusual pattern." The "Pattern Frequency in Historical Wins" section (`:329-333`) sits in
+  the same branch and never renders; its counts would be 0 anyway. `:174` reads `bonus_number` the
+  same way.
+- `view/utils/anomaly_detector.py:310` - the Prediction Validator's "exact same numbers drawn
+  recently" alert compares against `[]` and can never fire.
+
+The page does not crash, which is why this went unseen: `.get(key, [])` turned a missing key into a
+normal-looking "no match".
+
+**Fix.** Make the data carry what the page needs, in the website's API: have `drawpick.py` write
+`main_numbers` and `bonus_number` into each `lotto_draw_history.json` entry, which is also what the
+Next.js site will want. Or read `winning_numbers_details` in the page. Either way, replace the
+`.get(..., [])` with a direct key access so a missing field raises. Confirm with Streamlit `AppTest`:
+a past draw entered on Pattern Comparison must find at least itself.
+
+---
+## 2. F-26 — Prediction Validator tells players "Play with confidence"
+
+**Severity: Low.** Found 2026-09-19.
+
+`view/pages/prediction_validator.py:421` shows "RECOMMENDED - Play with confidence!" for a high
+score, `:425` "NOT RECOMMENDED - Regenerate numbers" for a low one, and the grade legend at `:492`
+reads "A (80-100): Excellent, play with confidence". In a fair draw every line is equally likely to
+win - the page says so itself at `:183`, and the root `CLAUDE.md` says the site must never score a
+line as more likely to win. The score measures how typical a line looks next to past draws, not its
+chance.
+
+**Fix.** Reword the verdicts and the legend to describe typicality ("typical of past draws" /
+"unusual next to past draws"), with no advice to play or regenerate. The score itself can stay; it is
+documented in `view/pages/CLAUDE.md` as a measure of resemblance.
+
+---
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
@@ -54,7 +101,8 @@ Kept for the record; each is complete and covered by tests.
   val AUC and Top-7 against the committed `model_comparison.csv`. All 8 dashboard pages rendered
   headless with Streamlit `AppTest`: no exceptions, no error boxes, and identical element counts
   before and after. 135 real tests pass. The legacy print-script
-  `tests/test_unified_bonus_to_main_features.py` asserted `window_saturation_penalty` was present;
+  `tests/test_unified_bonus_to_main_features.py` (now `demos/demo_unified_bonus_to_main_features.py`,
+  C-17b) asserted `window_saturation_penalty` was present;
   it now asserts the feature is *not* carried through when the input contains it, with its counts
   corrected (12 -> 11 base, 22 -> 21).
 
@@ -170,21 +218,17 @@ Kept for the record; each is complete and covered by tests.
 
 ## Reality check
 
-All six models are now measured out-of-sample on the same 60-draw hold-out, and all six sit at
-**validation AUC 0.498-0.545 with Top-7 lift 1.01-1.12**. The 2 SE noise floor is 0.031 AUC and
-0.227 Top-7 AvgCaught, so every one of them is at chance. That is the correct answer for a fair
-draw, and it is the real result of the review and fix work.
-
-Train/validation AUC gaps are now 0.005-0.053 across all six, down from a 0.383 worst case, so the
-training numbers can be trusted as a diagnostic rather than reflecting memorised noise.
+All six models are measured out-of-sample on the same 60-draw hold-out, and all six sit at chance -
+validation AUC close to 0.50, every difference inside the 2 SE noise floor (~0.031 AUC, ~0.227 Top-7
+AvgCaught). That is the correct answer for a fair draw. The worst train/validation gap was once 0.383
+(C-15b); the alarm is ~0.1. Figures are in `model_metrics/model_comparison.csv`, with a dated example
+in `docs/metrics.md` - they are not repeated here, so a new draw never makes this file stale.
 
 Read the scoreboard in this order: AUC, PR-AUC lift and per-draw Top-K lift first, since they are
 threshold-free; the precision / recall / F1 columns last, because maximising F1 at a ~15% positive
 rate parks the threshold near the base rate by construction.
 
-None of the open items above will move those numbers, and none should be expected to. What is left
-is hygiene, latent crashes and one honest question (F-8) about whether the freshness mechanism earns
-its place at all.
+No open item is expected to move those numbers. The open items are about the website.
 
 ---
 
@@ -235,6 +279,17 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+| N-3 | Top-K computed globally instead of per draw; overfit gap zero by construction | `model_metrics.py` |
+| N-4 | Bonus-pool tie-break non-deterministic | `bonus_predictor.py` |
+| N-5 | Two models could be assigned the same bonus ball | `quickpick.py` |
+| — | `total_count` train/serve window mismatch | `drawpick.py` |
+| — | Pipeline crashed at shutdown on the Tk matplotlib backend | `model_metrics.py`, `trend_analyzer.py` |
+| — | Interaction thresholds: phantom features, vacuous splits, empty cells, mismatched recency | `feature_interaction_analyzer.py`, `interaction_thresholds.py` |
+| — | Duplicate interaction script overwriting pipeline output | `feature_interaction_explorer.py` |
+| — | main-6 / all-7 split corrupting the freshness selection target | `drawpick.py`, `walk_forward.py` |
+
+The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
+original reports are in git history.
 
 ### F-7 — Two analysis scripts read a window that has never existed
 
@@ -762,18 +817,6 @@ existing 79: `test_walk_forward_parity.py` (parity across the artifacts this tou
 **Note for the future.** The system is deliberately **not** 85/15 end to end. ML training holds out
 15% (`ml_lotto/config.py`). The analysis layer computes over all draws, which is correct for
 serving-time artifacts. Do not "harmonise" them.
-| N-3 | Top-K computed globally instead of per draw; overfit gap zero by construction | `model_metrics.py` |
-| N-4 | Bonus-pool tie-break non-deterministic | `bonus_predictor.py` |
-| N-5 | Two models could be assigned the same bonus ball | `quickpick.py` |
-| — | `total_count` train/serve window mismatch | `drawpick.py` |
-| — | Pipeline crashed at shutdown on the Tk matplotlib backend | `model_metrics.py`, `trend_analyzer.py` |
-| — | Interaction thresholds: phantom features, vacuous splits, empty cells, mismatched recency | `feature_interaction_analyzer.py`, `interaction_thresholds.py` |
-| — | Duplicate interaction script overwriting pipeline output | `feature_interaction_explorer.py` |
-| — | main-6 / all-7 split corrupting the freshness selection target | `drawpick.py`, `walk_forward.py` |
-
-The six fixed on 2026-09-16/17 — **F-1**, **F-2**, **F-3**, **F-4**, **C-14**, **C-15b** — are written up
-below in full, because each one's root cause is the kind that comes back. The original reports are
-in git history.
 
 ### F-1 — The freshness target was sized for 7 balls while a line has 6 slots
 
