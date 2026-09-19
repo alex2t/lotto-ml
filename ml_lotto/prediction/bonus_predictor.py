@@ -33,6 +33,9 @@ def generate_bonus_predictions(
         category_dict: HMC category for each number
         num_predictions: Number of predictions to generate (default: 3)
 
+    Raises:
+        ValueError: if fewer than num_predictions numbers remain after excluding recent bonus balls.
+
     Returns:
         Tuple of (selected_numbers, all_predictions_data)
         - selected_numbers: List of predicted bonus numbers (length = num_predictions)
@@ -76,6 +79,13 @@ def generate_bonus_predictions(
     
     # Deterministic ordering: highest probability first, ties broken by lowest number
     available_pool.sort(key=lambda x: (-x[1], x[0]))
+
+    # F-5: fail here, clearly, rather than with a bare IndexError in the selection loop.
+    if len(available_pool) < num_predictions:
+        raise ValueError(
+            f"Bonus pool has {len(available_pool)} numbers after recent-bonus exclusions; "
+            f"{num_predictions} predictions requested"
+        )
     
     predictions = []
     used_categories = set()
@@ -89,7 +99,7 @@ def generate_bonus_predictions(
         
         elif i == 1:
             for num, prob, cat in available_pool[1:]:
-                if num not in predictions and cat != used_categories:
+                if num not in predictions and cat not in used_categories:
                     selected_num, selected_prob, selected_cat = num, prob, cat
                     print(f"    Prediction {i+1}: #{selected_num} (prob={selected_prob:.4f}, cat={selected_cat}) - Category diversity")
                     break
@@ -156,4 +166,4 @@ def assign_bonus_to_models(
     for model_idx, bonus_num in assignments.items():
         print(f"    Model {model_idx} → Bonus #{bonus_num}")
     
-    return assignments
+    return assignments
