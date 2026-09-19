@@ -5,9 +5,9 @@ Test script to verify unified bonus-to-main features implementation.
 
 Tests:
 1. create_unified_bonus_to_main_features() properly merges all features
-2. Feature counts are correct (12 base + 10 main + ~13 interactions)
+2. Feature counts are correct (11 base + 10 main + ~13 interactions)
 3. All expected feature names are present
-4. window_saturation_penalty bug is fixed
+4. window_saturation_penalty is not carried into bonus-to-main features (F-21, F-24)
 5. bonus_to_main_trainer.py can handle unified features dynamically
 """
 
@@ -82,17 +82,17 @@ def test_unified_bonus_to_main_features():
         for i in range(1, 11)
     ]
 
-    # Test 1: Verify window_saturation_penalty bug fix
-    print("\n  Test 1: Verify window_saturation_penalty bug fix")
+    # Test 1: the C-5 full-history feature must not be copied through, even when present in the input
+    print("\n  Test 1: window_saturation_penalty stays out (F-21, F-24)")
     base_features = extract_bonus_to_main_features_dict(
         bonus_to_main_data,
         main_features_dict,
         current_bonus_window
     )
     sample_base = base_features[1]
-    assert 'window_saturation_penalty' in sample_base, "BUG: window_saturation_penalty missing!"
-    print(f"    ✓ window_saturation_penalty bug FIXED!")
-    print(f"    ✓ Base features count: {len(sample_base)} (expected 12)")
+    assert 'window_saturation_penalty' not in sample_base, "window_saturation_penalty was copied through"
+    print(f"    ✓ window_saturation_penalty not carried through")
+    print(f"    ✓ Base features count: {len(sample_base)} (expected 11)")
 
     # Test 2: Unified features WITHOUT interactions
     print("\n  Test 2: Unified features WITHOUT interactions")
@@ -105,18 +105,18 @@ def test_unified_bonus_to_main_features():
 
     sample_features_no_interact = unified_no_interact[1]
     print(f"    Features in number 1: {len(sample_features_no_interact)}")
-    print(f"    Expected: 22 (12 base + 10 main)")
+    print(f"    Expected: 21 (11 base + 10 main)")
 
     # Verify base features
     base_feature_names = [
         'is_in_bonus_window', 'draws_since_bonus', 'historical_transition_rate',
         'category_multiplier', 'freshness_multiplier', 'timing_decay_weight',
-        'composite_transition_score', 'window_saturation_penalty',
+        'composite_transition_score',
         'avg_draws_to_transition', 'recent_4', 'recent_9', 'total_count'
     ]
     for feat in base_feature_names:
         assert feat in sample_features_no_interact, f"Missing base feature: {feat}"
-    print(f"    ✓ All 12 base features present")
+    print(f"    ✓ All 11 base features present")
 
     # Verify main features
     main_feature_names = [
@@ -140,7 +140,7 @@ def test_unified_bonus_to_main_features():
 
         sample_features_with_interact = unified_with_interact[1]
         print(f"    Features in number 1: {len(sample_features_with_interact)}")
-        print(f"    Expected: ~35 (12 base + 10 main + ~13 interactions)")
+        print(f"    Expected: ~34 (11 base + 10 main + ~13 interactions)")
 
         # Count interaction features
         interaction_count = sum(
@@ -162,16 +162,16 @@ def test_unified_bonus_to_main_features():
     print("\n  Test 4: get_unified_bonus_to_main_feature_names()")
     feature_names = get_unified_bonus_to_main_feature_names(include_interactions=False)
     print(f"    Feature names (no interactions): {len(feature_names)}")
-    assert len(feature_names) == 22, f"Expected 22 features, got {len(feature_names)}"
+    assert len(feature_names) == 21, f"Expected 21 features, got {len(feature_names)}"
     print(f"    ✓ Correct number of feature names")
 
     print("\n" + "="*80)
     print("✅ ALL TESTS PASSED!")
     print("="*80)
     print("\nSummary:")
-    print("  - window_saturation_penalty bug FIXED ✅")
+    print("  - window_saturation_penalty stays out (F-21, F-24)")
     print("  - create_unified_bonus_to_main_features() successfully merges all features")
-    print("  - Feature counts are correct (12 base + 10 main + interactions)")
+    print("  - Feature counts are correct (11 base + 10 main + interactions)")
     print("  - All expected feature names are present")
     print("  - days_since_last (CRITICAL) is now included")
     print("\n💡 Next: Run quickpick.py to verify integration with bonus_to_main_trainer.py")

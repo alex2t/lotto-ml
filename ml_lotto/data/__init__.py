@@ -14,10 +14,7 @@ from ml_lotto.data.loader import (
     get_most_likely_hmc_pattern,
     load_bonus_hit_analysis,
     load_freshness_weights,
-    load_number_pair_frequency,
-    load_range_spread_analysis,
-    load_odd_even_analysis,
-    load_sum_contribution_analysis
+    load_number_pair_frequency
 )
 
 __all__ = [
@@ -29,8 +26,5 @@ __all__ = [
     'get_most_likely_hmc_pattern',
     'load_bonus_hit_analysis',
     'load_freshness_weights',
-    'load_number_pair_frequency',
-    'load_range_spread_analysis',
-    'load_odd_even_analysis',
-    'load_sum_contribution_analysis'
+    'load_number_pair_frequency'
 ]

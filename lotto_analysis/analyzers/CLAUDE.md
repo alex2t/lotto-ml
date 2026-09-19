@@ -48,8 +48,8 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
   correct for what it writes: the artifacts are read at serving time to build the row for the **next**
   draw, and the next draw has no future to leak from. The `category` feature is not read from here -
   `walk_forward.py` derives it point-in-time, and the serving extractor re-derives it at the next
-  draw's date (C-6b). The JSON's categories are dated at the last draw; the only features still
-  derived from them (`lt_*`, `window_saturation_penalty`) are used by no model (F-21, F-24). The only split that exists is
+  draw's date (C-6b). The JSON's categories are dated at the last draw and are for the website;
+  since F-24 no ML feature reads them. The only split that exists is
   `ml_lotto/config.py:VALIDATION_SPLIT_RATIO` (0.85), and it governs model fitting only. Do not add a
   split here to "match" it; that would change `lotto_trigger_periods.json` and break parity while
   training stayed put. See F-10 in `issue.md`.
