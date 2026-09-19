@@ -133,6 +133,7 @@ from ml_lotto.prediction.predictor import generate_predictions, generate_all_pic
 from ml_lotto.prediction.bonus_predictor import generate_bonus_predictions, assign_bonus_to_models
 from ml_lotto.prediction.wheel import WHEEL_SIZE
 from ml_lotto.prediction.bonus_to_main_predictor import generate_bonus_to_main_predictions, assign_bonus_to_main_to_models
+from ml_lotto.utils.bonus_window import bonus_window_positions
 
 from ml_lotto.display import (
     display_final_picks,
@@ -667,11 +668,12 @@ def main(permutation_runs: int = 0):
         print(f"  Using LIVE window (adapts to most recent draws)")
 
         try:
+            # Served as trained: the engine view the trainer used, and the same window rule (F-40).
             bonus_to_main_predictions, bonus_to_main_top_6_data = generate_bonus_to_main_predictions(
                 bonus_to_main_pipeline,
                 bonus_to_main_features,
-                bonus_to_main_features_dict,
-                live_bonus_window,  # Pass full window with metadata
+                base_engine.with_base_features(bonus_to_main_features_dict).extract_features_for_next_draw(),
+                bonus_window_positions(all_draws),
                 category_dict,
                 num_predictions=3
             )
@@ -724,8 +726,10 @@ def main(permutation_runs: int = 0):
             sys.exit(1)
         
         print("\nStep 7: Generating MAIN NUMBER predictions...")
+        # Served exactly as trained: engine values, extractor values only where the engine has none (F-34).
+        serving_rows = base_engine.with_base_features(features_dict).extract_serving_rows()
         try:
-            all_probabilities = generate_predictions(models, model_features, features_dict)
+            all_probabilities = generate_predictions(models, model_features, serving_rows)
             print(f"✓ Main number predictions generated for {len(all_probabilities)} models")
         except Exception as e:
             print(f"✗ Error generating predictions: {e}")
@@ -759,7 +763,7 @@ def main(permutation_runs: int = 0):
             lines = generate_all_picks(
                 pick_models,
                 pick_probabilities,
-                features_dict,
+                serving_rows,
                 freshness_data,
                 pre_assigned_numbers=pre_assigned_numbers
             )
@@ -814,7 +818,7 @@ def main(permutation_runs: int = 0):
 
         print("\nStep 11: Generating Model 4 candidate pool...")
         try:
-            pool_data = generate_pool_picks(models, all_probabilities, features_dict)
+            pool_data = generate_pool_picks(models, all_probabilities, serving_rows)
         except Exception as e:
             print(f"⚠️  Error generating pool: {e}")
             pool_data = None

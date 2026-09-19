@@ -102,12 +102,12 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: nineteen files, 172 tests, ~30s. `pytest.ini` points pytest there, so
+`tests/` holds only real tests: nineteen files, 175 tests, ~30s. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
-python -m pytest -q                                                              # all 172
+python -m pytest -q                                                              # all 175
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
 python -m demos.demo_interactions                                                # a demo, from the root
 ```
@@ -145,10 +145,11 @@ HMC ratio, plus two auxiliary models (`BONUS_MODEL_CONFIG`, `BONUS_TO_MAIN_MODEL
 
 ### The part that matters most: train/serve parity
 
-Training features come from `ml_lotto/features/walk_forward.py`; serving features for the main models
-come from a **different** path, `ml_lotto/features/extractor.py` reading
-`data/lotto_trigger_periods.json`. The two must produce identical values or a model is fitted on one
-distribution and applied to another. This has broken repeatedly.
+Training features come from `ml_lotto/features/walk_forward.py`. `ml_lotto/features/extractor.py`
+builds a second row from `data/lotto_trigger_periods.json`; the main models are served
+`engine.extract_serving_rows()`, which takes the engine's value wherever it has one and the
+extractor's only for the rest, exactly as a training row does (F-34). Serving the extractor's row
+directly fitted models on one distribution and applied them to another. This has broken repeatedly.
 
 The full contract - which feature families are counted over the main 6 versus all 7, the deliberate
 off-by-one window naming, and the only correct way to build a serving row - is in

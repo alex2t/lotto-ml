@@ -34,7 +34,7 @@ regression — `matplotlib.use('Agg')` must come before `import matplotlib.pyplo
 python .claude/skills/lotto-verify/verify.py
 ```
 
-This runs the 172 real tests across the nineteen real test files, re-derives train/serve parity from the
+This runs the 175 real tests across the nineteen real test files, re-derives train/serve parity from the
 data, validates every generated ticket, and prints the validation metrics with the 2 SE noise floor.
 It exits non-zero if anything fails. The nineteen files, and what each one guards, are listed in
 [`tests/CLAUDE.md`](../../../tests/CLAUDE.md) - if you add a real test, add it to both that list and
@@ -50,8 +50,9 @@ python .claude/skills/lotto-verify/verify.py --baseline /tmp/baseline.csv
 ## Interpreting the result
 
 **Parity failures are the serious ones.** Training features come from
-`ml_lotto/features/walk_forward.py`; serving features for the main models come from
-`ml_lotto/features/extractor.py` via `data/lotto_trigger_periods.json`. A mismatch means a model was
+`ml_lotto/features/walk_forward.py`; the main models are served `engine.extract_serving_rows()`,
+which uses `ml_lotto/features/extractor.py`'s row (from `data/lotto_trigger_periods.json`) only for
+features the engine does not compute (F-34). A mismatch means a model was
 fitted on one distribution and applied to another. If parity fails, you changed one side only —
 `recent_*` and `freshness_bin` are counted over the **main 6** balls, `rolling_*` and `total_count`
 over **all 7**, and both sides must agree.
