@@ -14,8 +14,6 @@ Tests:
 import sys
 from pathlib import Path
 
-sys.path.insert(0, '/home/user/lotto-ml')
-
 from ml_lotto.features.bonus_to_main_features import (
     create_unified_bonus_to_main_features,
     get_unified_bonus_to_main_feature_names,

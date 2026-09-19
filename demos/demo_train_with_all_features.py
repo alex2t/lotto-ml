@@ -15,6 +15,7 @@ Tests:
 
 import sys
 import os
+import tempfile
 
 if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
@@ -334,7 +335,9 @@ def test_model_comparison():
     print("\n  Comparing models...")
 
     try:
-        comparison_df = compare_models(all_metrics, output_dir='model_metrics')
+        # A temp dir, never model_metrics/: that is the real scoreboard and this is mock data
+        with tempfile.TemporaryDirectory() as tmpdir:
+            comparison_df = compare_models(all_metrics, output_dir=tmpdir)
 
         print(f"\n  Comparison DataFrame:")
         print(comparison_df)

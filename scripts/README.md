@@ -240,13 +240,13 @@ tuning_comparison = compare_tuning_results(all_tuning_results)
 
 Test files for these scripts are located in the `tests/` directory:
 
-- `tests/test_train_with_all_features.py` - Tests for comprehensive training pipeline
+- `demos/demo_train_with_all_features.py` - Demo of the comprehensive training pipeline (not a test)
 
 Run tests with:
 
 ```bash
 # Test comprehensive training
-python tests/test_train_with_all_features.py
+python -m demos.demo_train_with_all_features
 ```
 
 ---
