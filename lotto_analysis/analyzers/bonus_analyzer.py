@@ -181,6 +181,16 @@ def calculate_bonus_category_preference(
     }
 
 
+def pre_draw_bonus_window(sorted_draws: List, idx: int) -> List[int]:
+    """
+    The last 10 bonus balls before draw `idx` (F-33).
+
+    A draw's own `recent_bonus_numbers` is updated after the draw, so it ends with that draw's bonus -
+    the window for the NEXT draw. The window before draw `idx` is therefore the previous draw's list.
+    """
+    return sorted_draws[idx - 1][1]['recent_bonus_numbers'] if idx > 0 else []
+
+
 def calculate_recent_bonus_exclusion(
     draw_history_log: Dict,
     total_draws: int
@@ -197,6 +207,7 @@ def calculate_recent_bonus_exclusion(
     """
     was_bonus_and_appeared_again = 0
     total_opportunities = 0
+    expected_hits = 0.0
 
     exclusion_by_draw = {i: {"avoided": 0, "appeared": 0} for i in [1, 2, 3, 5, 10]}
 
@@ -213,12 +224,15 @@ def calculate_recent_bonus_exclusion(
             continue
 
         current_bonus = winning_details[6]['number']
-        recent_bonus_list = draw_data.get('recent_bonus_numbers', [])
+        recent_bonus_list = pre_draw_bonus_window(sorted_draws, idx)
+        if not recent_bonus_list:
+            continue
 
         if current_bonus in recent_bonus_list:
             was_bonus_and_appeared_again += 1
 
         total_opportunities += 1
+        expected_hits += len(set(recent_bonus_list)) / 47
 
         # Check specific draw distances
         for lookback in [1, 2, 3, 5, 10]:
@@ -236,7 +250,8 @@ def calculate_recent_bonus_exclusion(
 
     # Calculate overall avoidance rate
     overall_rate = was_bonus_and_appeared_again / total_opportunities if total_opportunities > 0 else 0
-    expected_random = 10 / 47  # 10 positions in recent list, 47 total numbers
+    # Chance: the window's distinct balls / 47 - a window of 10 draws can repeat a ball (F-33)
+    expected_random = expected_hits / total_opportunities if total_opportunities > 0 else 0
     avoidance_rate = 1 - overall_rate
 
     # Calculate p-value for overall pattern
@@ -300,12 +315,18 @@ def calculate_main_from_recent_bonus(
     """
     main_from_recent_bonus = 0
     total_main_numbers = 0
+    expected_hits = 0.0
 
-    for draw_date, draw_data in draw_history_log.items():
+    sorted_draws = sorted(draw_history_log.items(), key=lambda x: x[1].get('draw_index', 0))
+
+    for idx, (draw_date, draw_data) in enumerate(sorted_draws):
         winning_details = draw_data.get('winning_numbers_details', [])
 
         if len(winning_details) < 7:
             continue
+
+        # is_recent_bonus_hit was set against the window before this draw
+        expected_hits += 6 * len(set(pre_draw_bonus_window(sorted_draws, idx))) / 47
 
         # First 6 are main numbers
         for i in range(6):
@@ -315,7 +336,8 @@ def calculate_main_from_recent_bonus(
                 main_from_recent_bonus += 1
 
     rate = main_from_recent_bonus / total_main_numbers if total_main_numbers > 0 else 0
-    expected_random = 10 / 47  # 10 in list, 47 total
+    # Chance: the window's distinct balls / 47, averaged over draws (F-33)
+    expected_random = expected_hits / total_main_numbers if total_main_numbers > 0 else 0
     boost_factor = rate / expected_random if expected_random > 0 else 1.0
 
     # Calculate p-value
@@ -615,12 +637,14 @@ def calculate_per_number_bonus_profile(
     # Calculate recency effect from data
     in_recent_bonus_appeared = 0
     not_in_recent_bonus_appeared = 0
+    expected_in_recent = 0.0
 
-    for draw_date, draw_data in sorted_draws:
+    for idx, (draw_date, draw_data) in enumerate(sorted_draws):
         winning_details = draw_data.get('winning_numbers_details', [])
-        if len(winning_details) >= 7:
+        recent_bonus_list = pre_draw_bonus_window(sorted_draws, idx)
+        if len(winning_details) >= 7 and recent_bonus_list:
             bonus_num = winning_details[6]['number']
-            recent_bonus_list = draw_data.get('recent_bonus_numbers', [])
+            expected_in_recent += len(set(recent_bonus_list)) / 47
 
             if bonus_num in recent_bonus_list:
                 in_recent_bonus_appeared += 1
@@ -630,7 +654,7 @@ def calculate_per_number_bonus_profile(
     # Calculate recency penalty multiplier
     if in_recent_bonus_appeared + not_in_recent_bonus_appeared > 0:
         in_recent_rate = in_recent_bonus_appeared / (in_recent_bonus_appeared + not_in_recent_bonus_appeared)
-        expected_rate = 10 / 47  # 10 in recent list, 47 total numbers
+        expected_rate = expected_in_recent / (in_recent_bonus_appeared + not_in_recent_bonus_appeared)
         recency_penalty = in_recent_rate / expected_rate if expected_rate > 0 else 0.5
     else:
         recency_penalty = 0.5
