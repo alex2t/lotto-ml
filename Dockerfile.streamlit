@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+WORKDIR /app
+
+# Create non-root user and group
+RUN groupadd -g 1000 lotto && \
+    useradd -u 1000 -g lotto -s /bin/bash -m lotto
+
+# Install minimal web dependencies
+COPY requirements-web.txt .
+RUN pip install --no-cache-dir -r requirements-web.txt
+
+# Copy Streamlit application and view modules
+COPY app.py .
+COPY view/ view/
+
+# Ensure data directory exists and set ownership
+RUN mkdir -p /app/data && chown -R lotto:lotto /app
+
+USER lotto
+
+EXPOSE 8501
+
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true", "--browser.gatherUsageStats=false"]
