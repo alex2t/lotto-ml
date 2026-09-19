@@ -7,19 +7,21 @@ Computed by `ml_lotto/models/model_metrics.py` during `quickpick.py`. Written to
 
 ## Current results
 
-From `model_metrics/model_comparison.csv`. Validation window is the last **60 draws** for every model.
+From `model_metrics/model_comparison.csv`, run of 2026-09-19 (598 draws, latest 16 Sep 2026).
+Validation window is the last **60 draws** for every model.
 
 | Model | Val AUC | Overfit gap | Top-7 caught | Top-7 expected | Top-7 lift | PR-AUC lift | Calib. error |
 |:--|--:|--:|--:|--:|--:|--:|--:|
-| Bonus Ball Predictor | 0.545 | 0.005 | 0.15 | 0.15 | 1.01 | 1.20 | 0.007 |
-| Jackpot Optimizer | 0.526 | 0.053 | 1.00 | 0.89 | 1.12 | 1.08 | 0.011 |
-| Conservative Pool Generator | 0.512 | 0.051 | 1.08 | 1.04 | 1.04 | 1.02 | 0.014 |
-| Complexity Explorer | 0.507 | 0.019 | 1.17 | 1.04 | 1.12 | 1.03 | 0.023 |
-| Momentum Specialist | 0.501 | 0.020 | 1.17 | 1.04 | 1.12 | 1.02 | 0.020 |
-| Bonus-to-Main Transition | 0.498 | 0.033 | 1.03 | 1.02 | 1.02 | 0.98 | 0.073 |
+| Bonus Ball Predictor | 0.551 | 0.002 | 0.13 | 0.15 | 0.90 | 1.91 | 0.008 |
+| Conservative Pool Generator | 0.531 | 0.026 | 1.17 | 1.04 | 1.12 | 1.07 | 0.016 |
+| Jackpot Optimizer | 0.531 | 0.078 | 0.95 | 0.89 | 1.06 | 1.08 | 0.013 |
+| Complexity Explorer | 0.519 | 0.029 | 1.23 | 1.04 | 1.18 | 1.08 | 0.016 |
+| Bonus-to-Main Transition | 0.500 | 0.029 | 1.08 | 1.01 | 1.07 | 0.99 | 0.072 |
+| Momentum Specialist | 0.496 | 0.024 | 1.18 | 1.04 | 1.14 | 1.02 | 0.015 |
 
-**Read this table correctly.** AUC 0.50 is a coin flip. Every model sits between 0.498 and 0.545,
-and Top-7 lift is 1.01-1.12 against an expected baseline of ~1.04 numbers caught. The
+**Read this table correctly.** AUC 0.50 is a coin flip. Every model sits between 0.496 and 0.551,
+and Top-7 lift is 0.90-1.18 against an expected baseline of ~1.04 numbers caught. Adding one draw
+moved every figure by less than the noise floor below - the values drift, the conclusion does not. The
 Bonus-to-Main model has a PR-AUC lift **below 1.0**, meaning it is fractionally worse than the base
 rate.
 
@@ -80,9 +82,9 @@ was drawn.
 
 **Calibration error** - mean absolute gap between predicted probability and observed frequency.
 Below 0.05 is good, above 0.1 means the probabilities are not trustworthy as probabilities. All main
-models are currently under 0.025; the Bonus-to-Main model at 0.073 is the weakest.
+models are currently under 0.025; the Bonus-to-Main model at 0.072 is the weakest.
 
-**Overfit gap** - train AUC minus validation AUC. Currently 0.005-0.053.
+**Overfit gap** - train AUC minus validation AUC. Currently 0.002-0.078.
 
 ## The overfit gap is the number to watch
 

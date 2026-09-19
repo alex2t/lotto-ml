@@ -1,8 +1,8 @@
 {
   "metadata": {
     "analysis_type": "feature_interaction_exploration",
-    "total_draws": 497,
-    "total_records": 3479,
+    "total_draws": 498,
+    "total_records": 3486,
     "total_pairwise_interactions": 11,
     "total_triple_interactions": 11,
     "total_composite_features": 1
@@ -13,17 +13,17 @@
       "feature_2": "freshness_bin",
       "threshold_1": 1,
       "threshold_2": 1,
-      "win_rate_high_high": 0.8577,
+      "win_rate_high_high": 0.8574,
       "win_rate_high_low": 0,
       "win_rate_low_high": 0,
-      "win_rate_low_low": 0.8566,
-      "interaction_strength": 1.0013,
+      "win_rate_low_low": 0.8569,
+      "interaction_strength": 1.0006,
       "interaction_type": "synergistic",
       "sample_sizes": {
-        "high_high": 1701,
+        "high_high": 1704,
         "high_low": 0,
         "low_high": 0,
-        "low_low": 1778
+        "low_low": 1782
       }
     },
     {
@@ -32,16 +32,16 @@
       "threshold_1": 2,
       "threshold_2": 1.0,
       "win_rate_high_high": 0.9024,
-      "win_rate_high_low": 0.8599,
-      "win_rate_low_high": 0.8493,
-      "win_rate_low_low": 0.8524,
-      "interaction_strength": 0.0421,
+      "win_rate_high_low": 0.8602,
+      "win_rate_low_high": 0.8496,
+      "win_rate_low_low": 0.8521,
+      "interaction_strength": 0.042,
       "interaction_type": "neutral",
       "sample_sizes": {
         "high_high": 205,
-        "high_low": 1042,
-        "low_high": 471,
-        "low_low": 1761
+        "high_low": 1044,
+        "low_high": 472,
+        "low_low": 1765
       }
     },
     {
@@ -51,15 +51,15 @@
       "threshold_2": 4,
       "win_rate_high_high": 0.8235,
       "win_rate_high_low": 0.8568,
-      "win_rate_low_high": 0.8494,
-      "win_rate_low_low": 0.8671,
+      "win_rate_low_high": 0.8488,
+      "win_rate_low_low": 0.8676,
       "interaction_strength": 0.0302,
       "interaction_type": "neutral",
       "sample_sizes": {
         "high_high": 136,
         "high_low": 754,
-        "low_high": 1182,
-        "low_low": 1407
+        "low_high": 1184,
+        "low_low": 1412
       }
     },
     {
@@ -68,16 +68,16 @@
       "threshold_1": 1,
       "threshold_2": 1.0,
       "win_rate_high_high": 0.8812,
-      "win_rate_high_low": 0.8526,
-      "win_rate_low_high": 0.8525,
-      "win_rate_low_low": 0.8577,
-      "interaction_strength": 0.0234,
+      "win_rate_high_low": 0.8522,
+      "win_rate_low_high": 0.8529,
+      "win_rate_low_low": 0.858,
+      "interaction_strength": 0.0233,
       "interaction_type": "neutral",
       "sample_sizes": {
         "high_high": 303,
-        "high_low": 1398,
-        "low_high": 373,
-        "low_low": 1405
+        "high_low": 1401,
+        "low_high": 374,
+        "low_low": 1408
       }
     },
     {
@@ -86,16 +86,16 @@
       "threshold_1": 1,
       "threshold_2": 1.0,
       "win_rate_high_high": 0.8812,
-      "win_rate_high_low": 0.8526,
-      "win_rate_low_high": 0.8525,
-      "win_rate_low_low": 0.8577,
-      "interaction_strength": 0.0234,
+      "win_rate_high_low": 0.8522,
+      "win_rate_low_high": 0.8529,
+      "win_rate_low_low": 0.858,
+      "interaction_strength": 0.0233,
       "interaction_type": "neutral",
       "sample_sizes": {
         "high_high": 303,
-        "high_low": 1398,
-        "low_high": 373,
-        "low_low": 1405
+        "high_low": 1401,
+        "low_high": 374,
+        "low_low": 1408
       }
     },
     {
@@ -104,16 +104,16 @@
       "threshold_1": 4,
       "threshold_2": 1.0,
       "win_rate_high_high": 0.8439,
-      "win_rate_high_low": 0.8474,
-      "win_rate_low_high": 0.877,
-      "win_rate_low_low": 0.86,
+      "win_rate_high_low": 0.8467,
+      "win_rate_low_high": 0.8773,
+      "win_rate_low_low": 0.8604,
       "interaction_strength": 0.0154,
       "interaction_type": "neutral",
       "sample_sizes": {
         "high_high": 237,
-        "high_low": 1081,
-        "low_high": 439,
-        "low_low": 1722
+        "high_low": 1083,
+        "low_high": 440,
+        "low_low": 1726
       }
     },
     {
@@ -121,17 +121,17 @@
       "feature_2": "recent_9",
       "threshold_1": 1,
       "threshold_2": 2,
-      "win_rate_high_high": 0.8683,
-      "win_rate_high_low": 0.8407,
-      "win_rate_low_high": 0.8593,
-      "win_rate_low_low": 0.8562,
-      "interaction_strength": 0.0142,
+      "win_rate_high_high": 0.8684,
+      "win_rate_high_low": 0.8397,
+      "win_rate_low_high": 0.86,
+      "win_rate_low_low": 0.8565,
+      "interaction_strength": 0.0143,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 1048,
-        "high_low": 653,
-        "low_high": 199,
-        "low_low": 1579
+        "high_high": 1049,
+        "high_low": 655,
+        "low_high": 200,
+        "low_low": 1582
       }
     },
     {
@@ -139,17 +139,17 @@
       "feature_2": "freshness_bin",
       "threshold_1": 2,
       "threshold_2": 1,
-      "win_rate_high_high": 0.8683,
-      "win_rate_high_low": 0.8593,
-      "win_rate_low_high": 0.8407,
-      "win_rate_low_low": 0.8562,
-      "interaction_strength": 0.0142,
+      "win_rate_high_high": 0.8684,
+      "win_rate_high_low": 0.86,
+      "win_rate_low_high": 0.8397,
+      "win_rate_low_low": 0.8565,
+      "interaction_strength": 0.0143,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 1048,
-        "high_low": 199,
-        "low_high": 653,
-        "low_low": 1579
+        "high_high": 1049,
+        "high_low": 200,
+        "low_high": 655,
+        "low_low": 1582
       }
     },
     {
@@ -157,17 +157,17 @@
       "feature_2": "recent_24",
       "threshold_1": 1,
       "threshold_2": 4,
-      "win_rate_high_high": 0.8494,
-      "win_rate_high_low": 0.8672,
-      "win_rate_low_high": 0.841,
-      "win_rate_low_low": 0.8613,
-      "interaction_strength": 0.0062,
+      "win_rate_high_high": 0.8485,
+      "win_rate_high_low": 0.8675,
+      "win_rate_low_high": 0.8413,
+      "win_rate_low_low": 0.8616,
+      "interaction_strength": 0.0074,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 903,
-        "high_low": 798,
-        "low_high": 415,
-        "low_low": 1363
+        "high_high": 904,
+        "high_low": 800,
+        "low_high": 416,
+        "low_low": 1366
       }
     },
     {
@@ -175,17 +175,17 @@
       "feature_2": "freshness_bin",
       "threshold_1": 4,
       "threshold_2": 1,
-      "win_rate_high_high": 0.8494,
-      "win_rate_high_low": 0.841,
-      "win_rate_low_high": 0.8672,
-      "win_rate_low_low": 0.8613,
-      "interaction_strength": 0.0062,
+      "win_rate_high_high": 0.8485,
+      "win_rate_high_low": 0.8413,
+      "win_rate_low_high": 0.8675,
+      "win_rate_low_low": 0.8616,
+      "interaction_strength": 0.0074,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 903,
-        "high_low": 415,
-        "low_high": 798,
-        "low_low": 1363
+        "high_high": 904,
+        "high_low": 416,
+        "low_high": 800,
+        "low_low": 1366
       }
     },
     {
@@ -193,17 +193,17 @@
       "feature_2": "recent_24",
       "threshold_1": 2,
       "threshold_2": 4,
-      "win_rate_high_high": 0.8583,
-      "win_rate_high_low": 0.8841,
-      "win_rate_low_high": 0.8268,
-      "win_rate_low_low": 0.8586,
-      "interaction_strength": 0.0016,
+      "win_rate_high_high": 0.8585,
+      "win_rate_high_low": 0.8843,
+      "win_rate_low_high": 0.8251,
+      "win_rate_low_low": 0.8589,
+      "interaction_strength": 0.0021,
       "interaction_type": "neutral",
       "sample_sizes": {
-        "high_high": 833,
-        "high_low": 414,
-        "low_high": 485,
-        "low_low": 1747
+        "high_high": 834,
+        "high_low": 415,
+        "low_high": 486,
+        "low_low": 1751
       }
     }
   ],
@@ -216,8 +216,8 @@
             2.0,
             19.7
           ],
-          "win_rate": 0.8604,
-          "sample_size": 1913
+          "win_rate": 0.8603,
+          "sample_size": 1918
         },
         {
           "bin_index": 1,
@@ -225,8 +225,8 @@
             19.7,
             37.4
           ],
-          "win_rate": 0.8554,
-          "sample_size": 885
+          "win_rate": 0.8557,
+          "sample_size": 887
         },
         {
           "bin_index": 2,
@@ -324,8 +324,8 @@
             0.0,
             0.4
           ],
-          "win_rate": 0.8566,
-          "sample_size": 1778
+          "win_rate": 0.8569,
+          "sample_size": 1782
         },
         {
           "bin_index": 2,
@@ -333,8 +333,8 @@
             0.8,
             1.2
           ],
-          "win_rate": 0.8552,
-          "sample_size": 1229
+          "win_rate": 0.8546,
+          "sample_size": 1231
         },
         {
           "bin_index": 5,
@@ -342,8 +342,8 @@
             2.0,
             2.4
           ],
-          "win_rate": 0.8542,
-          "sample_size": 391
+          "win_rate": 0.8546,
+          "sample_size": 392
         },
         {
           "bin_index": 7,
@@ -374,8 +374,8 @@
             0.0,
             0.6
           ],
-          "win_rate": 0.8457,
-          "sample_size": 901
+          "win_rate": 0.8459,
+          "sample_size": 902
         },
         {
           "bin_index": 1,
@@ -383,8 +383,8 @@
             0.6,
             1.2
           ],
-          "win_rate": 0.8557,
-          "sample_size": 1331
+          "win_rate": 0.8554,
+          "sample_size": 1335
         },
         {
           "bin_index": 3,
@@ -392,8 +392,8 @@
             1.8,
             2.4
           ],
-          "win_rate": 0.8666,
-          "sample_size": 787
+          "win_rate": 0.8669,
+          "sample_size": 789
         },
         {
           "bin_index": 5,
@@ -442,8 +442,8 @@
             0.0,
             1.0
           ],
-          "win_rate": 0.8405,
-          "sample_size": 163
+          "win_rate": 0.8415,
+          "sample_size": 164
         },
         {
           "bin_index": 1,
@@ -451,8 +451,8 @@
             1.0,
             2.0
           ],
-          "win_rate": 0.8326,
-          "sample_size": 442
+          "win_rate": 0.833,
+          "sample_size": 443
         },
         {
           "bin_index": 2,
@@ -460,8 +460,8 @@
             2.0,
             3.0
           ],
-          "win_rate": 0.882,
-          "sample_size": 729
+          "win_rate": 0.8824,
+          "sample_size": 731
         },
         {
           "bin_index": 3,
@@ -469,8 +469,8 @@
             3.0,
             4.0
           ],
-          "win_rate": 0.8682,
-          "sample_size": 827
+          "win_rate": 0.8684,
+          "sample_size": 828
         },
         {
           "bin_index": 4,
@@ -487,8 +487,8 @@
             5.0,
             6.0
           ],
-          "win_rate": 0.8541,
-          "sample_size": 370
+          "win_rate": 0.8522,
+          "sample_size": 372
         },
         {
           "bin_index": 6,
@@ -537,8 +537,8 @@
             0.0,
             0.2
           ],
-          "win_rate": 0.8566,
-          "sample_size": 1778
+          "win_rate": 0.8569,
+          "sample_size": 1782
         },
         {
           "bin_index": 5,
@@ -546,8 +546,8 @@
             1.0,
             1.2
           ],
-          "win_rate": 0.8552,
-          "sample_size": 1229
+          "win_rate": 0.8546,
+          "sample_size": 1231
         },
         {
           "bin_index": 9,
@@ -555,8 +555,8 @@
             1.8,
             2.0
           ],
-          "win_rate": 0.8644,
-          "sample_size": 472
+          "win_rate": 0.8647,
+          "sample_size": 473
         }
       ],
       "thresholds": []
@@ -585,28 +585,28 @@
       "category": "hot",
       "freshness_bin": 0,
       "recency": "very_recent",
-      "win_rate": 0.8681,
-      "lift_over_baseline": 1.013,
-      "sample_size": 91,
-      "wins": 79
+      "win_rate": 0.8696,
+      "lift_over_baseline": 1.014,
+      "sample_size": 92,
+      "wins": 80
     },
     {
       "category": "hot",
       "freshness_bin": 1,
       "recency": "very_recent",
-      "win_rate": 0.8678,
-      "lift_over_baseline": 1.012,
-      "sample_size": 537,
-      "wins": 466
+      "win_rate": 0.8664,
+      "lift_over_baseline": 1.011,
+      "sample_size": 539,
+      "wins": 467
     },
     {
       "category": "hot",
       "freshness_bin": 2,
       "recency": "very_recent",
-      "win_rate": 0.8649,
+      "win_rate": 0.8653,
       "lift_over_baseline": 1.009,
-      "sample_size": 333,
-      "wins": 288
+      "sample_size": 334,
+      "wins": 289
     },
     {
       "category": "hot",
@@ -630,10 +630,10 @@
       "category": "medium",
       "freshness_bin": 0,
       "recency": "recent",
-      "win_rate": 0.8582,
-      "lift_over_baseline": 1.001,
-      "sample_size": 282,
-      "wins": 242
+      "win_rate": 0.8596,
+      "lift_over_baseline": 1.003,
+      "sample_size": 285,
+      "wins": 245
     },
     {
       "category": "cold",
@@ -669,8 +669,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_4 >= 1 else 0) * (1 if freshness_bin >= 1 else 0)",
       "description": "Binary interaction: both recent_4 and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8577,
-      "interaction_strength": 1.0013,
+      "expected_win_rate_when_true": 0.8574,
+      "interaction_strength": 1.0006,
       "interaction_type": "synergistic"
     }
   ]

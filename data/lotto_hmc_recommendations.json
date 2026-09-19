@@ -1,18 +1,13 @@
 {
     "metadata": {
         "analysis_type": "hmc_configuration_recommendations",
-        "current_draw": 596,
-        "next_draw": 597,
+        "current_draw": 597,
+        "next_draw": 598,
         "recommendation_count": 5,
-        "learned_from_draws": 496
+        "learned_from_draws": 497
     },
     "current_environment": {
         "recent_10_draws": [
-            {
-                "draw": 587,
-                "date": "2026-08-19",
-                "hmc": "5-1-1"
-            },
             {
                 "draw": 588,
                 "date": "2026-08-22",
@@ -57,12 +52,17 @@
                 "draw": 596,
                 "date": "2026-09-14",
                 "hmc": "4-1-2"
+            },
+            {
+                "draw": 597,
+                "date": "2026-09-16",
+                "hmc": "4-3-0"
             }
         ],
         "averages": {
-            "hot": 3.4,
-            "medium": 2.0,
-            "cold": 1.6
+            "hot": 3.3,
+            "medium": 2.2,
+            "cold": 1.5
         },
         "trend": "balanced",
         "trend_description": "Recent draws show balanced distribution",
@@ -72,8 +72,8 @@
                 "count": 2
             },
             {
-                "pattern": "5-1-1",
-                "count": 1
+                "pattern": "4-3-0",
+                "count": 2
             },
             {
                 "pattern": "1-4-2",
@@ -84,41 +84,41 @@
     "recommendations": [
         {
             "rank": 1,
-            "total_score": 1825.51,
+            "total_score": 1829.93,
             "model_1_config": {
                 "hot_count": 3,
                 "medium_count": 1,
                 "cold_count": 2,
                 "pattern": "3H-1M-2C",
-                "probability": 31.19,
-                "recency_draws": 0
+                "probability": 31.12,
+                "recency_draws": 1
             },
             "model_2_config": {
                 "hot_count": 4,
                 "medium_count": 1,
                 "cold_count": 1,
                 "pattern": "4H-1M-1C",
-                "probability": 29.78,
-                "recency_draws": 0
+                "probability": 29.72,
+                "recency_draws": 1
             },
             "model_3_config": {
                 "hot_count": 3,
                 "medium_count": 2,
                 "cold_count": 1,
                 "pattern": "3H-2M-1C",
-                "probability": 25.96,
-                "recency_draws": 5
+                "probability": 25.9,
+                "recency_draws": 6
             },
             "ensemble_metrics": {
-                "total_coverage": 86.93,
+                "total_coverage": 86.74,
                 "diversity_score": 0.04,
                 "unique_patterns": 3
             },
             "explanation": [
-                "Model 1 (Momentum): 3H-1M-2C - 31.19% probability, last seen 0 draws ago",
-                "Model 2 (Jackpot): 4H-1M-1C - 29.78% probability, last seen 0 draws ago",
-                "Model 3 (Complexity): 3H-2M-1C - 25.96% probability, last seen 5 draws ago",
-                "Ensemble coverage: 86.93%",
+                "Model 1 (Momentum): 3H-1M-2C - 31.12% probability, last seen 1 draws ago",
+                "Model 2 (Jackpot): 4H-1M-1C - 29.72% probability, last seen 1 draws ago",
+                "Model 3 (Complexity): 3H-2M-1C - 25.90% probability, last seen 6 draws ago",
+                "Ensemble coverage: 86.74%",
                 "Diversity score: 0.04",
                 "Aligns with current balanced trend"
             ],
@@ -130,41 +130,41 @@
         },
         {
             "rank": 2,
-            "total_score": 1825.51,
+            "total_score": 1829.93,
             "model_1_config": {
                 "hot_count": 3,
                 "medium_count": 2,
                 "cold_count": 1,
                 "pattern": "3H-2M-1C",
-                "probability": 25.96,
-                "recency_draws": 5
+                "probability": 25.9,
+                "recency_draws": 6
             },
             "model_2_config": {
                 "hot_count": 4,
                 "medium_count": 1,
                 "cold_count": 1,
                 "pattern": "4H-1M-1C",
-                "probability": 29.78,
-                "recency_draws": 0
+                "probability": 29.72,
+                "recency_draws": 1
             },
             "model_3_config": {
                 "hot_count": 3,
                 "medium_count": 1,
                 "cold_count": 2,
                 "pattern": "3H-1M-2C",
-                "probability": 31.19,
-                "recency_draws": 0
+                "probability": 31.12,
+                "recency_draws": 1
             },
             "ensemble_metrics": {
-                "total_coverage": 86.93,
+                "total_coverage": 86.74,
                 "diversity_score": 0.04,
                 "unique_patterns": 3
             },
             "explanation": [
-                "Model 1 (Momentum): 3H-2M-1C - 25.96% probability, last seen 5 draws ago",
-                "Model 2 (Jackpot): 4H-1M-1C - 29.78% probability, last seen 0 draws ago",
-                "Model 3 (Complexity): 3H-1M-2C - 31.19% probability, last seen 0 draws ago",
-                "Ensemble coverage: 86.93%",
+                "Model 1 (Momentum): 3H-2M-1C - 25.90% probability, last seen 6 draws ago",
+                "Model 2 (Jackpot): 4H-1M-1C - 29.72% probability, last seen 1 draws ago",
+                "Model 3 (Complexity): 3H-1M-2C - 31.12% probability, last seen 1 draws ago",
+                "Ensemble coverage: 86.74%",
                 "Diversity score: 0.04",
                 "Aligns with current balanced trend"
             ],
@@ -176,41 +176,41 @@
         },
         {
             "rank": 3,
-            "total_score": 1825.5,
+            "total_score": 1829.92,
             "model_1_config": {
                 "hot_count": 4,
                 "medium_count": 1,
                 "cold_count": 1,
                 "pattern": "4H-1M-1C",
-                "probability": 29.78,
-                "recency_draws": 0
+                "probability": 29.72,
+                "recency_draws": 1
             },
             "model_2_config": {
                 "hot_count": 3,
                 "medium_count": 1,
                 "cold_count": 2,
                 "pattern": "3H-1M-2C",
-                "probability": 31.19,
-                "recency_draws": 0
+                "probability": 31.12,
+                "recency_draws": 1
             },
             "model_3_config": {
                 "hot_count": 3,
                 "medium_count": 2,
                 "cold_count": 1,
                 "pattern": "3H-2M-1C",
-                "probability": 25.96,
-                "recency_draws": 5
+                "probability": 25.9,
+                "recency_draws": 6
             },
             "ensemble_metrics": {
-                "total_coverage": 86.93,
+                "total_coverage": 86.74,
                 "diversity_score": 0.04,
                 "unique_patterns": 3
             },
             "explanation": [
-                "Model 1 (Momentum): 4H-1M-1C - 29.78% probability, last seen 0 draws ago",
-                "Model 2 (Jackpot): 3H-1M-2C - 31.19% probability, last seen 0 draws ago",
-                "Model 3 (Complexity): 3H-2M-1C - 25.96% probability, last seen 5 draws ago",
-                "Ensemble coverage: 86.93%",
+                "Model 1 (Momentum): 4H-1M-1C - 29.72% probability, last seen 1 draws ago",
+                "Model 2 (Jackpot): 3H-1M-2C - 31.12% probability, last seen 1 draws ago",
+                "Model 3 (Complexity): 3H-2M-1C - 25.90% probability, last seen 6 draws ago",
+                "Ensemble coverage: 86.74%",
                 "Diversity score: 0.04",
                 "Aligns with current balanced trend"
             ],
@@ -222,41 +222,41 @@
         },
         {
             "rank": 4,
-            "total_score": 1825.5,
+            "total_score": 1829.92,
             "model_1_config": {
                 "hot_count": 4,
                 "medium_count": 1,
                 "cold_count": 1,
                 "pattern": "4H-1M-1C",
-                "probability": 29.78,
-                "recency_draws": 0
+                "probability": 29.72,
+                "recency_draws": 1
             },
             "model_2_config": {
                 "hot_count": 3,
                 "medium_count": 2,
                 "cold_count": 1,
                 "pattern": "3H-2M-1C",
-                "probability": 25.96,
-                "recency_draws": 5
+                "probability": 25.9,
+                "recency_draws": 6
             },
             "model_3_config": {
                 "hot_count": 3,
                 "medium_count": 1,
                 "cold_count": 2,
                 "pattern": "3H-1M-2C",
-                "probability": 31.19,
-                "recency_draws": 0
+                "probability": 31.12,
+                "recency_draws": 1
             },
             "ensemble_metrics": {
-                "total_coverage": 86.93,
+                "total_coverage": 86.74,
                 "diversity_score": 0.04,
                 "unique_patterns": 3
             },
             "explanation": [
-                "Model 1 (Momentum): 4H-1M-1C - 29.78% probability, last seen 0 draws ago",
-                "Model 2 (Jackpot): 3H-2M-1C - 25.96% probability, last seen 5 draws ago",
-                "Model 3 (Complexity): 3H-1M-2C - 31.19% probability, last seen 0 draws ago",
-                "Ensemble coverage: 86.93%",
+                "Model 1 (Momentum): 4H-1M-1C - 29.72% probability, last seen 1 draws ago",
+                "Model 2 (Jackpot): 3H-2M-1C - 25.90% probability, last seen 6 draws ago",
+                "Model 3 (Complexity): 3H-1M-2C - 31.12% probability, last seen 1 draws ago",
+                "Ensemble coverage: 86.74%",
                 "Diversity score: 0.04",
                 "Aligns with current balanced trend"
             ],
@@ -268,41 +268,41 @@
         },
         {
             "rank": 5,
-            "total_score": 1825.46,
+            "total_score": 1829.88,
             "model_1_config": {
                 "hot_count": 3,
                 "medium_count": 1,
                 "cold_count": 2,
                 "pattern": "3H-1M-2C",
-                "probability": 31.19,
-                "recency_draws": 0
+                "probability": 31.12,
+                "recency_draws": 1
             },
             "model_2_config": {
                 "hot_count": 3,
                 "medium_count": 2,
                 "cold_count": 1,
                 "pattern": "3H-2M-1C",
-                "probability": 25.96,
-                "recency_draws": 5
+                "probability": 25.9,
+                "recency_draws": 6
             },
             "model_3_config": {
                 "hot_count": 4,
                 "medium_count": 1,
                 "cold_count": 1,
                 "pattern": "4H-1M-1C",
-                "probability": 29.78,
-                "recency_draws": 0
+                "probability": 29.72,
+                "recency_draws": 1
             },
             "ensemble_metrics": {
-                "total_coverage": 86.93,
+                "total_coverage": 86.74,
                 "diversity_score": 0.04,
                 "unique_patterns": 3
             },
             "explanation": [
-                "Model 1 (Momentum): 3H-1M-2C - 31.19% probability, last seen 0 draws ago",
-                "Model 2 (Jackpot): 3H-2M-1C - 25.96% probability, last seen 5 draws ago",
-                "Model 3 (Complexity): 4H-1M-1C - 29.78% probability, last seen 0 draws ago",
-                "Ensemble coverage: 86.93%",
+                "Model 1 (Momentum): 3H-1M-2C - 31.12% probability, last seen 1 draws ago",
+                "Model 2 (Jackpot): 3H-2M-1C - 25.90% probability, last seen 6 draws ago",
+                "Model 3 (Complexity): 4H-1M-1C - 29.72% probability, last seen 1 draws ago",
+                "Ensemble coverage: 86.74%",
                 "Diversity score: 0.04",
                 "Aligns with current balanced trend"
             ],
@@ -315,20 +315,20 @@
     ],
     "learned_parameters": {
         "feature_weights": {
-            "combined_probability": 0.5774881900869392,
-            "recency_at_draw": 0.26888532859828307,
-            "hot_count": 0.07681324065735155,
-            "medium_count": 0.056129915928581804,
-            "cold_count": 0.020683324728844397
+            "combined_probability": 0.5804097310271229,
+            "recency_at_draw": 0.26583391486075086,
+            "hot_count": 0.07687817705611488,
+            "medium_count": 0.05787502357802607,
+            "cold_count": 0.019003153477985302
         },
         "optimal_hot_counts": {
             "recency_thresholds": {
                 "hot_threshold_draws": 2.0,
                 "cold_threshold_draws": 7.0,
                 "success_rates": {
-                    "hot": 0.18159903575733227,
-                    "medium": 0.14315230224321132,
-                    "cold": 0.07065123510105373
+                    "hot": 0.18163592622293503,
+                    "medium": 0.14285714285714285,
+                    "cold": 0.07084985347353905
                 },
                 "interpretation": "Patterns \u22642 draws ago are HOT, \u22657 are COLD"
             },
@@ -350,13 +350,13 @@
                 "name": "During Balanced Period",
                 "optimal_hot_count": 4,
                 "success_rates_by_hot_count": {
-                    "0": 0.010610079575596816,
-                    "1": 0.05083996463306808,
-                    "2": 0.12838196286472148,
-                    "3": 0.20092838196286472,
-                    "4": 0.21839080459770116,
-                    "5": 0.1220159151193634,
-                    "6": 0.04774535809018567
+                    "0": 0.010582010582010581,
+                    "1": 0.050705467372134036,
+                    "2": 0.12804232804232804,
+                    "3": 0.20105820105820105,
+                    "4": 0.21957671957671956,
+                    "5": 0.12169312169312169,
+                    "6": 0.047619047619047616
                 },
                 "interpretation": "During balanced periods, 4 hot numbers maximize success"
             },
@@ -367,13 +367,13 @@
                     2
                 ],
                 "success_rates": {
-                    "4": 0.2110215053763441,
-                    "3": 0.1975806451612903,
-                    "2": 0.13588709677419356,
-                    "5": 0.11995967741935484,
-                    "1": 0.05342741935483871,
-                    "6": 0.04435483870967742,
-                    "0": 0.010368663594470046
+                    "4": 0.2119382964453387,
+                    "3": 0.1976861167002012,
+                    "2": 0.13561368209255534,
+                    "5": 0.11971830985915492,
+                    "1": 0.05331991951710262,
+                    "6": 0.04426559356136821,
+                    "0": 0.010347801092267893
                 }
             }
         }

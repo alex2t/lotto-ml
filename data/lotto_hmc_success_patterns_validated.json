@@ -9,42 +9,42 @@
             "historical_backtest"
         ],
         "significance_level": 0.05,
-        "draws_analyzed": 496,
+        "draws_analyzed": 497,
         "start_draw": 100,
-        "end_draw": 596
+        "end_draw": 597
     },
     "success_correlations": {
         "probability_correlation": {
-            "success_mean": 18.562574329224077,
-            "success_std": 8.993395641468359,
-            "failure_mean": 8.976753537453034,
-            "failure_std": 8.795858411477088,
-            "t_statistic": 38.3191837392831,
-            "p_value": 1.7639362830250822e-305,
+            "success_mean": 18.558856729377712,
+            "success_std": 8.963139850088117,
+            "failure_mean": 8.971840593585448,
+            "failure_std": 8.778611129254156,
+            "t_statistic": 38.446241622774004,
+            "p_value": 1.996601530486648e-307,
             "significant": true,
-            "effect_size": 9.585820791771043,
+            "effect_size": 9.587016135792265,
             "interpretation": "Higher probability significantly predicts success"
         },
         "recency_correlation": {
-            "success_mean": 7.74888558692422,
-            "success_std": 11.300144094611142,
-            "failure_mean": 16.82093023255814,
-            "failure_std": 20.696391193563024,
-            "t_statistic": -15.776578668383848,
-            "p_value": 1.6878320806208706e-55,
+            "success_mean": 7.7509266123054115,
+            "success_std": 11.290434668558705,
+            "failure_mean": 16.819940044483126,
+            "failure_std": 20.699391836300215,
+            "t_statistic": -15.787123143117434,
+            "p_value": 1.4292995939309617e-55,
             "significant": true,
-            "effect_size": -9.07204464563392,
+            "effect_size": -9.069013432177714,
             "interpretation": "Lower recency significantly predicts success"
         },
         "hot_count_distribution": {
             "success_distribution": {
-                "0": 0.02610587382160986,
-                "1": 0.11530094271211022,
-                "2": 0.24437998549673676,
-                "3": 0.28426395939086296,
-                "4": 0.22770123277737492,
-                "5": 0.08629441624365482,
-                "6": 0.01595358955765047
+                "0": 0.02604920405209841,
+                "1": 0.1150506512301013,
+                "2": 0.243849493487699,
+                "3": 0.28437047756874095,
+                "4": 0.22865412445730826,
+                "5": 0.08610709117221418,
+                "6": 0.015918958031837915
             },
             "overall_distribution": {
                 "0": 0.25,
@@ -55,8 +55,8 @@
                 "5": 0.07142857142857142,
                 "6": 0.03571428571428571
             },
-            "chi2_statistic": 772.4370800096688,
-            "p_value": 1.3877283296748213e-163,
+            "chi2_statistic": 777.252339604438,
+            "p_value": 1.2649344926756734e-164,
             "significant": true,
             "interpretation": "Hot count distribution differs significantly between success and overall"
         }
@@ -66,9 +66,9 @@
             "hot_threshold_draws": 2.0,
             "cold_threshold_draws": 7.0,
             "success_rates": {
-                "hot": 0.18159903575733227,
-                "medium": 0.14315230224321132,
-                "cold": 0.07065123510105373
+                "hot": 0.18163592622293503,
+                "medium": 0.14285714285714285,
+                "cold": 0.07084985347353905
             },
             "interpretation": "Patterns \u22642 draws ago are HOT, \u22657 are COLD"
         },
@@ -90,13 +90,13 @@
             "name": "During Balanced Period",
             "optimal_hot_count": 4,
             "success_rates_by_hot_count": {
-                "0": 0.010610079575596816,
-                "1": 0.05083996463306808,
-                "2": 0.12838196286472148,
-                "3": 0.20092838196286472,
-                "4": 0.21839080459770116,
-                "5": 0.1220159151193634,
-                "6": 0.04774535809018567
+                "0": 0.010582010582010581,
+                "1": 0.050705467372134036,
+                "2": 0.12804232804232804,
+                "3": 0.20105820105820105,
+                "4": 0.21957671957671956,
+                "5": 0.12169312169312169,
+                "6": 0.047619047619047616
             },
             "interpretation": "During balanced periods, 4 hot numbers maximize success"
         },
@@ -107,53 +107,53 @@
                 2
             ],
             "success_rates": {
-                "4": 0.2110215053763441,
-                "3": 0.1975806451612903,
-                "2": 0.13588709677419356,
-                "5": 0.11995967741935484,
-                "1": 0.05342741935483871,
-                "6": 0.04435483870967742,
-                "0": 0.010368663594470046
+                "4": 0.2119382964453387,
+                "3": 0.1976861167002012,
+                "2": 0.13561368209255534,
+                "5": 0.11971830985915492,
+                "1": 0.05331991951710262,
+                "6": 0.04426559356136821,
+                "0": 0.010347801092267893
             }
         }
     },
     "learned_weights": {
         "method": "logistic_regression",
         "raw_coefficients": {
-            "combined_probability": 0.7458544564961946,
-            "recency_at_draw": -0.34727865273102987,
-            "hot_count": 0.09920808571613435,
-            "medium_count": -0.07249455254104308,
-            "cold_count": -0.02671353317518768
+            "combined_probability": 0.7500004501002708,
+            "recency_at_draw": -0.34350829274460126,
+            "hot_count": 0.09934131754293425,
+            "medium_count": -0.07478560646505587,
+            "cold_count": -0.02455571107774463
         },
         "normalized_weights": {
-            "combined_probability": 0.5774881900869392,
-            "recency_at_draw": 0.26888532859828307,
-            "hot_count": 0.07681324065735155,
-            "medium_count": 0.056129915928581804,
-            "cold_count": 0.020683324728844397
+            "combined_probability": 0.5804097310271229,
+            "recency_at_draw": 0.26583391486075086,
+            "hot_count": 0.07687817705611488,
+            "medium_count": 0.05787502357802607,
+            "cold_count": 0.019003153477985302
         },
-        "model_accuracy": 0.9007056451612904,
-        "intercept": -2.6505020001477635,
+        "model_accuracy": 0.9006898534061512,
+        "intercept": -2.6519538533741986,
         "interpretation": "Weights represent relative importance of each feature in predicting success"
     },
     "backtest_summary": {
-        "total_configurations_tested": 13888,
-        "total_draws_tested": 496,
-        "overall_success_rate": 0.09929435483870967,
-        "total_successes": 1379,
-        "average_distance": 4.361031105990784,
+        "total_configurations_tested": 13916,
+        "total_draws_tested": 497,
+        "overall_success_rate": 0.0993101465938488,
+        "total_successes": 1382,
+        "average_distance": 4.360735843633228,
         "best_performing_patterns": {
-            "3H-1M-2C": 0.31048387096774194,
-            "4H-1M-1C": 0.2963709677419355,
-            "3H-2M-1C": 0.2600806451612903,
-            "2H-2M-2C": 0.2540322580645161,
-            "4H-0M-2C": 0.18548387096774194,
-            "2H-1M-3C": 0.1774193548387097,
-            "4H-2M-0C": 0.15120967741935484,
-            "2H-3M-1C": 0.14516129032258066,
-            "3H-0M-3C": 0.13709677419354838,
-            "5H-1M-0C": 0.12096774193548387
+            "3H-1M-2C": 0.3118712273641851,
+            "4H-1M-1C": 0.2977867203219316,
+            "3H-2M-1C": 0.2595573440643863,
+            "2H-2M-2C": 0.2535211267605634,
+            "4H-0M-2C": 0.18712273641851107,
+            "2H-1M-3C": 0.17706237424547283,
+            "4H-2M-0C": 0.15090543259557343,
+            "2H-3M-1C": 0.1448692152917505,
+            "3H-0M-3C": 0.13682092555331993,
+            "5H-1M-0C": 0.12072434607645875
         }
     }
 }
