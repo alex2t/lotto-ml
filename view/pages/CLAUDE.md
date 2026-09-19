@@ -20,7 +20,7 @@ streamlit run app.py
 | `statistics.py` | Statistics - includes the draw breakdown by count of numbers >= 32 (F-19) |
 | `freshness_analysis.py` | Freshness Analysis |
 | `prediction_validator.py` | Prediction Validator - **where a user builds and checks their own line** |
-| `number_insights.py` | Number Insights |
+| `number_insights.py` | Number Insights - a neutral profile of one number, no score or verdict (F-30) |
 | `pattern_comparison.py` | Pattern Comparison |
 | `post_draw_analysis.py` | Post Draw Analysis |
 

@@ -457,7 +457,8 @@ def generate_bonus_to_main_analysis(
     )
 
     overall_rate = total_transitions / total_bonuses if total_bonuses > 0 else 0
-    expected_random = 10 / max_number  # 10 positions in window / total numbers
+    # Chance that any given number is among the 6 main balls at least once in the next 10 draws (F-30)
+    expected_random = 1 - (1 - 6 / max_number) ** 10
     boost_factor = overall_rate / expected_random if expected_random > 0 else 1.0
 
     # Find peak timing draws (top 2)

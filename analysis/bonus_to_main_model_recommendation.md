@@ -1,5 +1,9 @@
 # Bonus-to-Main Number Prediction Model - Feasibility Analysis
 
+> **Superseded (F-30, 2026-09-19).** The 74% below is chance, not a signal: in a fair draw any number
+> comes up as a main number within 10 draws 74.5% of the time (1 - (41/47)^10), and on 488 draws
+> bonus balls did 74.6%, numbers not drawn 74.4%. This analysis compared it with no baseline.
+
 ## Executive Summary
 
 **Pattern Validated**: 74% of bonus numbers appear as main numbers within the next 10 draws (close to the claimed 80%).
