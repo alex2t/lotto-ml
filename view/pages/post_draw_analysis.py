@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import json
 from typing import List, Dict, Set, Tuple, Any
+from view.utils.data_loader import load_draw_history, get_sorted_draw_dates
 
 
 def load_analysis_data() -> Dict[str, Any]:
@@ -24,35 +25,12 @@ def load_analysis_data() -> Dict[str, Any]:
     return data
 
 
-def load_latest_draw_from_csv(csv_path: str = 'data/irish500.csv'):
-    """Load the most recent draw from the CSV file (chronologically sorted)."""
-    from datetime import datetime
-    try:
-        draws = []
-        with open(csv_path, 'r', encoding='utf-8') as f:
-            lines = [l.strip() for l in f if l.strip()]
-        for line in lines[1:]:
-            parts = line.split(',')
-            if len(parts) >= 8:
-                date_str = parts[0].strip()
-                dt = None
-                for fmt in ("%d %b %Y", "%Y-%m-%d", "%d/%m/%Y"):
-                    try:
-                        dt = datetime.strptime(date_str, fmt)
-                        break
-                    except ValueError:
-                        pass
-                if dt:
-                    main_nums = [int(p.strip()) for p in parts[1:7]]
-                    bonus_num = int(parts[7].strip())
-                    draws.append({'dt': dt, 'date': date_str, 'main': main_nums, 'bonus': bonus_num})
-        if draws:
-            draws.sort(key=lambda x: x['dt'], reverse=True)
-            latest = draws[0]
-            return {'date': latest['date'], 'main': latest['main'], 'bonus': latest['bonus']}
-    except Exception:
-        pass
-    return None
+def load_latest_draw() -> Dict[str, Any]:
+    """The most recent draw in lotto_draw_history.json - the site reads data/*.json, never the CSV (F-35)."""
+    history = load_draw_history()
+    date = get_sorted_draw_dates(history)[-1]
+    draw = history[date]
+    return {'date': date, 'main': draw['main_numbers'], 'bonus': draw['bonus_number']}
 
 
 def load_latest_predictions_from_picks(picks_path: str = 'lottery_picks.txt'):
@@ -219,21 +197,17 @@ def show():
     st.markdown("---")
 
     # Quick Load Section
-    latest_draw = load_latest_draw_from_csv()
+    latest_draw = load_latest_draw()
     latest_preds = load_latest_predictions_from_picks()
 
     st.subheader("⚡ Quick Load & Autofill")
     col_ql1, col_ql2 = st.columns([2, 1])
     with col_ql1:
-        if latest_draw:
-            st.info(f"📅 **Latest draw in dataset:** {latest_draw['date']} — **Main:** {', '.join(str(n) for n in sorted(latest_draw['main']))} | **Bonus:** {latest_draw['bonus']}")
-        else:
-            st.warning("⚠️ No draw data found in data/irish500.csv")
+        st.info(f"📅 **Latest draw in dataset:** {latest_draw['date']} — **Main:** {', '.join(str(n) for n in sorted(latest_draw['main']))} | **Bonus:** {latest_draw['bonus']}")
     with col_ql2:
         if st.button("📥 Autofill from Latest Draw & Predictions", use_container_width=True):
-            if latest_draw:
-                st.session_state["input_main_numbers"] = ', '.join(str(n) for n in sorted(latest_draw['main']))
-                st.session_state["input_bonus_number"] = str(latest_draw['bonus'])
+            st.session_state["input_main_numbers"] = ', '.join(str(n) for n in sorted(latest_draw['main']))
+            st.session_state["input_bonus_number"] = str(latest_draw['bonus'])
             if latest_preds:
                 st.session_state["input_predictions"] = ', '.join(str(n) for n in latest_preds)
                 st.session_state["input_prediction_count"] = len(latest_preds)
