@@ -301,7 +301,7 @@ def show():
 
     # --- SUM/RANGE VALIDATION PANEL ---
     if sum_data and not filtered_df.empty:
-        st.header("✅ Sum/Range Validation")
+        st.header("✅ Sum/Range Check")
 
         sum_dist = sum_data.get('overall_distribution', {})
         sum_mean = sum_dist.get('mean', 144.87)
@@ -309,7 +309,7 @@ def show():
         sum_min = sum_dist.get('min', 46)
         sum_max = sum_dist.get('max', 238)
 
-        # Calculate realistic range (mean ± 2 std deviations)
+        # Typical range (mean ± 2 std deviations)
         realistic_min = max(21, sum_mean - 2 * sum_std)  # Min possible is 21 (1+2+3+4+5+6)
         realistic_max = min(267, sum_mean + 2 * sum_std)  # Max possible is 267 (42+43+44+45+46+47)
 
@@ -319,7 +319,7 @@ def show():
         with col_sum2:
             st.metric("Std Deviation", f"{sum_std:.1f}")
         with col_sum3:
-            st.metric("Realistic Range", f"{realistic_min:.0f} - {realistic_max:.0f}")
+            st.metric("Typical Range", f"{realistic_min:.0f} - {realistic_max:.0f}")
         with col_sum4:
             st.metric("Actual Range", f"{sum_min} - {sum_max}")
 
@@ -332,14 +332,11 @@ def show():
 
             # Validate sum
             if realistic_min <= selected_sum <= realistic_max:
-                st.success(f"✅ **Realistic Sum!** Your sum ({selected_sum}) falls within the expected range ({realistic_min:.0f} - {realistic_max:.0f})")
-                confidence = "HIGH"
+                st.info(f"**Typical sum.** Your sum ({selected_sum}) is within the typical range ({realistic_min:.0f} - {realistic_max:.0f})")
             elif sum_min <= selected_sum <= sum_max:
-                st.warning(f"⚠️ **Uncommon Sum.** Your sum ({selected_sum}) is within historical bounds but outside typical range.")
-                confidence = "MEDIUM"
+                st.info(f"**Uncommon sum.** Your sum ({selected_sum}) is within past draws' bounds but outside the typical range.")
             else:
-                st.error(f"❌ **Unrealistic Sum!** Your sum ({selected_sum}) is outside all historical data ({sum_min} - {sum_max})")
-                confidence = "LOW"
+                st.info(f"**Sum never seen before.** Your sum ({selected_sum}) is outside every past draw ({sum_min} - {sum_max})")
 
             # Range spread analysis
             number_range = max(filtered_numbers) - min(filtered_numbers)
@@ -360,16 +357,16 @@ def show():
                 with col:
                     st.metric(range_label, count)
 
-            # Overall validation summary
-            st.info(f"**Validation Confidence:** {confidence}")
+            st.caption("How typical a sum is says nothing about the chance of winning. "
+                       "Every line is equally likely to win.")
 
         elif len(filtered_numbers) > 6:
-            st.info(f"📝 Select exactly 6 numbers for sum validation. Currently showing {len(filtered_numbers)} numbers.")
+            st.info(f"📝 Select exactly 6 numbers for the sum check. Currently showing {len(filtered_numbers)} numbers.")
             if filtered_numbers:
                 avg_sum = sum(filtered_numbers) / len(filtered_numbers)
                 st.markdown(f"**Quick Stats:** Average value = {avg_sum:.1f}")
         else:
-            st.info(f"📝 Select 6 numbers to see sum/range validation. Currently showing {len(filtered_numbers)} numbers.")
+            st.info(f"📝 Select 6 numbers to see the sum/range check. Currently showing {len(filtered_numbers)} numbers.")
 
         st.markdown("---")
 

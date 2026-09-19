@@ -1,7 +1,9 @@
 # view/utils/anomaly_detector.py
 """
-Automated anomaly detection system for lottery predictions.
-Identifies unusual patterns and potential issues in real-time.
+Flags where a line looks unlike past draws.
+
+An alert describes how unusual a line's shape is. It is never a warning about its chance of winning:
+every line is equally likely to win (F-28).
 """
 
 import json
@@ -104,9 +106,8 @@ class AnomalyDetector:
                 'critical',
                 'Sum Analysis',
                 f'Extreme sum detected: {total_sum}',
-                f'This sum is >3 standard deviations from mean ({sum_mean:.1f}). '
-                f'Only 0.3% of historical draws fall outside this range. '
-                f'Expected range: {sum_mean - 3*sum_std:.0f} - {sum_mean + 3*sum_std:.0f}'
+                f'This sum is more than 3 standard deviations from the mean ({sum_mean:.1f}). '
+                f'Very few past draws had a sum outside {sum_mean - 3*sum_std:.0f} - {sum_mean + 3*sum_std:.0f}.'
             )
         # Warning: Beyond 2.5 standard deviations
         elif total_sum < sum_mean - 2.5 * sum_std or total_sum > sum_mean + 2.5 * sum_std:
@@ -114,8 +115,8 @@ class AnomalyDetector:
                 'warning',
                 'Sum Analysis',
                 f'Unusual sum: {total_sum}',
-                f'This sum is beyond 2.5 standard deviations from mean ({sum_mean:.1f}). '
-                f'Less than 2% of historical draws fall in this range.'
+                f'This sum is more than 2.5 standard deviations from the mean ({sum_mean:.1f}). '
+                f'Few past draws had a sum this far out.'
             )
 
     def _check_odd_even_anomaly(self, numbers: List[int]):
@@ -129,8 +130,7 @@ class AnomalyDetector:
                 'critical',
                 'Odd/Even Balance',
                 f'All {"even" if odd_count == 0 else "odd"} numbers!',
-                f'This pattern has occurred in less than 0.5% of historical draws. '
-                f'Balanced selections (2-4 odd) have much higher success rates.'
+                f'Few past draws were all odd or all even; most had 2-4 odd numbers.'
             )
         # Warning: 5-1 or 1-5 split
         elif odd_count == 1 or odd_count == 5:
@@ -138,8 +138,7 @@ class AnomalyDetector:
                 'warning',
                 'Odd/Even Balance',
                 f'Severe odd/even imbalance: {odd_count} odd, {even_count} even',
-                f'Only ~5% of winning draws have this extreme imbalance. '
-                f'Consider a more balanced selection (2-4 odd numbers).'
+                f'Less common in past draws than 2-4 odd numbers.'
             )
 
     def _check_hmc_anomaly(self, numbers: List[int]):
@@ -157,8 +156,7 @@ class AnomalyDetector:
                 'critical',
                 'HMC Distribution',
                 f'All 6 numbers are {category_name.upper()}!',
-                f'This extreme concentration has very low historical probability. '
-                f'Winning draws typically mix hot, medium, and cold numbers.'
+                f'Few past draws had all six numbers in one category; most mixed hot, medium and cold.'
             )
         # Warning: 5 from one category
         elif hot_count == 5 or cold_count == 5:
@@ -167,8 +165,7 @@ class AnomalyDetector:
                 'warning',
                 'HMC Distribution',
                 f'5 out of 6 numbers are {category_name.upper()}',
-                f'This high concentration in one category is uncommon. '
-                f'Consider diversifying across HMC categories.'
+                f'Five numbers in one category is uncommon in past draws.'
             )
 
     def _check_range_anomaly(self, numbers: List[int]):
@@ -191,7 +188,7 @@ class AnomalyDetector:
                 'critical',
                 'Range Distribution',
                 f'All numbers concentrated in only {covered_ranges} range(s)!',
-                f'Winning draws typically spread across 4-5 number ranges. '
+                f'Past draws typically spread across 4-5 number ranges. '
                 f'Current distribution: {", ".join(f"{r}: {c}" for r, c in ranges.items() if c > 0)}'
             )
         # Warning: 4+ numbers in one range
@@ -201,7 +198,7 @@ class AnomalyDetector:
                 'warning',
                 'Range Distribution',
                 f'{max_in_one_range} numbers in range {max_range}',
-                f'This concentration is unusual. Winning draws typically have max 3 numbers per range.'
+                f'Past draws typically have at most 3 numbers in one range.'
             )
 
     def _check_consecutive_anomaly(self, numbers: List[int]):
@@ -229,8 +226,8 @@ class AnomalyDetector:
                 'critical',
                 'Consecutive Numbers',
                 f'{max_consecutive} consecutive numbers: {", ".join(str(n) for n in run)}',
-                f'Having {max_consecutive} consecutive numbers is extremely rare in winning draws. '
-                f'Most wins have at most 2-3 consecutive numbers.'
+                f'A run of {max_consecutive} consecutive numbers is rare in past draws; '
+                f'most have at most 2.'
             )
 
     def _check_all_cold_numbers(self, numbers: List[int]):
@@ -243,8 +240,7 @@ class AnomalyDetector:
                 'critical',
                 'Temperature Analysis',
                 'All 6 numbers are COLD!',
-                'While cold numbers can win, having all 6 from cold category is statistically unlikely. '
-                'Consider mixing with some hot or medium numbers.'
+                'Past draws rarely had all six numbers cold.'
             )
 
     def _check_all_hot_numbers(self, numbers: List[int]):
@@ -257,8 +253,7 @@ class AnomalyDetector:
                 'warning',
                 'Temperature Analysis',
                 'All 6 numbers are HOT!',
-                'While hot numbers appear frequently, relying solely on hot numbers ignores '
-                'the natural cycling of lottery draws. Consider diversification.'
+                'Few past draws had all six numbers hot.'
             )
 
     def _check_cooling_down_numbers(self, numbers: List[int]):
@@ -276,8 +271,8 @@ class AnomalyDetector:
                 'warning',
                 'Momentum Analysis',
                 f'{cooling_count} numbers are cooling down',
-                'These numbers are appearing less frequently than their historical baseline. '
-                'While not impossible, having many cooling numbers together is risky.'
+                'These numbers have come up less often recently than over their whole history. '
+                'That does not change their chance in the next draw.'
             )
 
     def _check_extreme_volatility(self, numbers: List[int]):
@@ -295,8 +290,8 @@ class AnomalyDetector:
                 'info',
                 'Volatility Analysis',
                 f'{high_volatility_count} highly volatile numbers detected',
-                'High volatility numbers have unpredictable patterns. While they can win, '
-                'combining many together increases uncertainty.'
+                'These numbers have come up at irregular intervals in the past. '
+                'That does not change their chance in the next draw.'
             )
 
     def _check_duplicate_recent_pattern(self, numbers: List[int]):
@@ -313,8 +308,8 @@ class AnomalyDetector:
                     'critical',
                     'Pattern Repetition',
                     f'Exact same numbers drawn on {date}!',
-                    'The exact same 6-number combination was drawn recently. '
-                    'While theoretically possible, immediate repetition is astronomically unlikely.'
+                    'This exact line was drawn recently. It is exactly as likely to be drawn again '
+                    'as any other line.'
                 )
                 return
 
@@ -330,7 +325,7 @@ class AnomalyDetector:
                 'Number Distribution',
                 f'All numbers fall in only {unique_decades} decade(s)',
                 f'Numbers are clustered in decades: {", ".join(f"{d}0s" for d in sorted(set(decades)))}. '
-                'Consider spreading across more decades (0-9, 10-19, 20-29, 30-39, 40-47).'
+                'Past draws usually cover more decades.'
             )
 
     def get_alert_summary(self) -> Dict[str, int]:

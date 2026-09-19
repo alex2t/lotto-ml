@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The fourteen real tests (139 tests, ~30s)
+## The fifteen real tests (152 tests, ~30s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -14,7 +14,8 @@ python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invarian
                  tests/test_model_capacity.py tests/test_prediction_alignment.py \
                  tests/test_scraper_sources.py tests/test_wheel.py \
                  tests/test_permutation_check.py tests/test_high_number_distribution.py \
-                 tests/test_bonus_predictor.py tests/test_draw_history_numbers.py -q
+                 tests/test_bonus_predictor.py tests/test_draw_history_numbers.py \
+                 tests/test_site_wording.py -q
 ```
 
 This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two in sync.
@@ -33,7 +34,8 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_wheel.py` | the Model 4 wheel covers every 3-subset of the pool's top 8 |
 | `test_permutation_check.py` | the F-17 shuffle keeps each draw's hit count and moves only the labels |
 | `test_high_number_distribution.py` | the F-19 count of main numbers >= 32 per draw that the dashboard shows |
-| `test_draw_history_numbers.py` | the draw history carries each draw's `main_numbers` and `bonus_number`, and Pattern Comparison finds a past draw among its best matches (F-25). Reads `data/*.json` |
+| `test_draw_history_numbers.py` | the draw history carries each draw's `main_numbers` and `bonus_number`, and Pattern Comparison finds a past draw as its exact match (F-25); past draws are classified with their pre-draw hot/medium/cold, not today's (F-27). Reads `data/*.json` |
+| `test_site_wording.py` | the website describes how typical a line looks, never how likely it is to win: Prediction Validator (F-26), Pattern Comparison, Trigger Periods' sum check and every anomaly alert (F-28) carry no play/avoid/strong/risky advice and say every line is equally likely. Renders pages with Streamlit `AppTest`; reads `data/*.json` |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5) |
 
 ## Not tests
