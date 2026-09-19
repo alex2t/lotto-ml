@@ -214,8 +214,9 @@ Each draw shows:
 - **Date:** Draw date
 - **HMC Distribution:** Pattern for that draw (e.g., 4H-2M-1C)
 - **Draw Range:** Days between first and last number
-- **Last 10 Bonus Numbers:** The 10 most recent bonus numbers at time of draw
-  - **Highlighted in green:** If that number appeared in the current draw
+- **Last 10 Bonus Balls Before This Draw:** the bonus balls of the 10 previous draws (F-33 - it
+  used to include the draw's own bonus)
+  - **Highlighted in red:** a ball from that list that came up in this draw
 - **Winning Numbers Table:** All 7 numbers with details:
   - **Number:** The drawn number
   - **Bonus?:** ⭐ if bonus number
@@ -971,9 +972,9 @@ A low score means the line looks less like past draws, not that it is less likel
 2. Reduce prediction count to 15-20
 3. Judge accuracy over many draws, not one
 
-### Recent bonus balls don't match "Last 10 Bonus Numbers"
+### Recent bonus balls don't match "Last 10 Bonus Balls Before This Draw"
 The Draw History table lists every number that was a bonus ball in the last 150 days; the "Last 10
-Bonus Numbers" line lists only the last 10 draws' bonus balls.
+Bonus Balls Before This Draw" line lists only the bonus balls of the 10 draws before that draw.
 
 ---
 
