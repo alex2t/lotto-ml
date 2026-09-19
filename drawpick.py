@@ -769,6 +769,7 @@ def main():
             print(f)
         print("\n❌ INCOMPLETE: Not all JSON files were generated!")
         print("   Please check the error messages above for details.")
+        sys.exit(1)
     else:
         print(f"\n✅ SUCCESS: All {len(expected_files)} JSON files generated successfully!")
 

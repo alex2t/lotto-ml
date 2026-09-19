@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
+
+WORKDIR /app
+
+# Create non-root user and group
+RUN groupadd -g 1000 lotto && \
+    useradd -u 1000 -g lotto -s /bin/bash -m lotto
+
+# Install minimal engine dependencies
+COPY requirements-engine.txt .
+RUN pip install --no-cache-dir -r requirements-engine.txt
+
+# Copy analysis code and orchestrator
+COPY drawpick.py .
+COPY lotto_analysis/ lotto_analysis/
+COPY analysis/bonus_analysis.py analysis/bonus_analysis.py
+
+# Create analysis output directory and set ownership
+RUN mkdir -p /app/data/analysis && chown -R lotto:lotto /app
+
+USER lotto
+
+ENTRYPOINT ["python", "drawpick.py"]

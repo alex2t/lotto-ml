@@ -1,0 +1,26 @@
+services:
+  data-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.data_engine
+    image: lotto-data-engine:latest
+    container_name: lotto-data-engine
+    restart: "no"
+    volumes:
+      - ./data:/app/data:rw
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  streamlit-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    image: lotto-streamlit:latest
+    container_name: lotto-streamlit
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data:ro
+    environment:
+      - PYTHONUNBUFFERED=1
