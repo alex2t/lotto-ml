@@ -1328,7 +1328,7 @@ AUC = 0.5  → Random guessing (useless!)
 ```
 
 > **This general scale does not apply to this project.** Irish Lotto is a fair draw, so ~0.50 is the
-> correct and expected result, not a failure. All six models sit at 0.498-0.545. An AUC of 0.7+ here
+> correct and expected result, not a failure. All six models sit at 0.496-0.551. An AUC of 0.7+ here
 > would mean a bug - lookahead, leakage, or a model that has memorised the training set. Do not treat
 > the scale above as a target. See `metrics.md` for the real numbers and the noise floor.
 

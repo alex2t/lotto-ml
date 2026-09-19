@@ -58,11 +58,11 @@ over **all 7**, and both sides must agree.
 
 **Metric moves under the noise floor mean nothing.** The floor is ~0.031 AUC and ~0.227 Top-7
 AvgCaught over the 60-draw validation window. All six models sit at chance (AUC 0.50-0.55, Top-7
-lift 1.01-1.12), which is the correct answer for a fair draw. Do not report a sub-2-SE move as an
+lift 0.90-1.18), which is the correct answer for a fair draw. Do not report a sub-2-SE move as an
 improvement, and do not tune until something exceeds it.
 
 **Watch the overfit gap as well as the AUC.** All six models sit at a train/validation AUC gap of
-0.005-0.053. A gap back above ~0.1 means capacity was handed back to a model, not that it learned
+0.002-0.078. A gap back above ~0.1 means capacity was handed back to a model, not that it learned
 something.
 
 **A constant feature is a defect.** `test_no_constant_features.py` fails if a model trains on a

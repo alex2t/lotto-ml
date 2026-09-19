@@ -19,7 +19,7 @@ The project is structured around **two distinct audiences fed by a single data p
 2. **The ML Engineering Layer (`ml_lotto/`, `quickpick.py`) — For the System Author**:
    - A rigorous machine learning and software engineering sandbox applying the principles from Ed Donner's *AI Coder: Complete Claude Code & Coding Agents Course*.
    - Evaluates six models (logistic regression, random forest, XGBoost, CatBoost, and two auxiliary regressors).
-   - **The Honest Baseline**: All models sit at chance (validation AUC 0.498–0.545, Top-7 lift 1.01–1.12 over 60 held-out draws). A 20-run label-permutation test (`python quickpick.py --permutation-check 20`) confirms that no model outperforms shuffled noise ($p = 0.095\text{--}0.476$).
+   - **The Honest Baseline**: All models sit at chance (validation AUC 0.496–0.551, Top-7 lift 0.90–1.18 over 60 held-out draws). A 20-run label-permutation test (`python quickpick.py --permutation-check 20`) confirms that no model outperforms shuffled noise ($p = 0.095\text{--}0.476$).
    - The value of this layer is **engineering discipline, train/serve parity, strict validation, and declarative constraint satisfaction**, not gambling advantage.
 
 3. **The Data Core (`drawpick.py`)**:

@@ -78,7 +78,7 @@ This is the single most important thing to understand before changing a model.
 
 Validation AUC cannot meaningfully improve on a fair draw. The only way to move it is to let a model
 memorise the training set, which shows up as the train/validation gap widening rather than as a
-better score. Current gaps are 0.005-0.053; above ~0.1 means capacity was handed back.
+better score. Current gaps are 0.002-0.078; above ~0.1 means capacity was handed back.
 
 Two things hold the line and **both** must stay constrained:
 
