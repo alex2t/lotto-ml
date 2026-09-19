@@ -120,6 +120,13 @@ python -m demos.demo_interactions                                               
   `git -c http.sslBackend=schannel` (push, fetch, ls-remote), or set it globally once.
 - `gh` is not installed, so PRs cannot be created from the CLI.
 
+## Context efficiency
+
+- Avoid `cat` on files that could be large. Use the Read tool with offset/limit for large files, or `head`/`tail`/`grep` in bash to scope output.
+- When checking logs, use `tail -n 100` or `grep` for the relevant pattern instead of dumping the whole file.
+- For directory listings, avoid recursive `ls`/`find` with no filters on large trees — narrow the path or pattern first.
+- If you genuinely need the full contents of something, that's fine — just don't default to it.
+
 ## Architecture
 
 ```
