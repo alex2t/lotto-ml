@@ -6,26 +6,30 @@ Generates predictions for which numbers from recent bonus list will appear as ma
 UPDATED v3.10: Accepts bonus window as dict entries for better metadata
 """
 
-import numpy as np
 from typing import Dict, List, Tuple, Any
+
+from ml_lotto.features.bonus_to_main_features import bonus_to_main_row
 
 
 def generate_bonus_to_main_predictions(
     model_pipeline,
     feature_names: List[str],
-    bonus_to_main_features: Dict,
-    current_bonus_window: List[Any],
+    point_in_time: Dict[int, Dict[str, Any]],
+    bonus_positions: Dict[int, int],
     category_dict: Dict,
     num_predictions: int = 3
 ) -> Tuple[List[int], List[Dict[str, Any]]]:
     """
     Generate predictions for numbers from recent bonus window that will appear as main.
 
+    Each row is built exactly as the trainer builds one (F-40): the engine's next-draw
+    features with the number's place in the bonus window.
+
     Args:
         model_pipeline: Trained bonus-to-main model
-        feature_names: List of feature names
-        bonus_to_main_features: Feature dictionary for all numbers
-        current_bonus_window: List of bonus entries (numbers or dicts) in window
+        feature_names: Feature names the model was fitted on
+        point_in_time: The engine's next-draw features, keyed by number
+        bonus_positions: bonus_window_positions() over the full history
         category_dict: Dictionary mapping number to category
         num_predictions: Number of predictions to generate (default 3)
 
@@ -34,53 +38,30 @@ def generate_bonus_to_main_predictions(
         - selected_numbers: List of predicted numbers (length = num_predictions)
         - all_predictions_data: List of dicts with number, probability, category for top 6
     """
-    if not current_bonus_window:
+    if not bonus_positions:
         print("\n⚠️  No numbers in current bonus window")
         return []
 
-    # Extract numbers from window (handle both list of ints and list of dicts)
-    if isinstance(current_bonus_window[0], dict):
-        bonus_numbers = [entry['number'] for entry in current_bonus_window]
-    else:
-        bonus_numbers = current_bonus_window
+    # Most recent first
+    candidates = sorted(bonus_positions, key=bonus_positions.get)
 
     print(f"\n{'='*70}")
     print("GENERATING BONUS-TO-MAIN PREDICTIONS")
     print(f"{'='*70}")
-    print(f"Current bonus window: {bonus_numbers}")
+    print(f"Unique candidates: {len(candidates)} numbers {candidates}")
 
-    # Deduplicate bonus window (same number can appear multiple times in last 10 draws)
-    unique_bonus_numbers = list(dict.fromkeys(bonus_numbers))  # Preserves order
-    print(f"Unique candidates: {len(unique_bonus_numbers)} numbers (after deduplication)")
-
-    # Predict for all numbers in window
     predictions = []
-
-    for num in unique_bonus_numbers:
-        if num not in bonus_to_main_features:
-            continue
-
-        features = bonus_to_main_features[num]
-        feature_vector = []
-
-        for fname in feature_names:
-            val = features.get(fname, 0.0)
-            if isinstance(val, (int, float, np.number)):
-                feature_vector.append(float(val))
-            else:
-                feature_vector.append(0.0)
-
-        # Get probability
+    for num in candidates:
+        draws_since_bonus = bonus_positions[num]
+        feature_vector = bonus_to_main_row(point_in_time[num], feature_names, draws_since_bonus)
         prob = model_pipeline.predict_proba([feature_vector])[0][1]
-
-        category = category_dict.get(num, 'unknown')
 
         predictions.append({
             'number': num,
             'probability': prob,
-            'category': category,
-            'draws_since_bonus': features.get('draws_since_bonus', 10),
-            'composite_score': features.get('composite_transition_score', 0.0)
+            'category': category_dict.get(num, 'unknown'),
+            'draws_since_bonus': draws_since_bonus,
+            'composite_score': point_in_time[num]['composite_transition_score']
         })
 
     # Sort by probability

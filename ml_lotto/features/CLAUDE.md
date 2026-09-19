@@ -8,12 +8,28 @@ different code paths here, and they must produce identical values.
 | | Path | Source |
 |:--|:--|:--|
 | Training | `walk_forward.py` (`PointInTimeFeatureEngine`) | recomputed from draw history |
-| Serving (main models) | `extractor.py` | reads `data/lotto_trigger_periods.json` |
+| Serving (main models) | `engine.extract_serving_rows()` | the engine's next-draw row, with `extractor.py`'s row as base |
 
 A mismatch means a model is fitted on one distribution and applied to another. It does not raise.
+
+**The main models are served by the engine, not the extractor** (F-34). A training row takes the
+engine's value for every feature it computes and the base features (`extractor.py`'s row) only for
+the rest - `build_main_dataset`. `extract_serving_rows()` builds the next-draw row the same way, and
+`quickpick.py` feeds it to predictions, picks and the pool. When the extractor's row was served
+directly, its gap statistics came from `lotto_advanced_patterns.json` with other formulas, it had no
+`freshness_bin`, and its `has_consecutive_partner` used another definition. Never serve a main model
+from `extract_features_from_hmc_json()` alone.
+
+**The Bonus-to-Main model uses one row rule and one window rule** (F-40): `bonus_to_main_row()` in
+`bonus_to_main_features.py` and `bonus_window_positions()` in `../utils/bonus_window.py`. The trainer
+applies them at each draw with the history cut there; the predictor applies them to the engine's
+next-draw row and the full history. Do not write the row out again in either place.
+`create_unified_bonus_to_main_features()` only supplies the engine's base dict; it is never scored.
+
 `../../tests/test_walk_forward_parity.py` is what holds this together: it asserts 0/47 mismatches on
-`recent_*`, `total_count` and `draws_since_bonus` against the JSON, and on `days_since_last`,
-`category` and `days_since_bonus` between the extractor's serving row and the engine's.
+`recent_*`, `total_count` and `draws_since_bonus` against the JSON, on `days_since_last`, `category`
+and `days_since_bonus` between the extractor's row and the engine's, and on every main-model column
+between the served row and the training row.
 
 **Counted-over conventions - do not change one side only:**
 
@@ -25,7 +41,8 @@ A mismatch means a model is fitted on one distribution and applied to another. I
 **Window naming is off by one by design.** `recent_4` counts over 5 draws, `recent_9` over 10,
 `recent_24` over 25 - see `cum_main[t] - cum_main[t-5]` at `walk_forward.py:225`.
 
-**Only `extract_features_for_next_draw()` builds a correct serving row** (`t = N`).
+**Only `extract_features_for_next_draw()` builds a correct serving row** (`t = N`);
+`extract_serving_rows()` is built on it.
 `extract_features_at_draw(N-1)` conditions on draws `0..N-2` and silently drops the most recent draw.
 
 **One serving date: `engine.next_draw_date`** (C-6b). Training row `t` counts days to draw `t`'s own
@@ -46,7 +63,7 @@ moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N)
 | File | Role |
 |:--|:--|
 | `walk_forward.py` | point-in-time engine; no lookahead. `with_base_features()` gives each model a view of the one engine per run |
-| `extractor.py` | serving orchestrator for the four main models, reads the JSON artifacts |
+| `extractor.py` | builds the base row from the JSON artifacts; it supplies a served value only for a feature the engine does not compute |
 | `base.py` | `total_count`, `days_since_last`, category; dynamic key detection from HMC data |
 | `rolling_stats.py` | `rolling_rate_*` / `rolling_trend_*`, counted over all 7 |
 | `freshness.py` | `freshness_c0..c3_weight`, `current_freshness_bin` |
@@ -54,7 +71,7 @@ moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N)
 | `patterns.py` | consecutive-partner and pair-affinity features |
 | `interactions.py` | applies mined pairwise/triple interactions |
 | `history.py` | `win_bias_ratio` |
-| `bonus.py`, `bonus_features.py`, `bonus_to_main_features.py` | the two auxiliary models' features |
+| `bonus.py`, `bonus_features.py`, `bonus_to_main_features.py` | the two auxiliary models' features; `bonus_to_main_row()` is the Bonus-to-Main row for training and serving |
 | `feature_selection.py` | correlation and importance filtering |
 | `realism.py` | thin; features migrated to JSON-loaded versions |
 
@@ -69,8 +86,9 @@ moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N)
 - **A feature that never varies is a bug.** `../../tests/test_no_constant_features.py` enforces it.
   Per-number constants over full history leak outcome information from the validation window.
 - A feature name in a model's `features` list in `../config.py` must be produced by both
-  `walk_forward.py` and `extractor.py`. `expand_feature_selection` raises on a name the serving
-  features lack (F-15); a name only serving produces still falls back to the base features in training.
+  `walk_forward.py` and `extractor.py`. `expand_feature_selection` raises on a name the extractor's
+  row lacks (F-15). A name only the extractor produces is a full-history value in both training and
+  serving - the engine's value wins wherever it has one.
 
 ## After changing anything here
 

@@ -12,12 +12,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ml_lotto.config import MAX_NUMBER, ODDS_JSON_INPUT, TRAINING_START_DRAW
+from ml_lotto.config import ACTIVE_MODELS, BONUS_TO_MAIN_MODEL_CONFIG, MAX_NUMBER, ODDS_JSON_INPUT, TRAINING_START_DRAW
 from ml_lotto.data.loader import load_draw_history_with_bias_ratios, load_hmc_json, load_odds_json
 from ml_lotto.features.base import get_dynamic_recent_keys
-from ml_lotto.features.extractor import extract_features_from_hmc_json
+from ml_lotto.features.extractor import expand_feature_selection, extract_features_from_hmc_json, get_all_feature_names
 from ml_lotto.features.timing import calculate_days_since_bonus
 from ml_lotto.features.walk_forward import PointInTimeFeatureEngine, next_draw_date
+from ml_lotto.models.bonus_to_main_trainer import _build_bonus_to_main_dataset
+from ml_lotto.prediction.bonus_to_main_predictor import generate_bonus_to_main_predictions
+from ml_lotto.utils.bonus_window import bonus_window_positions
 
 DRAW_HISTORY = 'data/lotto_draw_history.json'
 TRIGGER_PERIODS = 'data/lotto_trigger_periods.json'
@@ -220,3 +223,80 @@ def test_extractor_serving_row_matches_the_engine(engine, extractor_row, feature
         if extractor_row[num][feature] != served[num][feature]
     }
     assert not mismatches, f"{feature} differs for {len(mismatches)} numbers: {mismatches}"
+
+
+@pytest.fixture(scope='module')
+def model_columns(engine, extractor_row):
+    """Every column some main model trains on: produced by the engine or the base features."""
+    all_features = get_all_feature_names({1: {**extractor_row[1], **engine.extract_features_for_next_draw()[1]}})
+    return sorted({col for config in ACTIVE_MODELS
+                   for col in expand_feature_selection(config['features'], all_features)})
+
+
+def test_serving_row_matches_the_training_row_for_every_model_column(engine, extractor_row, model_columns):
+    """
+    A main model is served the row it was trained on, column for column (F-34).
+
+    A training row takes the engine's point-in-time value for every feature the engine
+    computes, and the base features only for the rest. Regression: the models were served
+    the extractor's row, whose gap statistics came from lotto_advanced_patterns.json with
+    different formulas (47/47 numbers wrong), whose freshness_bin was missing so every
+    freshness_bin interaction served 0, and whose has_consecutive_partner used another
+    definition of a hot neighbour.
+    """
+    served = engine.with_base_features(extractor_row).extract_serving_rows()
+    point_in_time = engine.extract_features_for_next_draw()
+    mismatches = {}
+    for col in model_columns:
+        trained_on = {num: point_in_time[num][col] if col in point_in_time[num] else extractor_row[num][col]
+                      for num in NUMBERS}
+        wrong = [num for num in NUMBERS if served[num][col] != trained_on[num]]
+        if wrong:
+            mismatches[col] = len(wrong)
+    assert not mismatches, f"served values differ from training values: {mismatches}"
+
+
+def test_serving_rows_take_the_gap_statistics_from_the_engine(engine, extractor_row):
+    """The F-34 columns are the engine's, not the extractor's JSON-derived values."""
+    served = engine.with_base_features(extractor_row).extract_serving_rows()
+    point_in_time = engine.extract_features_for_next_draw()
+    for col in ('appearance_volatility', 'gap_consistency_score', 'max_gap_ratio',
+                'freshness_bin', 'has_consecutive_partner'):
+        assert all(served[num][col] == point_in_time[num][col] for num in NUMBERS), col
+
+
+class RecordingModel:
+    """Stands in for the fitted pipeline and keeps every row it is asked to score."""
+
+    def __init__(self):
+        self.rows = []
+
+    def predict_proba(self, X):
+        self.rows.append(list(X[0]))
+        return np.array([[0.5, 0.5]])
+
+
+def test_bonus_to_main_serves_the_row_it_was_trained_on(engine, draws):
+    """
+    The Bonus-to-Main model is served, for the next draw, the rows the trainer builds (F-40).
+
+    Cut the history at draw t: what the predictor serves for the next draw must equal the
+    trainer's rows for draw t, number for number. Regression: serving read a dict built
+    from the extractor's row and the JSON profiles, so gap statistics, rolling rates, the
+    transition weights and every freshness_bin interaction differed from training.
+    """
+    t = len(draws) - 1
+    names = expand_feature_selection(BONUS_TO_MAIN_MODEL_CONFIG['features'],
+                                     list(engine.extract_features_for_next_draw()[1]))
+    trained, _, _ = _build_bonus_to_main_dataset(engine, draws, names, t, t + 1)
+
+    history = draws[:t]
+    model = RecordingModel()
+    generate_bonus_to_main_predictions(
+        model, names,
+        PointInTimeFeatureEngine(history, {}).extract_features_for_next_draw(),
+        bonus_window_positions(history),
+        {}, num_predictions=3,
+    )
+    assert len(model.rows) == len(trained) > 0
+    assert sorted(model.rows) == sorted(map(list, trained))

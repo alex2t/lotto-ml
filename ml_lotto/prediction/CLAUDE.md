@@ -11,7 +11,7 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 | `pool_generator.py` | ranked candidate pool for Model 4 |
 | `wheel.py` | 4-line covering-design wheel over the pool's top 8 |
 | `bonus_predictor.py` | 3 diverse bonus-ball predictions |
-| `bonus_to_main_predictor.py` | bonus-to-main transition picks |
+| `bonus_to_main_predictor.py` | bonus-to-main transition picks; scores rows from `bonus_to_main_row()`, the trainer's own rule (F-40) |
 
 ## The boundary that matters
 
@@ -69,6 +69,8 @@ let a constraint look satisfied while not binding (F-8, F-14).
   the pipeline was fitted on, so a silent 0 applies a coefficient fitted on real values to a constant
   and breaks parity with no error. Both sites - `predictor.py` and `bonus_predictor.py` - carry a
   comment saying so; do not "harden" them back into defaults. See F-9 in `issue.md`.
+  `bonus_to_main_predictor.py` builds its rows with `bonus_to_main_row()`, shared with its trainer,
+  which indexes `row[f]` the same way (F-40).
 - Verify claims against `lottery_picks.txt`. Filters have been advertised in logs and docs here
   without being implemented.
 

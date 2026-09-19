@@ -73,7 +73,7 @@ This is the single highest-risk invariant in the entire repository. Training fea
 | Context | Engine / Path | Source |
 |:---|:---|:---|
 | **Training** | `PointInTimeFeatureEngine` (`ml_lotto/features/walk_forward.py`) | Recomputed point-in-time from `data/lotto_draw_history.json` |
-| **Serving (Main Models)** | `ml_lotto/features/extractor.py` | Reads `data/lotto_trigger_periods.json` |
+| **Serving (Main Models)** | `engine.extract_serving_rows()` | The engine's next-draw row; `ml_lotto/features/extractor.py`'s row (from `data/lotto_trigger_periods.json`) only for features the engine does not compute (F-34) |
 
 * **Counted-Over Conventions**:
   - `recent_4`, `recent_5`, `recent_9`, `recent_24`, and `freshness_bin` are counted over the **main 6 balls** only.
@@ -82,7 +82,7 @@ This is the single highest-risk invariant in the entire repository. Training fea
   - `recent_4` counts over 5 draws (`last_4` in JSON).
   - `recent_9` counts over 10 draws (`last_9` in JSON).
   - `recent_24` counts over 25 draws (`last_24` in JSON).
-* **Serving Row Construction**: Only `engine.extract_features_for_next_draw()` ($t = N$) builds a valid serving row. `extract_features_at_draw(N-1)` drops the latest draw.
+* **Serving Row Construction**: Only `engine.extract_features_for_next_draw()` ($t = N$) builds a valid serving row. `extract_features_at_draw(N-1)` drops the latest draw. The main models are served `engine.with_base_features(features_dict).extract_serving_rows()`, built exactly like a training row - never the extractor's row alone (F-34). The Bonus-to-Main model builds training and serving rows with the same two functions, `bonus_to_main_row()` and `bonus_window_positions()`, over the engine (F-40).
 * **One Serving Date**: Every serving path counts days to `engine.next_draw_date` (the next draw on the current Mon/Wed/Sat schedule), matching training rows dated at their own draw. `category` is derived with `hmc_category()` in both paths, never read from the JSON. Never use `datetime.now()` (C-6b).
 * **No Silent Defaults**: Never use `feat.get(key, 0)` for feature values. A missing key indicates a distribution mismatch or missing column; let it fail loudly with `feat[col]`.
 * **Single Engine Instance**: `quickpick.py` instantiates one `PointInTimeFeatureEngine`, and models consume views via `engine.with_base_features()`.
@@ -178,7 +178,7 @@ Always execute commands inside the project's virtual environment:
 # Launch the Streamlit dashboard
 .\venv\Scripts\streamlit.exe run app.py
 
-# Execute all 19 test files (172 tests, ~30s) - pytest.ini limits pytest to tests/
+# Execute all 19 test files (175 tests, ~30s) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite
