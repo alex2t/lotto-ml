@@ -208,6 +208,16 @@ class PointInTimeFeatureEngine:
         """
         return self.extract_features_at_draw(self.N)
 
+    def extract_serving_rows(self) -> Dict[int, Dict[str, Any]]:
+        """
+        Build the next-draw row the main models are served, the way build_main_dataset
+        builds a training row: the engine's point-in-time value for every feature it
+        computes, the base features only for the rest (F-34).
+        """
+        point_in_time = self.extract_features_for_next_draw()
+        return {num: {**self.base_features_dict[num], **point_in_time[num]}
+                for num in range(1, MAX_NUMBER + 1)}
+
     def extract_features_at_draw(self, t: int) -> Dict[int, Dict[str, Any]]:
         """
         Extract complete feature dictionary for all 47 numbers at draw t.

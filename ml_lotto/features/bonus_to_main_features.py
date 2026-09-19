@@ -10,6 +10,8 @@ UPDATED v3.10: Uses LIVE bonus window calculation instead of stale JSON data
 
 from typing import Dict, Any, List
 
+import numpy as np
+
 
 def extract_bonus_to_main_features_dict(
     bonus_to_main_data: Dict[str, Any],
@@ -295,3 +297,18 @@ def get_unified_bonus_to_main_feature_names(include_interactions: bool = True) -
             print(f"  ⚠️  Warning: Could not get interaction feature names: {e}")
 
     return all_features
+
+
+def bonus_to_main_row(
+    point_in_time_row: Dict[str, Any],
+    feature_names: List[str],
+    draws_since_bonus: int
+) -> List[float]:
+    """
+    Build one Bonus-to-Main model row, the same way in training and serving (F-40).
+
+    The engine's point-in-time values for the number, with its place in the bonus window.
+    A non-numeric value (category) becomes 0.0, as it always has - see F-41.
+    """
+    row = {**point_in_time_row, 'is_in_bonus_window': 1.0, 'draws_since_bonus': float(draws_since_bonus)}
+    return [float(row[f]) if isinstance(row[f], (int, float, np.number)) else 0.0 for f in feature_names]

@@ -127,7 +127,8 @@ either end.
 - **A feature that never varies is a bug.** `tests/test_no_constant_features.py` enforces it.
   Per-number constants computed over full history leak outcome information from the validation
   window; globally constant features carry nothing.
-- **Adding a name to a config does nothing** unless both `walk_forward.py` (training) and
-  `extractor.py` (serving) produce it. Check both, then run the parity test.
+- **Adding a name to a config does nothing** unless both `walk_forward.py` and `extractor.py`
+  produce it. The main models are served `engine.extract_serving_rows()`, so the engine's value is
+  used wherever it has one (F-34). Check both, then run the parity test.
 - Adding a feature will not improve the metrics - see `metrics.md`. It will, if you are not careful,
   widen the overfit gap.

@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The nineteen real tests (172 tests, ~30s)
+## The nineteen real tests (175 tests, ~30s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -24,7 +24,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 
 | File | Guards |
 |:--|:--|
-| `test_walk_forward_parity.py` | train/serve parity - 0/47 mismatches on `recent_*`, `total_count`, `draws_since_bonus`, and extractor vs engine on `days_since_last`, `category`, `days_since_bonus`; the next-draw date follows the schedule. The most important file here |
+| `test_walk_forward_parity.py` | train/serve parity - 0/47 mismatches on `recent_*`, `total_count`, `draws_since_bonus`, and extractor vs engine on `days_since_last`, `category`, `days_since_bonus`; the served row equals the training row on every main-model column (F-34), and the Bonus-to-Main predictor scores the rows its trainer builds (F-40); the next-draw date follows the schedule. The most important file here |
 | `test_no_constant_features.py` | no model trains on a value that never varies; the C-5 full-history features stay out of all six models (F-21) |
 | `test_model_capacity.py` | the constrained model params and tuning grids stay constrained |
 | `test_selection_invariants.py` | the ILP line meets every constraint and is the brute-force optimum |
