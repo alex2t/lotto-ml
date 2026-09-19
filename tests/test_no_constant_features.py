@@ -16,6 +16,9 @@ outcome information into the features.
 import pytest
 
 from ml_lotto.config import (
+    BONUS_MODEL_CONFIG,
+    BONUS_TO_MAIN_MODEL_CONFIG,
+    LONG_TERM_PATTERN_WEIGHTS,
     MAX_NUMBER,
     MODEL_1_CONFIG,
     MODEL_2_CONFIG,
@@ -36,6 +39,23 @@ MODELS = [
     ('Model 3 Complexity', MODEL_3_CONFIG),
     ('Model 4 Pool', MODEL_4_CONFIG),
 ]
+
+AUX_MODELS = [
+    ('Bonus Ball', BONUS_MODEL_CONFIG),
+    ('Bonus-to-Main', BONUS_TO_MAIN_MODEL_CONFIG),
+]
+
+# Removed in C-5: per-number statistics over the whole timeline, served in training as a static copy.
+C5_REMOVED = {
+    'odd_even_json',
+    'range_spread_json',
+    'sum_contribution_json',
+    'window_saturation_penalty',
+    'series_recent',
+    'series_total',
+    'lt_category_alignment',
+    'lt_recency_weight',
+}
 
 
 @pytest.fixture(scope='module')
@@ -132,19 +152,21 @@ def test_the_removed_c5_features_stay_out_of_every_model(produced):
     train/val AUC gap from 0.380 to 0.148. The odd/even, sum and range constraints they
     were meant to express are enforced in prediction/filters.py instead.
     """
-    removed = {
-        'odd_even_json',
-        'range_spread_json',
-        'sum_contribution_json',
-        'window_saturation_penalty',
-        'series_recent',
-        'series_total',
-        'lt_category_alignment',
-        'lt_recency_weight',
-    }
     for label, config in MODELS:
-        back = sorted(removed & set(selected_for(config, produced)))
+        back = sorted(C5_REMOVED & set(selected_for(config, produced)))
         assert not back, f"{label} has re-introduced full-history feature(s): {back}"
+
+
+@pytest.mark.parametrize('label,config', AUX_MODELS)
+def test_the_removed_c5_features_stay_out_of_the_auxiliary_models(label, config):
+    """
+    The C-5 rule applies to every model, not only the four main ones (F-21).
+
+    Regression: Bonus-to-Main kept window_saturation_penalty, trained on a static
+    full-history copy and computed from categories dated at the last draw.
+    """
+    back = sorted((C5_REMOVED | {LONG_TERM_PATTERN_WEIGHTS}) & set(config['features']))
+    assert not back, f"{label} uses full-history feature(s) removed in C-5: {back}"
 
 
 def test_a_config_name_that_is_not_produced_raises(produced):

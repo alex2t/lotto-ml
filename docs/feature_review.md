@@ -26,7 +26,7 @@ static per-number values derived from the entire historical timeline". Six are n
 | `odd_even_json` | **no** |
 | `series_recent` | **no** |
 | `series_total` | **no** |
-| `window_saturation_penalty` | yes - Bonus-to-Main auxiliary only |
+| `window_saturation_penalty` | yes - Bonus-to-Main auxiliary only (removed from it 2026-09-19, F-21; now **no**) |
 
 Five of the six are computed for all 47 numbers on every row and then discarded. They appear in
 `extractor.py`'s `new_json_features` list, but that list is not bound to any of the four group

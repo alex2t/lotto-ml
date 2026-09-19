@@ -146,7 +146,7 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
     'description': '74% of bonus numbers appear as main within 10 draws (3.48x boost over random)',
     'algorithm': 'logistic_regression',
     'features': [
-        # === BONUS-TO-MAIN SPECIFIC FEATURES (12) ===
+        # === BONUS-TO-MAIN SPECIFIC FEATURES (11) ===
         'is_in_bonus_window',          # Binary: in recent 10 bonus draws
         'draws_since_bonus',           # Timing: 0-9 draws ago
         'historical_transition_rate',  # Number's historical success rate
@@ -154,7 +154,6 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
         'freshness_multiplier',        # Freshness category weight
         'timing_decay_weight',         # Time-based decay (draw_1 strongest)
         'composite_transition_score',  # Combined probability score
-        'window_saturation_penalty',   # Window over-saturation penalty
         'avg_draws_to_transition',     # Number's typical transition timing
         'recent_4',                    # Recent main appearances (4 draws)
         'recent_9',                    # Recent main appearances (9 draws)
@@ -180,7 +179,8 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
         'PAIRWISE_INTERACTIONS',       # Critical for logistic regression!
         'TRIPLE_INTERACTIONS',         # Category × freshness × timing patterns
     ],
-    # Total: 12 bonus-to-main + 10 main + ~13 interactions = ~35 features
+    # Total: 11 bonus-to-main + 10 main + ~13 interactions = ~34 features
+    # window_saturation_penalty removed (F-21): a C-5 full-history feature, static in training.
 
     # L1 for the same reason as the bonus model: 35 features against 462 positive
     # training rows gave a 0.150 gap that L2 could not touch. 2 features survive at
