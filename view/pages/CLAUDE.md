@@ -54,6 +54,9 @@ Shared helpers are in `../utils/`: `data_loader.py` (cached artifact reads), `fo
   avoid, include or regenerate anything - every line is equally likely to win. Do not quote a
   frequency from memory; take it from `data/*.json` (the anomaly alerts quoted "<0.5%" for a share that
   is 2%). `tests/test_site_wording.py` holds the list of banned phrases (F-26, F-28).
+- **A check that cannot fire is not a safeguard.** The anomaly detector's volatility alert needed a
+  value no number has ever reached, and ran for months without firing (F-29). When adding a check to
+  `../utils/anomaly_detector.py`, give `tests/test_anomaly_detector.py` a line that fires it.
 - **This layer is read-only.** Pages consume `data/*.json`, `lottery_picks.txt` and `model_metrics/`.
   Nothing here writes an artifact, trains a model, or recomputes a feature. If a page needs a number
   that does not exist, it is produced upstream in `lotto_analysis/` or `ml_lotto/`, not here.

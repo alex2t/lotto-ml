@@ -455,7 +455,7 @@ def main():
     print(f"  - Total bonus appearances: {total_bonuses}")
     print(f"  - Overall transition rate: {overall_rate*100:.2f}%")
     print(f"  - Numbers with transitions: {total_transitions}")
-    print(f"  - Boost over random: {overall_rate / (10/47):.2f}x")
+    print(f"  - Boost over random: {overall_rate / (1 - (41/47)**10):.2f}x")
     print()
 
 if __name__ == "__main__":

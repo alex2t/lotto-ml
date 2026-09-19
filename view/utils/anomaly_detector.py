@@ -10,47 +10,19 @@ import json
 from typing import List, Dict, Tuple, Any
 
 
+def load_json(path: str) -> Dict[str, Any]:
+    with open(path, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+
 def load_anomaly_detection_data() -> Dict[str, Any]:
-    """Load all necessary data for anomaly detection."""
-    data = {}
-
-    try:
-        with open('data/lotto_trigger_periods.json', 'r') as f:
-            data['trigger'] = json.load(f)
-    except FileNotFoundError:
-        data['trigger'] = {}
-
-    try:
-        with open('data/lotto_sum_contribution_validated.json', 'r') as f:
-            data['sum'] = json.load(f)
-    except FileNotFoundError:
-        data['sum'] = {}
-
-    try:
-        with open('data/lotto_odd_even_validated.json', 'r') as f:
-            data['odd_even'] = json.load(f)
-    except FileNotFoundError:
-        data['odd_even'] = {}
-
-    try:
-        with open('data/lotto_advanced_patterns.json', 'r') as f:
-            data['advanced'] = json.load(f)
-    except FileNotFoundError:
-        data['advanced'] = {}
-
-    try:
-        with open('data/lotto_bonus_to_main_patterns.json', 'r') as f:
-            data['bonus_transition'] = json.load(f)
-    except FileNotFoundError:
-        data['bonus_transition'] = {}
-
-    try:
-        with open('data/lotto_draw_history.json', 'r') as f:
-            data['draw_history'] = json.load(f)
-    except FileNotFoundError:
-        data['draw_history'] = {}
-
-    return data
+    """Load the artifacts the checks read. A missing file or key raises (F-29)."""
+    return {
+        'trigger': load_json('data/lotto_trigger_periods.json'),
+        'sum': load_json('data/lotto_sum_contribution_validated.json')['overall_distribution'],
+        'advanced': load_json('data/lotto_advanced_patterns.json')['per_number_features'],
+        'draw_history': load_json('data/lotto_draw_history.json'),
+    }
 
 
 class AnomalyDetector:
@@ -76,7 +48,6 @@ class AnomalyDetector:
         self._check_all_cold_numbers(numbers)
         self._check_all_hot_numbers(numbers)
         self._check_cooling_down_numbers(numbers)
-        self._check_extreme_volatility(numbers)
         self._check_duplicate_recent_pattern(numbers)
         self._check_all_same_parity_range(numbers)
 
@@ -85,7 +56,7 @@ class AnomalyDetector:
     def _add_alert(self, severity: str, category: str, message: str, details: str = ""):
         """Add an alert to the list."""
         self.alerts.append({
-            'severity': severity,  # 'critical', 'warning', 'info'
+            'severity': severity,  # 'critical' or 'warning'
             'category': category,
             'message': message,
             'details': details
@@ -94,11 +65,8 @@ class AnomalyDetector:
     def _check_sum_anomaly(self, numbers: List[int]):
         """Check if sum is extremely unusual."""
         total_sum = sum(numbers)
-        sum_data = self.data.get('sum', {})
-        summary_stats = sum_data.get('summary_statistics', {})
-
-        sum_mean = summary_stats.get('mean', 144.87)
-        sum_std = summary_stats.get('std', 30.4)
+        sum_mean = self.data['sum']['mean']
+        sum_std = self.data['sum']['std']
 
         # Critical: Beyond 3 standard deviations
         if total_sum < sum_mean - 3 * sum_std or total_sum > sum_mean + 3 * sum_std:
@@ -143,11 +111,9 @@ class AnomalyDetector:
 
     def _check_hmc_anomaly(self, numbers: List[int]):
         """Check for unusual HMC distribution."""
-        trigger_data = self.data.get('trigger', {})
-
-        hot_count = sum(1 for n in numbers if trigger_data.get(str(n), {}).get('category') == 'hot')
-        medium_count = sum(1 for n in numbers if trigger_data.get(str(n), {}).get('category') == 'medium')
-        cold_count = sum(1 for n in numbers if trigger_data.get(str(n), {}).get('category') == 'cold')
+        categories = [self.data['trigger'][str(n)]['category'] for n in numbers]
+        hot_count = categories.count('hot')
+        cold_count = categories.count('cold')
 
         # Critical: All from one category
         if hot_count == 6 or cold_count == 6:
@@ -232,8 +198,7 @@ class AnomalyDetector:
 
     def _check_all_cold_numbers(self, numbers: List[int]):
         """Check if all numbers are cold."""
-        trigger_data = self.data.get('trigger', {})
-        cold_count = sum(1 for n in numbers if trigger_data.get(str(n), {}).get('category') == 'cold')
+        cold_count = sum(1 for n in numbers if self.data['trigger'][str(n)]['category'] == 'cold')
 
         if cold_count == 6:
             self._add_alert(
@@ -245,8 +210,7 @@ class AnomalyDetector:
 
     def _check_all_hot_numbers(self, numbers: List[int]):
         """Check if all numbers are hot."""
-        trigger_data = self.data.get('trigger', {})
-        hot_count = sum(1 for n in numbers if trigger_data.get(str(n), {}).get('category') == 'hot')
+        hot_count = sum(1 for n in numbers if self.data['trigger'][str(n)]['category'] == 'hot')
 
         if hot_count == 6:
             self._add_alert(
@@ -258,13 +222,7 @@ class AnomalyDetector:
 
     def _check_cooling_down_numbers(self, numbers: List[int]):
         """Check if multiple numbers are cooling down."""
-        advanced_data = self.data.get('advanced', {})
-        per_number = advanced_data.get('per_number_features', {})
-
-        cooling_count = sum(
-            1 for n in numbers
-            if per_number.get(str(n), {}).get('recent_vs_baseline', 1.0) < 0.8
-        )
+        cooling_count = sum(1 for n in numbers if self.data['advanced'][str(n)]['recent_vs_baseline'] < 0.8)
 
         if cooling_count >= 4:
             self._add_alert(
@@ -275,31 +233,11 @@ class AnomalyDetector:
                 'That does not change their chance in the next draw.'
             )
 
-    def _check_extreme_volatility(self, numbers: List[int]):
-        """Check if too many high-volatility numbers."""
-        advanced_data = self.data.get('advanced', {})
-        per_number = advanced_data.get('per_number_features', {})
-
-        high_volatility_count = sum(
-            1 for n in numbers
-            if per_number.get(str(n), {}).get('appearance_volatility', 1.0) >= 1.5
-        )
-
-        if high_volatility_count >= 4:
-            self._add_alert(
-                'info',
-                'Volatility Analysis',
-                f'{high_volatility_count} highly volatile numbers detected',
-                'These numbers have come up at irregular intervals in the past. '
-                'That does not change their chance in the next draw.'
-            )
-
     def _check_duplicate_recent_pattern(self, numbers: List[int]):
         """Check if this exact pattern appeared very recently."""
-        draw_history = self.data.get('draw_history', {})
         sorted_selection = sorted(numbers)
 
-        recent_draws = sorted(draw_history.items(), reverse=True)[:20]  # Last 20 draws
+        recent_draws = sorted(self.data['draw_history'].items(), reverse=True)[:20]  # Last 20 draws
 
         for date, draw_data in recent_draws:
             main_numbers = sorted(draw_data['main_numbers'])
@@ -332,8 +270,7 @@ class AnomalyDetector:
         """Get summary counts of alerts by severity."""
         return {
             'critical': sum(1 for a in self.alerts if a['severity'] == 'critical'),
-            'warning': sum(1 for a in self.alerts if a['severity'] == 'warning'),
-            'info': sum(1 for a in self.alerts if a['severity'] == 'info')
+            'warning': sum(1 for a in self.alerts if a['severity'] == 'warning')
         }
 
 
