@@ -1,12 +1,13 @@
 # tests/
 
-**Only thirteen files in this folder are real tests. Do not run `pytest tests/` bare** - the other
-eleven are legacy print-scripts that run model training at import and will take minutes, hang, or
-fail on missing artifacts.
+**Every file in this folder is a real test.** `pytest` from the project root runs all of them -
+`pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
+`test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The thirteen real tests (135 tests, ~50s)
+## The thirteen real tests (135 tests, ~30s)
 
 ```bash
+python -m pytest -q          # all of them, via pytest.ini
 python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py \
                  tests/test_metrics.py tests/test_no_constant_features.py \
                  tests/test_freshness_target.py tests/test_threshold_holdout.py \
@@ -34,16 +35,11 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_high_number_distribution.py` | the F-19 count of main numbers >= 32 per draw that the dashboard shows |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5) |
 
-## The legacy print-scripts
+## Not tests
 
-`test_better_metrics.py`, `test_hyperparameter_tuning.py`,
-`test_integrated_training.py`, `test_interactions.py`, `test_model_specific_features.py`,
-`test_rolling_integration.py`, `test_rolling_stats_integration.py`, `test_smote_threshold.py`,
-`test_train_with_all_features.py`, `test_unified_bonus_features.py`, `test_unified_bonus_to_main_features.py`.
-
-They are demonstration scripts with a `test_` prefix, mostly `print` and no assertions. Leave them
-alone unless you are converting one into a real test - in which case add it to the real-test list
-above **and** to `verify.py`.
+`../demos/` holds the old feature-discovery scripts. They print what a module produces, mostly on
+mock data, and pytest does not collect them. Turning one into a real test means rewriting it to
+assert intended behaviour, putting it here, and adding it to `verify.py`'s list.
 
 ## Rules
 

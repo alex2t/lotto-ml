@@ -77,9 +77,10 @@ def extract_features_from_draw(winning_details: List[Dict]) -> Dict[int, Dict[st
             'days_since_last': detail.get('days_since_last_hit', 0),
             'category': detail.get('category', 'unknown'),
             'freshness_bin': detail.get('current_freshness_bin', 0),
-            'recent_4': detail.get('recent_counts', {}).get('last_4', 0),
-            'recent_9': detail.get('recent_counts', {}).get('last_9', 0),
-            'recent_14': detail.get('recent_counts', {}).get('last_14', 0),
+            # Windows are last_4/5/9/24; there is no last_14 (F-7). A missing one must fail.
+            'recent_4': detail['recent_counts']['last_4'],
+            'recent_9': detail['recent_counts']['last_9'],
+            'recent_24': detail['recent_counts']['last_24'],
             'bonus_hit_contribution': detail.get('bonus_hit_contribution', 0.0),
             'is_recent_bonus_hit': detail.get('is_recent_bonus_hit', False)
         }
@@ -98,7 +99,7 @@ def analyze_feature_win_rates_over_time(sorted_draws: List[Dict[str, Any]],
         Dict mapping feature -> list of win rates over windows
     """
     numeric_features = ['total_count', 'days_since_last', 'recent_4', 'recent_9',
-                       'recent_14', 'freshness_bin', 'bonus_hit_contribution']
+                       'recent_24', 'freshness_bin', 'bonus_hit_contribution']
 
     feature_win_rates = defaultdict(list)
 
@@ -210,7 +211,7 @@ def analyze_feature_correlations_over_time(sorted_draws: List[Dict[str, Any]],
         Dict mapping feature -> correlation_stability_score
     """
     numeric_features = ['total_count', 'days_since_last', 'recent_4', 'recent_9',
-                       'recent_14', 'freshness_bin']
+                       'recent_24', 'freshness_bin']
 
     # Calculate correlations in multiple windows
     feature_correlations = defaultdict(lambda: defaultdict(list))
