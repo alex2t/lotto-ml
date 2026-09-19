@@ -3,7 +3,7 @@ Bonus-to-Main Model Trainer
 ============================
 Trains ML model to predict which numbers from recent bonus list will appear as main numbers.
 
-Pattern: 74% of bonus numbers appear as main within 10 draws (3.48x boost over random)
+Pattern: 74.6% of bonus numbers appear as main within 10 draws - chance for any number (F-30)
 """
 
 import numpy as np

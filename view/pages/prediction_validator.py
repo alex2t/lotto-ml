@@ -341,7 +341,7 @@ def show():
             alerts, alert_summary = detect_anomalies(numbers)
 
             # Display alert summary
-            col_alert1, col_alert2, col_alert3, col_alert4 = st.columns(4)
+            col_alert1, col_alert2, col_alert3 = st.columns(3)
 
             with col_alert1:
                 total_alerts = len(alerts)
@@ -353,9 +353,6 @@ def show():
             with col_alert3:
                 st.metric("Unusual", alert_summary['warning'])
 
-            with col_alert4:
-                st.metric("Note", alert_summary['info'])
-
             # Display individual alerts
             if alerts:
                 st.markdown("**Detected Anomalies:**")
@@ -363,7 +360,6 @@ def show():
                 # Group by severity
                 critical_alerts = [a for a in alerts if a['severity'] == 'critical']
                 warning_alerts = [a for a in alerts if a['severity'] == 'warning']
-                info_alerts = [a for a in alerts if a['severity'] == 'info']
 
                 # Show critical alerts first
                 if critical_alerts:
@@ -376,14 +372,6 @@ def show():
                 # Show warnings
                 if warning_alerts:
                     for alert in warning_alerts:
-                        with st.container():
-                            st.info(f"**{alert['category']}: {alert['message']}**")
-                            if alert.get('details'):
-                                st.caption(alert['details'])
-
-                # Show info
-                if info_alerts:
-                    for alert in info_alerts:
                         with st.container():
                             st.info(f"**{alert['category']}: {alert['message']}**")
                             if alert.get('details'):

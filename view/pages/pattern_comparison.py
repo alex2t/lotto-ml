@@ -225,7 +225,7 @@ def show():
     data = load_comparison_data()
     trigger_data = data.get('trigger', {})
     draw_history = data.get('draw_history', {})
-    sum_data = data.get('sum', {})
+    sum_data = data['sum']
 
     # Analyze prediction pattern
     st.header("📊 Your Prediction Pattern")
@@ -255,9 +255,9 @@ def show():
 
     with col3:
         st.metric("Sum", total_sum)
-        # Validate against historical mean
-        sum_mean = sum_data.get('summary_statistics', {}).get('mean', 144.87)
-        sum_std = sum_data.get('summary_statistics', {}).get('std', 30.4)
+        # Typical range from past draws (F-29: the old key did not exist, so constants were used)
+        sum_mean = sum_data['overall_distribution']['mean']
+        sum_std = sum_data['overall_distribution']['std']
         realistic_min = max(21, sum_mean - 2 * sum_std)
         realistic_max = min(267, sum_mean + 2 * sum_std)
         if realistic_min <= total_sum <= realistic_max:

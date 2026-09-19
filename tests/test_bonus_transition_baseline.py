@@ -40,6 +40,36 @@ def fair_analysis():
     return generate_bonus_to_main_analysis(fair_draw_history(3000, seed=7), 47)
 
 
+def always_transitioning_history(n_draws, seed):
+    """Every bonus ball is a main number in the next draw, so every eligible bonus transitions."""
+    rng = random.Random(seed)
+    start = datetime.date(2010, 1, 1)
+    history, previous_bonus = {}, None
+    for i in range(n_draws):
+        pool = [n for n in range(1, 48) if n != previous_bonus]
+        main = ([previous_bonus] if previous_bonus else []) + rng.sample(pool, 6 if previous_bonus is None else 5)
+        bonus = rng.choice([n for n in range(1, 48) if n not in main])
+        history[(start + datetime.timedelta(days=3 * i)).isoformat()] = {
+            'draw_index': i,
+            'winning_numbers_details': [
+                {'number': b, 'is_bonus': j == 6, 'category': 'medium', 'current_freshness_bin': 0}
+                for j, b in enumerate(main + [bonus])
+            ],
+        }
+        previous_bonus = bonus
+    return history
+
+
+def test_transition_rate_counts_only_bonus_balls_with_ten_draws_after_them():
+    """F-32: 40 draws, all 30 eligible bonus balls transition - 100%, not 30/40 = 75%."""
+    analysis = generate_bonus_to_main_analysis(always_transitioning_history(40, seed=3), 47)
+    assert analysis['metadata']['overall_transition_rate'] == 1.0
+    assert analysis['metadata']['total_bonus_appearances'] == 40
+    for profile in analysis['per_number_transition_profile'].values():
+        if profile['eligible_bonus_appearances']:
+            assert profile['transition_rate'] == 1.0
+
+
 def test_random_baseline_is_the_chance_of_any_number_within_10_draws(fair_analysis):
     factors = fair_analysis['transition_prediction_factors']
     assert factors['expected_random_rate'] == pytest.approx(CHANCE_10_DRAWS, abs=1e-4)
