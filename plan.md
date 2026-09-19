@@ -229,9 +229,11 @@ To preserve maximum responsiveness and avoid VPS overload:
 ## 4. Phased Implementation Roadmap
 
 ### Phase 1: Dockerization & Environment Setup
-- [ ] Create `Dockerfile.data_engine` for the Python data core.
+- [x] Create `Dockerfile.data_engine` for the Python data core.
 - [ ] Verify that `drawpick.py` runs inside Docker and writes all ~24 JSON artifacts into a shared volume.
-- [ ] Create `docker-compose.yml` defining the data engine and shared storage volumes.
+      (Currently 22 of 24: Phase 16 fails in the container for want of `scikit-learn` - see F-43 in `issue.md`.)
+- [x] Create `docker-compose.yml` defining the data engine and shared storage volumes.
+- [x] Provide cross-platform start and stop scripts for Linux, Windows, and macOS (`scripts/docker_start.*`, `scripts/docker_stop.*`).
 
 ### Phase 2: n8n Automation Setup
 - [ ] Configure n8n HTTP Request node with realistic browser headers targeting the Irish Lotto results.

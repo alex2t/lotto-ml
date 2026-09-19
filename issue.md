@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-19
+**Last updated:** 2026-09-20
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -23,7 +23,12 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 ## Priority summary
 
-**No open defects; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+| ID | Severity | Defect | Evidence |
+|:--|:--|:--|:--|
+| F-43 | High | The Docker data engine lacks `scikit-learn`, so Phase 16 fails and is swallowed; the completeness check then reports SUCCESS because it tests existence, not freshness | `requirements-engine.txt`, `lotto_analysis/analyzers/hmc_success_analyzer.py:370`, `drawpick.py:707`, `drawpick.py:772` |
+| F-44 | Medium | A container run rewrites every artifact CRLF -> LF, and unpinned engine dependencies drift the values, so each host/container alternation is a whole-file spurious diff | no `.gitattributes`; `requirements-engine.txt` |
+| F-45 | Low | Docker plumbing: `echo >>` in the `.bat` scripts writes junk files into the repo root; `docker-compose.yml` has no ordering; the containers' uid 1000 is not guaranteed to own the bind-mounted `data/` | `scripts/docker_start.bat:23,31`, `scripts/docker_stop.bat:13`, `docker-compose.yml`, `Dockerfile.data_engine:25` |
+
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
@@ -31,21 +36,136 @@ order, so ties resolve the same way on every run. It is not reused.
 
 ## 1. High severity defects
 
-None open.
+### F-43 - The Docker data engine writes 22 of 24 artifacts and still reports SUCCESS
+
+Found 2026-09-20, reviewing the Phase 1 Dockerization in `plan.md`.
+
+**What is wrong.** `requirements-engine.txt` lists `pandas`, `scipy`, `numpy`, `statsmodels` - but
+not `scikit-learn`. `lotto_analysis/analyzers/hmc_success_analyzer.py:370` imports it inside
+`_learn_feature_weights()` and catches `ImportError` by returning a stub:
+
+```json
+"learned_weights": { "error": "scikit-learn not available",
+                     "message": "Install scikit-learn to enable weight learning" }
+```
+
+`lotto_analysis/analyzers/hmc_recommendation_analyzer.py:32` then does
+`success_patterns['learned_weights']['normalized_weights']` and raises `KeyError`. The
+`except Exception` at `drawpick.py:707` prints "System will continue without HMC recommendations"
+and the run carries on, so `data/lotto_hmc_recommendations.json` and `.txt` are never rewritten.
+
+**The failing case.** After the container run of 2026-09-20 00:26:
+
+| File | mtime |
+|:--|:--|
+| `data/lotto_trigger_periods.json` | 09-20 00:26 (container) |
+| `data/lotto_hmc_success_patterns_validated.json` | 09-20 00:27 (container, with the stub) |
+| `data/lotto_hmc_recommendations.json` | 09-19 23:28 (**host run, stale**) |
+| `data/lotto_hmc_recommendations.txt` | 09-19 23:28 (**host run, stale**) |
+
+`git diff --ignore-cr-at-eol data/lotto_hmc_success_patterns_validated.json` shows the
+`learned_weights` block replaced by the error stub - the `raw_coefficients`, `normalized_weights`,
+`model_accuracy` and `intercept` fields are gone, and `data/lotto_hmc_recommendations.json` is the
+one computed from the weights the artifact no longer contains.
+
+**Blast radius today is small; the defect is not.** No module in `ml_lotto/`, `view/` or `app.py`
+reads `lotto_hmc_recommendations.json`, so nothing downstream is currently wrong. What is wrong is
+that a phase can fail in the container and the run still exits 0 - the next phase to fail this way
+may write something that is read.
+
+**Why it reported SUCCESS.** `drawpick.py:753-762` checks `Path(file_path).exists()` for each of the
+24 expected files. Both stale files existed on the mounted volume from the host run, so nothing was
+missing and the new `sys.exit(1)` at `drawpick.py:772` did not fire. An existence check cannot
+detect a half-run: it passes on any volume that has ever held a complete run, and on a clean VPS
+`data/` it would instead abort the start script - the same defect with the opposite symptom.
+
+**How to fix.**
+
+1. Add `scikit-learn` to `requirements-engine.txt`. The engine image must carry every dependency a
+   phase can reach, not only those imported at module level - a lazily imported optional dependency
+   is invisible to a dependency list built by reading the top of each file.
+2. Make a phase failure fatal. Either re-raise in the Phase 16 handler at `drawpick.py:707`, or
+   record which phases completed and exit non-zero if any did not. The ImportError fallback in
+   `hmc_success_analyzer.py:370-375` is the same class of silent default the repo forbids
+   (`ml_lotto/data/CLAUDE.md`, "a missing key must raise, not default") - the fallback should raise
+   and the dependency be present.
+3. Have the completeness check compare each artifact's mtime against the start of the run, not just
+   its existence, so a file left over from an earlier run cannot satisfy it.
+
+**Not yet covered by a test.** A test that runs `drawpick.py` with `scikit-learn` masked and asserts
+a non-zero exit would catch all three parts.
 
 ---
 
 ## 2. Medium severity defects
 
-None open.
+### F-44 - A container run rewrites every artifact, masking the real diff
+
+Found 2026-09-20, same review.
+
+**What is wrong.** Two independent sources of churn between the host run and the container run:
+
+- **Line endings.** `json.dump` writes `\n` in text mode; on Windows that becomes CRLF, in the Linux
+  container it stays LF. There is no `.gitattributes`. After the container run, `git diff` over
+  `data/` shows 306,770 changed lines in `lotto_draw_history.json` alone and ~325k in total; with
+  `--ignore-cr-at-eol` only ~660 remain. Every line of every artifact is "changed".
+- **Unpinned dependencies.** `requirements-engine.txt` pins nothing (`pandas>=2.0.0` and so on), so
+  the image resolves a different scipy/BLAS build from the host's. The residual real diff is
+  last-digit float noise: `lotto_odd_even_validated.json` `p_value` `0.8656849561741503` ->
+  `0.8656849561741506`, `lotto_hmc_success_patterns_validated.json` `p_value`
+  `1.996601530486648e-307` -> `1.996601530486739e-307`. Nothing crosses a significance threshold
+  today, but the value depends on where the run happened.
+
+**Why it matters.** `lotto_analysis/analyzers/CLAUDE.md` requires that running `drawpick.py` twice on
+unchanged input produce identical JSON apart from `generated_date`, because "a spurious diff is worse
+than untidy: it masks the real one". This class has now recurred four times (C-2, N-4, F-12, F-44).
+Once Phase 2B has n8n committing draws and the VPS rebuilding, every alternation between the owner's
+PC and the VPS will produce a full-file diff with a genuine one-draw change buried in it.
+
+**How to fix.**
+
+1. Add `.gitattributes` with `data/**.json text eol=lf` (and the same for `data/analysis/*.csv` and
+   `data/*.txt`), then renormalise once with `git add --renormalize data/`.
+2. Pin the engine dependencies to exact versions (`==`) in `requirements-engine.txt`, matched to what
+   the owner's PC runs, so host and VPS compute the same figures. The ML layer trains on these
+   artifacts, so a drifting engine is a drifting training set.
 
 ---
 
 ## 3. Low severity defects
 
-None open.
+### F-45 - Docker stack plumbing: junk files, no service ordering, unowned volume
+
+Found 2026-09-20, same review. Three small defects in the Phase 1 scripts and compose file.
+
+**`echo >>` in the batch scripts is a file redirect, not an arrow.** `scripts/docker_start.bat:23`
+(`echo >> Step 1/2: ...`), `:31` (`echo >> Step 2/2: ...`) and `scripts/docker_stop.bat:13`
+(`echo >> Docker services stopped.`). `cmd` reads `>>` as append-to-file, so the first word becomes a
+filename and the rest becomes its contents. Running them created four untracked files in the repo
+root - `Step` (" 1/2: Running data-engine...", " 2/2: Starting Streamlit Web Dashboard..."), `Docker`
+(" services stopped."), plus `Running` and `Complete` from an earlier revision of the same lines -
+and printed nothing. *Fix:* delete the four files and drop the `>>`, e.g. `echo [Step 1/2] ...`. The
+`.sh` and `.ps1` scripts quote their strings and are unaffected.
+
+**`docker-compose.yml` does not express the ordering.** The data engine must finish before the web
+service reads `data/`, but that sequence exists only inside the start scripts; a bare
+`docker compose up` starts both at once and Streamlit can read a half-written artifact. *Fix:* give
+`streamlit-web` a `depends_on: { data-engine: { condition: service_completed_successfully } }`, which
+also makes F-43's non-zero exit stop the web service from starting on stale data.
+
+**The container user may not own the bind mount.** Both Dockerfiles create uid 1000 and
+`chown -R lotto:lotto /app` at build time (`Dockerfile.data_engine:25`, `Dockerfile.streamlit:24`),
+but the `./data:/app/data` mount replaces that directory at runtime with the host directory's
+ownership. Docker Desktop masks this; on the VPS the engine cannot write unless the host `data/` is
+owned by uid 1000. *Fix:* settle it in Phase 1 rather than Phase 5 - either document the
+`chown -R 1000:1000 data` step in the deployment notes or make the uid a build arg.
+
+**Minor, same area.** `.dockerignore` does not exclude `data/`, so the ~24 artifacts and
+`irish500.csv` are sent to both build contexts although neither Dockerfile copies them - both rely on
+the mount.
 
 ---
+
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
@@ -197,7 +317,8 @@ Read the scoreboard in this order: AUC, PR-AUC lift and per-draw Top-K lift firs
 threshold-free; the precision / recall / F1 columns last, because maximising F1 at a ~15% positive
 rate parks the threshold near the base rate by construction.
 
-No open item is expected to move those numbers. The open items are about the website.
+No open item is expected to move those numbers. F-43 to F-45 are about the Phase 1 Docker stack and
+the artifacts it writes.
 
 ---
 

@@ -1,0 +1,25 @@
+# Virtual Environments & Caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+catboost_info/
+
+# Local ML & Metrics (Owner PC only)
+ml_lotto/
+model_metrics/
+lottery_picks.txt
+demos/
+
+# Tests (excluded from production containers)
+tests/
+
+# Git & Agent Metadata
+.git/
+.gitignore
+.claude/
+.gemini/
+*.log
