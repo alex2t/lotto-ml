@@ -49,9 +49,11 @@ the back door. `../../tests/test_model_capacity.py` covers this.
 ## Rules
 
 - **The C-5 full-history features stay out of all six models**, auxiliaries included:
-  `*_json` statistics, `series_*`, `lt_*`, `window_saturation_penalty`. Each is a per-number value
+  `*_json` statistics, `series_*`, `lt_*`, `window_saturation_penalty`. Each was a per-number value
   over the whole timeline, copied unchanged into every training row. Bonus-to-Main kept
-  `window_saturation_penalty` until F-21. `../../tests/test_no_constant_features.py` guards all six.
+  `window_saturation_penalty` until F-21; F-24 then deleted all of them from `ml_lotto/`. Their
+  source JSON stays - the website reads it. `../../tests/test_no_constant_features.py` guards all six
+  configs, so none comes back.
 - Playable-ticket constraints (sum, span, odd count) belong in `../prediction/filters.py`, never in a
   feature list or a model.
 - A feature named in a config must be produced by both `../features/walk_forward.py` and

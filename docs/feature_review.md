@@ -28,6 +28,9 @@ static per-number values derived from the entire historical timeline". Six are n
 | `series_total` | **no** |
 | `window_saturation_penalty` | yes - Bonus-to-Main auxiliary only (removed from it 2026-09-19, F-21; now **no**) |
 
+**Update 2026-09-19:** all six were deleted from the ML layer in F-24, as recommended below. Their
+source JSON stays for the website.
+
 Five of the six are computed for all 47 numbers on every row and then discarded. They appear in
 `extractor.py`'s `new_json_features` list, but that list is not bound to any of the four group
 markers the configs actually use (`ADVANCED_PATTERN_FEATURES`, `FRESHNESS_PATTERN_WEIGHTS`,

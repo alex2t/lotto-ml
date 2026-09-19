@@ -55,7 +55,6 @@ from ml_lotto.config import (
     DISTRIBUTION_STATS_JSON,
     BONUS_ANALYSIS_JSON,
     BONUS_TO_MAIN_JSON,
-    LONG_TERM_PATTERNS_JSON,
     ADVANCED_PATTERNS_JSON,
     FRESHNESS_PATTERNS_VALIDATED_JSON,
     HMC_CATEGORIZATION_VALIDATED_JSON,
@@ -80,12 +79,8 @@ from ml_lotto.data.loader import (
     load_bonus_hit_analysis,
     load_freshness_weights,
     load_number_pair_frequency,
-    load_range_spread_analysis,
-    load_odd_even_analysis,
-    load_sum_contribution_analysis,
     load_bonus_analysis,
     load_bonus_to_main_patterns,
-    load_long_term_patterns,
     load_advanced_patterns,
     load_freshness_patterns_validated,
     load_hmc_categorization_validated,
@@ -123,12 +118,6 @@ from ml_lotto.features.freshness import (
     calculate_freshness_category_features,
     calculate_recency_weighted_pattern_score
 )
-
-# NOTE: Removed duplicate calculated features - using JSON versions instead:
-# - calculate_bonus_hit_target_alignment → bonus_hit_contribution
-# - calculate_odd_even_affinity → odd_even_json
-# - calculate_sum_contribution_score → sum_contribution_json
-# - calculate_range_spread_affinity → range_spread_json
 
 from ml_lotto.features.history import extract_win_bias_ratio_from_history
 
@@ -377,7 +366,6 @@ def main(permutation_runs: int = 0):
         with suppress_output():
             bonus_analysis_data = load_bonus_analysis(BONUS_ANALYSIS_JSON)
             bonus_to_main_data = load_bonus_to_main_patterns(BONUS_TO_MAIN_JSON)
-            long_term_analysis = load_long_term_patterns(LONG_TERM_PATTERNS_JSON)
             advanced_patterns_analysis = load_advanced_patterns(ADVANCED_PATTERNS_JSON)
 
         # Load scipy-validated feature analyses
@@ -416,34 +404,6 @@ def main(permutation_runs: int = 0):
             freshness_weight_data = load_freshness_weights(FRESHNESS_JSON_INPUT)
             pair_frequency_data = load_number_pair_frequency(ODDS_JSON_INPUT)
 
-        # Use scipy-validated scores if available, otherwise fall back to standard analysis
-        if odd_even_validated and 'validated_scores' in odd_even_validated:
-            odd_even_json_data = {int(k): v for k, v in odd_even_validated['validated_scores'].items()}
-            if VERBOSE:
-                print("  ✓ Using SCIPY-VALIDATED odd/even scores")
-        else:
-            odd_even_json_data = load_odd_even_analysis(DISTRIBUTION_STATS_JSON)
-            if VERBOSE:
-                print("  ⚠️  Using standard odd/even scores (scipy validation not available)")
-
-        if sum_contribution_validated and 'validated_scores' in sum_contribution_validated:
-            sum_contribution_json_data = {int(k): v for k, v in sum_contribution_validated['validated_scores'].items()}
-            if VERBOSE:
-                print("  ✓ Using SCIPY-VALIDATED sum contribution scores")
-        else:
-            sum_contribution_json_data = load_sum_contribution_analysis(DISTRIBUTION_STATS_JSON)
-            if VERBOSE:
-                print("  ⚠️  Using standard sum contribution scores (scipy validation not available)")
-
-        if range_spread_validated and 'validated_scores' in range_spread_validated:
-            range_spread_json_data = {int(k): v for k, v in range_spread_validated['validated_scores'].items()}
-            if VERBOSE:
-                print("  ✓ Using SCIPY-VALIDATED range spread scores")
-        else:
-            range_spread_json_data = load_range_spread_analysis(ODDS_JSON_INPUT)
-            if VERBOSE:
-                print("  ⚠️  Using standard range spread scores (scipy validation not available)")
-
         if VERBOSE:
             print(f"\n✓ Data Loading Summary:")
             print(f"  - Historical draws: {len(all_draws)}")
@@ -452,8 +412,7 @@ def main(permutation_runs: int = 0):
             print(f"  - Freshness Config: W={W}, C_max={C_max}, Key={recent_key}")
             print(f"  - Distribution stats: {distribution_stats.get('total_draws_analyzed', 0)} draws")
             print(f"  - Bonus analysis: {len(bonus_analysis_data.get('per_number_bonus_profile', {}))} numbers")
-            print(f"  - Long-term patterns: {long_term_analysis.get('metadata', {}).get('total_draws', 0)} draws analyzed (scipy-validated)")
-            print(f"  - NEW JSON features loaded: 6 feature sets")
+            print(f"  - NEW JSON features loaded: 3 feature sets")
 
         if VERBOSE:
             print("\nStep 2: Extracting MAIN NUMBER features from HMC data...")
@@ -494,14 +453,6 @@ def main(permutation_runs: int = 0):
             recent_key=recent_key,
             top_pattern_dist=top_pattern_dist,
             validated_weights=validated_freshness_weights
-        )
-
-        print("  Calculating 'long_term_pattern' features...")
-        from ml_lotto.features.long_term_patterns import expand_long_term_features
-        long_term_pattern_features = expand_long_term_features(
-            hmc_data=hmc_data,
-            long_term_analysis=long_term_analysis,
-            all_draws=all_draws
         )
 
         print("  Extracting 'advanced_pattern' features (volatility + trend)...")
@@ -546,10 +497,6 @@ def main(permutation_runs: int = 0):
                 bonus_hit_contribution_data,
                 freshness_weight_data,
                 pair_frequency_data,
-                range_spread_json_data,
-                odd_even_json_data,
-                sum_contribution_json_data,
-                long_term_pattern_features,
                 advanced_pattern_features_dict,
                 consecutive_pairs_validated,
                 rolling_stats_features,

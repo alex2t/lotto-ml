@@ -122,9 +122,6 @@ def extract_bonus_to_main_features_dict(
         # Get average draws to transition
         avg_draws_to_transition = profile.get('avg_draws_to_transition', 0.0)
 
-        # Get window saturation penalty from main features (if available)
-        window_saturation_penalty = features_dict.get(num, {}).get('window_saturation_penalty', 0.0)
-
         # Build feature dictionary
         bonus_to_main_features[num] = {
             'is_in_bonus_window': 1.0 if is_in_window else 0.0,
@@ -134,7 +131,6 @@ def extract_bonus_to_main_features_dict(
             'freshness_multiplier': freshness_multiplier,
             'timing_decay_weight': timing_decay_weight,
             'composite_transition_score': composite_score,
-            'window_saturation_penalty': float(window_saturation_penalty),  # FIXED: Was missing!
             'avg_draws_to_transition': avg_draws_to_transition,
             'recent_4': float(recent_4),
             'recent_9': float(recent_9),
@@ -258,7 +254,7 @@ def get_unified_bonus_to_main_feature_names(include_interactions: bool = True) -
     Returns:
         List of all feature names in unified bonus-to-main features
     """
-    # Base bonus-to-main features (12)
+    # Base bonus-to-main features (11)
     base_features = [
         'is_in_bonus_window',
         'draws_since_bonus',
@@ -267,7 +263,6 @@ def get_unified_bonus_to_main_feature_names(include_interactions: bool = True) -
         'freshness_multiplier',
         'timing_decay_weight',
         'composite_transition_score',
-        'window_saturation_penalty',
         'avg_draws_to_transition',
         'recent_4',
         'recent_9',
