@@ -4,7 +4,7 @@
 eleven are legacy print-scripts that run model training at import and will take minutes, hang, or
 fail on missing artifacts.
 
-## The thirteen real tests (127 tests, ~50s)
+## The thirteen real tests (135 tests, ~50s)
 
 ```bash
 python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py \
@@ -20,8 +20,8 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 
 | File | Guards |
 |:--|:--|
-| `test_walk_forward_parity.py` | train/serve parity - 0/47 mismatches on `recent_*`, `total_count`, `draws_since_bonus`. The most important file here |
-| `test_no_constant_features.py` | no model trains on a value that never varies |
+| `test_walk_forward_parity.py` | train/serve parity - 0/47 mismatches on `recent_*`, `total_count`, `draws_since_bonus`, and extractor vs engine on `days_since_last`, `category`, `days_since_bonus`; the next-draw date follows the schedule. The most important file here |
+| `test_no_constant_features.py` | no model trains on a value that never varies; the C-5 full-history features stay out of all six models (F-21) |
 | `test_model_capacity.py` | the constrained model params and tuning grids stay constrained |
 | `test_selection_invariants.py` | the ILP line meets every constraint and is the brute-force optimum |
 | `test_prediction_alignment.py` | predictions line up with the numbers they claim to be for |

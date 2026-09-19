@@ -83,7 +83,8 @@ balls**. `features/rolling_stats.py`.
 
 **Patterns** - `has_consecutive_partner`, `appearance_volatility`, `appearance_acceleration`,
 `window_saturation_penalty`. The saturation penalty is driven by
-`data/lotto_odds_results.json`, not by fixed values.
+`data/lotto_odds_results.json`, not by fixed values. It is still computed but no model uses it: the
+last one, Bonus-to-Main, dropped it on 2026-09-19 (F-21), as a C-5 full-history feature.
 
 **Bonus** - `was_recent_bonus`, `was_bonus_last_10`, `total_bonus_count`, `avg_days_between_bonus`,
 `days_since_last_bonus`, `bonus_frequency_ratio`, `is_in_bonus_window`. `features/bonus*.py`.

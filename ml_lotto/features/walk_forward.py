@@ -29,6 +29,32 @@ from lotto_analysis.config.config import HMC_HOT_THRESHOLD, HMC_COLD_THRESHOLD
 from ml_lotto.features.timing import calculate_recency_zone_score, load_recency_zones
 from ml_lotto.features.interactions import InteractionFeatureCalculator
 
+# Two weeks of a three-draws-a-week schedule: enough to see every current draw day.
+SCHEDULE_DRAWS = 6
+
+
+def next_draw_date(draw_dates: List[pd.Timestamp]) -> pd.Timestamp:
+    """
+    The first day after the last draw that falls on a current draw weekday.
+
+    The schedule is read from the weekdays of the latest SCHEDULE_DRAWS draws, so a change
+    such as the 2026 move from Wed/Sat to Mon/Wed/Sat is picked up from the data.
+    """
+    weekdays = {d.weekday() for d in draw_dates[-SCHEDULE_DRAWS:]}
+    day = draw_dates[-1] + pd.Timedelta(days=1)
+    while day.weekday() not in weekdays:
+        day += pd.Timedelta(days=1)
+    return day
+
+
+def hmc_category(days_since: int) -> str:
+    """Hot/medium/cold from days since last drawn. Training and serving must both use this."""
+    if days_since <= HMC_HOT_THRESHOLD:
+        return 'hot'
+    if days_since >= HMC_COLD_THRESHOLD:
+        return 'cold'
+    return 'medium'
+
 
 class PointInTimeFeatureEngine:
     """
@@ -111,25 +137,10 @@ class PointInTimeFeatureEngine:
         self.cum_main = np.vstack([np.zeros((1, MAX_NUMBER + 1), dtype=np.int32), np.cumsum(self.matrix_main, axis=0)])
         self.cum_bonus = np.vstack([np.zeros((1, MAX_NUMBER + 1), dtype=np.int32), np.cumsum(self.matrix_bonus, axis=0)])
 
-        # Reference date for the not-yet-drawn draw at index N, used when serving
-        # predictions. Training rows at draw t use date_t as their reference, so the
-        # prediction row must use the *next* draw's date to keep the same convention.
-        self.median_draw_gap_days = self._median_draw_gap()
-        self.next_draw_date = (
-            self.draw_dates[-1] + pd.Timedelta(days=self.median_draw_gap_days)
-            if self.draw_dates else pd.Timestamp.now()
-        )
-
-    def _median_draw_gap(self) -> int:
-        """Median number of days between consecutive draws (Wed/Sat schedule -> 3 or 4)."""
-        if len(self.draw_dates) < 2:
-            return 3
-        gaps = [
-            (self.draw_dates[i] - self.draw_dates[i - 1]).days
-            for i in range(1, len(self.draw_dates))
-        ]
-        gaps = [g for g in gaps if g > 0]
-        return int(np.median(gaps)) if gaps else 3
+        # Reference date for the not-yet-drawn draw at index N. Training rows at draw t use
+        # date_t, so the serving row must use the next draw's date. Every serving path takes
+        # its date from here (C-6b).
+        self.next_draw_date = next_draw_date(self.draw_dates)
 
     def _precompute_timeline_state(self):
         """Precompute the historical tracking state at every draw index t."""
@@ -235,15 +246,7 @@ class PointInTimeFeatureEngine:
         r5_all_arr = self.cum_all[t] - self.cum_all[max(0, t - 5)]
         r25_all_arr = self.cum_all[t] - self.cum_all[max(0, t - 25)]
 
-        categories = {}
-        for num in range(1, MAX_NUMBER + 1):
-            days = state['days_since'][num]
-            if days <= HMC_HOT_THRESHOLD:
-                categories[num] = 'hot'
-            elif days >= HMC_COLD_THRESHOLD:
-                categories[num] = 'cold'
-            else:
-                categories[num] = 'medium'
+        categories = {num: hmc_category(state['days_since'][num]) for num in range(1, MAX_NUMBER + 1)}
 
         hot_numbers = {n for n, cat in categories.items() if cat == 'hot'}
         cat_weights = {'hot': 0.487, 'medium': 0.234, 'cold': 0.280}

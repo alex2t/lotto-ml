@@ -12,7 +12,8 @@ different code paths here, and they must produce identical values.
 
 A mismatch means a model is fitted on one distribution and applied to another. It does not raise.
 `../../tests/test_walk_forward_parity.py` is what holds this together: it asserts 0/47 mismatches on
-`recent_*`, `total_count` and `draws_since_bonus`.
+`recent_*`, `total_count` and `draws_since_bonus` against the JSON, and on `days_since_last`,
+`category` and `days_since_bonus` between the extractor's serving row and the engine's.
 
 **Counted-over conventions - do not change one side only:**
 
@@ -26,6 +27,14 @@ A mismatch means a model is fitted on one distribution and applied to another. I
 
 **Only `extract_features_for_next_draw()` builds a correct serving row** (`t = N`).
 `extract_features_at_draw(N-1)` conditions on draws `0..N-2` and silently drops the most recent draw.
+
+**One serving date: `engine.next_draw_date`** (C-6b). Training row `t` counts days to draw `t`'s own
+date, so the serving row counts to the next draw's date - the first day after the last draw on a
+weekday used by the latest 6 draws (`next_draw_date()`), which picks up schedule changes such as the
+2026 move to Mon/Wed/Sat. `extract_features_from_hmc_json(..., reference_date=)` and
+`calculate_days_since_bonus(draws, reference_date)` both take it from the engine. `category` is
+derived with `hmc_category(days_since_last)` in both paths - never read from the JSON, whose
+category is dated at the last draw. Never count days to `datetime.now()`.
 
 **One engine per run.** `quickpick.py` builds a single `PointInTimeFeatureEngine` and each model
 uses `engine.with_base_features(its_dict)` - a view sharing the precomputed draw state. Do not
@@ -44,8 +53,8 @@ moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N)
 | `timing.py` | `days_since_bonus`, `recency_zone_score` |
 | `patterns.py` | consecutive-partner and pair-affinity features |
 | `interactions.py` | applies mined pairwise/triple interactions |
-| `long_term_patterns.py` | reads `lotto_long_term_patterns.json` |
-| `window_saturation.py` | saturation penalties from `lotto_odds_results.json` |
+| `long_term_patterns.py` | reads `lotto_long_term_patterns.json`; its `lt_*` features are used by no model (C-5) - deletion is F-24 |
+| `window_saturation.py` | `window_saturation_penalty` from `lotto_odds_results.json`; used by no model since F-21 - deletion is F-24 |
 | `history.py` | `win_bias_ratio` |
 | `bonus.py`, `bonus_features.py`, `bonus_to_main_features.py` | the two auxiliary models' features |
 | `feature_selection.py` | correlation and importance filtering |

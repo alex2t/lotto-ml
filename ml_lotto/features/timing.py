@@ -16,20 +16,21 @@ from pathlib import Path
 from ml_lotto.config import MAX_NUMBER
 
 
-def calculate_days_since_bonus(all_draws: List[Dict[str, Any]]) -> Dict[int, int]:
+def calculate_days_since_bonus(all_draws: List[Dict[str, Any]], reference_date: datetime) -> Dict[int, int]:
     """
     Calculate the days since each number was last drawn as a bonus ball.
-    
+
     Scans historical draws in reverse order to find the most recent date
     each number appeared as the bonus ball.
-    
+
     Args:
         all_draws: List of draw dictionaries from lotto_draw_history.json
-        
+        reference_date: Date the days are counted to - the next draw's date when serving,
+            as the training rows count to their own draw's date (C-6b). Never the clock.
+
     Returns:
         Dictionary mapping number -> days_since_bonus (999 if never)
     """
-    now = datetime.now()
     days_since_bonus = {num: 999 for num in range(1, MAX_NUMBER + 1)}
     last_seen_date = {num: None for num in range(1, MAX_NUMBER + 1)}
     
@@ -43,7 +44,7 @@ def calculate_days_since_bonus(all_draws: List[Dict[str, Any]]) -> Dict[int, int
 
     for num in range(1, MAX_NUMBER + 1):
         if last_seen_date[num] is not None:
-            days_since = (now - last_seen_date[num]).days
+            days_since = (reference_date - last_seen_date[num]).days
             days_since_bonus[num] = max(0, days_since)
     
     print(f"✓ Custom feature 'days_since_bonus' calculated.")

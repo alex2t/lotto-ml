@@ -19,6 +19,7 @@ from ml_lotto.data.loader import load_draw_history_with_bias_ratios, load_hmc_js
 from ml_lotto.features.rolling_stats import extract_rolling_features_for_all_numbers
 from ml_lotto.features.extractor import extract_features_from_hmc_json, get_all_feature_names
 from ml_lotto.features.base import get_dynamic_recent_keys
+from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
 from ml_lotto.models.trainer import build_training_dataset, calculate_train_val_split
 from ml_lotto.models.trainer import train_model
 from ml_lotto.models.model_metrics import compare_models
@@ -96,7 +97,8 @@ def main():
         dynamic_recent_keys,
         days_since_bonus_data,
         pattern_score_data,
-        rolling_stats_features=rolling_stats_features  # Include rolling stats
+        rolling_stats_features=rolling_stats_features,  # Include rolling stats
+        reference_date=PointInTimeFeatureEngine(all_draws).next_draw_date
     )
 
     all_feature_names = get_all_feature_names(hmc_data, dynamic_recent_keys)
