@@ -25,8 +25,8 @@
 
 The Irish Lotto ML Analysis Dashboard is a comprehensive validation and analysis tool designed to work alongside Machine Learning prediction models (like Model 4). It helps you:
 
-- **Validate predictions** before playing
-- **Analyze historical patterns** to inform selections
+- **See how typical a line looks** next to past draws
+- **Explore historical patterns** for fun
 - **Evaluate model performance** after each draw
 - **Identify trends and anomalies** in real-time
 
@@ -76,10 +76,7 @@ The dashboard will open in your web browser with 8 pages accessible via the top 
   - **Medium:** Numbers with average appearance frequency
   - **Cold:** Numbers appearing rarely
 
-- **What to look for:**
-  - Hot numbers for consistent selections
-  - Cold numbers for contrarian picks
-  - Mix of categories for balanced selection (e.g., 3 hot, 2 medium, 1 cold)
+- It does not change the chance in the next draw - every number is equally likely.
 
 #### **Freshness Weight**
 - **What it is:** How many times a number appeared in the last 5 draws
@@ -89,12 +86,7 @@ The dashboard will open in your web browser with 8 pages accessible via the top 
   - **C1:** Appeared exactly ONCE in last 5 draws
   - **C≥2:** Appeared TWO or more times in last 5 draws (very recent)
 
-- **What to look for:**
-  - **C0 numbers:** Fresh picks that haven't been drawn recently (contrarian strategy)
-  - **C1 numbers:** Balanced - not too fresh, not too saturated
-  - **C≥2 numbers:** Very hot - appeared multiple times recently (momentum strategy)
-
-- **Strategy tip:** Historical data shows balanced selections perform best. Mix C0 and C1 numbers rather than all C≥2.
+- It does not change the chance in the next draw - every number is equally likely.
 
 #### **Volatility Level** ⚡
 - **What it is:** Measures consistency of appearance patterns
@@ -104,14 +96,9 @@ The dashboard will open in your web browser with 8 pages accessible via the top 
   - **Med:** Moderate predictability (0.85-1.15)
   - **Low:** Consistent, predictable patterns (<0.85)
 
-- **What to look for:**
-  - **Low volatility:** Numbers with predictable timing (safer picks)
-  - **High volatility:** Numbers with erratic patterns (risky but potentially rewarding)
-  - **Medium volatility:** Balanced choice
+- **What it tells you:** how regular a number's past gaps have been. It does not change the
+  number's chance in the next draw - every number is equally likely.
 
-- **How to use:**
-  - Conservative strategy: Focus on low volatility numbers
-  - Aggressive strategy: Mix some high volatility numbers for surprise wins
 
 #### **Trend Direction** 📈
 - **What it is:** Statistical direction of appearance frequency over time
@@ -126,10 +113,8 @@ The dashboard will open in your web browser with 8 pages accessible via the top 
   - **↓ Trending Down:** Numbers losing steam - appearing less frequently
   - **→ Stable:** Consistent behavior
 
-- **Strategy:**
-  - **Momentum strategy:** Select trending up numbers (riding the wave)
-  - **Mean reversion:** Select trending down numbers (expecting bounce back)
-  - **Statistical significance:** Only shown if p < 0.05 (95% confidence)
+- **Statistical significance:** Only shown if p < 0.05
+- It does not change the chance in the next draw - every number is equally likely.
 
 #### **Momentum** 🔥
 - **What it is:** Recent activity compared to historical baseline
@@ -140,8 +125,9 @@ The dashboard will open in your web browser with 8 pages accessible via the top 
   - **❄️ Cooling Down:** Appearing >20% less than baseline
 
 - **What to look for:**
-  - **🔥 Heating Up:** Numbers on a hot streak (short-term burst)
-  - **❄️ Cooling Down:** Numbers that may be "due" (contrarian play)
+  - **🔥 Heating Up:** came up more often recently
+  - **❄️ Cooling Down:** came up less often recently
+- It does not change the chance in the next draw - every number is equally likely. A number is never "due".
 
 - **Difference from Trend:**
   - **Trend** = Long-term statistical direction
@@ -158,9 +144,7 @@ The dashboard will open in your web browser with 8 pages accessible via the top 
   - **Yes:** Number behavior is changing - may be entering new phase
   - **No:** Predictable behavior continuing
 
-- **How to use:** Regime shift numbers can indicate:
-  - Transition from cold to hot (good opportunity)
-  - Transition from hot to cold (proceed with caution)
+- It does not change the chance in the next draw - every number is equally likely.
 
 ### 📊 Main Display
 
@@ -171,7 +155,7 @@ Shows probability of a number appearing X times within a specific window:
 - **Percentage:** Historical probability
 - **Count:** How many times this scenario occurred
 
-**How to use:** Check if your selected numbers have appeared 2-3 times in last 10 draws (common pattern).
+**How to use:** See how often a number has appeared a given number of times in a window.
 
 #### **Trigger Periods Analysis Table**
 Shows all 47 numbers with:
@@ -204,22 +188,16 @@ Shows all 47 numbers with:
 2. Paste into "Enter specific numbers" filter
 3. View detailed analysis of that subset
 
-### 💡 Sum/Range Validation Panel
+### 💡 Sum/Range Check
 
 Appears when you have exactly 6 numbers filtered:
 
-- **Sum:** Total of your 6 numbers
-  - **Realistic Range:** 84-206 (mean ± 2 standard deviations)
-  - **Historical Mean:** 144.87
+- **Sum:** Total of your 6 numbers, shown as a typical sum (within mean ± 2 standard deviations of
+  past draws), an uncommon sum (outside that but within past draws' range), or a sum never seen before.
+- **Range Distribution:** how many of the 6 fall in 1-10, 11-20, 21-30, 31-40, 41-47.
 
-- **Range Distribution:** Numbers spread across:
-  - 1-10, 11-20, 21-30, 31-40, 41-47
-  - **Ideal:** At least 1 number in each range, max 3 per range
-
-- **Confidence Level:**
-  - **HIGH:** Both sum and range are realistic
-  - **MEDIUM:** One criterion is slightly off
-  - **LOW:** Both criteria are problematic
+How typical a sum is says nothing about the chance of winning. There is no confidence verdict
+(removed in F-28).
 
 ---
 
@@ -317,16 +295,16 @@ Shows what percentage of ALL main numbers (across all history) are Hot, Medium, 
 - See detailed breakdown of possible 7-ball outcomes
 - View probability distribution chart
 
-**Strategy:** Pick a 6-ball pattern from the top 10 for statistically optimal selection.
+**Note:** a common pattern is not likelier to win; every line is equally likely.
 
 ### ⚖️ Odd/Even Pattern Analysis
 
 **Overall Distribution:** ~50% odd, ~50% even (balanced)
 
-**Realistic Ratios:**
-- **2, 3, or 4 odd numbers:** 90%+ of historical draws
-- **1 or 5 odd numbers:** ~5% of draws (uncommon)
-- **0 or 6 odd numbers:** <0.5% of draws (extremely rare)
+**Past draws (498, checked 2026-09-19):**
+- **2, 3, or 4 odd numbers:** 79%
+- **1 or 5 odd numbers:** 19%
+- **0 or 6 odd numbers:** 2%
 
 **Per-Number Affinity Table:**
 Shows if specific numbers prefer to appear with odd or even neighbors.
@@ -338,7 +316,7 @@ Shows if specific numbers prefer to appear with odd or even neighbors.
 **Validation Helper:**
 Enter 6 numbers to check odd/even ratio against historical patterns.
 
-**Strategy:** Aim for 2-4 odd numbers (historically most common).
+**Note:** 2-4 odd is the most common shape; it is not likelier to win.
 
 ### High Numbers (32 and above) per Draw
 
@@ -378,13 +356,13 @@ Select C0/C1/C2 counts (must total 6) to see combined probability.
 
 **Top patterns table:** Shows most common freshness combinations historically.
 
-**Strategy:** Balanced freshness (mix of C0, C1, C2) tends to perform better than extremes.
+**Note:** no freshness mix is likelier to win; every line is equally likely.
 
 ---
 
 ## 5. Prediction Validator
 
-**Purpose:** Comprehensive validation of your 6-number selection before playing.
+**Purpose:** See how typical your 6 numbers look next to past draws. Every line is equally likely to win.
 
 ### 📝 Input Section
 
@@ -393,14 +371,14 @@ Enter your 6 numbers (from quickpick.py or manual selection).
 ### Validation Results (5 scored checks + 1 informational)
 
 #### 1️⃣ **Odd/Even Ratio**
-- **Realistic:** 2-4 odd numbers (Score: 100)
+- **Common:** 2-4 odd numbers (Score: 100)
 - **Uncommon:** 1 or 5 odd numbers (Score: 60)
 - **Very Rare:** 0 or 6 odd numbers (Score: 20)
 
 #### 2️⃣ **Sum Validation**
-- **Realistic:** Sum between 84-206 (Score: 100)
+- **Typical:** Sum between 84-206 (Score: 100)
 - **Uncommon:** Sum between historical min-max (Score: 60)
-- **Unrealistic:** Sum outside historical range (Score: 20)
+- **Never seen before:** Sum outside historical range (Score: 20)
 
 #### 3️⃣ **HMC Pattern**
 - **Good:** Matches top 10 historical patterns (Score: 80-100)
@@ -408,15 +386,15 @@ Enter your 6 numbers (from quickpick.py or manual selection).
 - **Poor:** Rare or never occurred pattern (Score: 20-59)
 
 #### 4️⃣ **Bonus Transition**
-- **Excellent:** Includes 2+ high-probability transition candidates (Score: 100)
+- **Excellent:** Includes 2+ recent transition candidates (Score: 100)
 - **Good:** Includes 1 candidate (Score: 80)
 - **Fair:** Includes candidates with lower probability (Score: 60)
 - **Poor:** No transition candidates (Score: 40)
 
 #### 5️⃣ **Range Spread**
-- **Good:** Numbers in 4+ ranges, max 3 per range (Score: 80-100)
-- **Fair:** Numbers in 3 ranges (Score: 60-79)
-- **Poor:** Numbers clustered in 1-2 ranges (Score: 20-59)
+- **Wide:** Numbers in 4+ ranges, max 3 per range (Score: 80-100)
+- **Moderate:** Numbers in 3 ranges (Score: 60-79)
+- **Narrow:** Numbers clustered in 1-2 ranges (Score: 20-59)
 
 #### 6. **High Numbers (32 and above)** - information only, not scored
 - Shows how many of your numbers are 32 or above, and a table of how often past draws had 0-6
@@ -450,14 +428,18 @@ Enter your 6 numbers (from quickpick.py or manual selection).
 
 ### 🏆 Overall Validation Score
 
-**Grading:**
-- **A+ (90-100):** Excellent - play with confidence
-- **A (80-89):** Good - minor adjustments optional
-- **B (70-79):** Fair - consider regenerating
-- **C (60-69):** Moderate - improvements recommended
-- **D (<60):** Poor - definitely regenerate
+The score measures how typical a line looks next to past draws, **not its chance of winning** -
+every line is equally likely to win (F-26, 2026-09-19).
 
-**Recommendations:** Specific suggestions if score < 80
+**Grading:**
+- **A+ (90-100):** Very typical
+- **A (80-89):** Typical of past draws
+- **B (70-79):** Fairly typical
+- **C (60-69):** Less typical
+- **D (<60):** Unusual next to past draws
+
+**What Makes It Less Typical:** below 80, the checks that pulled the score down, for a player who
+wants a more typical-looking line. No advice to play or regenerate.
 
 ---
 
@@ -562,7 +544,7 @@ Enter your 6 numbers to analyze.
 Displays:
 - **HMC Pattern:** e.g., 3H-2M-1C
 - **Odd/Even:** e.g., 3 Odd / 3 Even
-- **Sum:** Total value (validated against realistic range)
+- **Sum:** Total value (typical or unusual next to past draws)
 - **Consecutive:** Whether you have consecutive numbers
 - **Range Distribution:** Count in each range (1-10, 11-20, etc.)
 
@@ -574,6 +556,10 @@ Displays:
 - Sum proximity: 25%
 - Range distribution: 15%
 - Consecutive numbers: 10%
+
+**Which hot/medium/cold.** Your line is classified with today's categories; each past draw with the
+categories in force just before it was drawn. A past draw typed in today can therefore show a
+different HMC pattern from its own row, and need not rank first.
 
 **Top 15 Similar Draws table:**
 - **Rank:** 1-15
@@ -595,22 +581,21 @@ Displays:
 - Shows how common your odd/even split is
 - Example: "3/3 split appeared in 35% of draws"
 
-### 💡 Pattern Assessment (0-100 Score)
+### 💡 How Typical Is This Shape (0-100 Score)
+
+How much your line's shape looks like past draws - **not its chance of winning**; every line is
+equally likely to win (F-28, 2026-09-19).
 
 **Scoring factors:**
 - HMC pattern frequency (25 points if ≥5%, 15 if ≥2%, 5 if >0%)
 - Odd/Even frequency (25 points if ≥10%, 15 if ≥5%)
-- Sum within realistic range (20 points)
-- High similarity to past winners (20 points if ≥80%, 10 if ≥60%)
-- Good range distribution (10 points)
+- Sum within the typical range (20 points)
+- Similarity to the closest past draws (20 points if ≥80%, 10 if ≥60%)
+- Numbers in all five ranges, at most 3 in one (10 points)
 
-**Assessment levels:**
-- **75-100:** 🌟 STRONG PATTERN (excellent historical precedent)
-- **50-74:** 👍 GOOD PATTERN (reasonable alignment)
-- **25-49:** ⚖️ MODERATE PATTERN (some concerns)
-- **0-24:** ⛔ WEAK PATTERN (limited precedent)
+**Levels:** 75-100 Very typical shape, 50-74 Typical, 25-49 Less typical, 0-24 Unusual shape.
 
-**Pattern Strengths & Considerations:** Specific feedback on your pattern.
+**Common / Less common in past draws:** which parts of the shape are which.
 
 ---
 
@@ -721,12 +706,9 @@ Numbers you predicted that didn't win (excluding bonus).
 - **C1:** 1 appearance (moderate recency)
 - **C≥2:** 2+ appearances (very recent, saturated)
 
-**Strategy implications:**
-- **C0 numbers:** Lower short-term probability but potentially "due"
-- **C1 numbers:** Balanced - proven recent activity without saturation
-- **C≥2 numbers:** Hot streak - high recent activity
-
-**Historical finding:** Balanced selections (mix of C0, C1, C2) perform better than extremes.
+**What it means:** a description of the recent past. No number is "due" and no mix performs better;
+every line is equally likely to win. (F-18 found bin-2 numbers drawn ~11% more often at p = 0.031 -
+weak, and re-checked as draws accumulate.)
 
 ### Volatility
 
@@ -741,9 +723,7 @@ Numbers you predicted that didn't win (excluding bonus).
 - **Medium (0.85-1.15):** Moderate predictability
 - **High (≥1.15):** Erratic, unpredictable
 
-**Strategy:**
-- **Risk-averse:** Focus on low volatility (predictable)
-- **Risk-tolerant:** Include high volatility (potential surprises)
+**Note:** It does not change the chance in the next draw - every number is equally likely.
 
 ### Trend
 
@@ -762,9 +742,7 @@ Numbers you predicted that didn't win (excluding bonus).
 - **Trend:** Long-term statistical direction
 - **Momentum:** Short-term recent burst
 
-**Strategy:**
-- **Momentum play:** Ride trending up numbers
-- **Mean reversion:** Bet on trending down numbers bouncing back
+**Note:** It does not change the chance in the next draw - every number is equally likely.
 
 ### Momentum
 
@@ -792,14 +770,10 @@ Numbers you predicted that didn't win (excluding bonus).
 - Uses statistical tests for significance
 
 **Interpretation:**
-- **Yes:** Number entering new behavioral phase
-  - Cold → Hot transition (opportunity)
-  - Hot → Cold transition (caution)
-- **No:** Predictable, stable behavior continuing
+- **Yes:** the number's past frequency changed noticeably
+- **No:** no such change
 
-**Strategy:** Regime shift numbers can signal:
-- Start of hot streak (good entry point)
-- End of hot streak (exit signal)
+**Note:** It does not change the chance in the next draw - every number is equally likely.
 
 ### Bonus-to-Main Transition
 
@@ -863,48 +837,42 @@ streamlit run app.py   # Open dashboard
 2. Paste your 6 numbers from Model 4
 3. Review all 5 validation dimensions
 4. Check anomaly detection alerts
-5. **If score < 80:** Regenerate or manually adjust
+5. Read the score as how typical the line looks - it does not change the chance of winning
 
 **Step 3: Deep Analysis (Optional)**
 
 a) **Check Pattern Match:**
    - Go to **Pattern Comparison**
    - Enter your 6 numbers
-   - Review similarity to historical winners
-   - **Target:** >60% similarity to top matches
+   - See which past draws had a similar shape
 
 b) **Review Individual Numbers:**
    - Go to **Number Insights**
    - Analyze each of your 6 numbers
-   - Check for overdue numbers (strong picks)
-   - Verify momentum and trends
+   - See each number's history
 
 c) **Verify HMC Balance:**
    - Go to **Statistics**
    - Use 6-Ball HMC Pattern Analyzer
-   - Ensure your pattern is in top 10
+   - See how common your pattern has been
 
 d) **Check Freshness:**
    - Go to **Freshness Analysis**
-   - Verify balanced C0/C1/C2 distribution
-   - Avoid all C0 or all C≥2
+   - See your line's C0/C1/C2 mix next to past draws
 
 **Step 4: Review Transition Candidates**
 - Go to **Draw History**
 - Check **Bonus-to-Main Transition Candidates**
-- **Ensure 1-2 candidates are in your selection**
+- See which recent bonus balls later came up as main numbers
 
 **Step 5: Filter & Refine**
 - Go to **Trigger Periods Analysis**
-- Apply filters for your selection criteria:
-  - Volatility: Low or Medium (safer)
-  - Trend: Trending Up (momentum play)
-  - Freshness: Mix of C0 and C1
-- Use Sum/Range validation at bottom
+- Filter the 47 numbers by category, freshness, volatility or trend to explore them
+- Use the Sum/Range check at the bottom
 
 **Step 6: Final Decision**
-- If validation score ≥ 80 and no critical anomalies → **Play**
-- If score < 80 → Adjust or regenerate
+- Every line is equally likely to win. The validation score only shows how typical your line looks;
+  keep it or change it as you like.
 
 ### Post-Draw Workflow (After Results)
 
@@ -936,48 +904,15 @@ Based on recommendations:
 
 ## Tips & Best Practices
 
-### Selection Strategy Tips
+### What the facts mean for your line
 
-**1. Balanced HMC Distribution**
-- ✅ **Good:** 3H-2M-1C, 3H-3M-0C, 4H-1M-1C
-- ❌ **Avoid:** 6H-0M-0C, 0H-0M-6C (extreme concentrations)
-- **Why:** Historical data shows balanced selections perform better
+Irish Lotto is a fair draw: **every line has the same chance of winning**. Nothing on this site -
+hot or cold, odd or even, sum, spread, transition candidates, volatility, momentum - changes that.
+What the pages show is what past draws looked like, so you can build a line that looks like them, or
+deliberately does not. Both are equally likely to win.
 
-**2. Optimal Odd/Even Ratio**
-- ✅ **Target:** 2-4 odd numbers (covers 90%+ of historical draws)
-- ⚠️ **Risky:** 1 or 5 odd (~5% of draws)
-- ❌ **Avoid:** 0 or 6 odd (<0.5% of draws)
-
-**3. Sum Validation**
-- ✅ **Target:** 84-206 (realistic range)
-- **Sweet spot:** 120-170 (highest concentration)
-- ❌ **Avoid:** <84 or >206 (outside 95% confidence interval)
-
-**4. Range Spread**
-- ✅ **Good:** At least 4 of 5 ranges covered
-- ✅ **Good:** Max 3 numbers per range
-- ❌ **Avoid:** All numbers in 1-2 ranges
-- ❌ **Avoid:** 4+ numbers in single range
-
-**5. Freshness Balance**
-- ✅ **Recommended:** Mix of C0 and C1 (e.g., 3×C0, 2×C1, 1×C2)
-- ⚠️ **Risky:** All C0 (completely fresh)
-- ⚠️ **Risky:** All C≥2 (over-saturated)
-
-**6. Include Transition Candidates**
-- ✅ **Strategy:** Include 1-2 bonus-to-main transition candidates
-- **Success rate:** 74.25% transition within 10 draws
-- **How to find:** Draw History page → Transition Candidates section
-
-**7. Volatility Mix**
-- ✅ **Conservative:** Mostly low volatility (4-5 low, 1-2 medium)
-- ✅ **Balanced:** Mix of low and medium (3 low, 2 medium, 1 high)
-- ⚠️ **Aggressive:** Include high volatility for surprise wins
-
-**8. Momentum Strategy**
-- **Momentum play:** Select mostly 🔥 Heating Up numbers (ride the wave)
-- **Contrarian play:** Select ❄️ Cooling Down numbers (expecting bounce)
-- **Balanced:** Mix of both
+The one thing a line's make-up does change is how many other players might share a prize: lines
+made mostly of 1-31 (birthdays) are played more often. See the High Numbers check (F-19).
 
 ### Analysis Tips
 
@@ -987,12 +922,7 @@ Based on recommendations:
    - Apply one filter at a time
    - Observe how pool changes
 
-2. **Combine complementary filters:**
-   - ✅ Hot + C1 + Trending Up = Strong momentum plays
-   - ✅ Cold + C0 + Cooling Down = Contrarian value picks
-   - ✅ Medium + C1 + Stable = Safe, predictable picks
-
-3. **Use copyable lists:**
+2. **Use copyable lists:**
    - Copy numbers from Trending/Volatile lists
    - Paste into specific number filter
    - Analyze subset in detail
@@ -1011,45 +941,13 @@ Based on recommendations:
    - Click column headers to sort
    - Use for finding extremes (highest/lowest)
 
-**Pattern Validation:**
-1. **Always validate sum:** Quick check for realism
-2. **Check pattern frequency:** Compare to Statistics page
-3. **Review similar draws:** Pattern Comparison page
-4. **Verify no critical anomalies:** Prediction Validator
+**Checking a line's shape:**
+1. **Sum:** is it in the typical range?
+2. **Pattern frequency:** compare with the Statistics page
+3. **Similar draws:** Pattern Comparison page
+4. **Anything unusual:** Prediction Validator
 
-### Common Mistakes to Avoid
-
-❌ **Mistake 1: All hot numbers**
-- **Why it's bad:** Lack of diversity, over-correlation
-- **Fix:** Include 1-2 medium or cold numbers
-
-❌ **Mistake 2: Ignoring transition candidates**
-- **Why it's bad:** Miss 74% probability boost
-- **Fix:** Always include 1-2 transition candidates
-
-❌ **Mistake 3: Extreme odd/even ratios**
-- **Why it's bad:** <6% of historical draws
-- **Fix:** Stick to 2-4 odd numbers
-
-❌ **Mistake 4: Consecutive number overload**
-- **Why it's bad:** 4+ consecutive is extremely rare
-- **Fix:** Maximum 2-3 consecutive numbers
-
-❌ **Mistake 5: Ignoring sum validation**
-- **Why it's bad:** Unrealistic sums have near-zero probability
-- **Fix:** Always keep sum between 84-206
-
-❌ **Mistake 6: Playing without validation**
-- **Why it's bad:** May have critical anomalies
-- **Fix:** Always run Prediction Validator first
-
-❌ **Mistake 7: Not tracking performance**
-- **Why it's bad:** Can't improve model without feedback
-- **Fix:** Use Post Draw Analysis after every draw
-
-❌ **Mistake 8: Over-fitting to recent data**
-- **Why it's bad:** Patterns change, recent ≠ future
-- **Fix:** Balance recent trends with historical statistics
+None of these changes the chance of winning.
 
 ### Performance Optimization
 
@@ -1077,13 +975,14 @@ Based on recommendations:
 **Cause:** Data files not generated
 **Solution:** Run `python3 drawpick.py` to generate all data files
 
-### Validation score unexpectedly low
-**Check:**
+### Validation score lower than expected
+A low score means the line looks less like past draws, not that it is less likely to win.
+**What lowers it:**
 1. Sum is within 84-206
 2. Odd/even ratio is 2-4
 3. Not all same HMC category
 4. Numbers spread across ranges
-5. No critical anomalies
+5. "Very unusual" alerts
 
 ### Model 4 accuracy below 20%
 **Possible causes:**
@@ -1177,12 +1076,7 @@ streamlit run app.py
 ### Pre-Draw Checklist
 - [ ] Run drawpick.py (data updated?)
 - [ ] Generate predictions (quickpick.py)
-- [ ] Validation score ≥ 80?
-- [ ] No critical anomalies?
-- [ ] Sum between 84-206?
-- [ ] 2-4 odd numbers?
-- [ ] Include 1-2 transition candidates?
-- [ ] HMC pattern in top 10?
+- [ ] Check your line on the Prediction Validator if you are curious how typical it looks
 
 ### Post-Draw Checklist
 - [ ] Enter actual results in Post Draw Analysis
@@ -1192,15 +1086,11 @@ streamlit run app.py
 - [ ] Apply recommendations
 - [ ] Document learnings
 
-### Optimal Selection Profile
-- **HMC:** 3H-2M-1C or 3H-3M-0C
+### Typical Line Profile
+What most past draws looked like - not a recipe for winning, since every line is equally likely:
 - **Odd/Even:** 2-4 odd numbers
-- **Sum:** 120-170 (sweet spot)
-- **Freshness:** Mix of C0 and C1
-- **Ranges:** 4-5 ranges covered, max 3 per range
-- **Transition:** 1-2 candidates included
-- **Volatility:** Mostly low/medium
-- **Validation:** Score ≥ 80
+- **Sum:** 84-206
+- **Ranges:** 4-5 ranges covered, at most 3 in one
 
 ---
 

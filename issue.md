@@ -25,51 +25,55 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-27** | Pattern Comparison gives past draws today's hot/medium/cold, not their own | Medium | S |
-| 2 | **F-26** | Prediction Validator tells players "Play with confidence" | Low | XS |
+| 1 | **F-30** | Number Insights grades numbers STRONG PICK / AVOID and rewards "overdue"; Draw History says bonus balls are "likely to appear soon" | Medium | M |
+| 2 | **F-29** | Sum alerts use hard-coded mean/std from a key that does not exist; the volatility alert can never fire | Low | XS |
 
 **2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
-## 1. F-27 — Pattern Comparison gives past draws today's hot/medium/cold, not their own
+## 1. F-30 — Number Insights grades numbers as picks; Draw History says bonus balls are due
 
-**Severity: Medium.** Wrong facts shown to players. Found 2026-09-19, visible once F-25 made the page
-return matches.
+**Severity: Medium.** Wrong claims shown to players. Found 2026-09-19 while fixing F-28, whose sweep
+of `view/` turned it up; left out of F-28 because the fix is a design choice, not rewording.
 
-`view/pages/pattern_comparison.py:51` `get_hmc_pattern(numbers, trigger_data)` classifies a draw's
-numbers with `lotto_trigger_periods.json` - the categories *as of the latest draw*. The page applies it
-to every historical draw (`:161` in `find_similar_draws`, `:330` for "HMC Pattern Frequency"). A past
-draw's pattern must use the categories in force *before that draw*, which the draw history already
-stores per ball (`winning_numbers_details[i]['category']`).
+- `view/pages/number_insights.py:437-498` scores a single number and labels it "STRONG PICK", "GOOD
+  PICK", "NEUTRAL" or "AVOID". The score adds 25 for being "overdue" (current gap > 1.5x its average,
+  `:469-470`) and 15 for a "Strong bonus-to-main transition candidate" (`:477-478`); `:342` shows
+  "this number is OVERDUE!" and `:311` "a STRONG candidate for transitioning". In a fair draw every
+  number has the same 6/47 chance each draw, whatever its gap - "overdue" is the gambler's fallacy.
+- `view/pages/draw_history.py:171` says recent bonus numbers "are likely to appear in main draw soon",
+  and the `:227` "Strategy Tip" advises "including 1-2 of these in your selection" because they have
+  a 74.25% chance of appearing in the main draw within 10 draws. That is chance: any number appears in
+  10 draws with probability 1 - (41/47)^10 = 74.5%.
+- `docs/dashboard-manual.md` repeats both: the Number Insights section ("OVERDUE (strong pick)",
+  "STRONG PICK", "AVOID") and the Draw History "Strategy: Include 1-2 transition candidates".
 
-Measured over the main 6: the page's pattern differs from the pre-draw one for **459 of 498 draws**.
-Recent draws look all-hot because their numbers were just drawn - 16 Sep 2026 shows 6H-0M-0C, pre-draw
-3H-3M-0C; 14 Sep shows 6H-0M-0C, pre-draw 4H-1M-1C. So the similarity ranking and the HMC frequency
-count ("26/498") are computed on the wrong categories. The player's own line is correctly classified
-with today's categories - it is the comparison set that is wrong. `get_hmc_pattern` also defaults a
-missing category to `'medium'` with `.get`.
-
-**Fix.** In `find_similar_draws` and the frequency count, take a historical draw's pattern from its
-`winning_numbers_details` (main 6, `is_bonus` false); keep `get_hmc_pattern` for the player's line
-only. Replace the `'medium'` default with direct access. Test: a past draw's pattern on the page
-equals the one counted from its stored pre-draw categories.
+**Fix.** Decide first: drop the per-number score from Number Insights, or keep it as a neutral profile
+("appeared less than usual recently") with no verdict. Either way, show a gap as a fact next to the
+fair-draw expectation, never as "overdue", and give the transition rate next to its 74.5% chance
+baseline. Extend `tests/test_site_wording.py` to both pages, adding "overdue", "pick" and "due".
 
 ---
-## 2. F-26 — Prediction Validator tells players "Play with confidence"
+## 2. F-29 — Sum alerts read a key that does not exist; the volatility alert can never fire
 
-**Severity: Low.** Found 2026-09-19.
+**Severity: Low.** Found 2026-09-19 while fixing F-28.
 
-`view/pages/prediction_validator.py:421` shows "RECOMMENDED - Play with confidence!" for a high
-score, `:425` "NOT RECOMMENDED - Regenerate numbers" for a low one, and the grade legend at `:492`
-reads "A (80-100): Excellent, play with confidence". In a fair draw every line is equally likely to
-win - the page says so itself at `:183`, and the root `CLAUDE.md` says the site must never score a
-line as more likely to win. The score measures how typical a line looks next to past draws, not its
-chance.
+- `view/utils/anomaly_detector.py:100-101` and `view/pages/pattern_comparison.py:259-260` read
+  `summary_statistics.mean/std` from `lotto_sum_contribution_validated.json`, which has no such key
+  (the figures are under `overall_distribution`, as `prediction_validator.py` and
+  `trigger_analysis.py` read them). `.get(..., 144.87)` / `.get(..., 30.4)` hide it, so both always use
+  hard-coded constants - today's real values are 145.95 and 30.71, and they move with every draw.
+- `view/utils/anomaly_detector.py:285` flags a number as highly volatile at
+  `appearance_volatility >= 1.5`; the highest of the 47 is 1.16, so the alert can never fire. The
+  Trigger Periods page and the manual call >= 1.15 "High".
+- The whole detector reads its data with `.get(key, default)` - the pattern `view/pages/CLAUDE.md`
+  forbids since F-25.
 
-**Fix.** Reword the verdicts and the legend to describe typicality ("typical of past draws" /
-"unusual next to past draws"), with no advice to play or regenerate. The score itself can stay; it is
-documented in `view/pages/CLAUDE.md` as a measure of resemblance.
+**Fix.** Read `overall_distribution` with direct access in both places; set the volatility threshold
+from the same band the Trigger Periods page uses; replace the detector's `.get` defaults with direct
+access. Test: a sum alert quotes the mean in the JSON, and a line of the most volatile numbers fires
+the volatility alert.
 
 ---
 ## 6. Improvements done
@@ -248,6 +252,9 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-28 | Pattern Comparison, Trigger Periods, the anomaly alerts and the manual graded lines strong / weak / risky and quoted false frequencies | `pattern_comparison.py`, `trigger_analysis.py`, `anomaly_detector.py`, `prediction_validator.py`, `statistics.py`, `dashboard-manual.md` |
+| F-26 | Prediction Validator told players "Play with confidence" and "Regenerate numbers" | `prediction_validator.py` |
+| F-27 | Pattern Comparison classified past draws with today's hot/medium/cold | `pattern_comparison.py` |
 | F-25 | Pattern Comparison read `main_numbers`, a key the draw history never had - it never found a match | `hmc_analyzer.py`, `pattern_comparison.py`, `anomaly_detector.py` |
 | F-7 | Two `analysis/` scripts read `last_14`, a window that has never existed | `bonus_to_main_analysis.py`, `feature_stability_scorer.py` |
 | C-17b | Eleven feature-discovery print-scripts sat in `tests/`; one was broken, one overwrote the real metrics | moves them to `demos/`; `pytest.ini` |
@@ -286,6 +293,95 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-28 — Other pages graded lines strong, weak or risky, and quoted false frequencies
+
+**Root cause.** The same assumption as F-26 - that a line's shape changes its chance - ran through
+the rest of the site. Pattern Comparison graded a line STRONG / GOOD / MODERATE / WEAK PATTERN with
+"Pattern Strengths" and "has NEVER won". Trigger Periods ended its sum check with a "Validation
+Confidence: HIGH/MEDIUM/LOW" and called sums "Realistic" / "Unrealistic". The anomaly alerts, shown
+on the Prediction Validator, said "risky", "Consider diversification", "Balanced selections have much
+higher success rates", and that repeating a past line is "astronomically unlikely" - it is exactly as
+likely as any other. Two of their figures were false: all-odd/all-even "<0.5% of draws" is 2.0%
+(10 of 498), and 1 or 5 odd "~5%" is 18.9%. The manual carried all of it, plus a strategy section
+("ride the wave", "surprise wins", "Contrarian value picks").
+
+**Fix.** Wording only; no score, threshold or alert condition changed. Pattern Comparison: "How
+Typical Is This Shape", verdicts Very typical / Typical / Less typical / Unusual shape, lists "Common /
+Less common in past draws", and an equal-chance caption. Trigger Periods: typical / uncommon / never
+seen before, no confidence verdict. Anomaly detector: every detail describes past draws, with no
+advice and no hard-coded percentage; the repeat alert says a repeat is as likely as any line. The
+validator shows alert counts as Very unusual / Unusual / Note, without red error boxes. "Realistic"
+became "typical" or "common" on the validator and Statistics pages. `docs/dashboard-manual.md`: the
+Trigger Periods, Statistics, Freshness, Validator, Pattern Comparison and Key Concepts sections, the
+workflow and the Tips section rewritten to describe, not advise; its odd/even shares are now the
+measured 79% / 19% / 2%. `view/pages/CLAUDE.md` gains the rule "Describe, never advise".
+
+**Measured.** Rendered with `AppTest` - Prediction Validator, Pattern Comparison, Trigger Periods
+(sidebar numbers) and Statistics: no exceptions, no error boxes.
+
+**Tests.** `tests/test_validator_wording.py` renamed `tests/test_site_wording.py`, 3 -> 10 tests:
+Pattern Comparison and Trigger Periods rendered with a typical and an unusual line; six lines, derived
+from the data, that fire nine of the ten alert kinds (volatility cannot fire - F-29) with no advice in
+any; no percentage in the odd/even alerts; the repeat alert says "as likely". All 10 failed on the
+code before F-26. Number Insights and Draw History are F-30.
+
+### F-26 — Prediction Validator told players to play or regenerate
+
+**Root cause.** The page scores five checks on a line (odd/even, sum, HMC, bonus transition, range
+spread) - a measure of how much the line resembles past draws. Its verdicts read that score as a
+chance of winning: "RECOMMENDED - Play with confidence!", "NOT RECOMMENDED - Regenerate numbers",
+grades "Excellent" / "Risky" / "Poor", a legend ending "definitely regenerate", a "High Risk" badge on
+critical alerts, "Suggested Improvements" and "statistically sound". In a fair draw every line is
+equally likely to win; the page itself said so in the high-numbers check.
+
+**Fix.** Wording only, in `view/pages/prediction_validator.py`; the score and its thresholds are
+unchanged. Verdicts: "Typical of past draws" / "Somewhat typical" / "Unusual next to past draws", no
+longer shown as success/warning/error colours for the two lower bands. Grades: A+ Very typical, A
+Typical, B Fairly typical, C Less typical, D Unusual. The intro, a caption under the score and the
+legend state that the score is resemblance, not a chance of winning. "Recommendations / Suggested
+Improvements" became "What Makes It Less Typical", offered only "if you want one". Range spread
+Good/Fair/Poor became Wide/Moderate/Narrow; bonus candidates are "recent", not "high-probability".
+The validator part of `docs/dashboard-manual.md` matches.
+
+**Measured.** Rendered with `AppTest`: 5, 12, 23, 31, 38, 44 scores 84 (A Typical) and 1-6 scores 54
+(D Unusual), no exceptions, none of the advice phrases on either page. Same scores as before.
+
+**Tests.** `tests/test_site_wording.py` (new, 3 tests): for a line scoring >= 80 and one < 60,
+and for the empty page with the legend, no "play with confidence", "recommended", "regenerate",
+"risk", "improvement", "statistically sound", "excellent" or "poor", and the page says every line is
+equally likely to win. All 3 failed on the old page. Added to `verify.py`. The same language on
+other pages is F-28.
+
+### F-27 — Pattern Comparison classified past draws with today's hot/medium/cold
+
+**Root cause.** `get_hmc_pattern(numbers, trigger_data)` classifies numbers with
+`lotto_trigger_periods.json`, whose categories are dated at the latest draw. The page used it for the
+player's line - correct - and also for every historical draw in `find_similar_draws` and the "HMC
+Pattern Frequency" count, which is not: a past draw's pattern is the categories in force *before* it.
+Numbers just drawn are hot today, so recent draws looked all-hot (16 Sep 2026: shown 6H-0M-0C,
+pre-draw 3H-3M-0C). 459 of 498 draws had the wrong pattern. A number missing from the JSON was also
+silently counted as medium by a `.get(..., 'medium')` default.
+
+**Fix.** `view/pages/pattern_comparison.py`: new `get_draw_hmc_pattern(draw)` counts the main 6 of
+`winning_numbers_details` (stored pre-draw, `is_bonus` false); both historical uses call it.
+`get_hmc_pattern` stays for the player's line only and reads the category by direct key, so an
+unknown number raises. `find_similar_draws` lost its now-unused `trigger_data` argument. No artifact
+changed - the draw history already carried the pre-draw categories.
+
+**Measured before/after.** Pattern Comparison for 9, 14, 20, 22, 26, 29 (the 14 Sep 2026 draw, today
+6H-0M-0C): HMC Pattern Frequency 26/498 -> 4/498 (draws that really were 6H before the draw);
+the 14 Sep draw itself now shows its pre-draw 4H-1M-1C and ranks 2nd at 80.0% instead of 1st at 100%,
+because a line typed in today is classified with today's categories. Odd/even 112/498 unchanged.
+Rendered headless with `AppTest`: no exceptions or error boxes.
+
+**Tests.** `tests/test_draw_history_numbers.py`, 4 -> 7 tests. New: every historical match carries
+the HMC counted from the draw's separate `categories_pre_draw` lists, summing to 6 (failed on 459 draws
+with the old page); the latest draw is 6H by today's categories but keeps its pre-draw pattern; an
+unknown number in the player's line raises (the old page returned it as medium). **Changed:** the F-25
+test "a past draw comes back with the top similarity" queried with the draw's numbers classified by
+today's categories. That premise is what F-27 removes - a past draw's own HMC is now pre-draw - so it
+queries with the draw's own pre-draw pattern and asserts 100% similarity, stricter than "top".
 
 ### F-25 — Pattern Comparison read a key the draw history never had
 
