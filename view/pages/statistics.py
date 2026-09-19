@@ -314,10 +314,10 @@ def show():
     st.markdown("""
     **What past draws looked like:**
     - Most draws have 2-4 odd numbers
-    - Historical data shows balanced distribution (≈50/50)
-    - Some numbers have statistical preference for odd/even draws
-    - Use this to validate your number selections
-    """)
+    - 24 of the 47 numbers are odd, so a fair draw's balls are {expected:.1f}% odd, not 50%
+    - {differ} of the 47 numbers go with odd or even draws more often than chance would give
+    """.format(expected=odd_even_data['overall_distribution_test']['expected_odd_percentage'],
+               differ=odd_even_data['num_significant_deviations']))
 
     # Overall Distribution
     overall_dist = odd_even_data.get('overall_distribution_test', {})
@@ -349,9 +349,11 @@ def show():
     # Per-Number Affinity Analysis
     st.subheader("🎯 Per-Number Odd/Even Affinity")
     st.markdown("""
-    Numbers with **statistically validated** preference (p < 0.05) are highlighted.
-    - **Aligned**: Number's parity matches its preferred draw type
-    - **Affinity Score > 0.75**: Strong preference for odd/even draws
+    - **Affinity Score**: the share of the draws a number came up in that had at least as many odd
+      numbers as even
+    - **Chance**: that share in a fair draw. An odd number brings an odd ball with it, so its chance
+      is higher than an even number's
+    - **Validated**: the share differs from chance after correcting for testing 47 numbers (F-38)
     """)
 
     affinity_data = odd_even_data.get('per_number_affinity', {})
@@ -363,6 +365,7 @@ def show():
             'Parity': stats.get('number_parity', 'N/A').upper(),
             'Preferred Type': stats.get('preferred_type', 'N/A').upper(),
             'Affinity Score': f"{stats.get('affinity_score', 0):.3f}",
+            'Chance': f"{stats['chance_affinity_score']:.3f}",
             'Validated': '✅' if stats.get('statistically_validated', False) else '',
             'Alignment': stats.get('alignment', 'N/A').capitalize(),
             'p-value': f"{stats.get('p_value_adjusted', 1):.6f}"
@@ -374,7 +377,7 @@ def show():
     # Filter options
     col_filter1, col_filter2 = st.columns(2)
     with col_filter1:
-        show_validated_only = st.checkbox("Show only statistically validated numbers", value=False)
+        show_validated_only = st.checkbox("Show only numbers that differ from chance", value=False)
     with col_filter2:
         min_affinity = st.slider("Minimum affinity score", 0.0, 1.0, 0.0, 0.05)
 

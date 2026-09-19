@@ -25,12 +25,11 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-38** | Odd/even affinity flags all 24 odd numbers as "validated" on a biased test; Statistics page shows it | Medium | S |
-| 2 | **F-36** | A bonus ball repeated in the 10-draw window gets its oldest appearance as `draws_since_bonus` | Low | S |
-| 3 | **F-41** | Bonus-to-Main trains on `category` as a constant 0.0 - a string turned into 0.0 in every row | Low | S |
-| 4 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
+| 1 | **F-36** | A bonus ball repeated in the 10-draw window gets its oldest appearance as `draws_since_bonus` | Low | S |
+| 2 | **F-41** | Bonus-to-Main trains on `category` as a constant 0.0 - a string turned into 0.0 in every row | Low | S |
+| 3 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
 
-**4 open defects (1 Medium, 3 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**3 open defects (3 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
@@ -44,27 +43,7 @@ None open.
 
 ## 2. Medium severity defects
 
-### F-38 — Odd/even affinity flags every odd number as "validated" on a biased test
-
-**Severity: Medium.** Registered 2026-09-19. Raised from Low on review: the false result is shown to
-players.
-
-**Root cause.** `lotto_analysis/analyzers/odd_even_analyzer.py:126` labels a draw `'odd'` when
-`odd_in_draw >= even_in_draw`, so every 3:3 draw counts as odd. `:157` then tests each number's
-share of appearances in "odd" draws against `p = 0.5` with `stats.binomtest`. A draw containing an
-odd number is more likely to be mostly odd, so on fair draws every odd number deviates from 0.5 -
-the same fair-draw false positive as F-30 and F-31.
-
-**Evidence.** `data/lotto_odd_even_validated.json` `per_number_affinity` marks 25 numbers
-`statistically_validated`: all 24 odd numbers plus 46. `view/pages/statistics.py:357-366` shows them
-with a "Validated" mark.
-
-The overall chi-square (`:62-80`) also expects 50/50 where a fair draw gives 24/47 odd. Minor: it
-currently reports p = 0.53 (1511 odd / 1477 even over 2988 main balls).
-
-**Fix.** Test each number against the chance rate of a draw being "odd" given that the number was
-drawn, not 0.5, and test the overall split against 24/47. Check on simulated fair draws: about 5%
-flagged, as `tests/test_trend_significance.py` does for F-31.
+None open.
 
 ---
 
@@ -290,6 +269,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-38 | Odd/even affinity tested each number against 0.5 and validated all 24 odd numbers; overall test expected 50/50 | `odd_even_analyzer.py`, `statistics.py` |
 | F-35 | Post Draw Analysis parsed `data/irish500.csv` itself for the latest draw | `post_draw_analysis.py` |
 | F-40 | Bonus-to-Main model was served a dict built from the extractor and JSON profiles, not the engine rows it was trained on | `bonus_to_main_trainer.py`, `bonus_to_main_predictor.py`, `bonus_to_main_features.py`, `bonus_window.py`, `quickpick.py` |
 | F-34 | Main models were served the extractor's row, not the row they were trained on: gap statistics, `freshness_bin` interactions and `has_consecutive_partner` differed | `walk_forward.py`, `quickpick.py` |
@@ -339,6 +319,34 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-38 — Odd/even affinity validated every odd number on a biased test
+
+**Root cause.** `odd_even_analyzer.py` labels a draw "odd" when it has at least as many odd numbers as
+even, then tested each number's share of odd draws against 0.5 (`stats.binomtest(..., 0.5)`). A
+draw containing an odd number already has one odd ball, so for an odd number the fair-draw chance is
+0.827, for an even one 0.543 - never 0.5. With FDR correction applied, all 24 odd numbers plus 46
+were still "statistically validated", and the Statistics page marked them so, under text calling an
+affinity above 0.75 a "strong preference". The overall chi-square expected 50/50 odd balls where the
+pool holds 24 odd of 47. On simulated fair draws the old test gave p < 0.05 for 261 of 470 numbers.
+
+**Fix.** `chance_of_odd_draw(number, max_number, draw_size)` is the hypergeometric chance that a fair
+draw containing the number is an odd draw; each number is tested against its mean chance over its
+draws, and `chance_affinity_score` is written beside `affinity_score`. `preferred_type` is 'odd' or
+'even' only for a share that differs from chance after FDR, else 'neutral'. The overall test expects
+24/47 odd and writes `expected_odd_percentage`. The Statistics page shows a Chance column, says a fair
+draw's balls are 51.1% odd, and takes the count of numbers that differ from chance from the artifact.
+
+**Measured.** `drawpick.py`: only `lotto_odd_even_validated.json` changed (three others by timestamp
+only). Validated numbers 25 -> 0; raw p < 0.05 for 4 of 47 (about the 5% chance gives); number 1's
+share 0.820 against chance 0.827. Overall p 0.534 -> 0.588. `quickpick.py`: picks identical, every
+validation AUC identical - nothing in the ML layer reads the per-number results.
+
+**Tests.** `tests/test_odd_even_affinity.py` (new, 6 tests): on 10 x 498 simulated fair draws about 5%
+of numbers have p < 0.05 and FDR validates at most 2 (old: 261 and 254); the stated chance matches
+20,000 simulated draws within 0.01; a number whose draws are forced odd is still validated; every
+number drawn equally often gives chi-square 0; the Statistics page renders with the Chance column and
+without "strong preference" or "50/50". Four of the six failed on the old code.
 
 ### F-35 — Post Draw Analysis read the draw CSV
 
