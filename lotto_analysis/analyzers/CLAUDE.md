@@ -15,7 +15,7 @@ writes into either, you have changed the serving distribution and must change
 
 | Phase | Analyzer | Writes |
 |:--|:--|:--|
-| 1-2 | `hmc_analyzer.py` | feeds `lotto_trigger_periods.json`, `lotto_draw_history.json` |
+| 1-2 | `hmc_analyzer.py` | feeds `lotto_trigger_periods.json`, `lotto_draw_history.json` (each entry carries `main_numbers` and `bonus_number` for the website - F-25) |
 | 3 | `pattern_analyzer.py` | feeds `lotto_odds_results.json` |
 | 4 | `consecutive_analyzer.py` | feeds pattern output |
 | 5 | `freshness_analyzer_7_numbers.py` | `lotto_7_number_freshness_results.json` |

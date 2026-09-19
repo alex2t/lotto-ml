@@ -25,40 +25,35 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-25** | Pattern Comparison reads `main_numbers`, a key the draw history has never had | Medium | S |
+| 1 | **F-27** | Pattern Comparison gives past draws today's hot/medium/cold, not their own | Medium | S |
 | 2 | **F-26** | Prediction Validator tells players "Play with confidence" | Low | XS |
 
 **2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
-## 1. F-25 — Pattern Comparison reads a key the draw history has never had
+## 1. F-27 — Pattern Comparison gives past draws today's hot/medium/cold, not their own
 
-**Severity: Medium.** A website feature has never worked. Found 2026-09-19 by rendering the page with
-real input.
+**Severity: Medium.** Wrong facts shown to players. Found 2026-09-19, visible once F-25 made the page
+return matches.
 
-`data/lotto_draw_history.json` stores each draw's balls in `winning_numbers_details` (seven entries,
-the bonus flagged `is_bonus`). No entry has `main_numbers` or `bonus_number` - 0 of 498, and none in
-the version committed when the page was added (`70f053c`, 2025-11-23). Three dashboard reads use them
-with a silent default:
+`view/pages/pattern_comparison.py:51` `get_hmc_pattern(numbers, trigger_data)` classifies a draw's
+numbers with `lotto_trigger_periods.json` - the categories *as of the latest draw*. The page applies it
+to every historical draw (`:161` in `find_similar_draws`, `:330` for "HMC Pattern Frequency"). A past
+draw's pattern must use the categories in force *before that draw*, which the draw history already
+stores per ball (`winning_numbers_details[i]['category']`).
 
-- `view/pages/pattern_comparison.py:155` - `draw_data.get('main_numbers', [])` gives `[]` for every
-  draw, so `find_similar_draws` skips all 498 and returns nothing. The page answers every line - even
-  the actual 14 Sep 2026 draw, typed in exactly - with "No similar historical draws found. This might
-  indicate an unusual pattern." The "Pattern Frequency in Historical Wins" section (`:329-333`) sits in
-  the same branch and never renders; its counts would be 0 anyway. `:174` reads `bonus_number` the
-  same way.
-- `view/utils/anomaly_detector.py:310` - the Prediction Validator's "exact same numbers drawn
-  recently" alert compares against `[]` and can never fire.
+Measured over the main 6: the page's pattern differs from the pre-draw one for **459 of 498 draws**.
+Recent draws look all-hot because their numbers were just drawn - 16 Sep 2026 shows 6H-0M-0C, pre-draw
+3H-3M-0C; 14 Sep shows 6H-0M-0C, pre-draw 4H-1M-1C. So the similarity ranking and the HMC frequency
+count ("26/498") are computed on the wrong categories. The player's own line is correctly classified
+with today's categories - it is the comparison set that is wrong. `get_hmc_pattern` also defaults a
+missing category to `'medium'` with `.get`.
 
-The page does not crash, which is why this went unseen: `.get(key, [])` turned a missing key into a
-normal-looking "no match".
-
-**Fix.** Make the data carry what the page needs, in the website's API: have `drawpick.py` write
-`main_numbers` and `bonus_number` into each `lotto_draw_history.json` entry, which is also what the
-Next.js site will want. Or read `winning_numbers_details` in the page. Either way, replace the
-`.get(..., [])` with a direct key access so a missing field raises. Confirm with Streamlit `AppTest`:
-a past draw entered on Pattern Comparison must find at least itself.
+**Fix.** In `find_similar_draws` and the frequency count, take a historical draw's pattern from its
+`winning_numbers_details` (main 6, `is_bonus` false); keep `get_hmc_pattern` for the player's line
+only. Replace the `'medium'` default with direct access. Test: a past draw's pattern on the page
+equals the one counted from its stored pre-draw categories.
 
 ---
 ## 2. F-26 — Prediction Validator tells players "Play with confidence"
@@ -253,6 +248,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-25 | Pattern Comparison read `main_numbers`, a key the draw history never had - it never found a match | `hmc_analyzer.py`, `pattern_comparison.py`, `anomaly_detector.py` |
 | F-7 | Two `analysis/` scripts read `last_14`, a window that has never existed | `bonus_to_main_analysis.py`, `feature_stability_scorer.py` |
 | C-17b | Eleven feature-discovery print-scripts sat in `tests/`; one was broken, one overwrote the real metrics | moves them to `demos/`; `pytest.ini` |
 | F-21 | Bonus-to-Main trained on a C-5 full-history feature computed from last-draw categories | `config.py`, `window_saturation.py`, `bonus_to_main_trainer.py` |
@@ -290,6 +286,33 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-25 — Pattern Comparison read a key the draw history never had
+
+**Root cause.** `view/pages/pattern_comparison.py:155,174,330,333` and
+`view/utils/anomaly_detector.py:310` read `main_numbers` and `bonus_number` from
+`data/lotto_draw_history.json`. No entry has ever had them (0 of 498; also absent in the version
+committed with the page, `70f053c`, 2025-11-23) - the balls are in `winning_numbers_details`. The
+`.get('main_numbers', [])` default gave every draw an empty list, so `find_similar_draws` skipped all
+498: every line, even a real past draw typed in exactly, got "No similar historical draws found", and
+the Pattern Frequency section never rendered. The Prediction Validator's "exact same numbers drawn
+recently" alert compared against `[]` and could never fire.
+
+**Fix.** In the website's API, not the page: `hmc_analyzer.py` now writes `main_numbers` (the 6, in
+draw order) and `bonus_number` into each draw-history entry - what the Next.js site will need too. The
+pages read both with direct key access, so a missing field raises. `drawpick.py` and `quickpick.py`
+re-run.
+
+**Measured before/after.** Pattern Comparison for 9, 14, 20, 22, 26, 29 (the 14 Sep 2026 draw):
+0 matches -> 15, itself first at 100%; Pattern Frequency now renders (26/498 HMC, 112/498 odd/even).
+The validator on the 16 Sep draw now raises "Pattern Repetition: Exact same numbers drawn on
+2026-09-16". `lotto_draw_history.json` only gained the two fields; the other three changed files differ
+only in `generated_date`. Picks identical and metrics +0.0000 - the models never read these fields.
+
+**Tests.** `tests/test_draw_history_numbers.py` (new, 4 tests): every entry has 6 distinct main numbers
+in 1-47 and a separate bonus; both agree with `winning_numbers_details`; Pattern Comparison returns the
+latest and the earliest past draw with the top similarity score. All 4 failed with `KeyError` on the
+old data. Added to `verify.py`.
 
 ### F-7 — Two analysis scripts read a window that has never existed
 

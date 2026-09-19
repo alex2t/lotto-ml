@@ -52,6 +52,10 @@ Shared helpers are in `../utils/`: `data_loader.py` (cached artifact reads), `fo
   that does not exist, it is produced upstream in `lotto_analysis/` or `ml_lotto/`, not here.
 - A page that recomputes a statistic locally will drift from the analyzer that produces it. Load it
   through `../utils/data_loader.py` instead.
+- **Read artifact fields with `data['key']`, not `.get('key', [])`.** Pattern Comparison read
+  `main_numbers`, which `lotto_draw_history.json` did not have, and the empty default made it answer
+  every line with "no similar draws" for ten months (F-25). A missing field must raise. After
+  changing a page, render it with real input (Streamlit `AppTest`), not just a page load.
 - Adding a page means a module here **and** an entry in `app.py`'s `PAGES` dict.
 - The dashboard shows stale numbers until `drawpick.py` and `quickpick.py` have re-run. If a page
   looks wrong, check the artifact timestamps before reading the page code.
