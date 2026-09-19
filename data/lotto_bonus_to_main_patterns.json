@@ -1,8 +1,8 @@
 {
     "metadata": {
         "description": "Bonus-to-Main transition patterns for ML prediction",
-        "total_bonus_appearances": 497,
-        "overall_transition_rate": 0.7304,
+        "total_bonus_appearances": 498,
+        "overall_transition_rate": 0.7309,
         "numbers_with_transitions": 47
     },
     "per_number_transition_profile": {
@@ -12,7 +12,7 @@
             "last_bonus_date": "2026-08-12",
             "transition_rate": 0.75,
             "avg_draws_to_transition": 5.58,
-            "days_since_last_bonus": 33,
+            "days_since_last_bonus": 35,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -26,7 +26,7 @@
             "last_bonus_date": "2026-05-30",
             "transition_rate": 0.8333,
             "avg_draws_to_transition": 3.7,
-            "days_since_last_bonus": 107,
+            "days_since_last_bonus": 109,
             "most_common_category": "cold",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -41,7 +41,7 @@
             "last_bonus_date": "2025-02-08",
             "transition_rate": 0.7778,
             "avg_draws_to_transition": 5.14,
-            "days_since_last_bonus": 583,
+            "days_since_last_bonus": 585,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -56,7 +56,7 @@
             "last_bonus_date": "2026-09-14",
             "transition_rate": 0.5714,
             "avg_draws_to_transition": 5.0,
-            "days_since_last_bonus": 0,
+            "days_since_last_bonus": 2,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -70,7 +70,7 @@
             "last_bonus_date": "2026-03-25",
             "transition_rate": 0.7143,
             "avg_draws_to_transition": 5.2,
-            "days_since_last_bonus": 173,
+            "days_since_last_bonus": 175,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -84,7 +84,7 @@
             "last_bonus_date": "2025-11-19",
             "transition_rate": 0.875,
             "avg_draws_to_transition": 3.86,
-            "days_since_last_bonus": 299,
+            "days_since_last_bonus": 301,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -99,7 +99,7 @@
             "last_bonus_date": "2026-07-18",
             "transition_rate": 0.9091,
             "avg_draws_to_transition": 4.0,
-            "days_since_last_bonus": 58,
+            "days_since_last_bonus": 60,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -114,7 +114,7 @@
             "last_bonus_date": "2025-11-01",
             "transition_rate": 0.3333,
             "avg_draws_to_transition": 5.0,
-            "days_since_last_bonus": 317,
+            "days_since_last_bonus": 319,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -127,7 +127,7 @@
             "last_bonus_date": "2025-11-26",
             "transition_rate": 0.75,
             "avg_draws_to_transition": 6.0,
-            "days_since_last_bonus": 292,
+            "days_since_last_bonus": 294,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -141,7 +141,7 @@
             "last_bonus_date": "2025-08-09",
             "transition_rate": 0.8,
             "avg_draws_to_transition": 3.5,
-            "days_since_last_bonus": 401,
+            "days_since_last_bonus": 403,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -156,7 +156,7 @@
             "last_bonus_date": "2026-08-08",
             "transition_rate": 0.5833,
             "avg_draws_to_transition": 4.29,
-            "days_since_last_bonus": 37,
+            "days_since_last_bonus": 39,
             "most_common_category": "hot",
             "most_common_freshness": 2,
             "transition_timing_distribution": {
@@ -171,7 +171,7 @@
             "last_bonus_date": "2026-07-15",
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 2.88,
-            "days_since_last_bonus": 61,
+            "days_since_last_bonus": 63,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -186,7 +186,7 @@
             "last_bonus_date": "2026-08-29",
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 4.0,
-            "days_since_last_bonus": 16,
+            "days_since_last_bonus": 18,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -201,7 +201,7 @@
             "last_bonus_date": "2026-09-05",
             "transition_rate": 0.8571,
             "avg_draws_to_transition": 4.67,
-            "days_since_last_bonus": 9,
+            "days_since_last_bonus": 11,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -216,7 +216,7 @@
             "last_bonus_date": "2026-08-22",
             "transition_rate": 0.5385,
             "avg_draws_to_transition": 3.29,
-            "days_since_last_bonus": 23,
+            "days_since_last_bonus": 25,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -231,7 +231,7 @@
             "last_bonus_date": "2025-09-06",
             "transition_rate": 0.75,
             "avg_draws_to_transition": 4.0,
-            "days_since_last_bonus": 373,
+            "days_since_last_bonus": 375,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -246,7 +246,7 @@
             "last_bonus_date": "2026-03-14",
             "transition_rate": 0.5455,
             "avg_draws_to_transition": 3.83,
-            "days_since_last_bonus": 184,
+            "days_since_last_bonus": 186,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -261,7 +261,7 @@
             "last_bonus_date": "2026-09-02",
             "transition_rate": 0.5556,
             "avg_draws_to_transition": 5.0,
-            "days_since_last_bonus": 12,
+            "days_since_last_bonus": 14,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -276,7 +276,7 @@
             "last_bonus_date": "2025-06-07",
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 6.0,
-            "days_since_last_bonus": 464,
+            "days_since_last_bonus": 466,
             "most_common_category": "medium",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -291,7 +291,7 @@
             "last_bonus_date": "2026-08-15",
             "transition_rate": 0.9231,
             "avg_draws_to_transition": 5.25,
-            "days_since_last_bonus": 30,
+            "days_since_last_bonus": 32,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -306,7 +306,7 @@
             "last_bonus_date": "2026-04-11",
             "transition_rate": 0.8,
             "avg_draws_to_transition": 5.75,
-            "days_since_last_bonus": 156,
+            "days_since_last_bonus": 158,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -321,7 +321,7 @@
             "last_bonus_date": "2026-07-08",
             "transition_rate": 0.8462,
             "avg_draws_to_transition": 4.91,
-            "days_since_last_bonus": 68,
+            "days_since_last_bonus": 70,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -336,7 +336,7 @@
             "last_bonus_date": "2025-07-09",
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 4.33,
-            "days_since_last_bonus": 432,
+            "days_since_last_bonus": 434,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -350,7 +350,7 @@
             "last_bonus_date": "2026-06-13",
             "transition_rate": 0.8,
             "avg_draws_to_transition": 3.0,
-            "days_since_last_bonus": 93,
+            "days_since_last_bonus": 95,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -364,7 +364,7 @@
             "last_bonus_date": "2026-06-27",
             "transition_rate": 0.5556,
             "avg_draws_to_transition": 5.4,
-            "days_since_last_bonus": 79,
+            "days_since_last_bonus": 81,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -379,7 +379,7 @@
             "last_bonus_date": "2026-08-01",
             "transition_rate": 0.8182,
             "avg_draws_to_transition": 6.0,
-            "days_since_last_bonus": 44,
+            "days_since_last_bonus": 46,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -394,7 +394,7 @@
             "last_bonus_date": "2026-09-12",
             "transition_rate": 0.7778,
             "avg_draws_to_transition": 2.86,
-            "days_since_last_bonus": 2,
+            "days_since_last_bonus": 4,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -409,7 +409,7 @@
             "last_bonus_date": "2026-07-11",
             "transition_rate": 0.3333,
             "avg_draws_to_transition": 7.0,
-            "days_since_last_bonus": 65,
+            "days_since_last_bonus": 67,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -422,7 +422,7 @@
             "last_bonus_date": "2026-09-09",
             "transition_rate": 0.9,
             "avg_draws_to_transition": 2.56,
-            "days_since_last_bonus": 5,
+            "days_since_last_bonus": 7,
             "most_common_category": "medium",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -436,7 +436,7 @@
             "last_bonus_date": "2026-06-03",
             "transition_rate": 0.8,
             "avg_draws_to_transition": 4.88,
-            "days_since_last_bonus": 103,
+            "days_since_last_bonus": 105,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -446,12 +446,12 @@
             }
         },
         "31": {
-            "total_bonus_appearances": 9,
+            "total_bonus_appearances": 10,
             "transitioned_to_main": 7,
-            "last_bonus_date": "2026-02-21",
-            "transition_rate": 0.7778,
+            "last_bonus_date": "2026-09-16",
+            "transition_rate": 0.7,
             "avg_draws_to_transition": 4.71,
-            "days_since_last_bonus": 205,
+            "days_since_last_bonus": 0,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -465,7 +465,7 @@
             "last_bonus_date": "2026-04-08",
             "transition_rate": 0.8182,
             "avg_draws_to_transition": 5.11,
-            "days_since_last_bonus": 159,
+            "days_since_last_bonus": 161,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -480,7 +480,7 @@
             "last_bonus_date": "2025-04-26",
             "transition_rate": 0.4444,
             "avg_draws_to_transition": 6.0,
-            "days_since_last_bonus": 506,
+            "days_since_last_bonus": 508,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -494,7 +494,7 @@
             "last_bonus_date": "2026-08-26",
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 5.25,
-            "days_since_last_bonus": 19,
+            "days_since_last_bonus": 21,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -509,7 +509,7 @@
             "last_bonus_date": "2026-06-06",
             "transition_rate": 0.7333,
             "avg_draws_to_transition": 4.73,
-            "days_since_last_bonus": 100,
+            "days_since_last_bonus": 102,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -524,7 +524,7 @@
             "last_bonus_date": "2026-08-05",
             "transition_rate": 0.7778,
             "avg_draws_to_transition": 3.43,
-            "days_since_last_bonus": 40,
+            "days_since_last_bonus": 42,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -538,7 +538,7 @@
             "last_bonus_date": "2026-07-25",
             "transition_rate": 0.8182,
             "avg_draws_to_transition": 4.11,
-            "days_since_last_bonus": 51,
+            "days_since_last_bonus": 53,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -553,7 +553,7 @@
             "last_bonus_date": "2025-08-20",
             "transition_rate": 1.0,
             "avg_draws_to_transition": 4.09,
-            "days_since_last_bonus": 390,
+            "days_since_last_bonus": 392,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -568,7 +568,7 @@
             "last_bonus_date": "2026-07-04",
             "transition_rate": 0.7778,
             "avg_draws_to_transition": 2.71,
-            "days_since_last_bonus": 72,
+            "days_since_last_bonus": 74,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
@@ -582,7 +582,7 @@
             "last_bonus_date": "2026-03-21",
             "transition_rate": 0.7273,
             "avg_draws_to_transition": 5.12,
-            "days_since_last_bonus": 177,
+            "days_since_last_bonus": 179,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -597,7 +597,7 @@
             "last_bonus_date": "2026-05-23",
             "transition_rate": 0.8667,
             "avg_draws_to_transition": 3.46,
-            "days_since_last_bonus": 114,
+            "days_since_last_bonus": 116,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -612,7 +612,7 @@
             "last_bonus_date": "2026-02-18",
             "transition_rate": 0.7333,
             "avg_draws_to_transition": 3.82,
-            "days_since_last_bonus": 208,
+            "days_since_last_bonus": 210,
             "most_common_category": "medium",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -623,17 +623,17 @@
         },
         "43": {
             "total_bonus_appearances": 15,
-            "transitioned_to_main": 10,
+            "transitioned_to_main": 11,
             "last_bonus_date": "2026-09-07",
-            "transition_rate": 0.6667,
-            "avg_draws_to_transition": 5.2,
-            "days_since_last_bonus": 7,
+            "transition_rate": 0.7333,
+            "avg_draws_to_transition": 4.82,
+            "days_since_last_bonus": 9,
             "most_common_category": "hot",
             "most_common_freshness": 1,
             "transition_timing_distribution": {
                 "draw_6_10": 4,
                 "draw_4_5": 3,
-                "draw_1_3": 3
+                "draw_1_3": 4
             }
         },
         "44": {
@@ -642,7 +642,7 @@
             "last_bonus_date": "2026-04-15",
             "transition_rate": 0.75,
             "avg_draws_to_transition": 4.33,
-            "days_since_last_bonus": 152,
+            "days_since_last_bonus": 154,
             "most_common_category": "cold",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -657,7 +657,7 @@
             "last_bonus_date": "2025-11-22",
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 4.25,
-            "days_since_last_bonus": 296,
+            "days_since_last_bonus": 298,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -672,7 +672,7 @@
             "last_bonus_date": "2026-06-20",
             "transition_rate": 0.6667,
             "avg_draws_to_transition": 5.08,
-            "days_since_last_bonus": 86,
+            "days_since_last_bonus": 88,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -687,7 +687,7 @@
             "last_bonus_date": "2026-07-29",
             "transition_rate": 0.5833,
             "avg_draws_to_transition": 5.0,
-            "days_since_last_bonus": 47,
+            "days_since_last_bonus": 49,
             "most_common_category": "hot",
             "most_common_freshness": 0,
             "transition_timing_distribution": {
@@ -699,9 +699,9 @@
     },
     "category_transition_weights": {
         "hot": {
-            "total": 236,
-            "transitioned": 178,
-            "rate": 0.7542,
+            "total": 237,
+            "transitioned": 179,
+            "rate": 0.7553,
             "weight": 1.07
         },
         "medium": {
@@ -725,9 +725,9 @@
             "weight": 0.96
         },
         "C1": {
-            "total": 176,
-            "transitioned": 136,
-            "rate": 0.7727,
+            "total": 177,
+            "transitioned": 137,
+            "rate": 0.774,
             "weight": 1.0
         },
         "C2+": {
@@ -738,93 +738,93 @@
         }
     },
     "timing_decay_weights": {
-        "draw_1": 0.157,
-        "draw_2": 0.1598,
-        "draw_3": 0.124,
-        "draw_4": 0.0964,
-        "draw_5": 0.1102,
-        "draw_6": 0.0909,
-        "draw_7": 0.1019,
-        "draw_8": 0.0579,
-        "draw_9": 0.0551,
-        "draw_10": 0.0468
+        "draw_1": 0.1593,
+        "draw_2": 0.1593,
+        "draw_3": 0.1236,
+        "draw_4": 0.0962,
+        "draw_5": 0.1099,
+        "draw_6": 0.0907,
+        "draw_7": 0.1016,
+        "draw_8": 0.0577,
+        "draw_9": 0.0549,
+        "draw_10": 0.0467
     },
     "current_bonus_window": {
         "last_10_bonus_numbers": [
             {
+                "number": 31,
+                "bonus_date": "2026-09-16",
+                "draws_ago": 0,
+                "category": "hot",
+                "freshness": 1
+            },
+            {
                 "number": 4,
                 "bonus_date": "2026-09-14",
-                "draws_ago": 0,
+                "draws_ago": 1,
                 "category": "cold",
                 "freshness": 0
             },
             {
                 "number": 27,
                 "bonus_date": "2026-09-12",
-                "draws_ago": 1,
+                "draws_ago": 2,
                 "category": "medium",
                 "freshness": 0
             },
             {
                 "number": 29,
                 "bonus_date": "2026-09-09",
-                "draws_ago": 2,
+                "draws_ago": 3,
                 "category": "cold",
                 "freshness": 0
             },
             {
                 "number": 43,
                 "bonus_date": "2026-09-07",
-                "draws_ago": 3,
+                "draws_ago": 4,
                 "category": "medium",
                 "freshness": 1
             },
             {
                 "number": 14,
                 "bonus_date": "2026-09-05",
-                "draws_ago": 4,
+                "draws_ago": 5,
                 "category": "hot",
                 "freshness": 1
             },
             {
                 "number": 18,
                 "bonus_date": "2026-09-02",
-                "draws_ago": 5,
+                "draws_ago": 6,
                 "category": "medium",
                 "freshness": 0
             },
             {
                 "number": 13,
                 "bonus_date": "2026-08-29",
-                "draws_ago": 6,
+                "draws_ago": 7,
                 "category": "medium",
                 "freshness": 1
             },
             {
                 "number": 34,
                 "bonus_date": "2026-08-26",
-                "draws_ago": 7,
+                "draws_ago": 8,
                 "category": "cold",
                 "freshness": 0
             },
             {
                 "number": 15,
                 "bonus_date": "2026-08-22",
-                "draws_ago": 8,
+                "draws_ago": 9,
                 "category": "medium",
                 "freshness": 0
-            },
-            {
-                "number": 43,
-                "bonus_date": "2026-08-19",
-                "draws_ago": 9,
-                "category": "hot",
-                "freshness": 1
             }
         ]
     },
     "transition_prediction_factors": {
-        "base_rate": 0.7304,
+        "base_rate": 0.7309,
         "category_multipliers": {
             "hot": 1.07,
             "medium": 1.0,
@@ -836,14 +836,14 @@
             "C2+": 0.87
         },
         "timing_peak": [
-            2,
-            1
+            1,
+            2
         ],
         "timing_critical_window": [
             1,
             5
         ],
         "expected_random_rate": 0.2128,
-        "boost_factor": 3.43
+        "boost_factor": 3.44
     }
 }

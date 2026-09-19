@@ -19,7 +19,7 @@ code to match a document.
 ## Do not take a number from here as a target
 
 The single most damaging thing a stale doc did in this repo was state that AUC 0.65-0.75 was a
-"strong result showing genuine pattern detection". Real validation AUC is **0.498-0.545** across all
+"strong result showing genuine pattern detection". Real validation AUC is **0.496-0.551** across all
 six models, and that is the **correct** answer - Irish Lotto is a fair draw. An agent that treats a
 documented number as a goal will close the gap the only way it can: by handing models capacity to
 memorise with, widening the overfit gap and breaking exactly what `tests/test_model_capacity.py`

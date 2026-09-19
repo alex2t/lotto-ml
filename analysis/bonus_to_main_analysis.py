@@ -67,7 +67,7 @@ def analyze_bonus_to_main_pattern(draw_history):
         bonus_category = bonus_detail.get('category', 'unknown')
         bonus_freshness = bonus_detail.get('current_freshness_bin', 0)
         days_since_last = bonus_detail.get('days_since_last_hit', 0)
-        recent_counts = bonus_detail.get('recent_counts', {})
+        recent_counts = bonus_detail['recent_counts']  # last_4/5/9/24 - there is no last_14 (F-7)
 
         total_bonuses += 1
 
@@ -104,9 +104,9 @@ def analyze_bonus_to_main_pattern(draw_history):
                 'category': bonus_category,
                 'freshness_bin': bonus_freshness,
                 'days_since_last': days_since_last,
-                'recent_4': recent_counts.get('last_4', 0),
-                'recent_9': recent_counts.get('last_9', 0),
-                'recent_14': recent_counts.get('last_14', 0),
+                'recent_4': recent_counts['last_4'],
+                'recent_9': recent_counts['last_9'],
+                'recent_24': recent_counts['last_24'],
                 'appearance_draw': appearance_draw,
                 'transitioned': 1
             })
@@ -116,9 +116,9 @@ def analyze_bonus_to_main_pattern(draw_history):
                 'category': bonus_category,
                 'freshness_bin': bonus_freshness,
                 'days_since_last': days_since_last,
-                'recent_4': recent_counts.get('last_4', 0),
-                'recent_9': recent_counts.get('last_9', 0),
-                'recent_14': recent_counts.get('last_14', 0),
+                'recent_4': recent_counts['last_4'],
+                'recent_9': recent_counts['last_9'],
+                'recent_24': recent_counts['last_24'],
                 'transitioned': 0
             })
 
@@ -260,7 +260,7 @@ def recommend_model_features():
         'Recent Activity': [
             'recent_4_count',
             'recent_9_count',
-            'recent_14_count',
+            'recent_24_count',
             'recent_activity_trend'
         ],
         'Pattern Features': [

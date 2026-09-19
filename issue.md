@@ -25,60 +25,11 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| 2 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
 
-**2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**No open defects; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
-## 1. C-17b — The legacy test files are not tests
-
-**Severity: Low.** Carried from the code review.
-
-Six of the eleven legacy files in `tests/` contain zero `assert` statements — they are
-print scripts that pass by not raising (counted 2026-09-19, after F-6 deleted two ensemble scripts). Their work also happens at module import, so collecting them
-under pytest executes data loading and model training:
-
-```
-test_better_metrics.py  test_interactions.py
-test_model_specific_features.py  test_rolling_integration.py
-test_rolling_stats_integration.py  test_smote_threshold.py
-```
-
-The four files added during this review (`test_walk_forward_parity.py`,
-`test_selection_invariants.py`, `test_metrics.py`, `test_no_constant_features.py` — 37 tests) are
-real and run in about 5 seconds. A plain `pytest tests/` still cannot be used because of the others.
-
-They also write real output. `tests/test_train_with_all_features.py` overwrites
-`model_metrics/model_comparison.csv` with two mock models (`Model_1_RF`, `Model_2_Logistic`) -
-found 2026-09-19 when a baseline copied from disk after running it turned out to be mock data.
-Take metric baselines from git until this is fixed.
-
-**Fix.** Convert the useful ones to assertions inside functions, delete the rest, and add a
-`pytest.ini` so `pytest` runs clean from the repo root.
-
----
-## 2. F-7 — Standalone analysis scripts read a window that has never existed
-
-**Severity: Low.** Carried from the code review, confirmed in the final pass.
-
-`analysis/bonus_to_main_analysis.py:109,121` and `analysis/feature_stability_scorer.py:82` read:
-
-```python
-'recent_14': recent_counts.get('last_14', 0)
-```
-
-`SCENARIOS` produces windows 5/6/10/25, i.e. `last_4`, `last_5`, `last_9`, `last_24`. There is no
-`last_14`, so these silently read 0 for every number — the same defect that produced the dead
-interaction features that were fixed earlier (see Appendix A).
-
-None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction path is unaffected.
-
-**Fix.** Point them at `last_24` or remove the field. Better, have them fail on a missing key rather
-than defaulting to 0, which is what let this hide.
-
----
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
@@ -107,10 +58,10 @@ Kept for the record; each is complete and covered by tests.
   it now asserts the feature is *not* carried through when the input contains it, with its counts
   corrected (12 -> 11 base, 22 -> 21).
 
-  **Note.** Running the legacy print-script `tests/test_train_with_all_features.py` overwrites
-  `model_metrics/model_comparison.csv` with mock models (`Model_1_RF`, `Model_2_Logistic`). Save a
-  metrics baseline from git (`git show HEAD:model_metrics/model_comparison.csv`), not from disk,
-  after running it. Part of C-17b.
+  **Note.** A baseline taken during this work was spoiled: the then print-script
+  `tests/test_train_with_all_features.py` overwrote `model_metrics/model_comparison.csv` with mock
+  models. The comparison above is against the committed file. Fixed in C-17b - the script is now
+  `demos/demo_train_with_all_features.py` and writes to a temp directory.
 
 - **2026-09-19 - F-19, steer lines away from popular combinations.**
   Expected *payout* is not uniform even when probability is: birthday numbers (<=31), calendar
@@ -258,6 +209,8 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-7 | Two `analysis/` scripts read `last_14`, a window that has never existed | `bonus_to_main_analysis.py`, `feature_stability_scorer.py` |
+| C-17b | Eleven feature-discovery print-scripts sat in `tests/`; one was broken, one overwrote the real metrics | moves them to `demos/`; `pytest.ini` |
 | F-21 | Bonus-to-Main trained on a C-5 full-history feature computed from last-draw categories | `config.py`, `window_saturation.py`, `bonus_to_main_trainer.py` |
 | C-6b | Training dated rows at their own draw; serving dated them at the last draw | `extractor.py`, `walk_forward.py`, `quickpick.py` |
 | F-22 | Next-draw date ignored the 2026 move to Mon/Wed/Sat draws | `walk_forward.py` |
@@ -282,6 +235,53 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-7 — Two analysis scripts read a window that has never existed
+
+**Root cause.** `analysis/bonus_to_main_analysis.py:109,121` and `analysis/feature_stability_scorer.py:82`
+read `recent_counts.get('last_14', 0)`. `SCENARIOS` (`lotto_analysis/config/config.py`) has windows
+5/6/10/25, so the draw history holds only `last_4`, `last_5`, `last_9` and `last_24` - checked in
+`data/lotto_draw_history.json` on 2026-09-19. The `.get(..., 0)` default turned the missing key into
+a constant: every `recent_14` in their output was 0.
+
+**Fix.** Pointed both at `last_24` and renamed the field `recent_24` (a column named `recent_14`
+holding a 25-draw count would mislead), including the feature lists that name it. The window keys are
+now read with `[...]`, so a missing window raises instead of defaulting to 0. Regenerated their
+outputs in `data/analysis/` (`bonus_to_main_analysis.json`, `lotto_feature_stability.json`,
+`lotto_feature_stability_rankings.csv`, `lotto_core_feature_set.json`); these are read by nothing in
+the pipeline, the models or the website.
+
+**Measured before/after.** `bonus_to_main_analysis.json`: `recent_14` was 0 in 100/100 rows;
+`recent_24` now ranges 0-6. The outputs were last generated 2025-11-17, so the rerun also takes in
+every draw since. Checked in passing: the Bonus Ball model's `recent_14` is fine - the engine computes
+it point-in-time in training (0-5) and serving (0-4); the `.get('recent_14', 0)` in
+`bonus_features.py:210` is a dead default the engine overrides.
+
+**Tests.** None: both are standalone exploratory scripts outside the pipeline. The 135 real tests pass.
+
+### C-17b — Feature-discovery scripts sat in `tests/` as if they were tests
+
+**Root cause.** Eleven scripts written to explore features as they were built (from November 2025)
+had a `test_` prefix and lived in `tests/`, so pytest collected them next to the 13 real test files.
+Checked 2026-09-19: six had no assertion at all, and the other five asserted only shape on mock data
+(`is not None`, `'best_params' in`, `len > 0`) - nothing the real tests do not cover better. One was
+broken (`test_interactions.py` read `feature_medians`, renamed `feature_thresholds` in `3f2d3aa`).
+One wrote real output: `test_train_with_all_features.py` overwrote
+`model_metrics/model_comparison.csv` with two mock models, which spoiled a baseline during F-24.
+Because of them, `pytest tests/` could not be run bare.
+
+**Fix.** Moved, not deleted - the owner may mine them for facts to show on the site. `git mv` of all
+11 to `demos/demo_*.py` (history kept), run as `python -m demos.<name>` from the root. Fixed the
+broken one; the overwriting one now writes to a temp directory; removed two dead
+`sys.path.insert(0, '/home/user/lotto-ml')` lines. Added `pytest.ini` (`testpaths = tests`), so a
+bare `pytest` runs exactly the 13 real files. New `demos/CLAUDE.md`, imported from the root one.
+
+**Measured before/after.** Before: `tests/` held 24 files, 11 not tests; `test_interactions.py`
+exited 1. After: `tests/` holds the 13 real files; `pytest` collects 135 tests and passes in ~30 s;
+all 11 demos exit 0 as modules (1-32 s each) and leave `git status` unchanged - nothing written to
+`model_metrics/` or `data/`.
+
+**Tests.** No behaviour changed, so none added. The 135 real tests and `/lotto-verify` pass.
 
 ### F-21 — Bonus-to-Main trained on a C-5 full-history feature
 

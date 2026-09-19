@@ -12,35 +12,35 @@
     },
     "anova_test": {
         "significant": true,
-        "f_statistic": 62.768039757425036,
-        "p_value": 1.2947678031855394e-13,
-        "eta_squared": 0.7404682228944315,
+        "f_statistic": 67.04264387891864,
+        "p_value": 4.3867405627959395e-14,
+        "eta_squared": 0.7529273723058373,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
-                "count": 30,
-                "mean_days_since": 5.133333333333334,
-                "std_dev": 4.150058855696763,
-                "median": 5.0,
+                "count": 29,
+                "mean_days_since": 4.931034482758621,
+                "std_dev": 4.070196858022249,
+                "median": 4.0,
                 "min": 0.0,
-                "max": 12.0
+                "max": 11.0
             },
             "medium": {
-                "count": 7,
-                "mean_days_since": 18.857142857142858,
-                "std_dev": 3.1320159337914952,
-                "median": 19.0,
-                "min": 16.0,
-                "max": 23.0
+                "count": 8,
+                "mean_days_since": 17.75,
+                "std_dev": 4.803272693844122,
+                "median": 16.0,
+                "min": 14.0,
+                "max": 25.0
             },
             "cold": {
                 "count": 10,
-                "mean_days_since": 56.4,
+                "mean_days_since": 58.4,
                 "std_dev": 26.567314923082122,
-                "median": 52.5,
-                "min": 30.0,
-                "max": 121.0
+                "median": 54.5,
+                "min": 32.0,
+                "max": 123.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -49,38 +49,38 @@
         "bonferroni_corrected_alpha": 0.016666666666666666,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": -8.186050414577444,
-                "p_value": 1.2076802285899407e-09,
+                "t_statistic": -7.593891084800833,
+                "p_value": 6.65153214089732e-09,
                 "significant": true,
-                "mean_difference": -13.723809523809525
+                "mean_difference": -12.818965517241379
             },
             "hot_vs_cold": {
-                "t_statistic": -10.45569868446144,
-                "p_value": 9.752059375747333e-13,
+                "t_statistic": -10.74227335123115,
+                "p_value": 6.287679505975159e-13,
                 "significant": true,
-                "mean_difference": -51.266666666666666
+                "mean_difference": -53.46896551724138
             },
             "medium_vs_cold": {
-                "t_statistic": -3.6849017409824714,
-                "p_value": 0.0022062781207270823,
+                "t_statistic": -4.247258935113863,
+                "p_value": 0.000614699333039166,
                 "significant": true,
-                "mean_difference": -37.542857142857144
+                "mean_difference": -40.65
             }
         },
         "all_significant": true
     },
     "category_distribution": {
         "significant": true,
-        "chi2_stat": 19.95744680851064,
-        "p_value": 4.637623511168251e-05,
+        "chi2_stat": 17.148936170212767,
+        "p_value": 0.00018886688842073752,
         "category_counts": {
-            "hot": 30,
-            "medium": 7,
+            "hot": 29,
+            "medium": 8,
             "cold": 10
         },
         "category_percentages": {
-            "hot": 63.829787234042556,
-            "medium": 14.893617021276595,
+            "hot": 61.702127659574465,
+            "medium": 17.02127659574468,
             "cold": 21.27659574468085
         },
         "interpretation": "Category sizes are imbalanced (some over/under-represented)"
@@ -90,21 +90,21 @@
         "medium_cold_overlap": false,
         "categories_distinct": true,
         "suggested_thresholds": {
-            "hot_medium_cutoff": 5.0,
-            "medium_cold_cutoff": 16.0
+            "hot_medium_cutoff": 4.995399999999998,
+            "medium_cold_cutoff": 14.0
         },
         "current_ranges": {
             "hot": {
                 "min": 0.0,
-                "max": 12.0
+                "max": 11.0
             },
             "medium": {
-                "min": 16.0,
-                "max": 23.0
+                "min": 14.0,
+                "max": 25.0
             },
             "cold": {
-                "min": 30.0,
-                "max": 121.0
+                "min": 32.0,
+                "max": 123.0
             }
         }
     },
