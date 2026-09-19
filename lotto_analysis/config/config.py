@@ -96,3 +96,6 @@ ODD_EVEN_PATTERNS_7_NUMBERS = [
 ODD_EVEN_PATTERNS_6_NUMBERS = [
     "6_0", "5_1", "4_2", "3_3", "2_4", "1_5", "0_6"
 ]
+
+# First number above the 1-31 birthday range most players pick from (F-19)
+HIGH_NUMBER_FROM = 32

@@ -16,7 +16,7 @@ from lotto_analysis.config import (
     OUTPUT_FILE_MAIN, OUTPUT_FILE_PERIODS, OUTPUT_FILE_HISTORY,
     OUTPUT_FILE_7_NUMBERS, OUTPUT_FILE_DISTRIBUTIONS,
     SCENARIOS, MAX_NUMBER,
-    FRESHNESS_WINDOW_INDEX
+    FRESHNESS_WINDOW_INDEX, HIGH_NUMBER_FROM
 )
 from lotto_analysis.core.data_loader import load_lotto_data
 from lotto_analysis.analyzers.pattern_analyzer import process_pattern_analysis
@@ -27,6 +27,7 @@ from lotto_analysis.analyzers.freshness_analyzer_7_numbers import (
 )
 from lotto_analysis.analyzers.distribution_analyzer import (
     analyze_distribution_patterns,
+    analyze_high_number_distribution,
     calculate_per_number_distribution_stats
 )
 from lotto_analysis.analyzers.bonus_analyzer import generate_bonus_analysis
@@ -183,6 +184,11 @@ def main():
     for bin_name, stats in sum_7_stats.items():
         if stats['count'] > 0:
             print(f"  {bin_name}: {stats['count']} draws ({stats['percentage']:.2f}%)")
+
+    high_number_stats = analyze_high_number_distribution(draw_history_log)
+    print(f"\nMain numbers >= {HIGH_NUMBER_FROM} per draw (observed vs fair draw):")
+    for k, stats in high_number_stats.items():
+        print(f"  {k}: {stats['count']} draws ({stats['percentage']:.2f}%, fair {stats['fair_percentage']:.2f}%)")
 
     # ===== CALCULATE PER-NUMBER DISTRIBUTION STATS =====
     print("\n" + "=" * 70)
@@ -346,7 +352,11 @@ def main():
         "analysis_6_main_numbers": {
             "description": "Analysis of 6 main numbers (excluding bonus)",
             "odd_even_patterns": odd_even_6_stats,
-            "sum_distributions": sum_6_stats
+            "sum_distributions": sum_6_stats,
+            "high_number_distribution": {
+                "high_from": HIGH_NUMBER_FROM,
+                "by_count": high_number_stats
+            }
         },
         "analysis_all_7_numbers": {
             "description": "Analysis of all 7 numbers (6 main + bonus)",

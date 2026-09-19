@@ -4,7 +4,7 @@ import pandas as pd
 import json
 from pathlib import Path
 from typing import Dict, Any
-from view.utils.data_loader import load_trigger_data
+from view.utils.data_loader import load_trigger_data, load_high_number_distribution
 from view.utils.hmc_calculator import (
     calculate_6_ball_hmc_probabilities,
     get_6_ball_pattern_breakdown
@@ -39,6 +39,43 @@ def extract_patterns_data(odds_data: Dict[str, Any]) -> pd.DataFrame:
         return df
     else:
         return pd.DataFrame()
+
+
+def show_high_number_breakdown():
+    """Share of past draws with 0-6 main numbers >= 32, from drawpick.py Phase 6 (F-19)."""
+    distribution = load_high_number_distribution()
+    high_from = distribution['high_from']
+    by_count = distribution['by_count']
+    total = sum(v['count'] for v in by_count.values())
+
+    st.header(f"High Numbers ({high_from} and above) per Draw")
+    st.markdown(
+        f"How many of each draw's 6 main numbers were {high_from} or above, over {total} past "
+        f"draws. Numbers 1-31 are the birthday range many players pick from."
+    )
+
+    cols = st.columns(3)
+    for col, k in zip(cols, ('1', '2', '3')):
+        with col:
+            st.metric(f"{k} number(s) >= {high_from}", f"{by_count[k]['percentage']:.1f}% of draws",
+                      delta=f"{by_count[k]['count']} draws", delta_color="off")
+
+    st.dataframe(
+        pd.DataFrame([
+            {
+                f"Numbers >= {high_from}": int(k),
+                "Draws": v['count'],
+                "Share of draws (%)": v['percentage'],
+                "Fair draw (%)": v['fair_percentage'],
+            }
+            for k, v in by_count.items()
+        ]),
+        hide_index=True,
+    )
+    st.caption(
+        "Fair draw = the share expected if every number is equally likely. Past draws match it "
+        "closely, so no count is more likely to win; the breakdown shows what real draws look like."
+    )
 
 
 def show():
@@ -404,6 +441,9 @@ def show():
             except Exception as e:
                 st.error(f"Invalid input: {str(e)}")
 
+    st.markdown("---")
+
+    show_high_number_breakdown()
     st.markdown("---")
 
     # --- CONSECUTIVE PATTERNS ANALYSIS ---

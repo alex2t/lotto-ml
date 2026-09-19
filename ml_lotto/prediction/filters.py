@@ -71,23 +71,22 @@ def get_filter_statistics() -> Dict[str, Any]:
     """
     Get statistics about filter coverage and expected elimination rates.
 
-    Returns:
-        Dictionary with filter statistics based on historical data analysis
+    Eliminations are exact shares of all C(47, 6) lines, computed 2026-09-19.
     """
     return {
         'odd_even_filter': {
             'description': 'Enforces 2-4 odd numbers (optimal: 3 odd / 3 even)',
-            'expected_elimination': '21.27% (eliminates extreme patterns: 0-1 odd, 5-6 odd)'
+            'expected_elimination': '18.82% (eliminates extreme patterns: 0-1 odd, 5-6 odd)'
         },
         'sum_constraint': {
             'description': f'Enforces sum between {MIN_SUM} and {MAX_SUM} (empirical ~95% historical range)',
-            'expected_elimination': '5.2% (eliminates uncharacteristically low or high totals)'
+            'expected_elimination': '4.82% (eliminates uncharacteristically low or high totals)'
         },
         'range_distribution': {
             'description': f'Enforces minimum span of {MIN_SPAN} across selected main balls',
-            'expected_elimination': '2.8% (eliminates tight single-decade clumps)'
+            'expected_elimination': '3.28% (eliminates tight single-decade clumps)'
         },
         'combined_impact': {
-            'total_elimination': '~26.5% of mathematically possible 6-number combinations eliminated'
+            'total_elimination': '24.73% of mathematically possible 6-number combinations eliminated'
         }
     }

@@ -44,9 +44,9 @@ def quotas(h, m, c):
     return {'hot': h, 'medium': m, 'cold': c}
 
 
-def solve(world, q, target=TARGET_PATTERN, penalties=(), pre=()):
+def solve(world, q, target=TARGET_PATTERN, penalties=(), pre=(), min_high=0):
     scores, categories, bins = world
-    return solve_line(scores, categories, bins, q, target, set(penalties), list(pre))
+    return solve_line(scores, categories, bins, q, target, set(penalties), list(pre), min_high)
 
 
 def count(numbers, lookup, key):
@@ -170,3 +170,35 @@ def test_different_probabilities_produce_different_lines(world):
     line_a = solve(world, quotas(4, 1, 1))
     line_b = solve((scores[::-1].copy(), categories, bins), quotas(4, 1, 1))
     assert line_a != line_b
+
+
+def high_count(numbers):
+    return sum(1 for n in numbers if n >= 32)
+
+
+BIRTHDAY = np.where(NUMS <= 31, 0.9, 0.1) + NUMS * 1e-4    # 1-31 strongly preferred
+
+
+@pytest.mark.parametrize('min_high', [2, 3])
+def test_minimum_high_numbers_is_enforced_when_scores_favour_low_numbers(min_high):
+    """F-19: scores favouring 1-31 make the best line all-birthday, so only the constraint can lift it."""
+    world = make_world(BIRTHDAY)
+    assert high_count(solve(world, quotas(2, 2, 2))) < min_high, "world does not stress the rule"
+
+    line = solve(world, quotas(2, 2, 2), min_high=min_high)
+    assert high_count(line) >= min_high
+    assert validate_line(line) == (True, [])
+
+
+def test_minimum_is_a_floor_not_a_target():
+    """Other features may add more high numbers: the 'high' world must keep all it wants."""
+    world = make_world(SKEWED['high'])
+    assert high_count(solve(world, quotas(2, 2, 2), min_high=2)) > 2
+
+
+def test_minimum_counts_the_whole_ticket_including_pre_assigned():
+    world = make_world(BIRTHDAY)
+    pre = [40]
+    selected = solve(world, quotas(2, 1, 1), target={0: 2, 1: 1, 2: 1}, pre=pre, min_high=2)
+    assert high_count(pre + selected) >= 2
+    assert high_count(selected) == 1, "the pre-assigned 40 already counts toward the minimum"
