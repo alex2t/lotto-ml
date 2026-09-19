@@ -37,10 +37,15 @@ def generate_bonus_to_main_predictions(
         Tuple of (selected_numbers, all_predictions_data)
         - selected_numbers: List of predicted numbers (length = num_predictions)
         - all_predictions_data: List of dicts with number, probability, category for top 6
+
+    Raises:
+        ValueError: the bonus window is empty (F-42).
     """
     if not bonus_positions:
-        print("\n⚠️  No numbers in current bonus window")
-        return []
+        raise ValueError(
+            "Empty bonus window: none of the last 10 draws has a bonus ball. "
+            "The draw history is incomplete - fix it rather than predicting from nothing."
+        )
 
     # Most recent first
     candidates = sorted(bonus_positions, key=bonus_positions.get)
