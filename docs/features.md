@@ -35,14 +35,16 @@ print('missing:', sorted(req - produced))
 
 | Model | Algorithm | Named features |
 |:--|:--|--:|
-| Momentum Specialist | logistic_regression | 15 |
-| Jackpot Optimizer | random_forest | 11 |
-| Complexity Explorer | xgboost | 23 |
+| Momentum Specialist | logistic_regression | 14 |
+| Jackpot Optimizer | random_forest | 10 |
+| Complexity Explorer | xgboost | 22 |
 | Conservative Pool Generator | catboost | 5 |
-| Bonus Ball Predictor | logistic_regression | 22 |
-| Bonus-to-Main Transition | logistic_regression | 24 |
+| Bonus Ball Predictor | logistic_regression | 21 |
+| Bonus-to-Main Transition | logistic_regression | 22 |
 
-Counts include the uppercase group markers, each of which expands to a family.
+Counts include the uppercase group markers, each of which expands to a family. Counted from
+`ml_lotto/config.py` on 2026-09-19; every row but the Pool Generator was one too high, and
+Bonus-to-Main lost `category` in F-41.
 
 ## Group markers
 
@@ -62,6 +64,8 @@ count, not the config length.
 ## Families
 
 **Core** - `total_count` (all 7 balls), `days_since_last`, `category` (hot/medium/cold by recency).
+`category` is a string: the engine and the interactions use it, but no model may select it as a
+column (F-41).
 Computed in `features/base.py`.
 
 **Recent activity windows** - `recent_4`, `recent_5`, `recent_9`, `recent_24`, counted over the

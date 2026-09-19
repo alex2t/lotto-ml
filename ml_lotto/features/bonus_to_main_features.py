@@ -10,8 +10,6 @@ UPDATED v3.10: Uses LIVE bonus window calculation instead of stale JSON data
 
 from typing import Dict, Any, List
 
-import numpy as np
-
 
 def extract_bonus_to_main_features_dict(
     bonus_to_main_data: Dict[str, Any],
@@ -308,7 +306,8 @@ def bonus_to_main_row(
     Build one Bonus-to-Main model row, the same way in training and serving (F-40).
 
     The engine's point-in-time values for the number, with its place in the bonus window.
-    A non-numeric value (category) becomes 0.0, as it always has - see F-41.
+    A non-numeric value raises: it used to become 0.0, which made `category` a constant
+    column in every training and serving row (F-41).
     """
     row = {**point_in_time_row, 'is_in_bonus_window': 1.0, 'draws_since_bonus': float(draws_since_bonus)}
-    return [float(row[f]) if isinstance(row[f], (int, float, np.number)) else 0.0 for f in feature_names]
+    return [float(row[f]) for f in feature_names]
