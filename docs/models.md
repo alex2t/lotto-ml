@@ -63,10 +63,11 @@ Documented because several older notes describe these as active. They are not.
 **SMOTE is off.** `trainer.py` accepts `use_smote` (default `False`) and no model config overrides
 it. The class imbalance is handled by threshold selection instead, not by synthetic oversampling.
 
-**Ensemble voting is off in the main pipeline.** `ENSEMBLE_MODE = False`. The voting strategies
-(majority, threshold, weighted, unanimous) exist in `ml_lotto/prediction/ensemble.py` and are
-reachable through `scripts/ensemble_predict.py` as a manual step, but `quickpick.py` does not use
-them. `ENSEMBLE_RUNS = 15` applies only to the standalone script.
+**There is no ensemble.** Nothing combines the models' outputs; each model writes its own line.
+The voting module, its CLI, the seed-rerun script and the `ENSEMBLE_MODE` / `ENSEMBLE_RUNS` flags
+were deleted on 2026-09-19 (F-6 in `issue.md`) - none was reachable from `quickpick.py`, and
+combining models that each sit at chance yields a model at chance. Verified against the code
+2026-09-19.
 
 **Feature selection is per-model**, not global - each config carries its own
 `feature_selection` block with correlation and importance thresholds.

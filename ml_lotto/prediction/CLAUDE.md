@@ -10,7 +10,6 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 | `filters.py` | the ticket-rule bounds and `validate_line()`; no repair |
 | `pool_generator.py` | ranked candidate pool for Model 4 |
 | `wheel.py` | 4-line covering-design wheel over the pool's top 8 |
-| `ensemble.py` | majority / threshold / weighted / unanimous voting |
 | `bonus_predictor.py` | 3 diverse bonus-ball predictions |
 | `bonus_to_main_predictor.py` | bonus-to-main transition picks |
 
@@ -60,8 +59,9 @@ let a constraint look satisfied while not binding (F-8, F-14).
   Repairing one line would break the cover, so they are written as `Wheel Line n:` - a format
   `/lotto-verify` does not parse as a model ticket. It is variance management, not an edge: 4
   unrelated lines catch a match-3 more often (~7.2%) at the same expected value.
-- `ENSEMBLE_MODE` in `../config.py` is `False`; `ensemble.py` is reachable from
-  `scripts/ensemble_predict.py` but is not part of the default `quickpick.py` run.
+- **There is no ensemble.** Each model writes its own line. The voting module was deleted as dead
+  code (F-6): it was never reachable from `quickpick.py`, and combining models at chance cannot beat
+  chance. Do not re-add one unless a model first passes the F-17 permutation check.
 - Invariants are covered by `../../tests/test_selection_invariants.py` and
   `../../tests/test_prediction_alignment.py`. A filter you cannot express as a test on a generated
   line probably belongs somewhere else.

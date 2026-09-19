@@ -1,7 +1,7 @@
 # tests/
 
 **Only thirteen files in this folder are real tests. Do not run `pytest tests/` bare** - the other
-thirteen are legacy print-scripts that run model training at import and will take minutes, hang, or
+eleven are legacy print-scripts that run model training at import and will take minutes, hang, or
 fail on missing artifacts.
 
 ## The thirteen real tests (127 tests, ~50s)
@@ -36,7 +36,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 
 ## The legacy print-scripts
 
-`test_better_metrics.py`, `test_ensemble.py`, `test_ensemble_predict.py`, `test_hyperparameter_tuning.py`,
+`test_better_metrics.py`, `test_hyperparameter_tuning.py`,
 `test_integrated_training.py`, `test_interactions.py`, `test_model_specific_features.py`,
 `test_rolling_integration.py`, `test_rolling_stats_integration.py`, `test_smote_threshold.py`,
 `test_train_with_all_features.py`, `test_unified_bonus_features.py`, `test_unified_bonus_to_main_features.py`.
