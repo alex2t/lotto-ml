@@ -323,6 +323,9 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         draw_history_log[draw_date] = {
             "draw_index": i,
             "draw_date": draw_date,
+            # The drawn balls, for the website (F-25): Pattern Comparison and the validator read these.
+            "main_numbers": main_winning_numbers,
+            "bonus_number": bonus_number,
             "hmc_summary": {
                 "hot_count": rating_counts['hot'],
                 "medium_count": rating_counts['medium'],
