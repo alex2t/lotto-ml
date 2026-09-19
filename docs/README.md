@@ -31,7 +31,8 @@ than working around it.
 ## What is deliberately not here
 
 - **Open defects** - `issue.md` at the repo root.
-- **Architecture, scraping plan, VPS/automation plan** - `review.md` at the repo root.
+- **Architecture** - `README.md` at the repo root.
+- **Roadmap: Next.js site, Docker/VPS, n8n scraping** - `plan.md` at the repo root.
 - **Per-folder rules and invariants** - the `CLAUDE.md` in each folder.
 - **Analysis and utility script inventories** - `analysis/CLAUDE.md` and `scripts/CLAUDE.md`.
 
