@@ -340,6 +340,13 @@ Enter 6 numbers to check odd/even ratio against historical patterns.
 
 **Strategy:** Aim for 2-4 odd numbers (historically most common).
 
+### High Numbers (32 and above) per Draw
+
+How many of each past draw's 6 main numbers were 32 or above: headline shares for 1, 2 and 3
+such numbers, and a table for 0-6 next to what a fair draw gives (added 2026-09-19, F-19). About
+a quarter of draws have 1, a third have 2, a quarter have 3. Numbers 1-31 are the birthday range
+many players use; the breakdown shows what real draws look like when you build your own line.
+
 ---
 
 ## 4. Freshness Analysis
@@ -383,7 +390,7 @@ Select C0/C1/C2 counts (must total 6) to see combined probability.
 
 Enter your 6 numbers (from quickpick.py or manual selection).
 
-### 📊 Validation Results (5 Dimensions)
+### Validation Results (5 scored checks + 1 informational)
 
 #### 1️⃣ **Odd/Even Ratio**
 - **Realistic:** 2-4 odd numbers (Score: 100)
@@ -410,6 +417,13 @@ Enter your 6 numbers (from quickpick.py or manual selection).
 - **Good:** Numbers in 4+ ranges, max 3 per range (Score: 80-100)
 - **Fair:** Numbers in 3 ranges (Score: 60-79)
 - **Poor:** Numbers clustered in 1-2 ranges (Score: 20-59)
+
+#### 6. **High Numbers (32 and above)** - information only, not scored
+- Shows how many of your numbers are 32 or above, and a table of how often past draws had 0-6
+  such numbers next to what a fair draw gives (added 2026-09-19, F-19).
+- It does not change your chance of winning - every line is equally likely. Numbers 1-31 are
+  the birthday range many players use, so a line built mostly from them is more likely to share a
+  prize. Use it to decide how your own line should look.
 
 ### ⚠️ Automated Anomaly Detection
 

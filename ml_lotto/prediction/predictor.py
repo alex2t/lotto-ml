@@ -10,6 +10,7 @@ UPDATED: v3.6 - Modified for 5 main numbers (bonus assigned separately)
 import numpy as np
 from typing import Dict, Any, List
 from ml_lotto.config import MAX_NUMBER
+from lotto_analysis.config.config import HIGH_NUMBER_FROM
 from ml_lotto.prediction.constraints import (
     get_optimal_pattern_distribution,
     categorize_numbers_by_freshness,
@@ -206,6 +207,8 @@ def generate_all_picks(
             print(f"  Selecting {h}H + {m}M + {c}C + {g}G = {h+m+c+g} additional numbers")
         else:
             print(f"  HMC Ratio: {h}H + {m}M + {c}C + {g}G = {h+m+c+g} numbers")
+        if model_config['min_high_numbers']:
+            print(f"  At least {model_config['min_high_numbers']} numbers >= {HIGH_NUMBER_FROM}")
         
         # Numbers on earlier lines are avoided unless unavoidable - the solver's flat
         # penalty is the only diversity mechanism (F-16). Pre-assigned numbers are exempt.
@@ -248,7 +251,8 @@ def generate_all_picks(
             {'hot': h, 'medium': m, 'cold': c},
             model_target,
             penalty_set_for_model,
-            model_pre_assigned
+            model_pre_assigned,
+            model_config['min_high_numbers']
         )
         achieved_pattern = pattern_string(selected_numbers, number_categories, model_target)
 

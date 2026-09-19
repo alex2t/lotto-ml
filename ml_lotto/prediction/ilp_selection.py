@@ -10,6 +10,7 @@ Pick a line by integer linear programming instead of greedy picking plus repair.
                MIN_SUM <= sum of the line <= MAX_SUM
                MIN_ODD <= odd numbers     <= MAX_ODD
                max - min >= MIN_SPAN
+               numbers >= HIGH_NUMBER_FROM >= min_high   (per model, F-19)
 
 This is the only diversity mechanism (F-16). Scores are probabilities below 1, so two
 lines' score sums differ by less than LINE_SIZE; a PENALTY_COST of LINE_SIZE therefore
@@ -30,6 +31,7 @@ from scipy.optimize import Bounds, LinearConstraint, milp
 from ml_lotto.config import MAX_NUMBER
 from ml_lotto.prediction.constraints import LINE_SIZE
 from ml_lotto.prediction.filters import MAX_ODD, MAX_SUM, MIN_ODD, MIN_SPAN, MIN_SUM
+from lotto_analysis.config.config import HIGH_NUMBER_FROM
 
 NUMBERS = np.arange(1, MAX_NUMBER + 1)
 PENALTY_COST = float(LINE_SIZE)
@@ -43,8 +45,14 @@ def solve_line(
     target_pattern: Dict[int, int],
     penalty_numbers: Set[int],
     pre_assigned: List[int],
+    min_high: int,
 ) -> List[int]:
-    """Return the sorted selected numbers (pre-assigned excluded) of the optimal line."""
+    """
+    Return the sorted selected numbers (pre-assigned excluded) of the optimal line.
+
+    min_high is the model's floor on numbers >= HIGH_NUMBER_FROM across the whole ticket;
+    0 leaves them to the model's probabilities.
+    """
     n = MAX_NUMBER
     fixed = np.isin(NUMBERS, pre_assigned)
     free = ~fixed
@@ -70,6 +78,7 @@ def solve_line(
         add(row((in_bin & free).astype(float)), count, np.inf)
     add(row(NUMBERS.astype(float)), MIN_SUM, MAX_SUM)
     add(row(odd.astype(float)), MIN_ODD, MAX_ODD)
+    add(row((NUMBERS >= HIGH_NUMBER_FROM).astype(float)), min_high, np.inf)
 
     eye = np.eye(n)
     for i in range(n):
@@ -92,7 +101,8 @@ def solve_line(
     )
     if not result.success:
         raise ValueError(
-            f"No line satisfies quotas {quotas}, freshness {target_pattern} and the "
+            f"No line satisfies quotas {quotas}, freshness {target_pattern}, {min_high}+ numbers >= "
+            f"{HIGH_NUMBER_FROM} and the "
             f"ticket filters with pre-assigned {sorted(pre_assigned)}: {result.message}"
         )
 

@@ -107,6 +107,24 @@ def load_trigger_data() -> Tuple[pd.DataFrame, Dict[str, Any], List[str], List[s
 
 
 @st.cache_data
+def load_high_number_distribution() -> Dict[str, Any]:
+    """
+    How many of each draw's 6 main numbers were >= 32, from lotto_distribution_stats.json.
+
+    Returns {'high_from': 32, 'by_count': {'0'..'6': {count, percentage, odds,
+    fair_percentage}}}. Written by drawpick.py Phase 6 (F-19).
+    """
+    file_path = Path('data/lotto_distribution_stats.json')
+    with open(file_path, 'r') as f:
+        stats = json.load(f)
+    main_stats = stats['analysis_6_main_numbers']
+    if 'high_number_distribution' not in main_stats:
+        st.error(f"{file_path} has no high_number_distribution. Re-run drawpick.py.")
+        st.stop()
+    return main_stats['high_number_distribution']
+
+
+@st.cache_data
 def load_draw_history() -> Dict[str, Any]:
     """Load draw history data from JSON file."""
     file_path = Path('data/lotto_draw_history.json')

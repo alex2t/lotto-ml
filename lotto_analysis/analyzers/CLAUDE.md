@@ -19,7 +19,7 @@ writes into either, you have changed the serving distribution and must change
 | 3 | `pattern_analyzer.py` | feeds `lotto_odds_results.json` |
 | 4 | `consecutive_analyzer.py` | feeds pattern output |
 | 5 | `freshness_analyzer_7_numbers.py` | `lotto_7_number_freshness_results.json` |
-| 6-7 | `distribution_analyzer.py` | `lotto_distribution_stats.json` |
+| 6-7 | `distribution_analyzer.py` | `lotto_distribution_stats.json` (odd/even, sums, and `high_number_distribution` - draws by count of main numbers >= 32, for the dashboard) |
 | 8 | `bonus_analyzer.py` | `lotto_bonus_analysis.json` |
 | 9 | `bonus_to_main_analyzer.py` | `lotto_bonus_to_main_patterns.json` |
 | 10 | `consecutive_pair_analyzer.py`, `odd_even_analyzer.py`, `range_spread_analyzer.py`, `sum_contribution_analyzer.py`, `freshness_pattern_analyzer.py`, `hmc_categorization_analyzer.py`, `long_term_pattern_analyzer.py` | the seven `*_validated.json` / `lotto_long_term_patterns.json` |
