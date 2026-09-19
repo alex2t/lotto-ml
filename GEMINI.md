@@ -177,8 +177,8 @@ Always execute commands inside the project's virtual environment:
 # Launch the Streamlit dashboard
 .\venv\Scripts\streamlit.exe run app.py
 
-# Execute the 12 verified test suites (120 tests, ~50s)
-.\venv\Scripts\python.exe -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py tests/test_metrics.py tests/test_no_constant_features.py tests/test_freshness_target.py tests/test_threshold_holdout.py tests/test_model_capacity.py tests/test_prediction_alignment.py tests/test_scraper_sources.py tests/test_wheel.py tests/test_permutation_check.py tests/test_high_number_distribution.py -q
+# Execute the 13 verified test suites (127 tests, ~50s)
+.\venv\Scripts\python.exe -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py tests/test_metrics.py tests/test_no_constant_features.py tests/test_freshness_target.py tests/test_threshold_holdout.py tests/test_model_capacity.py tests/test_prediction_alignment.py tests/test_scraper_sources.py tests/test_wheel.py tests/test_permutation_check.py tests/test_high_number_distribution.py tests/test_bonus_predictor.py -q
 
 # Run the comprehensive lotto verification suite
 .\venv\Scripts\python.exe .claude/skills/lotto-verify/verify.py
@@ -207,7 +207,7 @@ python .claude/skills/lotto-verify/verify.py
 | **`view/pages/`** | `app.py`, `view/pages/*.py` | 8-page Streamlit web dashboard. Strictly read-only; displays facts for user enjoyment. |
 | **`scripts/`** | `scrape_lotto.py`, `ensemble_predict.py` | Independent utilities; web scraper for new draw ingestion. |
 | **`analysis/`** | `bonus_analysis.py`, exploratory scripts | Phase 11 statistical analysis; exploratory data science scripts. |
-| **`tests/`** | 12 verified test files (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
+| **`tests/`** | 13 verified test files (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
 | **`docs/`** | `metrics.md`, `features.md`, `models.md`, `json-artifacts.md` | Reference documentation. Code and artifacts always supersede docs in conflicts. |
 | **`data/`** | `irish500.csv`, `*.json` | Ground-truth historical draws and generated analytical artifacts. |
 | **`model_metrics/`** | `model_comparison.csv`, `*.png` | Evaluation scoreboards, ROC/PR curves, and calibration plots. |

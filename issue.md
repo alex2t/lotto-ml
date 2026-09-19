@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-18
+**Last updated:** 2026-09-19
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -25,35 +25,16 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-5** | `assign_bonus_to_models` divides by zero on an empty list | Low (latent) | XS |
-| 2 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
-| 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
-| 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 1 | **F-6** | Ensemble machinery is unreachable from the pipeline | Low | M |
+| 2 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
+| 3 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
+| 4 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
 
-**5 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
-
----
-
-## 1. F-5 — `assign_bonus_to_models` divides by zero on an empty list
-
-**Severity: Low, latent.**
-
-`ml_lotto/prediction/bonus_predictor.py:150`:
-
-```python
-bonus_idx = (model_idx - 1) % len(bonus_predictions)
-```
-
-`ZeroDivisionError` when `bonus_predictions` is empty. `generate_bonus_predictions` builds
-`available_pool` by excluding every number with `was_bonus_last_10 == 1`; it returns fewer than
-`num_predictions` entries when the pool is thin, and could in principle return none.
-
-**Fix.** Return an empty assignment dict when there are no predictions and let Step 10's existing
-`None` handling take over.
+**4 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
-## 2. F-6 — The ensemble machinery cannot be reached from the pipeline
+
+## 1. F-6 — The ensemble machinery cannot be reached from the pipeline
 
 **Severity: Low.**
 
@@ -71,7 +52,7 @@ the config flag rather than leaving 341 lines that look load-bearing. With all f
 chance, ensembling them will not help — resolve the modelling question first.
 
 ---
-## 3. C-6b — The two feature paths use different serving reference dates
+## 2. C-6b — The two feature paths use different serving reference dates
 
 **Severity: Low.** Carried from the code review.
 
@@ -89,7 +70,7 @@ predicted should be measured as of that draw — so move `extractor.py` onto the
 date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
 
 ---
-## 4. C-17b — The legacy test files are not tests
+## 3. C-17b — The legacy test files are not tests
 
 **Severity: Low.** Carried from the code review.
 
@@ -111,7 +92,7 @@ real and run in about 5 seconds. A plain `pytest tests/` still cannot be used be
 `pytest.ini` so `pytest` runs clean from the repo root.
 
 ---
-## 5. F-7 — Standalone analysis scripts read a window that has never existed
+## 4. F-7 — Standalone analysis scripts read a window that has never existed
 
 **Severity: Low.** Carried from the code review, confirmed in the final pass.
 
@@ -281,6 +262,8 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-20 | Bonus prediction 2 claimed category diversity it never applied | `bonus_predictor.py` |
+| F-5 | A too-small bonus pool crashed with a bare IndexError; the registered divide-by-zero was unreachable | `bonus_predictor.py` |
 | F-16 | Diversity penalty applied twice; the configured percentage barely mattered | `ilp_selection.py`, `predictor.py` (deletes `penalties.py`) |
 | F-15 | Config feature names the serving path never produces were dropped silently | `config.py`, `extractor.py` |
 | C-15b | Tree models memorised the training set (train/val AUC gap 0.383) | `config.py`, `hyperparameter_tuning.py` |
@@ -298,6 +281,52 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-20 — Bonus prediction 2 claimed category diversity it never applied
+
+**Root cause.** `ml_lotto/prediction/bonus_predictor.py` chose prediction 2 with
+`cat != used_categories` - a string compared to a set, always true - so it took the second-highest
+probability whatever its category, while the log printed "Category diversity". Prediction 3 used
+`not in` and was correct. Found 2026-09-19 while fixing F-5.
+
+**Fix.** `cat not in used_categories`. The rule the docstring describes now holds: prediction 2 is
+the best number from a different hot/medium/cold category than prediction 1, and prediction 3 from
+a category not used yet, so the three span all three categories when the pool allows.
+
+**Measured before/after.** In a case where the top two share a category (47 and 46 both cold), the
+old code returned `[47, 46, 45]` - two colds - and the fix returns `[47, 45, 44]`, one of each. The
+real run is unchanged, `[45, 10, 19]` (cold, medium, hot): its top two already differed. Picks and
+metrics identical; bonus probabilities are at chance, so this is about what the output claims, not
+about odds.
+
+**Tests.** `tests/test_bonus_predictor.py::test_three_picks_span_three_categories_when_the_top_two_share_one`
+fails on the old comparison and passes on the fix.
+
+### F-5 — A too-small bonus pool crashed with a bare IndexError
+
+**Root cause.** The register said `assign_bonus_to_models` divides by zero on an empty list and that
+`generate_bonus_predictions` could return fewer picks than requested. Reproduced 2026-09-19 with a
+stub model: the second claim is false. With a pool of 0, 1 or 2 numbers after recent-bonus
+exclusions, `generate_bonus_predictions` raised `IndexError: list index out of range` itself
+(`available_pool[0]`, `available_pool[i]`, `candidates[0]`), so an empty list never reached
+`assign_bonus_to_models` - the division by zero was unreachable from `quickpick.py`. The real defect
+was an unchecked precondition failing with an unexplained error. In practice the pool is never thin:
+the bonus window is a `deque(maxlen=10)` (`walk_forward.py:145`), so at most 10 numbers are excluded
+and at least 37 remain.
+
+**Fix.** `generate_bonus_predictions` raises `ValueError` naming the pool size and the request when
+the pool is smaller than `num_predictions`. The fix the register proposed - return `{}` and let the
+`None` handling take over - was not applied: it is a silent default, and would have produced a run
+with no bonus ball and no error.
+
+**Measured before/after.** Pools of 0/1/2: `IndexError` before, `ValueError` with a message after.
+Pool of 3 and the real pipeline: unchanged. No metric or pick can move - the guard is never reached
+with a 10-draw window.
+
+**Tests.** `tests/test_bonus_predictor.py` (new, 6 tests): pools of 0, 1 and 2 raise `ValueError`
+(the three fail on the old code with `IndexError`); a pool of exactly 3 uses all of it; with the
+widest real exclusion (10 numbers) the three picks are distinct and none excluded; every model gets
+one of the predictions.
 
 ### F-16 — The diversity penalty was applied twice
 
