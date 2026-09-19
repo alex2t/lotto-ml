@@ -307,7 +307,7 @@ class AnomalyDetector:
         recent_draws = sorted(draw_history.items(), reverse=True)[:20]  # Last 20 draws
 
         for date, draw_data in recent_draws:
-            main_numbers = sorted(draw_data.get('main_numbers', []))
+            main_numbers = sorted(draw_data['main_numbers'])
             if main_numbers == sorted_selection:
                 self._add_alert(
                     'critical',

@@ -10,7 +10,7 @@ Inventory verified on 2026-09-17 against the files on disk.
 
 | File | Size | Top-level structure |
 |:--|--:|:--|
-| `lotto_draw_history.json` | 4.4 MB | 497 keys, one per draw date (`2021-12-15` ...) |
+| `lotto_draw_history.json` | 4.4 MB | one key per draw date from draw 100 (`2021-12-15` ...) |
 | `lotto_trigger_periods.json` | 58 KB | 47 keys, one per number |
 | `lotto_odds_results.json` | 32 KB | `requested_draws`, `pattern_analysis_draws`, `hmc_analysis_draws`, `hmc_training_draws`, +9 |
 | `lotto_advanced_patterns.json` | 45 KB | `metadata`, `summary_statistics`, `per_number_features` |
@@ -64,7 +64,8 @@ you have changed the serving distribution; training must change to match or pari
 
 **`lotto_draw_history.json`** - the draw record the walk-forward training engine reads. Keyed by
 date. Starts at `TRAINING_DATA` (draw 100), which is why counts derived from it differ from counts
-over the full CSV.
+over the full CSV. Each entry has `main_numbers` (the 6, in draw order) and `bonus_number`, for the
+website (F-25), plus `winning_numbers_details` with each ball's pre-draw category and counts.
 
 Everything else is supporting detail. If you are short of time, understand these two.
 
