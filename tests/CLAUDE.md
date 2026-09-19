@@ -1,17 +1,19 @@
 # tests/
 
-**Only twelve files in this folder are real tests. Do not run `pytest tests/` bare** - the other
+**Only thirteen files in this folder are real tests. Do not run `pytest tests/` bare** - the other
 thirteen are legacy print-scripts that run model training at import and will take minutes, hang, or
 fail on missing artifacts.
 
-## The twelve real tests (120 tests, ~50s)
+## The thirteen real tests (127 tests, ~50s)
 
 ```bash
 python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py \
                  tests/test_metrics.py tests/test_no_constant_features.py \
                  tests/test_freshness_target.py tests/test_threshold_holdout.py \
                  tests/test_model_capacity.py tests/test_prediction_alignment.py \
-                 tests/test_scraper_sources.py tests/test_wheel.py \n                 tests/test_permutation_check.py tests/test_high_number_distribution.py -q
+                 tests/test_scraper_sources.py tests/test_wheel.py \
+                 tests/test_permutation_check.py tests/test_high_number_distribution.py \
+                 tests/test_bonus_predictor.py -q
 ```
 
 This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two in sync.
@@ -30,6 +32,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_wheel.py` | the Model 4 wheel covers every 3-subset of the pool's top 8 |
 | `test_permutation_check.py` | the F-17 shuffle keeps each draw's hit count and moves only the labels |
 | `test_high_number_distribution.py` | the F-19 count of main numbers >= 32 per draw that the dashboard shows |
+| `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5) |
 
 ## The legacy print-scripts
 
@@ -39,7 +42,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 `test_train_with_all_features.py`, `test_unified_bonus_features.py`, `test_unified_bonus_to_main_features.py`.
 
 They are demonstration scripts with a `test_` prefix, mostly `print` and no assertions. Leave them
-alone unless you are converting one into a real test - in which case add it to the twelve-file list
+alone unless you are converting one into a real test - in which case add it to the real-test list
 above **and** to `verify.py`.
 
 ## Rules
