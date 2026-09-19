@@ -152,7 +152,7 @@ def find_similar_draws(prediction_pattern: Dict, draw_history: Dict, trigger_dat
     similarities = []
 
     for date_str, draw_data in draw_history.items():
-        main_numbers = draw_data.get('main_numbers', [])
+        main_numbers = draw_data['main_numbers']  # direct access: a .get default hid F-25
         if len(main_numbers) != 6:
             continue
 
@@ -171,7 +171,7 @@ def find_similar_draws(prediction_pattern: Dict, draw_history: Dict, trigger_dat
         similarities.append({
             'date': date_str,
             'numbers': main_numbers,
-            'bonus': draw_data.get('bonus_number'),
+            'bonus': draw_data['bonus_number'],
             'similarity': similarity,
             'pattern': draw_pattern
         })
@@ -327,10 +327,10 @@ def show():
 
         # Count how often this pattern has won
         hmc_matches = sum(1 for draw in draw_history.values()
-                          if get_hmc_pattern(draw.get('main_numbers', []), trigger_data) == hmc)
+                          if get_hmc_pattern(draw['main_numbers'], trigger_data) == hmc)
 
         oe_matches = sum(1 for draw in draw_history.values()
-                         if get_odd_even_pattern(draw.get('main_numbers', [])) == odd_even)
+                         if get_odd_even_pattern(draw['main_numbers']) == odd_even)
 
         total_draws = len(draw_history)
 
