@@ -9,12 +9,12 @@ Configs live in `ml_lotto/config.py`. Training runs from `quickpick.py` via
 
 Four main models in `ACTIVE_MODELS`, each producing a 6-number line:
 
-| Config | Name | Algorithm | Hot/Med/Cold | Labels |
-|:--|:--|:--|:--|:--|
-| `MODEL_1_CONFIG` | Momentum Specialist | logistic_regression | 4 / 1 / 1 | all 7 positions |
-| `MODEL_2_CONFIG` | Jackpot Optimizer | random_forest | 3 / 1 / 2 | main 6 only |
-| `MODEL_3_CONFIG` | Complexity Explorer | xgboost | 2 / 2 / 2 | all 7 positions |
-| `MODEL_4_CONFIG` | Conservative Pool Generator | catboost | 10 / 5 / 5 | all 7 positions |
+| Config | Name | Algorithm | Hot/Med/Cold | Min numbers >= 32 | Labels |
+|:--|:--|:--|:--|--:|:--|
+| `MODEL_1_CONFIG` | Momentum Specialist | logistic_regression | 4 / 1 / 1 | 2 | all 7 positions |
+| `MODEL_2_CONFIG` | Jackpot Optimizer | random_forest | 3 / 1 / 2 | 2 | main 6 only |
+| `MODEL_3_CONFIG` | Complexity Explorer | xgboost | 2 / 2 / 2 | 0 | all 7 positions |
+| `MODEL_4_CONFIG` | Conservative Pool Generator | catboost | 10 / 5 / 5 | - | all 7 positions |
 
 Model 2 sets `exclude_bonus=True`, so it labels only the main 6 balls. Its PR-AUC baseline is
 therefore ~0.128 rather than ~0.149, and its Top-7 expected value is lower. Do not compare its

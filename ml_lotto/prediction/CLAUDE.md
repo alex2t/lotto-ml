@@ -35,6 +35,11 @@ let a constraint look satisfied while not binding (F-8, F-14).
 - **The ticket rules apply to the whole ticket**, pre-assigned numbers included. HMC quotas and
   the freshness target count the selected numbers only, as `predictor.py` adjusts the quotas for
   what is pre-assigned.
+- **`min_high_numbers` is a per-model floor, not a ticket rule** (F-19). Models 1 and 2 need at
+  least 2 numbers >= 32 (`HIGH_NUMBER_FROM`, from `lotto_analysis/config/config.py`), Model 3 has no
+  floor. It is a constraint in `solve_line` over the whole ticket, pre-assigned included; the model's
+  probabilities may add more. It is not in `filters.validate_line` because it differs per model.
+  The basis is the draw breakdown on the dashboard's Statistics page: 71% of past draws had 2+.
 - **Diversity is one lexicographic rule.** `solve_line` charges `PENALTY_COST` (= `LINE_SIZE`) per
   number already on an earlier line, which exceeds any difference in probability sums, so a reused
   number is taken only when no feasible line avoids it. There is no percentage penalty and no

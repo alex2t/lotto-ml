@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from view.utils.anomaly_detector import detect_anomalies
+from view.utils.data_loader import load_high_number_distribution
 
 
 def load_validation_data() -> Tuple[Dict, Dict, Dict, Dict, Dict]:
@@ -175,6 +176,44 @@ def calculate_overall_score(scores: List[float]) -> Tuple[int, str, str]:
         return int(avg_score), "D Poor", "red"
 
 
+def show_high_number_check(numbers: List[int]):
+    """
+    Show how many of the line's numbers are >= 32 next to how often past draws had each count.
+
+    Information only - it is not scored. Every line is equally likely to win; numbers in the
+    1-31 birthday range are only more likely to be shared with other players' tickets.
+    """
+    distribution = load_high_number_distribution()
+    high_from = distribution['high_from']
+    by_count = distribution['by_count']
+    line_count = sum(1 for n in numbers if n >= high_from)
+    line_stats = by_count[str(line_count)]
+
+    st.subheader(f"6. High Numbers ({high_from} and above)")
+    st.write(
+        f"Your line has **{line_count}** number(s) of {high_from} or above. "
+        f"{line_stats['percentage']:.1f}% of past draws had exactly that many "
+        f"(a fair draw gives {line_stats['fair_percentage']:.1f}%)."
+    )
+    st.dataframe(
+        pd.DataFrame([
+            {
+                f"Numbers >= {high_from}": int(k),
+                "Past draws": v['count'],
+                "Share of draws (%)": v['percentage'],
+                "Fair draw (%)": v['fair_percentage'],
+                "Your line": "<-" if int(k) == line_count else "",
+            }
+            for k, v in by_count.items()
+        ]),
+        hide_index=True,
+    )
+    st.caption(
+        "Not scored. Every line has the same chance of winning; lines drawn mostly from 1-31 "
+        "(birthday numbers) are more likely to share a prize with other players."
+    )
+
+
 def show():
     """Display the prediction validator page."""
     st.title("🎯 Prediction Validator")
@@ -295,6 +334,9 @@ def show():
             with col5b:
                 st.write(msg5)
                 st.progress(score5 / 100)
+
+            # 6. High numbers - information only, not part of the overall score (F-19)
+            show_high_number_check(numbers)
 
             # Automated Anomaly Detection
             st.markdown("---")
