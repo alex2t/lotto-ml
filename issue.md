@@ -25,11 +25,106 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
+| 1 | **F-35** | `post_draw_analysis.py` reads `data/irish500.csv` directly, violating the sole API boundary | Medium | S |
+| 2 | **F-38** | Odd/even affinity flags all 24 odd numbers as "validated" on a biased test; Statistics page shows it | Medium | S |
+| 3 | **F-36** | A bonus ball repeated in the 10-draw window gets its oldest appearance as `draws_since_bonus` | Low | S |
+| 4 | **F-41** | Bonus-to-Main trains on `category` as a constant 0.0 - a string turned into 0.0 in every row | Low | S |
+| 5 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
 
-**No open defects; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**5 open defects (2 Medium, 3 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
+order, so ties resolve the same way on every run. It is not reused.
 
 ---
 
+## 1. High severity defects
+
+None open.
+
+---
+
+## 2. Medium severity defects
+
+### F-35 — `post_draw_analysis.py` reads `data/irish500.csv` directly
+
+**Severity: Medium.** Registered 2026-09-19.
+
+**Root cause.** `view/pages/post_draw_analysis.py:27` defines `load_latest_draw_from_csv(csv_path: str = 'data/irish500.csv')` which directly reads and parses the raw CSV file to display the latest draw and autofill inputs (`post_draw_analysis.py:222-231`).
+
+This directly violates the core architectural invariant in `GEMINI.md` Section 1.3 and Section 3.5:
+> `data/*.json` is the sole API boundary: Pages in `view/` and models in `ml_lotto/` read only these JSON artifacts, never `data/irish500.csv` directly.
+
+**Fix.** Update `post_draw_analysis.py` to load the latest draw from `data/lotto_draw_history.json` via `view.utils.data_loader` or standard JSON loading, matching the other dashboard pages.
+
+### F-38 — Odd/even affinity flags every odd number as "validated" on a biased test
+
+**Severity: Medium.** Registered 2026-09-19. Raised from Low on review: the false result is shown to
+players.
+
+**Root cause.** `lotto_analysis/analyzers/odd_even_analyzer.py:126` labels a draw `'odd'` when
+`odd_in_draw >= even_in_draw`, so every 3:3 draw counts as odd. `:157` then tests each number's
+share of appearances in "odd" draws against `p = 0.5` with `stats.binomtest`. A draw containing an
+odd number is more likely to be mostly odd, so on fair draws every odd number deviates from 0.5 -
+the same fair-draw false positive as F-30 and F-31.
+
+**Evidence.** `data/lotto_odd_even_validated.json` `per_number_affinity` marks 25 numbers
+`statistically_validated`: all 24 odd numbers plus 46. `view/pages/statistics.py:357-366` shows them
+with a "Validated" mark.
+
+The overall chi-square (`:62-80`) also expects 50/50 where a fair draw gives 24/47 odd. Minor: it
+currently reports p = 0.53 (1511 odd / 1477 even over 2988 main balls).
+
+**Fix.** Test each number against the chance rate of a draw being "odd" given that the number was
+drawn, not 0.5, and test the overall split against 24/47. Check on simulated fair draws: about 5%
+flagged, as `tests/test_trend_significance.py` does for F-31.
+
+---
+
+## 3. Low severity defects
+
+### F-36 — A repeated bonus ball gets its oldest appearance as `draws_since_bonus`
+
+**Severity: Low.** Registered 2026-09-19. Lowered from Medium on review: training and serving agree.
+
+**Root cause.** When a number was the bonus ball twice in the last 10 draws, `draws_since_bonus`
+records the older appearance, not the most recent.
+
+Since F-40 the rule lives in one place, `bonus_window_positions()` in
+`ml_lotto/utils/bonus_window.py`, used by the trainer (history cut at each draw) and the predictor
+(full history). It iterates oldest to newest and skips a number it has already seen, so the oldest
+position is kept. Training and serving agree, so this is not a parity break; the feature just means
+something other than its name. A 10-draw window averages ~9.2 distinct balls, so a repeat is common.
+The model's `draws_since_bonus` coefficient is 0 in 4 of 5 calibration folds, so the effect today is
+close to nil.
+
+**Fix.** In `bonus_window_positions()`, iterate newest first. One change fixes both sides.
+
+### F-41 — Bonus-to-Main trains on `category` as a constant 0.0
+
+**Severity: Low.** Registered 2026-09-19, found while fixing F-40.
+
+**Root cause.** `BONUS_TO_MAIN_MODEL_CONFIG` lists `'category'` (`ml_lotto/config.py`, "for
+interactions"). The engine's value is a string ('hot'/'medium'/'cold'), and `bonus_to_main_row()`
+(`ml_lotto/features/bonus_to_main_features.py`) turns any non-numeric value into 0.0 - as the old
+trainer and predictor loops both did. So the column is 0.0 in every training and serving row. It
+carries nothing, and a feature that never varies is a bug. `tests/test_no_constant_features.py`
+misses it because its `produced` fixture drops `category`.
+
+**Fix.** Remove `'category'` from the config's feature list (the interactions read it from the row
+without it being a column), and make `bonus_to_main_row()` raise on a non-numeric value instead of
+substituting 0.0. Check the no-constant test covers string-valued features.
+
+### F-39 — `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6
+
+**Severity: Low.** Registered 2026-09-19. Latent: every current caller passes 6 numbers
+(`.claude/skills/lotto-verify/verify.py:134`, `tests/test_selection_invariants.py`).
+
+**Root cause.** The docstring (`ml_lotto/prediction/filters.py:37`) accepts "6-7 numbers". Sum and
+span use `numbers[:6]` (`:58`, `:63`), but the odd count (`:52-54`) counts every number, so a
+7-number line with 4 odd main numbers and an odd bonus fails with 5 odd.
+
+**Fix.** Make `validate_line` take exactly the 6 main numbers and raise on any other length, rather
+than slicing.
 ---
 ## 6. Improvements done
 
@@ -207,6 +302,8 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-40 | Bonus-to-Main model was served a dict built from the extractor and JSON profiles, not the engine rows it was trained on | `bonus_to_main_trainer.py`, `bonus_to_main_predictor.py`, `bonus_to_main_features.py`, `bonus_window.py`, `quickpick.py` |
+| F-34 | Main models were served the extractor's row, not the row they were trained on: gap statistics, `freshness_bin` interactions and `has_consecutive_partner` differed | `walk_forward.py`, `quickpick.py` |
 | F-33 | A draw's recent-bonus list ends with its own bonus; three bonus statistics read it as the pre-draw window | `bonus_analyzer.py`, `draw_history.py` |
 | F-32 | Bonus-to-main transition rate divided by bonus appearances with no 10-draw window | `bonus_to_main_analyzer.py` |
 | F-29 | Sum alerts used hard-coded mean/std from a key that never existed; the volatility alert could never fire | `anomaly_detector.py`, `pattern_comparison.py`, `prediction_validator.py` |
@@ -253,6 +350,74 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-40 — Bonus-to-Main model was served a different row from the one it was trained on
+
+**Root cause.** Training built each row from the engine - `extract_features_at_draw(t)[num]` with
+`is_in_bonus_window` and `draws_since_bonus` overridden. Serving scored `bonus_to_main_features_dict`,
+built in `bonus_to_main_features.py` from the extractor's row and `lotto_bonus_to_main_patterns.json`.
+The two rules were written out twice, in the trainer and in the predictor, and read different dicts.
+Against the engine's next-draw row, for the 10 numbers in the current bonus window: the transition
+weights (`category_multiplier`, `freshness_multiplier`, `timing_decay_weight`,
+`composite_transition_score`) differed on 10/10, the gap statistics on 10/10, `freshness_bin` and its
+interactions on 3-8/10 (served as 0, as in F-34), the freshness triples on 4/10. The predictor also
+read each column with `.get(fname, 0.0)`.
+
+**Fix.** One row rule and one window rule, shared. `bonus_to_main_row()` in
+`bonus_to_main_features.py` builds a row from an engine row and the number's window position;
+`bonus_window_positions()` in `ml_lotto/utils/bonus_window.py` gives the window for a history. The
+trainer applies them at each draw `t` (history cut at `t`); the predictor applies them to
+`base_engine.with_base_features(bonus_to_main_features_dict).extract_features_for_next_draw()` and
+the full history - the same engine view the trainer uses. The predictor's silent `.get` is gone:
+a column the row lacks raises.
+
+**Measured.** Training unchanged: validation AUC and Top-7 +0.0000 against the post-F-34 baseline.
+The served probabilities also did not move (the same six, 7.3% to 6.3%). The fitted model (L1,
+C = 0.005) gives weight almost only to `gap_variance` and `total_count`, and the old path already
+served both correctly - `gap_variance` from `rolling_stats.py`, `total_count` parity-tested. The
+~20 corrected columns currently have zero weight; they would have mattered as soon as the
+regularisation or the feature set changed.
+
+**Tests.** `tests/test_walk_forward_parity.py`, `test_bonus_to_main_serves_the_row_it_was_trained_on`:
+with the history cut at the last draw `t`, the rows the predictor scores (captured by a recording
+model) equal the trainer's rows for draw `t`, number for number.
+
+### F-34 — Main models were served a different row from the one they were trained on
+
+**Root cause.** A training row is built by `build_main_dataset` (`walk_forward.py`): the engine's
+point-in-time value for every feature it computes, the base features only for the rest. The serving
+row was `extract_features_from_hmc_json()`'s output, passed straight to `generate_predictions`,
+`generate_all_picks` and `generate_pool_picks`. Where the two computed the same name differently, the
+models were fitted on one value and served another:
+
+- `appearance_volatility`, `gap_consistency_score`, `max_gap_ratio` came from
+  `lotto_advanced_patterns.json` - calendar-day gaps, detrended - where training uses draw-index gaps.
+  Different on 47/47 numbers (number 1: volatility 0.8127 trained vs 0.836 served, max gap ratio
+  4.498 vs 3.75). `gap_consistency_score` is in all four main models.
+- The extractor never set `freshness_bin`, and `interactions.py` reads it with `.get('freshness_bin', 0)`,
+  so every served `*_x_freshness_bin_interaction` and freshness triple was computed at bin 0:
+  `recent_4_x_freshness_bin_interaction` differed on 23/47 numbers, `triple_hot_0_very_recent` on 15.
+- `has_consecutive_partner` used `recent_4 >= 1` for a hot neighbour, training the hot category:
+  3/47 numbers differed.
+
+`test_walk_forward_parity.py` compared only six named features, none of these.
+
+**Fix.** `PointInTimeFeatureEngine.extract_serving_rows()` builds the next-draw row the way a
+training row is built - `{**base_features[num], **point_in_time[num]}` - and `quickpick.py` passes
+`base_engine.with_base_features(features_dict).extract_serving_rows()` to predictions, picks and the
+pool. The extractor's row is still the base, so a feature the engine does not compute is served the
+same full-history value it was trained on. Training is unchanged.
+
+**Measured.** Validation metrics identical to the pre-fix baseline (every AUC and Top-7 change
++0.0000), as expected - only the served row changed. The picks changed: all three model lines and the
+Model 4 wheel. `/lotto-verify`: all checks pass.
+
+**Tests.** `tests/test_walk_forward_parity.py`, two new tests: the served row equals the training row
+on every column any main model trains on, and the gap statistics, `freshness_bin` and
+`has_consecutive_partner` come from the engine. Both fail on the old code.
+
+**Not covered here.** The Bonus Ball model was already served by the engine (`quickpick.py:587`).
+The Bonus-to-Main model had the same defect, fixed separately as F-40.
 
 ### F-33 — Bonus statistics read a list that ends with the draw's own bonus
 

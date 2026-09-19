@@ -91,6 +91,23 @@ def calculate_current_bonus_window(
     return bonus_window
 
 
+def bonus_window_positions(draws: List[Dict[str, Any]], window_size: int = 10) -> Dict[int, int]:
+    """
+    Map each bonus ball of the last window_size draws to how many draws ago it was drawn.
+
+    The one definition the Bonus-to-Main model uses in training (history cut at each draw)
+    and serving (full history), so the two cannot drift (F-40). A ball that was the bonus
+    twice keeps its older position - F-36.
+    """
+    n = len(draws)
+    positions = {}
+    for prev_idx in range(max(0, n - window_size), n):
+        bonus_num = draws[prev_idx].get('bonus_number') or draws[prev_idx].get('bonus')
+        if bonus_num and bonus_num not in positions:
+            positions[bonus_num] = n - prev_idx - 1
+    return positions
+
+
 def get_bonus_window_numbers(bonus_window: List[Dict[str, Any]]) -> List[int]:
     """
     Extract just the numbers from a bonus window.

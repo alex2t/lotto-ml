@@ -58,8 +58,9 @@ Also present: `lotto_correlation_summary.csv`, `lotto_interaction_summary.csv`,
 
 ## The two that matter
 
-**`lotto_trigger_periods.json`** - the serving feature source for the four main models, via
-`ml_lotto/features/extractor.py`. Keyed by number, 1 to 47. Change what an analyzer writes here and
+**`lotto_trigger_periods.json`** - read by `ml_lotto/features/extractor.py` to build the base
+serving row for the four main models; the engine's point-in-time value replaces it for every feature
+the engine computes (F-34). Keyed by number, 1 to 47. Change what an analyzer writes here and
 you have changed the serving distribution; training must change to match or parity breaks silently.
 
 **`lotto_draw_history.json`** - the draw record the walk-forward training engine reads. Keyed by

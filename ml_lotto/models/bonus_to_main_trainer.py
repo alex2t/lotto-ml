@@ -11,15 +11,16 @@ from typing import Dict, List, Tuple
 from sklearn.linear_model import LogisticRegression
 from sklearn.calibration import CalibratedClassifierCV
 from collections import defaultdict
+from ml_lotto.features.bonus_to_main_features import bonus_to_main_row
 from ml_lotto.features.extractor import expand_feature_selection
 from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
 from ml_lotto.models.model_metrics import calculate_comprehensive_metrics
+from ml_lotto.utils.bonus_window import bonus_window_positions
 
 
 def _build_bonus_to_main_dataset(
     engine: PointInTimeFeatureEngine,
     all_draws: List[Dict],
-    bonus_to_main_features: Dict,
     feature_names: List[str],
     start_draw: int,
     end_draw: int
@@ -39,41 +40,11 @@ def _build_bonus_to_main_dataset(
     draw_index = []
 
     for draw_idx in range(max(start_draw, 10), end_draw):
-        current_draw = all_draws[draw_idx]
         feats_at_draw = engine.extract_features_at_draw(draw_idx)
+        current_main_numbers = all_draws[draw_idx].get('numbers', [])
 
-        # Build recent bonus list from previous 10 draws
-        recent_bonus_numbers = []
-        recent_bonus_positions = {}  # number -> draws since it was the bonus
-        for prev_idx in range(max(0, draw_idx - 10), draw_idx):
-            prev_draw = all_draws[prev_idx]
-            # Check both 'bonus_number' and 'bonus' keys for compatibility
-            bonus_num = prev_draw.get('bonus_number') or prev_draw.get('bonus')
-            if bonus_num and bonus_num not in recent_bonus_numbers:
-                recent_bonus_numbers.append(bonus_num)
-                recent_bonus_positions[bonus_num] = draw_idx - prev_idx - 1
-
-        current_main_numbers = current_draw.get('numbers', [])
-
-        for num in recent_bonus_numbers:
-            base_features = feats_at_draw.get(num) or bonus_to_main_features.get(num, {})
-            if not base_features:
-                continue
-
-            draws_since_bonus = recent_bonus_positions.get(num, -1)
-
-            # Override window-specific features for this historical point
-            feature_vector = []
-            for fname in feature_names:
-                if fname == 'is_in_bonus_window':
-                    feature_vector.append(1.0)
-                elif fname == 'draws_since_bonus':
-                    feature_vector.append(float(draws_since_bonus))
-                else:
-                    val = base_features.get(fname, 0.0)
-                    feature_vector.append(float(val) if isinstance(val, (int, float, np.number)) else 0.0)
-
-            X.append(feature_vector)
+        for num, draws_since_bonus in bonus_window_positions(all_draws[:draw_idx]).items():
+            X.append(bonus_to_main_row(feats_at_draw[num], feature_names, draws_since_bonus))
             y.append(1 if num in current_main_numbers else 0)
             draw_index.append(draw_idx)
 
@@ -134,7 +105,7 @@ def train_bonus_to_main_model(
     engine = base_engine.with_base_features(bonus_to_main_features)
 
     X_train, y_train, _ = _build_bonus_to_main_dataset(
-        engine, all_draws, bonus_to_main_features, feature_names,
+        engine, all_draws, feature_names,
         training_start_draw, training_end_draw
     )
 
@@ -179,7 +150,7 @@ def train_bonus_to_main_model(
         print(f"  Validation draws: {len(all_draws) - validation_start_draw}")
 
         X_val, y_val, val_draw_index = _build_bonus_to_main_dataset(
-            engine, all_draws, bonus_to_main_features, feature_names,
+            engine, all_draws, feature_names,
             validation_start_draw, len(all_draws)
         )
 

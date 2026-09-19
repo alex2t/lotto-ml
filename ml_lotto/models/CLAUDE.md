@@ -9,7 +9,7 @@ Training and evaluation. Called by `quickpick.py` after `drawpick.py` has writte
 | `hyperparameter_tuning.py` | TimeSeriesSplit CV grids; `quick` (6-24 combos) or `extensive` |
 | `model_metrics.py` | AUC, PR-AUC, Top-K, calibration; writes `model_metrics/` |
 | `bonus_trainer.py` | auxiliary bonus-ball model |
-| `bonus_to_main_trainer.py` | auxiliary bonus-to-main transition model |
+| `bonus_to_main_trainer.py` | auxiliary bonus-to-main transition model; rows from `bonus_to_main_row()` and `bonus_window_positions()`, the same functions serving uses (F-40) |
 | `permutation_check.py` | F-17 label-permutation check: `python quickpick.py --permutation-check N` |
 
 ## The six models
