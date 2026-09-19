@@ -1,9 +1,10 @@
-"""Bonus predictions come from the non-excluded pool, or fail clearly when it is too small (F-5)."""
+"""Bonus predictions come from the non-excluded pool, or fail clearly on input they cannot serve (F-5, F-42)."""
 
 import numpy as np
 import pytest
 
 from ml_lotto.prediction.bonus_predictor import assign_bonus_to_models, generate_bonus_predictions
+from ml_lotto.prediction.bonus_to_main_predictor import generate_bonus_to_main_predictions
 
 
 class RisingProbability:
@@ -61,3 +62,15 @@ def test_every_model_gets_one_of_the_predictions():
     assignments = assign_bonus_to_models(picks, 4)
     assert sorted(assignments) == [1, 2, 3, 4]
     assert set(assignments.values()) == set(picks)
+
+
+def test_empty_bonus_window_raises():
+    """
+    An empty bonus window is broken input, so it fails rather than returning nothing (F-42).
+
+    Regression: the function returned a bare `[]` where it otherwise returns a 2-tuple, so the
+    caller in quickpick.py died on `ValueError: not enough values to unpack (expected 2, got 0)`
+    instead of on the real problem - no bonus ball in the last 10 draws.
+    """
+    with pytest.raises(ValueError, match='bonus window'):
+        generate_bonus_to_main_predictions(RisingProbability(), ['x'], features(()), {}, {})

@@ -11,7 +11,7 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 | `pool_generator.py` | ranked candidate pool for Model 4 |
 | `wheel.py` | 4-line covering-design wheel over the pool's top 8 |
 | `bonus_predictor.py` | 3 diverse bonus-ball predictions |
-| `bonus_to_main_predictor.py` | bonus-to-main transition picks; scores rows from `bonus_to_main_row()`, the trainer's own rule (F-40) |
+| `bonus_to_main_predictor.py` | bonus-to-main transition picks; scores rows from `bonus_to_main_row()`, the trainer's own rule (F-40); raises on an empty bonus window (F-42) |
 
 ## The boundary that matters
 
