@@ -71,7 +71,7 @@ moments (count, sum, sum of squares, max), not stored gap lists - keep them O(N)
 | `patterns.py` | consecutive-partner and pair-affinity features |
 | `interactions.py` | applies mined pairwise/triple interactions |
 | `history.py` | `win_bias_ratio` |
-| `bonus.py`, `bonus_features.py`, `bonus_to_main_features.py` | the two auxiliary models' features; `bonus_to_main_row()` is the Bonus-to-Main row for training and serving |
+| `bonus.py`, `bonus_features.py`, `bonus_to_main_features.py` | the two auxiliary models' features; `bonus_to_main_row()` is the Bonus-to-Main row for training and serving, and raises on a non-numeric value (F-41) |
 | `feature_selection.py` | correlation and importance filtering |
 | `realism.py` | thin; features migrated to JSON-loaded versions |
 
