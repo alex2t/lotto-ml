@@ -1,14 +1,22 @@
 # Metrics
 
-How the six models are evaluated, what the numbers currently are, and how to tell a real improvement
+How the six models are evaluated, what the numbers look like, and how to tell a real improvement
 from noise.
+
+**This is the only document that quotes model figures.** The `CLAUDE.md` files, the skill and
+`GEMINI.md` keep only the stable thresholds and point here.
 
 Computed by `ml_lotto/models/model_metrics.py` during `quickpick.py`. Written to `model_metrics/`.
 
-## Current results
+## Example results
 
-From `model_metrics/model_comparison.csv`, run of 2026-09-19 (598 draws, latest 16 Sep 2026).
-Validation window is the last **60 draws** for every model.
+**A dated snapshot, not kept current.** Every new draw moves these digits a little, so this table is
+not updated after each run - it shows what normal looks like. The live figures are
+`model_metrics/model_comparison.csv` and the table `/lotto-verify` prints. Refresh this snapshot only
+if the picture changes: a model leaves chance, or an overfit gap nears ~0.1.
+
+Snapshot of 2026-09-19 (598 draws, latest 16 Sep 2026). Validation window is the last **60 draws**
+for every model.
 
 | Model | Val AUC | Overfit gap | Top-7 caught | Top-7 expected | Top-7 lift | PR-AUC lift | Calib. error |
 |:--|--:|--:|--:|--:|--:|--:|--:|
@@ -19,9 +27,10 @@ Validation window is the last **60 draws** for every model.
 | Bonus-to-Main Transition | 0.500 | 0.029 | 1.08 | 1.01 | 1.07 | 0.99 | 0.072 |
 | Momentum Specialist | 0.496 | 0.024 | 1.18 | 1.04 | 1.14 | 1.02 | 0.015 |
 
-**Read this table correctly.** AUC 0.50 is a coin flip. Every model sits between 0.496 and 0.551,
-and Top-7 lift is 0.90-1.18 against an expected baseline of ~1.04 numbers caught. Adding one draw
-moved every figure by less than the noise floor below - the values drift, the conclusion does not. The
+**Read this table correctly.** AUC 0.50 is a coin flip. In this snapshot every model sits between
+0.496 and 0.551, and Top-7 lift is 0.90-1.18 against an expected baseline of ~1.04 numbers caught.
+Adding one draw moves every figure by less than the noise floor below - the values drift, the
+conclusion does not. The
 Bonus-to-Main model has a PR-AUC lift **below 1.0**, meaning it is fractionally worse than the base
 rate.
 
@@ -81,10 +90,10 @@ random selection would catch; `Top-7 Lift` is the ratio.
 was drawn.
 
 **Calibration error** - mean absolute gap between predicted probability and observed frequency.
-Below 0.05 is good, above 0.1 means the probabilities are not trustworthy as probabilities. All main
-models are currently under 0.025; the Bonus-to-Main model at 0.072 is the weakest.
+Below 0.05 is good, above 0.1 means the probabilities are not trustworthy as probabilities. In the
+snapshot all main models are under 0.025; the Bonus-to-Main model at 0.072 is the weakest.
 
-**Overfit gap** - train AUC minus validation AUC. Currently 0.002-0.078.
+**Overfit gap** - train AUC minus validation AUC. 0.002-0.078 in the snapshot; the alarm is ~0.1.
 
 ## The overfit gap is the number to watch
 

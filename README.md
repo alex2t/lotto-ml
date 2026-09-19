@@ -22,7 +22,7 @@ and the models train on.
 
 ## The honest result
 
-All six models score at chance - validation AUC 0.50-0.55. A label-permutation test confirms it:
+All six models score at chance - validation AUC close to 0.50, a coin flip. A label-permutation test confirms it:
 retrained 20 times on shuffled results, no model beat its shuffled versions. That is the correct
 answer for a fair lottery, and the project treats it as one. The one statistical signal found so far
 is small: numbers drawn two or more times in the last five draws came up about 11% more often (p = 0.03, weak).

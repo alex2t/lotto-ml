@@ -29,9 +29,9 @@ Plus `BONUS_MODEL_CONFIG` and `BONUS_TO_MAIN_MODEL_CONFIG`, both logistic regres
 
 ## Measure before changing anything
 
-All six models sit at validation AUC 0.50-0.55 with Top-7 lift 0.90-1.18 over the same 60 draws.
-That is chance, and chance is the correct answer for a fair draw. The scoreboard is
-`model_metrics/model_comparison.csv`.
+All six models sit at chance - validation AUC close to 0.50 over the same 60 draws - and chance is
+the correct answer for a fair draw. The scoreboard is `model_metrics/model_comparison.csv`; a dated
+example is in `docs/metrics.md`, the only file that quotes figures.
 
 **Noise floor (2 SE): ~0.031 AUC, ~0.227 Top-7 AvgCaught.** A move smaller than that is not a
 result. Do not report it as an improvement and do not tune against it.
@@ -40,7 +40,7 @@ result. Do not report it as an improvement and do not tune against it.
 labels, every model's real validation AUC fell inside the noise range (p 0.095-0.476). A claimed gain
 is not real until `python quickpick.py --permutation-check 20` says so - see `docs/metrics.md`.
 
-**Watch the overfit gap.** Train/validation AUC gaps are currently 0.002-0.078. A gap back above
+**Watch the overfit gap.** A train/validation AUC gap above
 ~0.1 means a model was handed capacity to memorise with, not that it learned something. The
 constrained `algorithm_params` in `../config.py` and the grids in `hyperparameter_tuning.py` are
 deliberately narrow and must both stay that way - widening one alone reintroduces the gap through
