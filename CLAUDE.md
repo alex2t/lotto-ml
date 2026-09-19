@@ -62,7 +62,7 @@ What each one covers:
 | Folder guide | Covers |
 |:--|:--|
 | `ml_lotto/features/CLAUDE.md` | the train/serve parity contract - the highest-risk file in the repo |
-| `tests/CLAUDE.md` | the seventeen test files and what each one guards |
+| `tests/CLAUDE.md` | the eighteen test files and what each one guards |
 | `lotto_analysis/analyzers/CLAUDE.md` | the 16 analysis phases and which JSON each writes |
 | `ml_lotto/models/CLAUDE.md` | the six model configs, the noise floor, the overfit gap |
 | `ml_lotto/prediction/CLAUDE.md` | selection vs filters, the playable-ticket boundary |
@@ -102,12 +102,12 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: seventeen files, 162 tests, ~30s. `pytest.ini` points pytest there, so
+`tests/` holds only real tests: eighteen files, 167 tests, ~30s. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
-python -m pytest -q                                                              # all 162
+python -m pytest -q                                                              # all 167
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
 python -m demos.demo_interactions                                                # a demo, from the root
 ```

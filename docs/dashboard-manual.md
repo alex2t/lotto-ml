@@ -393,26 +393,27 @@ Enter your 6 numbers (from quickpick.py or manual selection).
 
 ### ⚠️ Automated Anomaly Detection
 
-**11 real-time checks:**
+**Each alert describes how unusual the line looks next to past draws:**
 
-**Critical Alerts (🚨):**
-- Extreme sum deviation (>3 standard deviations)
+**Very unusual:**
+- Sum more than 3 standard deviations from the mean of past draws (mean and standard deviation read
+  from `lotto_sum_contribution_validated.json`, F-29)
 - All odd or all even numbers
 - All numbers from one HMC category
 - All numbers in ≤2 ranges
 - 4+ consecutive numbers
 - Exact duplicate of recent draw
 
-**Warning Alerts (⚠️):**
-- Unusual sum (>2.5σ)
+**Unusual:**
+- Sum more than 2.5 standard deviations from the mean
 - Severe odd/even imbalance (5-1 or 1-5)
 - 5 numbers from one HMC category
 - 4+ numbers in single range
 - 4+ cooling down numbers
 - All numbers in ≤2 decades
 
-**Info Alerts (ℹ️):**
-- 4+ highly volatile numbers
+The volatility alert was removed in F-29: it needed 4 numbers at volatility ≥ 1.5, and no number has
+reached 1.2, so it never fired.
 
 ### 🏆 Overall Validation Score
 

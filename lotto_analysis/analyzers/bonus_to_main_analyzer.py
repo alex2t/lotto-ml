@@ -37,6 +37,7 @@ def calculate_per_number_transition_profiles(
     for num in range(1, max_number + 1):
         number_profiles[num] = {
             'total_bonus_appearances': 0,
+            'eligible_bonus_appearances': 0,  # with a full 10-draw window after them (F-32)
             'transitioned_to_main': 0,
             'transition_draws': [],
             'last_bonus_date': None,
@@ -71,6 +72,7 @@ def calculate_per_number_transition_profiles(
         bonus_num = bonus_detail['number']
         bonus_category = bonus_detail.get('category', 'unknown')
         bonus_freshness = bonus_detail.get('current_freshness_bin', 0)
+        number_profiles[bonus_num]['eligible_bonus_appearances'] += 1
 
         # Track category and freshness stats (for transition analysis)
         number_profiles[bonus_num]['category_when_bonus'].append(bonus_category)
@@ -101,9 +103,10 @@ def calculate_per_number_transition_profiles(
     final_profiles = {}
 
     for num, profile in number_profiles.items():
-        if profile['total_bonus_appearances'] > 0:
+        # Only appearances with 10 draws after them could transition (F-32)
+        if profile['eligible_bonus_appearances'] > 0:
             profile['transition_rate'] = round(
-                profile['transitioned_to_main'] / profile['total_bonus_appearances'],
+                profile['transitioned_to_main'] / profile['eligible_bonus_appearances'],
                 4
             )
         else:
@@ -450,13 +453,17 @@ def generate_bonus_to_main_analysis(
         int(p['total_bonus_appearances'])
         for p in per_number_profiles.values()
     )
+    eligible_bonuses = sum(
+        int(p['eligible_bonus_appearances'])
+        for p in per_number_profiles.values()
+    )
 
     total_transitions = sum(
         int(p['transitioned_to_main'])
         for p in per_number_profiles.values()
     )
 
-    overall_rate = total_transitions / total_bonuses if total_bonuses > 0 else 0
+    overall_rate = total_transitions / eligible_bonuses if eligible_bonuses > 0 else 0
     # Chance that any given number is among the 6 main balls at least once in the next 10 draws (F-30)
     expected_random = 1 - (1 - 6 / max_number) ** 10
     boost_factor = overall_rate / expected_random if expected_random > 0 else 1.0
