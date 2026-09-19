@@ -37,7 +37,7 @@ error. It has since been rebuilt around the practices from Ed Donner's Udemy cou
   AI agent working in that folder starts from the invariants instead of rediscovering them.
 - **`issue.md`**, one register of every known defect and planned improvement, with file:line
   evidence, severity and the fix history.
-- **`review.md`**, the architecture overview and roadmap.
+- **`plan.md`**, the roadmap: Next.js front end, Docker on a VPS, n8n draw scraping.
 - **A verification skill** (`/lotto-verify`) that runs the tests, checks train/serve parity and
   validates every generated ticket after each change.
 - **Evidence before change** - a decision rule fixed before an experiment runs, measured
@@ -53,6 +53,31 @@ streamlit run app.py   # open the website
 
 `python scripts/scrape_lotto.py` adds new draws. Re-run `drawpick.py` after it.
 
+## Architecture
+
+```
+data/irish500.csv -> drawpick.py -> data/*.json -> quickpick.py -> lottery_picks.txt, model_metrics/
+   (draw history)    (16 phases)   (~24 files)    (features,
+                                        |          training,
+                                        v          selection)
+                                  app.py (8-page site)
+```
+
+1. **Draw history** - `data/irish500.csv`, newest first: `Date,Num1..Num6,Bonus`.
+2. **Statistics** - `drawpick.py` and `lotto_analysis/` run 16 phases (hot/medium/cold by recency,
+   trigger periods, freshness bins, odd/even, sums, bonus-to-main transitions) and write ~24 JSON
+   files into `data/`. These files are the website's only data source and the ML layer's only input.
+3. **ML** - `quickpick.py` and `ml_lotto/`:
+   - Model 1, Momentum Specialist - logistic regression.
+   - Model 2, Jackpot Optimizer - random forest, labelled on the main 6 balls only.
+   - Model 3, Complexity Explorer - XGBoost.
+   - Model 4, Conservative Pool Generator - CatBoost, a ranked 20-number pool plus a 4-line wheel.
+   - Two auxiliary logistic regressions: bonus ball, and bonus-to-main transitions.
+   - Selection - an integer linear program picks each line under the hot/medium/cold quota,
+     freshness target and ticket rules (sum 84-206, span 20+, 2-4 odd).
+4. **Website** - `app.py` and `view/pages/`: trigger periods, draw history, statistics, freshness,
+   prediction validator, number insights, pattern comparison, post-draw analysis.
+
 ## Layout
 
 | Path | What |
@@ -65,5 +90,8 @@ streamlit run app.py   # open the website
 
 ## Next
 
-- React front end with game-like line pickers.
-- Automated pipeline: scrape each draw, rebuild the data, refresh the site.
+See [`plan.md`](plan.md):
+
+- Next.js (React) front end with game-like line pickers.
+- n8n scrapes each draw, the VPS rebuilds the data in Docker and refreshes the site.
+- Model training stays on the owner's PC, using a data bundle downloaded from the site.

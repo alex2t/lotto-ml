@@ -80,7 +80,9 @@ stops the next agent rediscovering a convention the hard way, so a stale one is 
 it gets trusted over the source.
 
 For **every folder you changed a file in**, open its `CLAUDE.md` and check the change did not make
-anything in it untrue. Then check the root [`CLAUDE.md`](../../../CLAUDE.md) the same way.
+anything in it untrue. Then check the root [`CLAUDE.md`](../../../CLAUDE.md) the same way, and
+[`GEMINI.md`](../../../GEMINI.md) with its copy `.gemini/GEMINI.md` - they restate the same
+invariants and roadmap for Gemini, so a fact changed in a `CLAUDE.md` must change there too.
 
 | If you changed | Check |
 |:--|:--|
@@ -114,4 +116,4 @@ until it is current:
 - The Priority summary lists **open items only**. A resolved ID appearing there is itself a defect
   in the register.
 
-Architecture and the automation plans are in [`review.md`](../../../review.md).
+Architecture is in [`README.md`](../../../README.md); the roadmap is in [`plan.md`](../../../plan.md).
