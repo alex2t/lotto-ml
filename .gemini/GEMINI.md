@@ -178,7 +178,7 @@ Always execute commands inside the project's virtual environment:
 # Launch the Streamlit dashboard
 .\venv\Scripts\streamlit.exe run app.py
 
-# Execute all 20 test files (183 tests, ~30s) - pytest.ini limits pytest to tests/
+# Execute all 20 test files (191 tests, ~30s) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite

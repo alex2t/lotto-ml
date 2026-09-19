@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The twenty real tests (183 tests, ~30s)
+## The twenty real tests (191 tests, ~30s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -25,7 +25,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | File | Guards |
 |:--|:--|
 | `test_walk_forward_parity.py` | train/serve parity - 0/47 mismatches on `recent_*`, `total_count`, `draws_since_bonus`, and extractor vs engine on `days_since_last`, `category`, `days_since_bonus`; the served row equals the training row on every main-model column (F-34), and the Bonus-to-Main predictor scores the rows its trainer builds (F-40); the next-draw date follows the schedule. The most important file here |
-| `test_no_constant_features.py` | no model trains on a value that never varies; the C-5 full-history features stay out of all six models (F-21) |
+| `test_no_constant_features.py` | no model trains on a value that never varies, including a string column that every row turns into 0.0 (F-41); the C-5 full-history features stay out of all six models (F-21) |
 | `test_model_capacity.py` | the constrained model params and tuning grids stay constrained |
 | `test_selection_invariants.py` | the ILP line meets every constraint and is the brute-force optimum |
 | `test_prediction_alignment.py` | predictions line up with the numbers they claim to be for |
@@ -41,7 +41,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_bonus_transition_baseline.py` | on simulated fair draws the bonus-to-main analyzer reports its random baseline as 1 - (41/47)^10 and a boost of ~1.0, not 3.5x; the validator counts any recent bonus ball, with no transition-rate filter (F-30); a transition rate divides only by bonus balls with 10 draws after them (F-32) |
 | `test_trend_significance.py` | the "significant trend" flag flags about 5% of numbers on simulated fair draws (was 61%), still flags a real change in frequency, and flags nothing without an older window (F-31) |
 | `test_anomaly_detector.py` | the sum alerts and Pattern Comparison's typical range use the mean and std in `lotto_sum_contribution_validated.json`, not hard-coded figures; every `_check_` in the anomaly detector can fire on the current data (F-29). Reads `data/*.json` |
-| `test_bonus_window.py` | bonus statistics use the 10 bonus balls before each draw, not a list ending with the draw's own bonus: on fair draws the repeat rate matches chance (was 1.0), the main-from-recent-bonus boost and recency penalty are ~1.0 (were 0.92 and 4.7); Draw History shows the pre-draw window (F-33). Reads `data/*.json` |
+| `test_bonus_window.py` | bonus statistics use the 10 bonus balls before each draw, not a list ending with the draw's own bonus: on fair draws the repeat rate matches chance (was 1.0), the main-from-recent-bonus boost and recency penalty are ~1.0 (were 0.92 and 4.7); Draw History shows the pre-draw window (F-33); `bonus_window_positions()` counts a repeated bonus ball from its most recent appearance, over the last 10 draws only (F-36). Reads `data/*.json` |
 | `test_odd_even_affinity.py` | odd/even tests measure against a fair draw: on simulated fair draws about 5% of numbers have p < 0.05 (was 56%) and FDR validates almost none (was 254 of 470); the stated chance of an odd draw matches simulation; a real affinity is still flagged; the overall test expects 24/47 odd; the Statistics page shows each number's chance (F-38) |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5) |
 

@@ -25,11 +25,9 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-36** | A bonus ball repeated in the 10-draw window gets its oldest appearance as `draws_since_bonus` | Low | S |
-| 2 | **F-41** | Bonus-to-Main trains on `category` as a constant 0.0 - a string turned into 0.0 in every row | Low | S |
-| 3 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
+| 1 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
 
-**3 open defects (3 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**1 open defect (1 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
@@ -48,38 +46,6 @@ None open.
 ---
 
 ## 3. Low severity defects
-
-### F-36 — A repeated bonus ball gets its oldest appearance as `draws_since_bonus`
-
-**Severity: Low.** Registered 2026-09-19. Lowered from Medium on review: training and serving agree.
-
-**Root cause.** When a number was the bonus ball twice in the last 10 draws, `draws_since_bonus`
-records the older appearance, not the most recent.
-
-Since F-40 the rule lives in one place, `bonus_window_positions()` in
-`ml_lotto/utils/bonus_window.py`, used by the trainer (history cut at each draw) and the predictor
-(full history). It iterates oldest to newest and skips a number it has already seen, so the oldest
-position is kept. Training and serving agree, so this is not a parity break; the feature just means
-something other than its name. A 10-draw window averages ~9.2 distinct balls, so a repeat is common.
-The model's `draws_since_bonus` coefficient is 0 in 4 of 5 calibration folds, so the effect today is
-close to nil.
-
-**Fix.** In `bonus_window_positions()`, iterate newest first. One change fixes both sides.
-
-### F-41 — Bonus-to-Main trains on `category` as a constant 0.0
-
-**Severity: Low.** Registered 2026-09-19, found while fixing F-40.
-
-**Root cause.** `BONUS_TO_MAIN_MODEL_CONFIG` lists `'category'` (`ml_lotto/config.py`, "for
-interactions"). The engine's value is a string ('hot'/'medium'/'cold'), and `bonus_to_main_row()`
-(`ml_lotto/features/bonus_to_main_features.py`) turns any non-numeric value into 0.0 - as the old
-trainer and predictor loops both did. So the column is 0.0 in every training and serving row. It
-carries nothing, and a feature that never varies is a bug. `tests/test_no_constant_features.py`
-misses it because its `produced` fixture drops `category`.
-
-**Fix.** Remove `'category'` from the config's feature list (the interactions read it from the row
-without it being a column), and make `bonus_to_main_row()` raise on a non-numeric value instead of
-substituting 0.0. Check the no-constant test covers string-valued features.
 
 ### F-39 — `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6
 
@@ -269,6 +235,8 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-41 | Bonus-to-Main selected `category`, a string every row turned into a constant 0.0 | `config.py`, `bonus_to_main_features.py` |
+| F-36 | A bonus ball repeated inside the 10-draw window was counted from its oldest appearance | `bonus_window.py` |
 | F-38 | Odd/even affinity tested each number against 0.5 and validated all 24 odd numbers; overall test expected 50/50 | `odd_even_analyzer.py`, `statistics.py` |
 | F-35 | Post Draw Analysis parsed `data/irish500.csv` itself for the latest draw | `post_draw_analysis.py` |
 | F-40 | Bonus-to-Main model was served a dict built from the extractor and JSON profiles, not the engine rows it was trained on | `bonus_to_main_trainer.py`, `bonus_to_main_predictor.py`, `bonus_to_main_features.py`, `bonus_window.py`, `quickpick.py` |
@@ -319,6 +287,46 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-41 — Bonus-to-Main trained on `category` as a constant 0.0
+
+**Root cause.** `BONUS_TO_MAIN_MODEL_CONFIG` listed `'category'`, whose value is the string 'hot',
+'medium' or 'cold'. `bonus_to_main_row()` - and the two loops it replaced in F-40 - turned any
+non-numeric value into 0.0, so the column was 0.0 in every training and serving row. A feature that
+never varies is a bug, and the other tests missed it because their `produced` fixture drops
+`category`.
+
+**Fix.** `'category'` removed from the config; `bonus_to_main_row()` now indexes `float(row[f])` and
+raises on a non-numeric value rather than substituting 0.0. The engine still carries `category`, which
+is what the interaction features read.
+
+**Measured.** The model fits 33 columns instead of 34. Every metric and every pick is identical, as an
+all-zero column under L1 must be: it had zero weight.
+
+**Tests.** `tests/test_no_constant_features.py`, `test_no_selected_feature_is_a_string`, over all six
+configs: no model selects a feature whose engine value is not a number. It failed for Bonus-to-Main on
+the old code.
+
+### F-36 — A repeated bonus ball was counted from its oldest appearance
+
+**Root cause.** `bonus_window_positions()` (`ml_lotto/utils/bonus_window.py`) walked the last 10 draws
+oldest to newest and skipped a ball it had already seen, so a ball that was the bonus twice kept the
+older position. `draws_since_bonus` then said 9 for a ball that had been the bonus in the most recent
+draw. A 10-draw window averages ~9.2 distinct balls, so a repeat is common. Training and serving read
+this one function since F-40, so both were wrong the same way - not a parity break, a feature that did
+not mean what its name said.
+
+**Fix.** Drop the "already seen" guard: the loop runs oldest to newest, so overwriting leaves the most
+recent appearance. One change covers training and serving.
+
+**Measured.** `quickpick.py`: the four main models and the Bonus Ball model are unchanged
+(+0.0000 on every metric). Bonus-to-Main validation AUC 0.4997 -> 0.5124 and Top-7 AvgCaught +0.0167,
+both well inside the 2 SE noise floor of 0.031 AUC and 0.227 - not a result, and it stays at chance.
+Its picks reordered (31 now first, at 0 draws since bonus); the main lines are identical.
+
+**Tests.** `tests/test_bonus_window.py`, two new tests: a ball that was the bonus in the oldest and
+the newest of ten draws is 0 draws ago, not 9; and the window holds the last 10 draws only. The first
+failed on the old code.
 
 ### F-38 — Odd/even affinity validated every odd number on a biased test
 

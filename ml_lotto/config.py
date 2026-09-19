@@ -170,14 +170,14 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
 
         # === MAIN FEATURES - BASELINE (3) ===
         'appearance_volatility',       # Frequency consistency
-        'category',                    # HMC category (for interactions)
         'freshness_bin',               # Freshness bin (for interactions)
 
         # === INTERACTION FEATURES (~13) ===
         'PAIRWISE_INTERACTIONS',       # Critical for logistic regression!
         'TRIPLE_INTERACTIONS',         # Category × freshness × timing patterns
     ],
-    # Total: 11 bonus-to-main + 10 main + ~13 interactions = ~34 features
+    # Total: 11 bonus-to-main + 9 main + ~13 interactions = ~33 features
+    # category removed (F-41): a string, so every row carried it as a constant 0.0.
     # window_saturation_penalty removed (F-21): a C-5 full-history feature, static in training.
 
     # L1 for the same reason as the bonus model: 35 features against 462 positive
