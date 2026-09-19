@@ -9,11 +9,15 @@ on one distribution and applied to another. These tests pin the agreement.
 import json
 
 import numpy as np
+import pandas as pd
 import pytest
 
-from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW
-from ml_lotto.data.loader import load_draw_history_with_bias_ratios
-from ml_lotto.features.walk_forward import PointInTimeFeatureEngine
+from ml_lotto.config import MAX_NUMBER, ODDS_JSON_INPUT, TRAINING_START_DRAW
+from ml_lotto.data.loader import load_draw_history_with_bias_ratios, load_hmc_json, load_odds_json
+from ml_lotto.features.base import get_dynamic_recent_keys
+from ml_lotto.features.extractor import extract_features_from_hmc_json
+from ml_lotto.features.timing import calculate_days_since_bonus
+from ml_lotto.features.walk_forward import PointInTimeFeatureEngine, next_draw_date
 
 DRAW_HISTORY = 'data/lotto_draw_history.json'
 TRIGGER_PERIODS = 'data/lotto_trigger_periods.json'
@@ -169,3 +173,50 @@ def test_engine_view_matches_a_freshly_built_engine(engine, draws):
     fresh = PointInTimeFeatureEngine(draws, base)
     for t in (TRAINING_START_DRAW, engine.N):
         assert view.extract_features_at_draw(t) == fresh.extract_features_at_draw(t)
+
+
+def dates(*days):
+    return [pd.Timestamp(d) for d in days]
+
+
+@pytest.mark.parametrize('history,expected', [
+    # Wed/Sat schedule: Sat -> Wed is 4 days, Wed -> Sat is 3
+    (dates('2026-08-15', '2026-08-19', '2026-08-22', '2026-08-26', '2026-08-29'), '2026-09-02'),
+    (dates('2026-08-12', '2026-08-15', '2026-08-19', '2026-08-22', '2026-08-26'), '2026-08-29'),
+    # Mon/Wed/Sat since September 2026: Mon -> Wed is 2 days, which a median gap of 3 misses
+    (dates('2026-09-02', '2026-09-05', '2026-09-07', '2026-09-09', '2026-09-12', '2026-09-14'), '2026-09-16'),
+])
+def test_next_draw_date_follows_the_current_schedule(history, expected):
+    assert next_draw_date(history) == pd.Timestamp(expected)
+
+
+@pytest.fixture(scope='module')
+def extractor_row(draws, engine):
+    """The main models' serving row, built as quickpick.py builds it."""
+    hmc_data = load_hmc_json(TRIGGER_PERIODS)
+    return extract_features_from_hmc_json(
+        hmc_data,
+        get_dynamic_recent_keys(hmc_data),
+        calculate_days_since_bonus(draws, engine.next_draw_date),
+        {},
+        consecutive_patterns=load_odds_json(ODDS_JSON_INPUT)['patterns'],
+        reference_date=engine.next_draw_date,
+    )
+
+
+@pytest.mark.parametrize('feature', ['days_since_last', 'category', 'days_since_bonus'])
+def test_extractor_serving_row_matches_the_engine(engine, extractor_row, feature):
+    """
+    The main models train on engine rows and serve from the extractor (C-6b).
+
+    Regression: the extractor counted days to the last draw and the engine to the next,
+    so every served days_since_last was 3 days short and 4 numbers were served as hot
+    that training would call medium. days_since_bonus was counted to the wall clock.
+    """
+    served = engine.extract_features_for_next_draw()
+    mismatches = {
+        num: (extractor_row[num][feature], served[num][feature])
+        for num in NUMBERS
+        if extractor_row[num][feature] != served[num][feature]
+    }
+    assert not mismatches, f"{feature} differs for {len(mismatches)} numbers: {mismatches}"
