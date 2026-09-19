@@ -21,7 +21,7 @@ import json
 # Try to import scipy for advanced time series analysis
 try:
     from scipy.signal import savgol_filter, detrend, find_peaks
-    from scipy.stats import kendalltau
+    from scipy.stats import fisher_exact
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
@@ -270,13 +270,12 @@ def calculate_trend_features(
                     else:
                         smoothed_trend = appearance_trend
 
-                    # Test trend significance using Kendall's tau
-                    # This tests if there's a monotonic trend over time
-                    recent_indices = np.arange(len(smoothed_freq[-recent_window:]))
-                    recent_values = smoothed_freq[-recent_window:]
-                    tau, p_value = kendalltau(recent_indices, recent_values)
-
-                    trend_significant = (p_value < 0.05) if not np.isnan(p_value) else False
+                    # Significance of recent vs older on the raw per-draw counts (F-31). The smoothed
+                    # rolling series shares most of its data between neighbouring points, so a test on
+                    # it flagged most numbers even on fair draws.
+                    trend_significant = bool(older_draws) and fisher_exact(
+                        [[recent, len(recent_draws) - recent], [older, len(older_draws) - older]]
+                    ).pvalue < 0.05
                 else:
                     smoothed_trend = appearance_trend
                     trend_significant = False

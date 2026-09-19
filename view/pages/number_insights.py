@@ -437,7 +437,12 @@ def show():
 
     facts = []
     if advanced:
-        # No trend line: trend_is_significant flags most numbers even in fair draws (F-31)
+        trend = advanced['appearance_trend']
+        if advanced['trend_is_significant'] and trend > 0.2:
+            facts.append("Came up significantly more often in the last 50 draws than the 50 before")
+        elif advanced['trend_is_significant'] and trend < -0.2:
+            facts.append("Came up significantly less often in the last 50 draws than the 50 before")
+
         ratio = advanced['recent_vs_baseline']
         if ratio > 1.2:
             facts.append(f"Came up more often recently than over its history ({ratio:.2f}x)")

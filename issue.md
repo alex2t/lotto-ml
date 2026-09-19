@@ -25,35 +25,14 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-31** | "Statistically significant" trend flag marks 25-33 of 47 numbers on fair draws | Medium | S |
-| 2 | **F-29** | Sum alerts use hard-coded mean/std from a key that does not exist; the volatility alert can never fire | Low | XS |
-| 3 | **F-32** | Bonus-to-main transition rate divides by bonus appearances that have no 10-draw future | Low | XS |
+| 1 | **F-29** | Sum alerts use hard-coded mean/std from a key that does not exist; the volatility alert can never fire | Low | XS |
+| 2 | **F-32** | Bonus-to-main transition rate divides by bonus appearances that have no 10-draw future | Low | XS |
 
-**3 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
-
----
-
-## 1. F-31 — The "statistically significant" trend flag marks most numbers even on fair draws
-
-**Severity: Medium.** A false statistical claim shown to players. Found 2026-09-19 while fixing F-30.
-
-`lotto_analysis/analyzers/advanced_pattern_analyzer.py:277-279` sets `trend_is_significant` from
-Kendall's tau on the last 50 points of a series that is a rolling 10-draw window, then smoothed with a
-Savitzky-Golay filter. Neighbouring points share most of their data, so they are far from
-independent, and Kendall's test - which assumes independence - returns p-values that are far too
-small. On the real data 32 of 47 numbers are "significant" (13 up, 13 down past the 0.2 threshold);
-at p < 0.05 about 2.4 are expected by chance. On simulated fair draws (498 draws, 5 seeds) the same
-function flags 25, 25, 25, 33 and 31 of 47 - so the flag says nothing about the draw.
-
-Shown as the Trend metric on Number Insights, the "Trending Up / Down" filter and lists on Trigger
-Periods ("statistically significant (p < 0.05)", `view/pages/trigger_analysis.py:558-562`), and read
-by Post Draw Analysis. F-30 removed it from the Number Insights profile. No ML feature reads it.
-
-**Fix.** Test the raw per-draw appearances (0/1 per draw, or counts in non-overlapping blocks), not
-the smoothed rolling series; then verify on simulated fair draws that about 5% of numbers are flagged.
+**2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
-## 2. F-29 — Sum alerts read a key that does not exist; the volatility alert can never fire
+
+## 1. F-29 — Sum alerts read a key that does not exist; the volatility alert can never fire
 
 **Severity: Low.** Found 2026-09-19 while fixing F-28.
 
@@ -74,7 +53,7 @@ access. Test: a sum alert quotes the mean in the JSON, and a line of the most vo
 the volatility alert.
 
 ---
-## 3. F-32 — The bonus-to-main transition rate divides by appearances with no 10-draw future
+## 2. F-32 — The bonus-to-main transition rate divides by appearances with no 10-draw future
 
 **Severity: Low.** Found 2026-09-19 while fixing F-30.
 
@@ -267,6 +246,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-31 | The "significant trend" flag ran Kendall's tau on a smoothed rolling series and flagged 61% of numbers on fair draws | `advanced_pattern_analyzer.py` |
 | F-30 | Number Insights graded numbers STRONG PICK / AVOID and rewarded "overdue"; bonus balls were called likely to come up, from a 10/47 baseline | `number_insights.py`, `draw_history.py`, `prediction_validator.py`, `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | F-28 | Pattern Comparison, Trigger Periods, the anomaly alerts and the manual graded lines strong / weak / risky and quoted false frequencies | `pattern_comparison.py`, `trigger_analysis.py`, `anomaly_detector.py`, `prediction_validator.py`, `statistics.py`, `dashboard-manual.md` |
 | F-26 | Prediction Validator told players "Play with confidence" and "Regenerate numbers" | `prediction_validator.py` |
@@ -309,6 +289,33 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-31 — The "significant trend" flag flagged most numbers on fair draws
+
+**Root cause.** `advanced_pattern_analyzer.py` set `trend_is_significant` from Kendall's tau on the
+last 50 points of a rolling 10-draw frequency, smoothed with a Savitzky-Golay filter. Neighbouring
+points of that series share most of their data, so they are not independent, and the test's p-values
+were far too small: 32 of 47 real numbers were "significant", and on simulated fair draws the function
+flagged 285 of 470 (61%) where p < 0.05 allows about 5%. It also flagged trends with no older window
+to compare. The flag was shown as Trend on Number Insights and Post Draw Analysis and as the Trending
+Up / Down filter and lists on Trigger Periods ("statistically significant (p < 0.05)").
+
+**Fix.** `trend_is_significant` is Fisher's exact test on the raw counts the trend compares - draws
+with the number in the last 50 against the 50 before - false when there is no older window. The
+smoothed `appearance_trend` value, which the ML layer reads, is unchanged. Number Insights' profile
+shows the trend again (F-30 had left it out); Trigger Periods states the test and that about 2 of the
+47 numbers are flagged by chance; the manual and `docs/ml-concepts.md` describe the real method.
+
+**Measured.** Simulated fair draws, 20 x 47 numbers: 3.3% flagged (was 53-70% per run).
+`drawpick.py` re-run: only `trend_is_significant` changed - 31 numbers True -> False - and
+`statistically_significant_trends` 32 -> 1 (number 42; ~2.4 expected by chance). `quickpick.py`
+re-run: picks identical, largest metric change 1.3e-6. Number Insights for 42 and Trigger Periods
+render with `AppTest`: no exceptions, no error boxes.
+
+**Tests.** `tests/test_trend_significance.py` (new, 4 tests): 0.5-6% flagged across 470 fair numbers
+(the old code: 61%); a real change (2 -> 25 appearances in 50 draws) is flagged; nothing is flagged
+with fewer than 100 draws. Three of the four failed on the old code; the real-change test passes on
+both, as it should.
 
 ### F-30 — Number Insights graded numbers as picks; bonus balls were called due
 
