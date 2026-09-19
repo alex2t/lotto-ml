@@ -30,7 +30,9 @@ streamlit run app.py
 `lottery_picks.txt`. They type 6 numbers and get six checks, each shown against what past draws did:
 odd/even ratio, sum, HMC pattern, bonus transition, range spread, and how many numbers are >= 32.
 
-The first five are scored into an overall score. **The high-numbers check (F-19) is information
+The first five are scored into an overall score. **That score measures how typical the line looks
+next to past draws, not its chance of winning** - its grades and verdicts say "typical" / "unusual"
+and never advise playing or regenerating (F-26, `tests/test_site_wording.py`). **The high-numbers check (F-19) is information
 only**: it shows the line's count of numbers >= 32 next to the share of past draws with each count,
 and a fair draw's share, so the user can decide for themselves. It is not scored because every line
 is equally likely to win - the only effect of high numbers is less prize sharing with birthday-number
@@ -47,6 +49,11 @@ Shared helpers are in `../utils/`: `data_loader.py` (cached artifact reads), `fo
 
 ## Rules
 
+- **Describe, never advise.** A page may say a line or number is common, typical or unusual in past
+  draws. It must not call it strong, weak, safe, risky, due or overdue, or tell the player to pick,
+  avoid, include or regenerate anything - every line is equally likely to win. Do not quote a
+  frequency from memory; take it from `data/*.json` (the anomaly alerts quoted "<0.5%" for a share that
+  is 2%). `tests/test_site_wording.py` holds the list of banned phrases (F-26, F-28).
 - **This layer is read-only.** Pages consume `data/*.json`, `lottery_picks.txt` and `model_metrics/`.
   Nothing here writes an artifact, trains a model, or recomputes a feature. If a page needs a number
   that does not exist, it is produced upstream in `lotto_analysis/` or `ml_lotto/`, not here.
@@ -56,6 +63,10 @@ Shared helpers are in `../utils/`: `data_loader.py` (cached artifact reads), `fo
   `main_numbers`, which `lotto_draw_history.json` did not have, and the empty default made it answer
   every line with "no similar draws" for ten months (F-25). A missing field must raise. After
   changing a page, render it with real input (Streamlit `AppTest`), not just a page load.
+- **A past draw's hot/medium/cold is the one in force before it**, stored per ball in
+  `lotto_draw_history.json` `winning_numbers_details[i]['category']`. `lotto_trigger_periods.json`
+  is dated at the latest draw - use it only for the player's own line. Applying it to history made
+  recent draws look all-hot (F-27).
 - Adding a page means a module here **and** an entry in `app.py`'s `PAGES` dict.
 - The dashboard shows stale numbers until `drawpick.py` and `quickpick.py` have re-run. If a page
   looks wrong, check the artifact timestamps before reading the page code.
