@@ -72,8 +72,11 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
 - **A "random" baseline is the chance in a fair draw, counted the same way as the rate it is
   compared with.** `bonus_to_main_analyzer.py` compared "comes up as a main number within 10 draws"
   with 10/47 - one ball per draw instead of six - and reported a 3.44x boost for what is chance
-  (1 - (41/47)^10 = 74.5%). Test a baseline on simulated fair draws: the boost must come out ~1.0
-  (`tests/test_bonus_transition_baseline.py`, F-30). The rate's denominator counts only the cases
+  (1 - (41/47)^10 = 74.5%). `odd_even_analyzer.py` tested each number's share of odd draws against
+  0.5, but a draw containing an odd number is more often odd - chance is ~0.83 for an odd number, ~0.54
+  for an even one (`chance_of_odd_draw`) - and it validated all 24 odd numbers (F-38). Test a
+  baseline on simulated fair draws: the boost must come out ~1.0
+  (`tests/test_bonus_transition_baseline.py`, F-30; `tests/test_odd_even_affinity.py`, F-38). The rate's denominator counts only the cases
   that could succeed: a bonus ball in the last 10 draws has no 10-draw window yet (F-32).
 - **A draw's `recent_bonus_numbers` ends with its own bonus.** `hmc_analyzer.py` updates the list after
   each draw, so it is the window for the NEXT draw - what serving needs. The window before draw `i` is

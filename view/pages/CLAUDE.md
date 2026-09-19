@@ -17,7 +17,7 @@ streamlit run app.py
 |:--|:--|
 | `trigger_analysis.py` | Trigger Periods Analysis |
 | `draw_history.py` | Draw History |
-| `statistics.py` | Statistics - includes the draw breakdown by count of numbers >= 32 (F-19) |
+| `statistics.py` | Statistics - includes the draw breakdown by count of numbers >= 32 (F-19); each number's odd/even affinity next to its fair-draw chance (F-38) |
 | `freshness_analysis.py` | Freshness Analysis |
 | `prediction_validator.py` | Prediction Validator - **where a user builds and checks their own line** |
 | `number_insights.py` | Number Insights - a neutral profile of one number, no score or verdict (F-30) |
