@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2026-09-19 19:10:08
+LOTTERY PICKS - GENERATED 2026-09-19 22:41:02
 ======================================================================
 INTERACTION FEATURES EDITION V3.16
 Model 1: 6 main (ML-optimized with interactions) + 1 bonus
@@ -119,10 +119,10 @@ BONUS BALL PREDICTIONS (Top 6)
 ======================================================================
 BONUS-TO-MAIN PREDICTIONS (Top 6)
 ======================================================================
-#1. Number 15:   7.3% probability [hot   ] (9 draws since bonus)
-#2. Number 31:   7.3% probability [hot   ] (0 draws since bonus)
-#3. Number 14:   7.1% probability [hot   ] (5 draws since bonus)
-#4. Number 18:   6.9% probability [hot   ] (6 draws since bonus)
-#5. Number 34:   6.9% probability [hot   ] (8 draws since bonus)
+#1. Number 31:   7.5% probability [hot   ] (0 draws since bonus)
+#2. Number 15:   7.3% probability [hot   ] (9 draws since bonus)
+#3. Number 14:   7.2% probability [hot   ] (5 draws since bonus)
+#4. Number  4:   7.0% probability [hot   ] (1 draws since bonus)
+#5. Number 18:   7.0% probability [hot   ] (6 draws since bonus)
 #6. Number 43:   6.3% probability [hot   ] (4 draws since bonus)
 

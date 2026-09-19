@@ -13,6 +13,7 @@ estimated over the whole timeline - including the validation window - so it leak
 outcome information into the features.
 """
 
+import numpy as np
 import pytest
 
 from ml_lotto.config import (
@@ -167,6 +168,23 @@ def test_the_removed_c5_features_stay_out_of_the_auxiliary_models(label, config)
     # The group keyword that used to expand to the lt_* features (deleted in F-24)
     back = sorted((C5_REMOVED | {'LONG_TERM_PATTERN_WEIGHTS'}) & set(config['features']))
     assert not back, f"{label} uses full-history feature(s) removed in C-5: {back}"
+
+
+@pytest.mark.parametrize('label,config', MODELS + AUX_MODELS)
+def test_no_selected_feature_is_a_string(snapshots, label, config):
+    """
+    A model column must be a number, not a label (F-41).
+
+    Regression: Bonus-to-Main selected `category`, whose value is 'hot' / 'medium' / 'cold'.
+    The row builders turned any non-numeric value into 0.0, so the column was 0.0 in every
+    training and serving row - a constant, and the model could learn nothing from it. The
+    other tests here miss it because `produced` drops `category`.
+    """
+    early, _ = snapshots
+    row = early[1]
+    strings = sorted(n for n in expand_feature_selection(config['features'], sorted(row))
+                     if not isinstance(row[n], (int, float, np.number)))
+    assert not strings, f"{label} selects non-numeric feature(s): {strings}"
 
 
 def test_a_config_name_that_is_not_produced_raises(produced):

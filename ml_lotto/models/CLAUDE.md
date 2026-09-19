@@ -56,6 +56,9 @@ the back door. `../../tests/test_model_capacity.py` covers this.
   configs, so none comes back.
 - Playable-ticket constraints (sum, span, odd count) belong in `../prediction/filters.py`, never in a
   feature list or a model.
+- **A model column must be a number.** `category` is a string; Bonus-to-Main selected it and both row
+  builders turned it into 0.0, so it was a constant column in every row (F-41). `bonus_to_main_row()`
+  now raises on a non-numeric value. The engine still carries `category` for the interactions.
 - A feature named in a config must be produced by both `../features/walk_forward.py` and
   `../features/extractor.py`. A name the serving features lack raises in `expand_feature_selection`
   (F-15) - fix the config, do not catch the error.
