@@ -25,13 +25,12 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-35** | `post_draw_analysis.py` reads `data/irish500.csv` directly, violating the sole API boundary | Medium | S |
-| 2 | **F-38** | Odd/even affinity flags all 24 odd numbers as "validated" on a biased test; Statistics page shows it | Medium | S |
-| 3 | **F-36** | A bonus ball repeated in the 10-draw window gets its oldest appearance as `draws_since_bonus` | Low | S |
-| 4 | **F-41** | Bonus-to-Main trains on `category` as a constant 0.0 - a string turned into 0.0 in every row | Low | S |
-| 5 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
+| 1 | **F-38** | Odd/even affinity flags all 24 odd numbers as "validated" on a biased test; Statistics page shows it | Medium | S |
+| 2 | **F-36** | A bonus ball repeated in the 10-draw window gets its oldest appearance as `draws_since_bonus` | Low | S |
+| 3 | **F-41** | Bonus-to-Main trains on `category` as a constant 0.0 - a string turned into 0.0 in every row | Low | S |
+| 4 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
 
-**5 open defects (2 Medium, 3 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**4 open defects (1 Medium, 3 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
@@ -44,17 +43,6 @@ None open.
 ---
 
 ## 2. Medium severity defects
-
-### F-35 — `post_draw_analysis.py` reads `data/irish500.csv` directly
-
-**Severity: Medium.** Registered 2026-09-19.
-
-**Root cause.** `view/pages/post_draw_analysis.py:27` defines `load_latest_draw_from_csv(csv_path: str = 'data/irish500.csv')` which directly reads and parses the raw CSV file to display the latest draw and autofill inputs (`post_draw_analysis.py:222-231`).
-
-This directly violates the core architectural invariant in `GEMINI.md` Section 1.3 and Section 3.5:
-> `data/*.json` is the sole API boundary: Pages in `view/` and models in `ml_lotto/` read only these JSON artifacts, never `data/irish500.csv` directly.
-
-**Fix.** Update `post_draw_analysis.py` to load the latest draw from `data/lotto_draw_history.json` via `view.utils.data_loader` or standard JSON loading, matching the other dashboard pages.
 
 ### F-38 — Odd/even affinity flags every odd number as "validated" on a biased test
 
@@ -302,6 +290,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-35 | Post Draw Analysis parsed `data/irish500.csv` itself for the latest draw | `post_draw_analysis.py` |
 | F-40 | Bonus-to-Main model was served a dict built from the extractor and JSON profiles, not the engine rows it was trained on | `bonus_to_main_trainer.py`, `bonus_to_main_predictor.py`, `bonus_to_main_features.py`, `bonus_window.py`, `quickpick.py` |
 | F-34 | Main models were served the extractor's row, not the row they were trained on: gap statistics, `freshness_bin` interactions and `has_consecutive_partner` differed | `walk_forward.py`, `quickpick.py` |
 | F-33 | A draw's recent-bonus list ends with its own bonus; three bonus statistics read it as the pre-draw window | `bonus_analyzer.py`, `draw_history.py` |
@@ -350,6 +339,25 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-35 — Post Draw Analysis read the draw CSV
+
+**Root cause.** `view/pages/post_draw_analysis.py` had its own `load_latest_draw_from_csv()`, which
+parsed `data/irish500.csv` - trying three date formats and swallowing every exception - to show the
+latest draw and fill the Autofill inputs. Every other page reads `data/*.json`, which is what lets the
+Next.js site replace Streamlit without the CSV; this page would have broken there. The CSV and the
+JSON agreed on the latest draw, so nothing showed wrong.
+
+**Fix.** `load_latest_draw()` takes the last date from `data_loader.get_sorted_draw_dates(
+load_draw_history())` and reads `main_numbers` and `bonus_number` with `[...]`. The "no draw found"
+branches went with it: `load_draw_history()` stops the page if the file is missing.
+
+**Measured.** Autofill fills 2026-09-16's draw (4, 7, 19, 20, 35, 42 / bonus 31), as before. No module
+under `view/` names `irish500` any more.
+
+**Tests.** `tests/test_draw_history_numbers.py`, two new tests: clicking Autofill (Streamlit
+`AppTest`) fills the newest draw in `lotto_draw_history.json`, and no `view/**/*.py` names
+`irish500`. The second failed on the old code.
 
 ### F-40 — Bonus-to-Main model was served a different row from the one it was trained on
 
