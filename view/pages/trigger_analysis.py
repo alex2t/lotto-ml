@@ -554,12 +554,14 @@ def show():
                 - **Med**: Moderate predictability (0.85 ≤ volatility < 1.15)
                 - **Low**: Consistent, predictable patterns (volatility < 0.85)
 
-                **Trend** (Direction of change over time):
-                - **↑ Trending Up**: Statistically significant increase in appearances
-                - **→ Stable**: No significant trend detected
-                - **↓ Trending Down**: Statistically significant decrease in appearances
+                **Trend** (last 50 draws vs the 50 before):
+                - **↑ Trending Up**: Significantly more appearances
+                - **→ Stable**: No significant change
+                - **↓ Trending Down**: Significantly fewer appearances
 
-                Note: Trends are only shown when statistically significant (p < 0.05).
+                Significant means Fisher's exact test, p < 0.05. Even in a fair draw about 1 number
+                in 20 is flagged by chance - about 2 of the 47 - and a trend does not change a
+                number's chance in the next draw (F-31).
                 """)
 
         with col_info4:
