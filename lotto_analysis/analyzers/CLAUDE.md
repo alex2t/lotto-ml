@@ -75,6 +75,11 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
   (1 - (41/47)^10 = 74.5%). Test a baseline on simulated fair draws: the boost must come out ~1.0
   (`tests/test_bonus_transition_baseline.py`, F-30). The rate's denominator counts only the cases
   that could succeed: a bonus ball in the last 10 draws has no 10-draw window yet (F-32).
+- **A draw's `recent_bonus_numbers` ends with its own bonus.** `hmc_analyzer.py` updates the list after
+  each draw, so it is the window for the NEXT draw - what serving needs. The window before draw `i` is
+  draw `i-1`'s list: use `bonus_analyzer.pre_draw_bonus_window()`. Reading a draw's own list as its
+  pre-draw window made every bonus "repeat" (F-33). A 10-draw window averages ~9.2 distinct balls, so
+  its chance baseline is distinct / 47, not 10/47.
 - **A significance test runs on independent data.** `advanced_pattern_analyzer.py` ran Kendall's tau
   on a rolling, smoothed series - neighbouring points share most of their data - and flagged 61% of
   numbers on fair draws. `trend_is_significant` is now Fisher's exact test on the raw counts of the
