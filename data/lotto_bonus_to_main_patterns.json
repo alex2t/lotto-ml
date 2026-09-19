@@ -843,7 +843,7 @@
             1,
             5
         ],
-        "expected_random_rate": 0.2128,
-        "boost_factor": 3.44
+        "expected_random_rate": 0.7448,
+        "boost_factor": 0.98
     }
 }

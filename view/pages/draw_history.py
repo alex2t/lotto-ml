@@ -165,35 +165,38 @@ def show():
     # --- BONUS-TO-MAIN TRANSITION PANEL ---
     if bonus_transition_data:
         st.markdown("---")
-        st.header("🎯 Bonus-to-Main Transition Candidates")
-        st.markdown("""
-        **Why This Matters:** 74.25% of bonus numbers transition to main draw within 10 draws!
-        Numbers below have appeared as bonus recently and are likely to appear in main draw soon.
-        """)
+        st.header("🎯 Recent Bonus Balls and the Main Draw")
 
-        metadata = bonus_transition_data.get('metadata', {})
-        per_number_data = bonus_transition_data.get('per_number_transition_profile', {})
+        metadata = bonus_transition_data['metadata']
+        per_number_data = bonus_transition_data['per_number_transition_profile']
+        overall_rate = metadata['overall_transition_rate']
+        chance_rate = bonus_transition_data['transition_prediction_factors']['expected_random_rate']
+
+        st.markdown(
+            f"{overall_rate*100:.1f}% of bonus balls came up in the main draw within the next 10 draws. "
+            f"In a fair draw any number does that {chance_rate*100:.1f}% of the time (F-30). "
+            "A recent bonus ball is no likelier than any other number."
+        )
 
         col_meta1, col_meta2, col_meta3 = st.columns(3)
         with col_meta1:
-            st.metric("Overall Transition Rate", f"{metadata.get('overall_transition_rate', 0)*100:.1f}%")
+            st.metric("Bonus Balls Back Within 10 Draws", f"{overall_rate*100:.1f}%")
         with col_meta2:
-            st.metric("Total Bonus Appearances", metadata.get('total_bonus_appearances', 0))
+            st.metric("Any Number, Fair Draw", f"{chance_rate*100:.1f}%")
         with col_meta3:
-            st.metric("Numbers Tracked", metadata.get('numbers_with_transitions', 0))
+            st.metric("Total Bonus Appearances", metadata['total_bonus_appearances'])
 
-        # Build high-probability candidates list
+        # Numbers that were a bonus ball recently, with their past record
         candidates = []
         for number, stats in per_number_data.items():
-            transition_rate = stats.get('transition_rate', 0)
-            days_since = stats.get('days_since_last_bonus', 999)
-            avg_draws = stats.get('avg_draws_to_transition', 0)
+            transition_rate = stats['transition_rate']
+            days_since = stats['days_since_last_bonus']
+            avg_draws = stats['avg_draws_to_transition']
 
-            # High probability if: transition_rate > 0.65 AND days_since < 100
-            if transition_rate > 0.65 and days_since < 150:
+            if days_since is not None and days_since < 150:
                 candidates.append({
                     'Number': int(number),
-                    'Transition Rate': f"{transition_rate*100:.1f}%",
+                    'Past Bonus-to-Main Rate': f"{transition_rate*100:.1f}%",
                     'Days Since Bonus': days_since,
                     'Avg Draws to Transit': f"{avg_draws:.1f}",
                     'Last Bonus': stats.get('last_bonus_date', 'N/A'),
@@ -206,7 +209,7 @@ def show():
             candidates_df = pd.DataFrame(candidates)
             candidates_df = candidates_df.sort_values(by='Days Since Bonus', ascending=True)
 
-            st.subheader(f"🔥 Top {len(candidates)} High-Probability Transition Candidates")
+            st.subheader(f"{len(candidates)} Numbers That Were a Bonus Ball in the Last 150 Days")
             st.dataframe(
                 candidates_df,
                 hide_index=True,
@@ -221,12 +224,11 @@ def show():
             candidate_numbers = candidates_df['Number'].tolist()
             candidate_numbers_str = ", ".join(str(n) for n in candidate_numbers)
 
-            st.markdown("**Copy to filter these candidates:**")
+            st.markdown("**Copy these numbers to filter them:**")
             st.code(candidate_numbers_str, language=None)
 
-            st.info(f"💡 **Strategy Tip:** Recent bonus numbers ({candidate_numbers_str}) have {metadata.get('overall_transition_rate', 0)*100:.1f}% chance of appearing in main draw within 10 draws. Consider including 1-2 of these in your selection.")
         else:
-            st.info("No high-probability candidates at this time. Check back after next draw!")
+            st.info("No number was a bonus ball in the last 150 days.")
 
         st.markdown("---")
     

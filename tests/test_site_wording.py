@@ -32,8 +32,11 @@ def page_text(at):
     return ' '.join(str(p) for p in parts).lower()
 
 
+PAGE_TEMPLATE = "from view.pages import {page}; {page}.show()"
+
+
 def render(page, line=None, sidebar=False):
-    at = AppTest.from_string(f"from view.pages import {page}; {page}.show()", default_timeout=60)
+    at = AppTest.from_string(PAGE_TEMPLATE.format(page=page), default_timeout=60)
     at.run()
     if line:
         box = at.sidebar.text_input[0] if sidebar else at.text_input[0]
@@ -86,6 +89,55 @@ def test_trigger_periods_sum_check_gives_no_confidence_verdict(line, verdict):
     assert verdict in text
     assert_no_advice(text)
     assert EQUAL_CHANCE in text
+
+
+NUMBER_ADVICE = ADVICE + ['overdue', 'pick', 'avoid', 'candidate', 'is due', 'likely to appear',
+                          'high-probability', 'strategy', 'indicator']
+
+
+def latest_bonus_ball():
+    with open('data/lotto_draw_history.json', encoding='utf-8') as f:
+        history = json.load(f)
+    return history[max(history)]['bonus_number']
+
+
+def longest_gap_number():
+    """The number whose last appearance is furthest back - the one the old page called OVERDUE."""
+    with open('data/lotto_draw_history.json', encoding='utf-8') as f:
+        history = json.load(f)
+    last_seen = {}
+    for date in sorted(history):
+        for d in history[date]['winning_numbers_details']:
+            last_seen[d['number']] = date
+    return min(last_seen, key=last_seen.get)
+
+
+@pytest.mark.parametrize('pick', ['latest_bonus', 'longest_gap'])
+def test_number_insights_is_a_profile_without_a_verdict(pick):
+    """F-30: no STRONG PICK / AVOID score, no "overdue", no "strong candidate"."""
+    number = latest_bonus_ball() if pick == 'latest_bonus' else longest_gap_number()
+    at = AppTest.from_string(PAGE_TEMPLATE.format(page='number_insights'), default_timeout=60)
+    at.run()
+    at.number_input[0].set_value(number).run()
+    assert not at.exception
+    text = page_text(at)
+    assert 'profile' in text
+    for phrase in NUMBER_ADVICE:
+        assert phrase not in text, phrase
+    assert '6 in 47' in text
+    assert 'does not make a number due' in text
+
+
+def test_draw_history_shows_the_transition_rate_next_to_chance():
+    """F-30: the bonus-to-main rate is shown with the fair-draw rate from the artifact, no tip."""
+    with open('data/lotto_bonus_to_main_patterns.json', encoding='utf-8') as f:
+        chance = json.load(f)['transition_prediction_factors']['expected_random_rate']
+    at = render('draw_history')
+    text = page_text(at)
+    assert f"{chance*100:.1f}%" in text
+    assert 'no likelier than any other number' in text
+    for phrase in NUMBER_ADVICE:
+        assert phrase not in text, phrase
 
 
 def alert_lines():
