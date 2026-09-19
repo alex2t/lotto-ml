@@ -7,10 +7,10 @@
     "classifier__estimator__min_samples_leaf": 500,
     "classifier__estimator__n_estimators": 100
   },
-  "best_score": 0.5052775100230492,
+  "best_score": 0.505276936717311,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 39.09897565841675,
+  "elapsed_time": 25.976856231689453,
   "total_fits": 12
 }
