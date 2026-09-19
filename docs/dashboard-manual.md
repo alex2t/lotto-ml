@@ -101,12 +101,14 @@ The dashboard will open in your web browser with 8 pages accessible via the top 
 
 
 #### **Trend Direction** 📈
-- **What it is:** Statistical direction of appearance frequency over time
+- **What it is:** Whether a number came up more or less often in the last 50 draws than in the 50
+  before (Fisher's exact test, p < 0.05)
 - **Options:**
   - **All:** No filter
-  - **↑ Trending Up:** Statistically increasing in frequency (p < 0.05)
-  - **→ Stable:** No significant trend
-  - **↓ Trending Down:** Statistically decreasing in frequency (p < 0.05)
+  - **↑ Trending Up:** Significantly more often
+  - **→ Stable:** No significant change
+  - **↓ Trending Down:** Significantly less often
+- About 2 of the 47 numbers are flagged by chance even in a fair draw.
 
 - **What to look for:**
   - **↑ Trending Up:** Numbers gaining momentum - appearing more frequently
@@ -450,8 +452,8 @@ wants a more typical-looking line. No advice to play or regenerate.
 - **Recent Counts:** Appearances in last 20, older periods
 - **Peak/Trough Counts:** Number of cycles detected
 
-These describe the number's past. None changes its chance in the next draw. The Trend
-significance flag is unreliable - it marks most numbers even on fair draws (F-31).
+These describe the number's past. None changes its chance in the next draw. A significant trend
+is 5% likely by chance for any number, so about 2 of the 47 show one in a fair draw.
 
 ### ⏱️ Recent Activity
 
@@ -700,11 +702,12 @@ weak, and re-checked as draws accumulate.)
 
 ### Trend
 
-**Definition:** Long-term statistical direction of appearance frequency.
+**Definition:** Change in how often a number came up: the last 50 draws against the 50 before.
 
-**How it's calculated:**
-- Linear regression on appearance counts over time
-- Statistical significance tested (p < 0.05 required)
+**How it's calculated (checked against the code 2026-09-19, F-31):**
+- Value: the change between the two windows, on a smoothed series
+- Significance: Fisher's exact test on the raw counts of the two windows, p < 0.05. On simulated
+  fair draws it flags 3.3% of numbers; the earlier test on the smoothed series flagged 61%.
 
 **Types:**
 - **↑ Trending Up:** Increasing frequency (significant)
