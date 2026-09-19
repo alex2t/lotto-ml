@@ -432,8 +432,8 @@ def main():
             },
             "timing_peak": [1, 2],
             "timing_critical_window": [1, 5],
-            "expected_random_rate": round(10/47, 4),
-            "boost_factor": round(overall_rate / (10/47), 2)
+            "expected_random_rate": round(1 - (41/47)**10, 4),
+            "boost_factor": round(overall_rate / (1 - (41/47)**10), 2)
         }
     }
 

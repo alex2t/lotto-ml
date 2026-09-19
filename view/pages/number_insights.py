@@ -34,6 +34,7 @@ def load_number_data(number: int) -> Dict[str, Any]:
             # Fixed: Use correct key name 'per_number_transition_profile'
             per_number = bonus_data.get('per_number_transition_profile', {})
             data['bonus_transition'] = per_number.get(str(number), {})
+            data['transition_chance_rate'] = bonus_data['transition_prediction_factors']['expected_random_rate']
     except FileNotFoundError:
         data['bonus_transition'] = {}
 
@@ -88,8 +89,8 @@ def get_appearance_timeline(number: int, draw_history: Dict) -> List[Dict]:
     return appearances
 
 
-def calculate_gap_stats(appearances: List[Dict]) -> Dict[str, Any]:
-    """Calculate gap statistics between appearances."""
+def calculate_gap_stats(appearances: List[Dict], latest_draw: str) -> Dict[str, Any]:
+    """Gap statistics between appearances; the current gap runs to the latest draw, not today (F-11)."""
     if len(appearances) < 1:
         return {
             'min_gap': 0,
@@ -124,8 +125,7 @@ def calculate_gap_stats(appearances: List[Dict]) -> Dict[str, Any]:
     # Calculate current gap (days since last appearance)
     last_date = parse_date(appearances[-1]['date'])
     if last_date:
-        current_date = datetime.now()
-        current_gap = (current_date - last_date).days
+        current_gap = (parse_date(latest_draw) - last_date).days
     else:
         current_gap = 0
 
@@ -143,8 +143,8 @@ def show():
     st.title("🔍 Number Insights - Deep Dive Analysis")
 
     st.markdown("""
-    Select any number (1-47) to view comprehensive historical analysis, trends, and patterns.
-    This tool helps identify the best numbers for your next prediction.
+    Select any number (1-47) to view its history, trends, and patterns.
+    These describe the past only: every number has the same 6-in-47 chance in each draw.
     """)
 
     # Number selector
@@ -291,6 +291,7 @@ def show():
         with col_b2:
             transition_rate = bonus_transition.get('transition_rate', 0)
             st.metric("Bonus→Main Rate", f"{transition_rate*100:.1f}%")
+            st.caption(f"Any number, fair draw: {number_data['transition_chance_rate']*100:.1f}%")
 
         with col_b3:
             # Fixed: Use correct field name 'avg_draws_to_transition'
@@ -307,16 +308,14 @@ def show():
             days_since = bonus_transition.get('days_since_last_bonus', 0)
             st.info(f"📅 Last Bonus: {last_bonus} ({days_since} days ago)")
 
-            if transition_rate > 0.65 and days_since < 150:
-                st.success("✅ This number is a STRONG candidate for transitioning from bonus to main draw!")
-
         st.markdown("---")
 
     # === GAP ANALYSIS ===
     st.header("📏 Gap Analysis")
 
-    appearances = get_appearance_timeline(selected_number, number_data.get('draw_history', {}))
-    gap_stats = calculate_gap_stats(appearances)
+    draw_history = number_data['draw_history']
+    appearances = get_appearance_timeline(selected_number, draw_history)
+    gap_stats = calculate_gap_stats(appearances, max(draw_history))
 
     col_g1, col_g2, col_g3, col_g4 = st.columns(4)
 
@@ -335,17 +334,16 @@ def show():
         gap_delta = f"+{current_gap - avg_gap:.0f}" if current_gap > avg_gap else f"{current_gap - avg_gap:.0f}"
         st.metric("Current Gap", f"{current_gap} days", gap_delta)
 
-    # Gap interpretation
+    # Gap as a fact - a long gap does not make a number due (F-30)
     if avg_gap > 0:
         gap_ratio = current_gap / avg_gap
-        if gap_ratio > 1.5:
-            st.warning(f"⚠️ Current gap is {gap_ratio:.1f}x the average - this number is OVERDUE!")
-        elif gap_ratio > 1.2:
-            st.info(f"ℹ️ Current gap is {gap_ratio:.1f}x the average - slightly overdue")
+        if gap_ratio > 1.2:
+            st.info(f"Current gap is {gap_ratio:.1f}x its average - longer than usual.")
         elif gap_ratio < 0.5:
-            st.success(f"✅ Current gap is only {gap_ratio:.1f}x the average - recently appeared")
+            st.info(f"Current gap is {gap_ratio:.1f}x its average - it came up recently.")
         else:
-            st.info(f"ℹ️ Current gap is {gap_ratio:.1f}x the average - within normal range")
+            st.info(f"Current gap is {gap_ratio:.1f}x its average - about usual.")
+        st.caption("A long gap does not make a number due: its chance is the same in every draw.")
 
     st.markdown("---")
 
@@ -433,80 +431,41 @@ def show():
 
     st.markdown("---")
 
-    # === RECOMMENDATION SECTION ===
-    st.header("💡 Recommendation")
+    # === PROFILE SECTION ===
+    # Facts about the number's past, with no score or verdict: every number is equally likely (F-30)
+    st.header("📋 Profile")
 
-    recommendation_score = 0
-    reasons = []
-    warnings = []
-
-    # Score based on various factors
+    facts = []
     if advanced:
-        # Positive factors
-        if advanced.get('trend_is_significant') and advanced.get('appearance_trend', 0) > 0.2:
-            recommendation_score += 20
-            reasons.append("✅ Statistically significant upward trend")
+        # No trend line: trend_is_significant flags most numbers even in fair draws (F-31)
+        ratio = advanced['recent_vs_baseline']
+        if ratio > 1.2:
+            facts.append(f"Came up more often recently than over its history ({ratio:.2f}x)")
+        elif ratio < 0.8:
+            facts.append(f"Came up less often recently than over its history ({ratio:.2f}x)")
 
-        if advanced.get('recent_vs_baseline', 0) > 1.2:
-            recommendation_score += 15
-            reasons.append("✅ Heating up - appearing more than baseline")
+        if advanced['in_regime_shift']:
+            facts.append("Its frequency changed noticeably (regime shift)")
 
-        if advanced.get('in_regime_shift'):
-            recommendation_score += 10
-            reasons.append("✅ In regime shift - pattern changing")
-
-        # Negative factors
-        if advanced.get('appearance_trend', 0) < -0.2 and advanced.get('trend_is_significant'):
-            recommendation_score -= 15
-            warnings.append("⚠️ Trending down significantly")
-
-        if advanced.get('recent_vs_baseline', 1) < 0.8:
-            recommendation_score -= 10
-            warnings.append("⚠️ Cooling down - appearing less than baseline")
-
-    # Gap analysis
-    if avg_gap > 0 and gap_ratio > 1.5:
-        recommendation_score += 25
-        reasons.append(f"✅ Overdue - current gap is {gap_ratio:.1f}x average")
+    if avg_gap > 0 and gap_ratio > 1.2:
+        facts.append(f"Current gap is {gap_ratio:.1f}x its average")
     elif avg_gap > 0 and gap_ratio < 0.5:
-        recommendation_score -= 20
-        warnings.append(f"⚠️ Recently appeared - gap only {gap_ratio:.1f}x average")
+        facts.append(f"Came up recently - gap {gap_ratio:.1f}x its average")
 
-    # Bonus transition
-    if bonus_transition.get('transition_rate', 0) > 0.65 and bonus_transition.get('days_since_bonus', 999) < 150:
-        recommendation_score += 15
-        reasons.append("✅ Strong bonus-to-main transition candidate")
+    if bonus_transition and bonus_transition['days_since_last_bonus'] is not None \
+            and bonus_transition['days_since_last_bonus'] < 150:
+        facts.append(f"Was a bonus ball {bonus_transition['days_since_last_bonus']} days before the latest draw")
 
-    # Freshness
     if last_5 == 0:
-        recommendation_score += 5
-        reasons.append("✅ Fresh - not in last 5 draws")
+        facts.append("Not in the last 5 draws")
     elif last_5 >= 2:
-        recommendation_score -= 10
-        warnings.append(f"⚠️ Appeared {last_5} times in last 5 draws")
+        facts.append(f"Appeared {last_5} times in the last 5 draws")
 
-    # Final recommendation
-    recommendation_score = max(0, min(100, recommendation_score + 50))  # Normalize to 0-100
-
-    if recommendation_score >= 75:
-        st.success(f"🌟 **STRONG PICK** (Score: {recommendation_score}/100)")
-    elif recommendation_score >= 60:
-        st.info(f"👍 **GOOD PICK** (Score: {recommendation_score}/100)")
-    elif recommendation_score >= 40:
-        st.warning(f"⚖️ **NEUTRAL** (Score: {recommendation_score}/100)")
+    if facts:
+        for fact in facts:
+            st.markdown(f"- {fact}")
     else:
-        st.error(f"⛔ **AVOID** (Score: {recommendation_score}/100)")
+        st.markdown("Nothing stands out: its recent history is close to its usual.")
 
-    # Show reasons
-    if reasons:
-        st.markdown("**Positive Indicators:**")
-        for reason in reasons:
-            st.markdown(f"- {reason}")
-
-    if warnings:
-        st.markdown("**Caution Indicators:**")
-        for warning in warnings:
-            st.markdown(f"- {warning}")
-
-    if not reasons and not warnings:
-        st.info("No strong indicators detected. This number shows neutral characteristics.")
+    st.caption("None of this changes its chance: every number has a 6 in 47 (12.8%) chance of being "
+               "a main number in each draw.")

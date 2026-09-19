@@ -203,7 +203,7 @@ How typical a sum is says nothing about the chance of winning. There is no confi
 
 ## 2. Draw History
 
-**Purpose:** Review historical draws and identify bonus-to-main transition candidates.
+**Purpose:** Review historical draws and which recent bonus balls later came up as main numbers.
 
 ### 📊 Display Format
 
@@ -221,28 +221,15 @@ Each draw shows:
   - **Days Since:** Days since previous appearance
   - **Recent columns (L4, L5, L9, L24):** Appearance counts
 
-### 🎯 Bonus-to-Main Transition Candidates
+### 🎯 Recent Bonus Balls and the Main Draw
 
-**Key Finding:** 74.25% of bonus numbers appear in main draw within 10 draws!
+Shows the share of bonus balls that came up in the main draw within the next 10 draws, next to the
+share any number would in a fair draw (`expected_random_rate` in `lotto_bonus_to_main_patterns.json`).
+In a fair draw any number comes up in the main draw within 10 draws 74.5% of the time (1 - (41/47)^10), and bonus balls do the same - 74.6% over 488 draws, checked 2026-09-19 (F-30). A recent bonus ball is no likelier than any other number.
 
-**What this section shows:**
-- Numbers that recently appeared as **bonus** and have high probability of appearing in **main draw** soon
-- **Filter criteria:**
-  - Transition Rate > 65%
-  - Days Since Last Bonus < 150 days
-
-**Table columns:**
-- **Number:** The candidate number
-- **Transition Rate:** Historical % of transitioning from bonus to main
-- **Days Since Bonus:** Days since it last appeared as bonus
-- **Avg Draws to Transit:** Average number of draws before transitioning
-- **Last Bonus:** Date of last bonus appearance
-- **HMC When Transitioning:** Most common HMC category when it transitions
-- **Freshness:** Most common freshness level when it transitions
-
-**Copyable List:** Click to select the comma-separated list of candidates for easy filtering.
-
-**Strategy:** Include 1-2 transition candidates in your 6-number selection for statistically-backed picks.
+**Table:** every number that was a bonus ball in the last 150 days, with its past bonus-to-main rate,
+days since it was a bonus ball, average draws until it came up as a main number, and the HMC category
+and freshness it most often had. A copyable list lets you filter them on other pages.
 
 ### 🔍 Sidebar Filters
 
@@ -386,10 +373,9 @@ Enter your 6 numbers (from quickpick.py or manual selection).
 - **Poor:** Rare or never occurred pattern (Score: 20-59)
 
 #### 4️⃣ **Bonus Transition**
-- **Excellent:** Includes 2+ recent transition candidates (Score: 100)
-- **Good:** Includes 1 candidate (Score: 80)
-- **Fair:** Includes candidates with lower probability (Score: 60)
-- **Poor:** No transition candidates (Score: 40)
+- **Typical:** Includes a number that was a bonus ball in the last 150 days (Score: 100) - 99.6% of
+  past draws did (F-30, 2026-09-19)
+- **Unusual:** No such number (Score: 70)
 
 #### 5️⃣ **Range Spread**
 - **Wide:** Numbers in 4+ ranges, max 3 per range (Score: 80-100)
@@ -464,10 +450,8 @@ wants a more typical-looking line. No advice to play or regenerate.
 - **Recent Counts:** Appearances in last 20, older periods
 - **Peak/Trough Counts:** Number of cycles detected
 
-**How to interpret:**
-- **High volatility + Trending Up + Heating Up:** Strong pick (momentum play)
-- **Low volatility + Stable trend:** Predictable, safe pick
-- **Regime Shift = Yes:** Number changing behavior - opportunity or risk
+These describe the number's past. None changes its chance in the next draw. The Trend
+significance flag is unreliable - it marks most numbers even on fair draws (F-31).
 
 ### ⏱️ Recent Activity
 
@@ -476,11 +460,11 @@ Shows appearances in last 4, 5, 9, and 24 draws with freshness classification.
 ### 🎁 Bonus Number Analysis
 
 - **Bonus Appearances:** Times appeared as bonus
-- **Bonus→Main Rate:** Probability of transitioning
+- **Bonus→Main Rate:** How often it came up as a main number within 10 draws of being a bonus ball,
+  next to the 74.5% any number would in a fair draw
 - **Avg Draws to Transit:** Typical waiting period
 - **Last Bonus:** Date and days since
 
-**Transition candidate status:** If rate > 65% and days < 150, it's a strong candidate.
 
 ### 📏 Gap Analysis
 
@@ -491,9 +475,8 @@ Shows appearances in last 4, 5, 9, and 24 draws with freshness classification.
 - **Avg Gap:** Typical waiting time
 - **Current Gap:** Days since last appearance
 
-**Overdue Detection:**
-- If current gap > 1.5× average: ⚠️ OVERDUE (strong pick)
-- If current gap < 0.5× average: Recently appeared (avoid)
+**Current gap vs average:** stated as a fact - longer than usual, about usual, or came up
+recently. The current gap runs to the latest draw, not today. A long gap does not make a number due.
 
 ### 🔗 Trigger Series Patterns
 
@@ -502,7 +485,7 @@ Shows historical hot streaks:
 - **Start/End Dates:** When the streak occurred
 - **Count:** Number of appearances in that period
 
-**How to use:** If number has recent trigger series, it may be entering another hot streak.
+**Note:** a past streak says nothing about the next draw.
 
 ### 📅 Appearance History
 
@@ -511,23 +494,13 @@ Last 20 appearances with:
 - **Type:** Main or Bonus
 - **Gap:** Days since previous appearance
 
-### 💡 Recommendation (0-100 Score)
+### 📋 Profile
 
-**Factors considered:**
-- Trend direction (+20 for significant uptrend)
-- Momentum (+15 for heating up)
-- Regime shift (+10 for positive shift)
-- Overdue status (+25 for >1.5× average gap)
-- Bonus transition (+15 for strong candidate)
-- Freshness (+5 for C0)
-
-**Assessment:**
-- **75-100:** 🌟 STRONG PICK
-- **60-74:** 👍 GOOD PICK
-- **40-59:** ⚖️ NEUTRAL
-- **0-39:** ⛔ AVOID
-
-**Positive & Caution Indicators:** Specific reasons for the score.
+A list of what stands out in the number's past, with no score or verdict (F-30, 2026-09-19): how
+often it came up recently against its history, a regime shift, a gap longer than usual or a recent
+appearance, a recent bonus appearance, and its count in the last 5 draws. The old 0-100
+"Recommendation" (STRONG PICK ... AVOID) is gone - it rewarded "overdue" numbers, and every number has
+the same 6 in 47 (12.8%) chance of being a main number in each draw.
 
 ---
 
@@ -777,7 +750,7 @@ weak, and re-checked as draws accumulate.)
 
 ### Bonus-to-Main Transition
 
-**Key Finding:** 74.25% of bonus numbers appear in main draw within 10 draws.
+**Finding:** In a fair draw any number comes up in the main draw within 10 draws 74.5% of the time (1 - (41/47)^10), and bonus balls do the same - 74.6% over 488 draws, checked 2026-09-19 (F-30). A recent bonus ball is no likelier than any other number.
 
 **How it works:**
 1. Number appears as **bonus** in draw N
@@ -786,8 +759,7 @@ weak, and re-checked as draws accumulate.)
 
 **Transition Rate:**
 - Per-number statistic
-- Example: Number 46 has 69.2% transition rate
-- Only includes numbers with rate > 65% and days since < 150
+- Shown next to the fair-draw 74.5%
 
 **Why it matters:** Provides statistically-backed candidates for main number selection.
 
@@ -860,9 +832,9 @@ d) **Check Freshness:**
    - Go to **Freshness Analysis**
    - See your line's C0/C1/C2 mix next to past draws
 
-**Step 4: Review Transition Candidates**
+**Step 4: Review Recent Bonus Balls**
 - Go to **Draw History**
-- Check **Bonus-to-Main Transition Candidates**
+- Check **Recent Bonus Balls and the Main Draw**
 - See which recent bonus balls later came up as main numbers
 
 **Step 5: Filter & Refine**
@@ -988,25 +960,16 @@ A low score means the line looks less like past draws, not that it is less likel
 **Possible causes:**
 1. Model needs retraining with recent data
 2. Too many predictions (reduce count)
-3. Ignoring transition candidates
-4. Over-emphasis on single strategy (e.g., all hot)
+3. Chance: the models sit at chance, as a fair draw requires (F-17)
 
 **Solutions:**
 1. Review Post Draw Analysis recommendations
 2. Reduce prediction count to 15-20
-3. Always include 1-2 transition candidates
-4. Balance HMC categories
+3. Judge accuracy over many draws, not one
 
-### Transition candidates don't match last 10 bonus
-**Cause:** This is actually correct behavior!
-- **Last 10 Bonus:** Simple historical record
-- **Transition Candidates:** Predictive analysis with filters
-
-**Requirements for transition candidate:**
-- Transition rate > 65% (from ALL historical bonus appearances)
-- Days since last bonus < 150 days
-
-**Note:** After recent fix, overlap should be much higher (6-8 of 10).
+### Recent bonus balls don't match "Last 10 Bonus Numbers"
+The Draw History table lists every number that was a bonus ball in the last 150 days; the "Last 10
+Bonus Numbers" line lists only the last 10 draws' bonus balls.
 
 ---
 

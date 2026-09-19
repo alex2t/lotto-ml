@@ -25,44 +25,32 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-30** | Number Insights grades numbers STRONG PICK / AVOID and rewards "overdue"; Draw History says bonus balls are "likely to appear soon" | Medium | M |
+| 1 | **F-31** | "Statistically significant" trend flag marks 25-33 of 47 numbers on fair draws | Medium | S |
 | 2 | **F-29** | Sum alerts use hard-coded mean/std from a key that does not exist; the volatility alert can never fire | Low | XS |
+| 3 | **F-32** | Bonus-to-main transition rate divides by bonus appearances that have no 10-draw future | Low | XS |
 
-**2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**3 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
-## 1. F-30 — Number Insights grades numbers as picks; Draw History says bonus balls are due
+## 1. F-31 — The "statistically significant" trend flag marks most numbers even on fair draws
 
-**Severity: Medium.** Wrong claims shown to players. Found 2026-09-19 while fixing F-28, whose sweep
-of `view/` turned it up; left out of F-28 because the fix is a design choice, not rewording.
+**Severity: Medium.** A false statistical claim shown to players. Found 2026-09-19 while fixing F-30.
 
-- `view/pages/number_insights.py:437-498` scores a single number and labels it "STRONG PICK", "GOOD
-  PICK", "NEUTRAL" or "AVOID". The score adds 25 for being "overdue" (current gap > 1.5x its average,
-  `:469-470`) and 15 for a "Strong bonus-to-main transition candidate" (`:477-478`); `:342` shows
-  "this number is OVERDUE!" and `:311` "a STRONG candidate for transitioning". In a fair draw every
-  number has the same 6/47 chance each draw, whatever its gap - "overdue" is the gambler's fallacy.
-- `view/pages/draw_history.py:171` says recent bonus numbers "are likely to appear in main draw soon",
-  and the `:227` "Strategy Tip" advises "including 1-2 of these in your selection" because they have
-  a 74.25% chance of appearing in the main draw within 10 draws. That is chance: any number appears in
-  10 draws with probability 1 - (41/47)^10 = 74.5%. Measured on the 488 draws with 10 following draws
-  (2026-09-19): bonus ball 74.59%, numbers not drawn at t 74.37% (19,520 cases), every number 74.48%;
-  binomial test of the bonus rate against 74.48%, p = 1.0.
-- **The source of the claim is a wrong baseline.** `lotto_analysis/analyzers/bonus_to_main_analyzer.py:460`
-  sets `expected_random = 10 / 47` (21.3%), counting one ball per draw instead of six, and writes
-  `boost_factor = 3.44` into `data/lotto_bonus_to_main_patterns.json`
-  (`transition_prediction_factors`). The correct random rate is 74.5%, a boost of 1.0.
-  `analysis/bonus_to_main_model_recommendation.md` and the mock 0.74 in
-  `demos/demo_unified_bonus_to_main_features.py` compare against no baseline at all.
-- `docs/dashboard-manual.md` repeats both: the Number Insights section ("OVERDUE (strong pick)",
-  "STRONG PICK", "AVOID") and the Draw History "Strategy: Include 1-2 transition candidates".
+`lotto_analysis/analyzers/advanced_pattern_analyzer.py:277-279` sets `trend_is_significant` from
+Kendall's tau on the last 50 points of a series that is a rolling 10-draw window, then smoothed with a
+Savitzky-Golay filter. Neighbouring points share most of their data, so they are far from
+independent, and Kendall's test - which assumes independence - returns p-values that are far too
+small. On the real data 32 of 47 numbers are "significant" (13 up, 13 down past the 0.2 threshold);
+at p < 0.05 about 2.4 are expected by chance. On simulated fair draws (498 draws, 5 seeds) the same
+function flags 25, 25, 25, 33 and 31 of 47 - so the flag says nothing about the draw.
 
-**Fix.** Decide first: drop the per-number score from Number Insights, or keep it as a neutral profile
-("appeared less than usual recently") with no verdict. Either way, show a gap as a fact next to the
-fair-draw expectation, never as "overdue", and give the transition rate next to its 74.5% chance
-baseline. Correct `expected_random` in the analyzer to `1 - (1 - 6/47)**10` so the artifact's
-`boost_factor` reads ~1.0, then re-run `drawpick.py`. Extend `tests/test_site_wording.py` to both
-pages, adding "overdue", "pick" and "due".
+Shown as the Trend metric on Number Insights, the "Trending Up / Down" filter and lists on Trigger
+Periods ("statistically significant (p < 0.05)", `view/pages/trigger_analysis.py:558-562`), and read
+by Post Draw Analysis. F-30 removed it from the Number Insights profile. No ML feature reads it.
+
+**Fix.** Test the raw per-draw appearances (0/1 per draw, or counts in non-overlapping blocks), not
+the smoothed rolling series; then verify on simulated fair draws that about 5% of numbers are flagged.
 
 ---
 ## 2. F-29 — Sum alerts read a key that does not exist; the volatility alert can never fire
@@ -84,6 +72,23 @@ pages, adding "overdue", "pick" and "due".
 from the same band the Trigger Periods page uses; replace the detector's `.get` defaults with direct
 access. Test: a sum alert quotes the mean in the JSON, and a line of the most volatile numbers fires
 the volatility alert.
+
+---
+## 3. F-32 — The bonus-to-main transition rate divides by appearances with no 10-draw future
+
+**Severity: Low.** Found 2026-09-19 while fixing F-30.
+
+`lotto_analysis/analyzers/bonus_to_main_analyzer.py` counts transitions only for draws with 10
+draws after them (`range(len(sorted_draws) - 10)`, `:63`), but `overall_transition_rate` divides by
+all bonus appearances (`total_bonuses`, `:449`), including the last 10, which cannot transition. So
+the rate reads 73.09% (364/498) where it is 74.59% (364/488). Per-number `transition_rate` has the
+same denominator. The error is ~2% and shrinks as draws accumulate, but it makes bonus balls look
+slightly below chance (74.48%). `base_rate` in the same artifact is read by
+`ml_lotto/features/bonus_to_main_features.py:51`, so the fix changes a Bonus-to-Main feature value -
+re-run `quickpick.py` and compare metrics.
+
+**Fix.** Divide by the bonus appearances that have a full 10-draw window, overall and per number.
+Test on simulated fair draws: the rate is within noise of 1 - (41/47)^10.
 
 ---
 ## 6. Improvements done
@@ -262,6 +267,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-30 | Number Insights graded numbers STRONG PICK / AVOID and rewarded "overdue"; bonus balls were called likely to come up, from a 10/47 baseline | `number_insights.py`, `draw_history.py`, `prediction_validator.py`, `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | F-28 | Pattern Comparison, Trigger Periods, the anomaly alerts and the manual graded lines strong / weak / risky and quoted false frequencies | `pattern_comparison.py`, `trigger_analysis.py`, `anomaly_detector.py`, `prediction_validator.py`, `statistics.py`, `dashboard-manual.md` |
 | F-26 | Prediction Validator told players "Play with confidence" and "Regenerate numbers" | `prediction_validator.py` |
 | F-27 | Pattern Comparison classified past draws with today's hot/medium/cold | `pattern_comparison.py` |
@@ -303,6 +309,47 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-30 — Number Insights graded numbers as picks; bonus balls were called due
+
+**Root cause.** Two claims with one shape: a number's past predicts its next draw. Number Insights
+scored each number 0-100 as STRONG PICK / GOOD PICK / NEUTRAL / AVOID, adding 25 for an "overdue"
+gap (> 1.5x its average) and calling a number "OVERDUE!" - the gambler's fallacy; every number has
+the same 6/47 chance each draw. Draw History said recent bonus balls "are likely to appear in main
+draw soon" and advised including 1-2, because 74% of bonus balls come up as main numbers within 10
+draws. That figure is real but is chance: any number does it 1 - (41/47)^10 = 74.5% of the time
+(bonus 74.59%, numbers not drawn 74.37%, p = 1.0). It looked like a signal because
+`bonus_to_main_analyzer.py:460` used 10/47 = 21.3% as the random rate - one ball per draw instead of
+six - and wrote `boost_factor: 3.44` into the artifact. The Prediction Validator scored a line lower
+unless it held a "transition candidate" (past rate > 0.65), the same claim. The demo that "showed"
+74% hard-codes `transition_rate: 0.74` as mock input.
+
+**Fix.** Kept as a neutral profile, as the owner chose. Number Insights: the Recommendation score is
+replaced by a Profile - a list of what stands out (recent vs historical frequency, regime shift, gap
+vs average, recent bonus appearance, last-5 count), no score, no verdict, and a caption that every
+number has a 6 in 47 chance. The gap is stated as longer than usual / about usual / came up recently,
+with "a long gap does not make a number due"; it now runs to the latest draw, not `datetime.now()`
+(the F-11 rule). The Bonus→Main rate is shown next to the fair-draw rate. The trend line is left out
+of the profile - its significance flag is broken (F-31). Draw History: "Recent Bonus Balls and the
+Main Draw" shows the rate next to the fair-draw rate from the artifact and lists every number that
+was a bonus ball in the last 150 days, with no rate filter and no tip. Validator: the check counts
+any number that was a bonus ball in the last 150 days - 99.6% of past draws had one, so it is a
+typicality check - with no transition-rate filter. Analyzer: `expected_random = 1 - (1 - 6/47)**10`,
+also in `analysis/generate_bonus_to_main_json.py`. Manual, `lotto_analysis/analyzers/CLAUDE.md`
+and the old `analysis/bonus_to_main_model_recommendation.md` updated.
+
+**Measured.** `drawpick.py` re-run: the only artifact change is `expected_random_rate` 0.2128 ->
+0.7448 and `boost_factor` 3.44 -> 0.98. `quickpick.py` re-run: picks identical, largest metric change
+3.4e-5 (run noise; floor 0.031). Number Insights (the latest bonus ball and the longest-gap number)
+and Draw History render with `AppTest`: no exceptions, no error boxes. A dead branch went with the
+score: it read `days_since_bonus`, a key the artifact never had, so its +15 never applied.
+
+**Tests.** `tests/test_bonus_transition_baseline.py` (new, 3 tests): on 3,000 simulated fair draws
+the analyzer's random rate is 1 - (41/47)^10 and its boost 0.95-1.05 (the old code reports 3.5 on
+fair draws); the validator scores a line with a recent low-rate bonus ball as typical (the old one
+scored it 70). `tests/test_site_wording.py` 10 -> 13: Number Insights for the latest bonus ball and
+the longest-gap number, and Draw History, carry no pick / avoid / overdue / candidate / strategy
+wording and show the chance rate. All new tests failed on the old code.
 
 ### F-28 — Other pages graded lines strong, weak or risky, and quoted false frequencies
 
