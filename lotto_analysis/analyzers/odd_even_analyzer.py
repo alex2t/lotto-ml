@@ -31,12 +31,30 @@ except ImportError:
     STATSMODELS_AVAILABLE = False
 
 
-def analyze_odd_even_distribution(draw_history: List[Dict[str, Any]]) -> Dict[str, Any]:
+def odd_in_pool(max_number: int) -> int:
+    """How many of the numbers 1..max_number are odd."""
+    return (max_number + 1) // 2
+
+
+def chance_of_odd_draw(number: int, max_number: int, draw_size: int) -> float:
+    """
+    Chance that a fair draw containing `number` has at least as many odd numbers as even.
+
+    The draw's other draw_size - 1 numbers come from the remaining max_number - 1, so this is
+    hypergeometric. An odd number already supplies one odd ball, which is why testing its share
+    of odd draws against 0.5 flagged every odd number (F-38).
+    """
+    others_odd = odd_in_pool(max_number) - number % 2
+    odd_needed = -(-draw_size // 2) - number % 2
+    return float(stats.hypergeom.sf(odd_needed - 1, max_number - 1, others_odd, draw_size - 1))
+
+
+def analyze_odd_even_distribution(draw_history: List[Dict[str, Any]], max_number: int = 47) -> Dict[str, Any]:
     """
     Analyze odd/even distribution across draws using chi-square test.
 
-    Tests whether the observed odd/even distribution deviates significantly
-    from expected (uniform) distribution.
+    Tests whether the observed odd/even split deviates from a fair draw's, which is the
+    pool's share of odd numbers - 24/47 for 1-47, not 50/50 (F-38).
 
     Args:
         draw_history: List of historical draws
@@ -59,8 +77,6 @@ def analyze_odd_even_distribution(draw_history: List[Dict[str, Any]]) -> Dict[st
         odd_counts.append(odd)
         even_counts.append(even)
 
-    # Expected: 3.5 odd, 3.5 even per 7-number draw (50/50 split)
-    # But we'll test against observed distribution
     total_odd = sum(odd_counts)
     total_even = sum(even_counts)
     total_numbers = total_odd + total_even
@@ -74,9 +90,10 @@ def analyze_odd_even_distribution(draw_history: List[Dict[str, Any]]) -> Dict[st
         }
 
     # Chi-square goodness-of-fit test
-    # H0: Odd and even numbers appear with equal frequency (50/50)
+    # H0: balls are odd in the pool's proportion, 24/47 - not 50/50 (F-38)
     observed = np.array([total_odd, total_even])
-    expected = np.full(2, total_numbers / 2.0)
+    odd_share = odd_in_pool(max_number) / max_number
+    expected = total_numbers * np.array([odd_share, 1 - odd_share])
 
     chi2_stat, p_value = stats.chisquare(observed, expected)
 
@@ -92,6 +109,7 @@ def analyze_odd_even_distribution(draw_history: List[Dict[str, Any]]) -> Dict[st
         'total_even': int(total_even),
         'odd_percentage': float(total_odd / total_numbers * 100),
         'even_percentage': float(total_even / total_numbers * 100),
+        'expected_odd_percentage': float(odd_share * 100),
         'interpretation': _interpret_odd_even_test(p_value, total_odd, total_even)
     }
 
@@ -103,8 +121,9 @@ def calculate_per_number_odd_even_affinity(
     """
     Calculate per-number odd/even affinity with statistical validation.
 
-    For each number, calculates how well it fits with odd/even draws using
-    binomial test.
+    A draw is "odd" when it has at least as many odd numbers as even. Each number's share of
+    odd draws is tested (binomial) against the chance of an odd draw given that number came
+    up (chance_of_odd_draw), not 0.5 (F-38).
 
     Args:
         draw_history: List of historical draws
@@ -113,7 +132,8 @@ def calculate_per_number_odd_even_affinity(
     Returns:
         Dictionary mapping number to affinity analysis
     """
-    number_stats = defaultdict(lambda: {'odd_draw_count': 0, 'even_draw_count': 0, 'total_appearances': 0})
+    number_stats = defaultdict(lambda: {'odd_draw_count': 0, 'even_draw_count': 0, 'total_appearances': 0,
+                                        'chance_sum': 0.0})
 
     # Categorize each draw as odd-heavy or even-heavy
     for draw in draw_history:
@@ -128,6 +148,7 @@ def calculate_per_number_odd_even_affinity(
         for num in numbers:
             if 1 <= num <= max_number:
                 number_stats[num]['total_appearances'] += 1
+                number_stats[num]['chance_sum'] += chance_of_odd_draw(num, max_number, len(numbers))
                 if draw_type == 'odd':
                     number_stats[num]['odd_draw_count'] += 1
                 else:
@@ -143,6 +164,7 @@ def calculate_per_number_odd_even_affinity(
         if total < 5:  # Need minimum sample size
             affinity_results[num] = {
                 'affinity_score': 0.5,
+                'chance_affinity_score': 0.5,
                 'statistically_validated': False,
                 'p_value': 1.0,
                 'preferred_type': 'neutral'
@@ -150,27 +172,22 @@ def calculate_per_number_odd_even_affinity(
             continue
 
         odd_draw_count = stats_data['odd_draw_count']
-        even_draw_count = stats_data['even_draw_count']
+        chance = stats_data['chance_sum'] / total
 
-        # Binomial test: does this number appear more in odd or even draws?
-        # H0: number appears equally in odd/even draws (p=0.5)
-        result = stats.binomtest(odd_draw_count, total, 0.5, alternative='two-sided')
-        p_value = result.pvalue
+        # H0: the number's draws are odd as often as fair draws containing it would be
+        p_value = stats.binomtest(odd_draw_count, total, chance, alternative='two-sided').pvalue
 
-        # Calculate affinity score
-        if odd_draw_count > even_draw_count:
-            affinity_score = 0.5 + (odd_draw_count / total - 0.5)
-            preferred_type = 'odd' if p_value < 0.05 else 'neutral'
+        affinity_score = odd_draw_count / total
+        if p_value < 0.05:
+            preferred_type = 'odd' if affinity_score > chance else 'even'
         else:
-            affinity_score = 0.5 - (even_draw_count / total - 0.5)
-            preferred_type = 'even' if p_value < 0.05 else 'neutral'
+            preferred_type = 'neutral'
 
-        # If number itself is odd, higher score = prefers odd draws
-        # If number itself is even, lower score = prefers even draws
         num_parity = 'odd' if num % 2 == 1 else 'even'
 
         affinity_results[num] = {
             'affinity_score': float(affinity_score),
+            'chance_affinity_score': float(chance),
             'statistically_validated': bool(p_value < 0.05),
             'p_value': float(p_value),
             'preferred_type': preferred_type,
@@ -196,7 +213,7 @@ def analyze_odd_even_patterns(
         Dictionary with scipy-validated analysis results
     """
     print("  Running chi-square test on overall odd/even distribution...")
-    overall_test = analyze_odd_even_distribution(draw_history)
+    overall_test = analyze_odd_even_distribution(draw_history, max_number)
 
     print("  Calculating per-number odd/even affinity with binomial tests...")
     per_number_affinity = calculate_per_number_odd_even_affinity(draw_history, max_number)
@@ -225,6 +242,9 @@ def analyze_odd_even_patterns(
         for i, num in enumerate(numbers):
             per_number_affinity[num]['p_value_adjusted'] = float(p_adjusted[i])
             per_number_affinity[num]['statistically_validated'] = bool(rejected[i])
+            if not rejected[i]:
+                per_number_affinity[num]['preferred_type'] = 'neutral'
+                per_number_affinity[num]['alignment'] = 'misaligned'
 
         num_significant_after = sum(
             1 for data in per_number_affinity.values()
@@ -270,7 +290,7 @@ def analyze_odd_even_patterns(
 def _interpret_odd_even_test(p_value: float, total_odd: int, total_even: int) -> str:
     """Interpret odd/even distribution test."""
     if p_value >= 0.05:
-        return "Odd/even distribution is balanced (no significant deviation from 50/50)"
+        return "Odd/even split is what a fair draw gives (24 of the 47 numbers are odd)"
     elif total_odd > total_even:
         return "Odd numbers are significantly over-represented"
     else:
