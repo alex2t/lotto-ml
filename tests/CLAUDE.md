@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The nineteen real tests (177 tests, ~30s)
+## The twenty real tests (183 tests, ~30s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -17,7 +17,7 @@ python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invarian
                  tests/test_bonus_predictor.py tests/test_draw_history_numbers.py \
                  tests/test_site_wording.py tests/test_bonus_transition_baseline.py \
                  tests/test_trend_significance.py tests/test_anomaly_detector.py \
-                 tests/test_bonus_window.py -q
+                 tests/test_bonus_window.py tests/test_odd_even_affinity.py -q
 ```
 
 This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two in sync.
@@ -42,6 +42,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_trend_significance.py` | the "significant trend" flag flags about 5% of numbers on simulated fair draws (was 61%), still flags a real change in frequency, and flags nothing without an older window (F-31) |
 | `test_anomaly_detector.py` | the sum alerts and Pattern Comparison's typical range use the mean and std in `lotto_sum_contribution_validated.json`, not hard-coded figures; every `_check_` in the anomaly detector can fire on the current data (F-29). Reads `data/*.json` |
 | `test_bonus_window.py` | bonus statistics use the 10 bonus balls before each draw, not a list ending with the draw's own bonus: on fair draws the repeat rate matches chance (was 1.0), the main-from-recent-bonus boost and recency penalty are ~1.0 (were 0.92 and 4.7); Draw History shows the pre-draw window (F-33). Reads `data/*.json` |
+| `test_odd_even_affinity.py` | odd/even tests measure against a fair draw: on simulated fair draws about 5% of numbers have p < 0.05 (was 56%) and FDR validates almost none (was 254 of 470); the stated chance of an odd draw matches simulation; a real affinity is still flagged; the overall test expects 24/47 odd; the Statistics page shows each number's chance (F-38) |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5) |
 
 ## Not tests

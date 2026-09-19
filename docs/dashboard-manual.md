@@ -297,11 +297,14 @@ Shows what percentage of ALL main numbers (across all history) are Hot, Medium, 
 - **0 or 6 odd numbers:** 2%
 
 **Per-Number Affinity Table:**
-Shows if specific numbers prefer to appear with odd or even neighbors.
+For each number, the share of the draws it came up in that had at least as many odd numbers as even
+(Affinity Score), next to that share in a fair draw (Chance). An odd number brings an odd ball with it,
+so its chance is higher. "Validated" marks a share that differs from chance after correcting for
+testing 47 numbers; on the draws to 2026-09-16 none does (F-38).
 
 **Filters:**
-- **Affinity:** Strong Odd / Balanced / Strong Even
-- **Significance:** Show only statistically significant results (p < 0.05)
+- **Show only numbers that differ from chance**
+- **Minimum affinity score** slider
 
 **Validation Helper:**
 Enter 6 numbers to check odd/even ratio against historical patterns.
