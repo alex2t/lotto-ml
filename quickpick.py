@@ -68,8 +68,6 @@ from ml_lotto.config import (
     BONUS_TO_MAIN_MODEL_CONFIG,
     MAX_NUMBER,
     TRAINING_START_DRAW,
-    ENSEMBLE_MODE,
-    ENSEMBLE_RUNS,
     RANDOM_SEED_BASE
 )
 
@@ -317,15 +315,9 @@ def main(permutation_runs: int = 0):
     print("INTELLIGENT LOTTO SYSTEM V3.16: INTERACTION FEATURES EDITION")
     print("=" * 70)
 
-    if ENSEMBLE_MODE:
-        print(f"MODE: Ensemble Voting ({ENSEMBLE_RUNS} runs per model)")
-        print(f"  Each model runs {ENSEMBLE_RUNS}x with different seeds")
-        print(f"  Numbers ranked by consistency across runs")
-        print(f"  Base seed: {RANDOM_SEED_BASE}")
-    else:
-        print(f"MODE: Single Deterministic Run (seed: {RANDOM_SEED_BASE})")
-        np.random.seed(RANDOM_SEED_BASE)
-        random.seed(RANDOM_SEED_BASE)
+    print(f"MODE: Single Deterministic Run (seed: {RANDOM_SEED_BASE})")
+    np.random.seed(RANDOM_SEED_BASE)
+    random.seed(RANDOM_SEED_BASE)
 
     print(f"Active Models: {len(ACTIVE_MODELS)} main models + 1 bonus model + 1 bonus-to-main model")
     print("V3.16 FEATURES: Pairwise & triple interaction features for Model 1")

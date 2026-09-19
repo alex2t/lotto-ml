@@ -9,7 +9,6 @@ Comprehensive training script that demonstrates all ML improvements:
 4. ✅ Rolling statistics (temporal features)
 5. ✅ Hyperparameter tuning (TimeSeriesSplit CV)
 6. ✅ Enhanced metrics (Top-K accuracy, PR-AUC)
-7. ✅ Ensemble voting (multiple strategies)
 
 This script shows how to integrate all features into your training pipeline.
 """
@@ -24,7 +23,6 @@ from ml_lotto.models.trainer import build_training_dataset, calculate_train_val_
 from ml_lotto.models.trainer import train_model
 from ml_lotto.models.model_metrics import compare_models
 from ml_lotto.models.hyperparameter_tuning import compare_tuning_results
-from ml_lotto.prediction.ensemble import EnsembleVoter, display_voting_results, analyze_ensemble_agreement, display_agreement_analysis
 from ml_lotto.config import MAX_NUMBER, TRAINING_START_DRAW
 
 # Configuration
@@ -62,7 +60,6 @@ def main():
     print("  ✅ Rolling statistics (9 temporal features per number)")
     print("  ✅ Hyperparameter tuning with TimeSeriesSplit CV")
     print("  ✅ Enhanced metrics (Top-K accuracy, PR-AUC)")
-    print("  ✅ Ensemble voting (majority, weighted, unanimous)")
     print("="*80)
 
     # ========================================
@@ -191,48 +188,7 @@ def main():
         tuning_comparison = compare_tuning_results(all_tuning_results, output_dir='model_metrics')
 
     # ========================================
-    # 8. ENSEMBLE VOTING
-    # ========================================
-    print("\n🎲 Generating ensemble predictions...")
-
-    # Collect predictions from all models
-    model_predictions = {}
-    model_probabilities = {}
-
-    for model_name, model_info in trained_models.items():
-        pipeline = model_info['pipeline']
-        features = model_info['features']
-
-        # Get validation predictions
-        X_val = val_df[features].values
-        val_proba = pipeline.predict_proba(X_val)[:, 1] if hasattr(pipeline, 'predict_proba') else pipeline.decision_function(X_val)
-
-        # Get optimal threshold from metrics
-        optimal_threshold = all_metrics[model_name].get('optimal_threshold', 0.5)
-
-        # Get top predictions
-        val_pred = (val_proba >= optimal_threshold).astype(int)
-        top_indices = val_proba.argsort()[::-1][:15]  # Top 15 predictions
-
-        model_predictions[model_name] = top_indices.tolist()
-        model_probabilities[model_name] = {idx: val_proba[idx] for idx in top_indices}
-
-    # Apply ensemble voting with majority strategy
-    voter = EnsembleVoter(strategy='majority')
-    ensemble_predictions, voting_details = voter.vote(
-        model_predictions,
-        model_probabilities,
-        top_k=10
-    )
-
-    display_voting_results(ensemble_predictions, voting_details, list(trained_models.keys()))
-
-    # Analyze model agreement
-    agreement = analyze_ensemble_agreement(model_predictions, model_probabilities)
-    display_agreement_analysis(agreement)
-
-    # ========================================
-    # 9. SUMMARY
+    # 8. SUMMARY
     # ========================================
     print("\n" + "="*80)
     print("  ✅ TRAINING COMPLETE!")
@@ -241,7 +197,6 @@ def main():
     print(f"   Models trained: {len(trained_models)}")
     print(f"   Features per model: {len(features)} (after selection)")
     print(f"   Hyperparameter tuning: {'✅ Completed' if all_tuning_results else '❌ Skipped'}")
-    print(f"   Ensemble predictions: {len(ensemble_predictions)} numbers")
 
     print(f"\n📁 Results saved to:")
     print(f"   model_metrics/model_comparison.csv")
@@ -252,17 +207,15 @@ def main():
     print("\n💡 Next steps:")
     print("   1. Review model_comparison.csv for best model")
     print("   2. Check Top-K accuracy (most relevant for lottery)")
-    print("   3. Use ensemble predictions for final number selection")
-    print("   4. Adjust tuning_mode to 'extensive' for better results")
+    print("   3. Adjust tuning_mode to 'extensive' for better results")
     print("="*80 + "\n")
 
-    return trained_models, all_metrics, ensemble_predictions
+    return trained_models, all_metrics
 
 
 if __name__ == '__main__':
     try:
-        trained_models, metrics, ensemble_preds = main()
-        print(f"\n🎯 Ensemble final picks: {ensemble_preds}")
+        main()
         sys.exit(0)
     except Exception as e:
         print(f"\n❌ Error: {e}")

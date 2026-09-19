@@ -1419,14 +1419,10 @@ Voting:
   ...
 ```
 
-**In our code:**
-```python
-ENSEMBLE_MODE = True
-ENSEMBLE_RUNS = 5
-
-# Run each model 5 times with different seeds
-# Pick numbers that appear most frequently
-```
+**In this project:** not used. A voting ensemble existed but was never wired into the pipeline and
+was deleted (F-6, 2026-09-19). Averaging only cancels mistakes when each model has some real signal;
+every model here sits at chance, so a vote between them is at chance too. Random Forest (bagging)
+and XGBoost (boosting), below, are ensembles inside a single model.
 
 ---
 

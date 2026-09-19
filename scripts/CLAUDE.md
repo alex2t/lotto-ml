@@ -5,7 +5,6 @@ Standalone utilities. **None of these run as part of `drawpick.py` or `quickpick
 | File | Role |
 |:--|:--|
 | `scrape_lotto.py` | fetches Irish National Lottery results; the only thing here that writes `data/irish500.csv`. Covered by `../tests/test_scraper_sources.py` |
-| `ensemble_predict.py` | CLI over `ml_lotto/prediction/ensemble.py`; needs models trained by `quickpick.py` first |
 | `train_with_all_features.py` | demonstration of the full training pipeline with SMOTE, feature selection and tuning all enabled. Not the production path |
 
 ## Reading README.md in this folder
