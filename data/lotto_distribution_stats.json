@@ -75,6 +75,53 @@
                 "percentage": 12.07,
                 "odds": 0.1207
             }
+        },
+        "high_number_distribution": {
+            "high_from": 32,
+            "by_count": {
+                "0": {
+                    "count": 32,
+                    "percentage": 6.44,
+                    "odds": 0.0644,
+                    "fair_percentage": 6.86
+                },
+                "1": {
+                    "count": 112,
+                    "percentage": 22.54,
+                    "odds": 0.2254,
+                    "fair_percentage": 25.32
+                },
+                "2": {
+                    "count": 182,
+                    "percentage": 36.62,
+                    "odds": 0.3662,
+                    "fair_percentage": 35.16
+                },
+                "3": {
+                    "count": 130,
+                    "percentage": 26.16,
+                    "odds": 0.2616,
+                    "fair_percentage": 23.44
+                },
+                "4": {
+                    "count": 35,
+                    "percentage": 7.04,
+                    "odds": 0.0704,
+                    "fair_percentage": 7.88
+                },
+                "5": {
+                    "count": 5,
+                    "percentage": 1.01,
+                    "odds": 0.0101,
+                    "fair_percentage": 1.26
+                },
+                "6": {
+                    "count": 1,
+                    "percentage": 0.2,
+                    "odds": 0.002,
+                    "fair_percentage": 0.07
+                }
+            }
         }
     },
     "analysis_all_7_numbers": {

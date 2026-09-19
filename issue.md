@@ -4,7 +4,7 @@
 **Last updated:** 2026-09-18
 **Scope:** the single record of outstanding defects.
 
-Sections 1-6 are **open**: defects by severity, then improvements not yet started. Section 7 lists
+Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
 improvements already done. Items carried from the retired code review keep
 their original IDs (C-nn / N-n); items found later are numbered F-n, and an ID is never reused.
 Appendix A is the resolved list. Appendix B keeps the full C-5 write-up for reference.
@@ -17,7 +17,7 @@ effect. A fix is not finished until this file says so.
 
 **Improvements are tracked the same way.** Planned work that is not a defect also gets the next
 free F-n, a Priority summary row with severity `Improvement`, and its own section. When done, it
-moves to section 7 (Improvements done). Nothing open lives only in a list or in `review.md`.
+moves to section 6 (Improvements done). Nothing open lives only in a list or in `review.md`.
 
 ---
 
@@ -30,9 +30,8 @@ moves to section 7 (Improvements done). Nothing open lives only in a list or in 
 | 3 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
 | 4 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
 | 5 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
-| 6 | **F-19** | Lines not steered away from popular combinations | Improvement | S |
 
-**5 open defects, nothing High; 1 improvement not started.** Everything resolved is in Appendix A and appears nowhere above.
+**5 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
 
@@ -132,24 +131,54 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 than defaulting to 0, which is what let this hide.
 
 ---
-## 6. F-19 — Lines are not steered away from popular combinations
-
-**Type: Improvement, not started.** Effort S.
-
-Expected *payout* is not uniform even when probability is: birthday numbers (<=31), calendar
-patterns and arithmetic sequences are heavily played and share jackpots more often. Steering toward
-numbers >=32 raises expected value without predicting anything. Note the current sum in [84, 206]
-and 2-4 odd rules push the *opposite* way, toward the most commonly played combinations - keep them
-for the match-3/4 tiers, not for jackpot EV.
-
-**How.** One more constraint or objective term in `ilp_selection.solve_line` (for example a minimum
-count of numbers >=32), which the ILP makes a small change. Decide first which tier the lines are
-for, since the two goals pull in opposite directions.
-
----
-## 7. Improvements done
+## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-19 - F-19, steer lines away from popular combinations.**
+  Expected *payout* is not uniform even when probability is: birthday numbers (<=31), calendar
+  patterns and arithmetic sequences are heavily played and share prizes more often. Steering toward
+  numbers >=32 does not change the chance of winning; it lowers the chance of sharing a prize. This
+  repo has no ticket-sales data, so that benefit cannot be measured here. (An earlier note said the
+  sum and odd rules push toward popular combinations; checked 2026-09-19, they barely steer - they
+  pass 95% and 81% of all lines.)
+
+  **Done 2026-09-19 - the data, on the dashboard.** `drawpick.py` Phase 6
+  (`distribution_analyzer.analyze_high_number_distribution`) writes, into
+  `lotto_distribution_stats.json`, how many draws had 0-6 main numbers >= 32, with a fair draw's share
+  alongside. The Statistics page shows the breakdown on its own; the Prediction Validator also shows it
+  for any line the user types in, information only.
+  Over the 497 analysed draws:
+
+  | Numbers >= 32 | Draws | Share | Fair draw |
+  |--:|--:|--:|--:|
+  | 0 | 32 | 6.44% | 6.86% |
+  | 1 | 112 | 22.54% | 25.32% |
+  | 2 | 182 | 36.62% | 35.16% |
+  | 3 | 130 | 26.16% | 23.44% |
+  | 4 | 35 | 7.04% | 7.88% |
+  | 5 | 5 | 1.01% | 1.26% |
+  | 6 | 1 | 0.20% | 0.07% |
+
+  Draws follow the fair-draw shares; 2 is the most common count and 3+ happens in 34%.
+
+  **Tried and reverted: "at least 3 numbers >= 32" in selection.** It worked (all three lines met it)
+  but skewed the lines: it rules out 67% of all lines and squeezes half of each into a 16-number range,
+  which raises the share of lines with a consecutive pair from 53% to 55% and the share whose pair sits
+  in 32-47 from 20% to 44% - all three generated lines had one (42-43, 39-40, 32-33). "At least 2"
+  leaves consecutive pairs at their natural rate (51%) and still excludes the most birthday-heavy lines
+  (0-1 high numbers).
+
+  **Decided 2026-09-19, from the dashboard data: a per-model floor.** `min_high_numbers` in each model
+  config - Models 1 and 2: at least 2 numbers >= 32 (71% of past draws had 2+); Model 3: no floor, its
+  probabilities decide. A floor, not a target: a model may pick more. One constraint in
+  `ilp_selection.solve_line` over the whole ticket; not in `validate_line`, since it differs per model.
+
+  Picks: Model 1 unchanged `[5, 13, 15, 24, 42, 43]` (already 2); Model 2 `[6, 8, 9, 23, 31, 39]` ->
+  `[6, 9, 23, 31, 38, 39]` (8 -> 38); Model 3 `[7, 22, 32, 38, 40, 47]` -> `[10, 19, 22, 32, 40, 47]`,
+  moved only because Model 2 now holds 38 (it still has 3 high numbers unforced). Lines disjoint.
+  Tests (`test_selection_invariants.py`): the floor is enforced in a world whose scores favour 1-31,
+  is a floor not a target, and counts pre-assigned numbers; removing the constraint fails two.
 
 - **2026-09-19 - F-18, is the freshness pattern worth enforcing? Kept; change freeze lifted.**
   Enforcing a bin pattern can only help if a number's freshness bin changes its chance of being

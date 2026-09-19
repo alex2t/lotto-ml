@@ -4,10 +4,12 @@ Analyzes both 6 main numbers and all 7 numbers (6 main + bonus)
 """
 
 from collections import defaultdict
+from math import comb
 from typing import Dict, List, Tuple
 from ..config import (
     SUM_BINS_6_NUMBERS, SUM_BINS_7_NUMBERS,
-    ODD_EVEN_PATTERNS_6_NUMBERS, ODD_EVEN_PATTERNS_7_NUMBERS
+    ODD_EVEN_PATTERNS_6_NUMBERS, ODD_EVEN_PATTERNS_7_NUMBERS,
+    HIGH_NUMBER_FROM, MAX_NUMBER
 )
 
 
@@ -152,6 +154,37 @@ def analyze_distribution_patterns(draw_history_log: Dict) -> Tuple[Dict, Dict, D
         }
     
     return odd_even_6_stats, odd_even_7_stats, sum_6_stats, sum_7_stats
+
+
+def analyze_high_number_distribution(draw_history_log: Dict) -> Dict:
+    """
+    Count draws by how many of their 6 main numbers are >= HIGH_NUMBER_FROM.
+
+    Keys are "0".."6". Each entry has the observed count, percentage and odds, plus
+    fair_percentage - the share a fair draw gives (hypergeometric), for comparison.
+    """
+    main_draws = [
+        [w['number'] for w in draw['winning_numbers_details'][:6]]
+        for draw in draw_history_log.values()
+        if len(draw['winning_numbers_details']) >= 7
+    ]
+    counts = defaultdict(int)
+    for numbers in main_draws:
+        counts[sum(1 for n in numbers if n >= HIGH_NUMBER_FROM)] += 1
+
+    total_draws = len(main_draws)
+    n_high = MAX_NUMBER - HIGH_NUMBER_FROM + 1
+    stats = {}
+    for k in range(7):
+        count = counts.get(k, 0)
+        fair = comb(n_high, k) * comb(MAX_NUMBER - n_high, 6 - k) / comb(MAX_NUMBER, 6)
+        stats[str(k)] = {
+            "count": count,
+            "percentage": round(count / total_draws * 100, 2),
+            "odds": round(count / total_draws, 4),
+            "fair_percentage": round(fair * 100, 2),
+        }
+    return stats
 
 
 def calculate_draw_distribution_features(winning_numbers_details: List[Dict]) -> Dict:

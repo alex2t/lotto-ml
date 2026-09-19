@@ -4,9 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-An Irish Lotto (6/47 + 1 bonus) analysis and prediction system. Statistical analysis writes ~24 JSON
-artifacts to `data/`, an ML layer trains six models on those artifacts, and a Streamlit dashboard
-displays the results.
+An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
+
+- **The website, for players.** `view/` is for people who want to have fun picking their own line
+  from a few facts about past draws - hot/medium/cold numbers, odd vs even, whether a ball was
+  recently a bonus, how many numbers are 32 or above. It is a toy, not a tipster: every line is
+  equally likely to win, and the site says so. It is Streamlit today and will move to **React**
+  later, so picking a line can be made playful (spinning wheels and the like).
+- **The ML layer, for the owner only.** `ml_lotto/` and `quickpick.py` are a personal learning
+  project - vibe coding put on a proper footing, applying the techniques from Ed Donner's Udemy
+  course *AI Coder: Complete Claude Code & Coding Agents Course*. All six models sit at chance,
+  which is the correct result for a fair draw (F-17). Its value is the engineering, not the
+  predictions.
+- **`drawpick.py` feeds both.** It turns `data/irish500.csv` into ~24 JSON artifacts in `data/` that
+  the site displays and the ML layer trains on.
+
+**What that means for the work:**
+
+- **`data/*.json` is the website's API.** A statistic the site shows is computed in
+  `lotto_analysis/` and written by `drawpick.py`, never in a page. A page only reads and displays.
+  That is what lets a React front end replace Streamlit without redoing any analysis.
+- **Site features are about informed fun, not prediction.** Show what past draws looked like and let
+  the player decide. Do not score a line as "more likely to win" - nothing is.
+- **The ML layer is where engineering discipline is practised** - parity, tests, `issue.md`. It does
+  not need to beat chance; it needs to be correct.
 
 **Read [`issue.md`](issue.md) before starting work.** It is the register of known open defects with
 file:line evidence, and it will save you rediscovering them. [`review.md`](review.md) holds the
@@ -33,7 +54,7 @@ What each one covers:
 | Folder guide | Covers |
 |:--|:--|
 | `ml_lotto/features/CLAUDE.md` | the train/serve parity contract - the highest-risk file in the repo |
-| `tests/CLAUDE.md` | the eleven real test files vs the thirteen legacy print-scripts |
+| `tests/CLAUDE.md` | the twelve real test files vs the thirteen legacy print-scripts |
 | `lotto_analysis/analyzers/CLAUDE.md` | the 16 analysis phases and which JSON each writes |
 | `ml_lotto/models/CLAUDE.md` | the six model configs, the noise floor, the overfit gap |
 | `ml_lotto/prediction/CLAUDE.md` | selection vs filters, the playable-ticket boundary |
@@ -63,7 +84,7 @@ artifact, the code wins.
 ```bash
 python drawpick.py      # Stage 1: analysis -> writes ~24 JSON files into data/
 python quickpick.py     # Stage 2: trains models, writes lottery_picks.txt + model_metrics/
-streamlit run app.py    # Dashboard (8 pages, view/pages/)
+streamlit run app.py    # The website (8 pages, view/pages/); Prediction Validator = build your own line
 ```
 
 `drawpick.py` must run before `quickpick.py` - the ML layer reads only the JSON artifacts, never the
@@ -72,7 +93,7 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-Eleven files are real tests (112 of them, ~50s). Everything else in `tests/` is a legacy print-script
+Twelve files are real tests (120 of them, ~50s). Everything else in `tests/` is a legacy print-script
 that runs model training at import - **do not run `pytest tests/` bare.** The full list, and what
 each one guards, is in `tests/CLAUDE.md`. `/lotto-verify` runs them all.
 
@@ -156,7 +177,7 @@ updates it in the same change:
   the remaining sections, add it to the Appendix A table, and write up the root cause, the measured
   before/after and the tests that now cover it.
 - **Planned an improvement** - it is tracked exactly like a defect: next free `F-n`, a Priority
-  summary row with severity `Improvement`, its own section. When done, it moves to section 7.
+  summary row with severity `Improvement`, its own section. When done, it moves to section 6.
 - Never leave a resolved ID in the Priority summary, and never leave a found defect only in the
   conversation.
 

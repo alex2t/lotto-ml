@@ -16,7 +16,7 @@ Inventory verified on 2026-09-17 against the files on disk.
 | `lotto_advanced_patterns.json` | 45 KB | `metadata`, `summary_statistics`, `per_number_features` |
 | `lotto_bonus_analysis.json` | 37 KB | `bonus_validation`, `bonus_category_preference`, `recent_bonus_exclusion`, +4 |
 | `lotto_bonus_to_main_patterns.json` | 28 KB | `metadata`, `per_number_transition_profile`, `category_transition_weights`, +4 |
-| `lotto_distribution_stats.json` | 22 KB | `total_draws_analyzed`, `analysis_6_main_numbers`, `analysis_all_7_numbers`, +2 |
+| `lotto_distribution_stats.json` | 22 KB | `total_draws_analyzed`, `analysis_6_main_numbers` (incl. `high_number_distribution`, 2026-09-19), `analysis_all_7_numbers`, +2 |
 | `lotto_7_number_freshness_results.json` | 10 KB | `window_size_W`, `c_max_threshold`, `recent_count_key`, +4 |
 | `lotto_long_term_patterns.json` | 14 KB | `metadata`, `hmc_pattern_analysis`, `recency_correlation_analysis`, `category_performance_by_recency` |
 | `lotto_statistics_analysis.json` | 15 KB | `hmc_distribution`, `days_since_last_hit`, `recent_counts`, +3 |

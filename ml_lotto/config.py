@@ -225,6 +225,7 @@ MODEL_1_CONFIG = {
     'medium_count': 1,
     'cold_count': 1,
     'generic_count': 0,
+    'min_high_numbers': 2,  # at least 2 numbers >= 32; 71% of past draws had 2+ (F-19)
 
     'features': [
         # CORE MOMENTUM (MUST HAVE)
@@ -286,6 +287,7 @@ MODEL_2_CONFIG = {
     'medium_count': 1,
     'cold_count': 2,
     'generic_count': 0,
+    'min_high_numbers': 2,  # at least 2 numbers >= 32; 71% of past draws had 2+ (F-19)
 
     'features': [
         # CORE STABILITY (MUST HAVE)
@@ -357,6 +359,7 @@ MODEL_3_CONFIG = {
     'medium_count': 2,
     'cold_count': 2,
     'generic_count': 0,
+    'min_high_numbers': 0,  # no floor - the model's probabilities decide (F-19)
 
     'features': [
         # USE EVERYTHING - let XGBoost find complex patterns

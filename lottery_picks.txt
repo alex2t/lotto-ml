@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2026-09-19 00:01:14
+LOTTERY PICKS - GENERATED 2026-09-19 00:49:37
 ======================================================================
 INTERACTION FEATURES EDITION V3.16
 Model 1: 6 main (ML-optimized with interactions) + 1 bonus
@@ -27,9 +27,9 @@ Top 10 Most Important Features:
   10. total_count                         :   0.0096
 
 Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [3H-1M-2C+0G | C0=3, C1=2, C_GE_2=1]
-Main Numbers (6): [6, 8, 9, 23, 31, 39]
+Main Numbers (6): [6, 9, 23, 31, 38, 39]
 Bonus Ball: None (jackpot optimizer - main 6 only)
-Complete: [6, 8, 9, 23, 31, 39] (6 main only)
+Complete: [6, 9, 23, 31, 38, 39] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) - focuses on stability and long-term patterns
 
 Top 10 Most Important Features:
@@ -45,9 +45,9 @@ Top 10 Most Important Features:
   10. freshness_category_interaction      :   0.0385
 
 Line 3: Complexity Explorer [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
-Main Numbers (6): [7, 22, 32, 38, 40, 47]
-Bonus Ball: 19
-Complete: [7, 22, 32, 38, 40, 47] + BONUS 19
+Main Numbers (6): [10, 19, 22, 32, 40, 47]
+Bonus Ball: 38
+Complete: [10, 19, 22, 32, 40, 47] + BONUS 38
 Description: XGBoost with ALL features - finds complex interaction patterns across all signals
 
 Top 10 Most Important Features:
