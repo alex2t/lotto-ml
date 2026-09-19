@@ -51,7 +51,7 @@ Recoverable from git history if needed. Superseded content is listed against eac
 | `HARDCODED_VALUES_ANALYSIS.md` | `features.md` - the audit's conclusion is now a rule in the root `CLAUDE.md` |
 | `JSON_DATA_REFERENCE.md` | `json-artifacts.md` |
 | `ML_APPROACHES_FOR_LOTTO_PREDICTION.md` | `models.md` |
-| `ENSEMBLE_VOTING.md` | `models.md` - ensemble is off in the main pipeline (`ENSEMBLE_MODE = False`) |
+| `ENSEMBLE_VOTING.md` | `models.md` - there is no ensemble; the code was deleted (F-6) |
 | `BONUS_TO_MAIN_ANALYSIS_SUMMARY.md` | `models.md` |
 | `HMC_RECOMMENDATION_IMPLEMENTATION.md` | `models.md` |
 | `ANALYSIS_SCRIPTS_REFERENCE.md` | `analysis/CLAUDE.md`, `scripts/CLAUDE.md` |

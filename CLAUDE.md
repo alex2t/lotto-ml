@@ -61,7 +61,7 @@ What each one covers:
 | Folder guide | Covers |
 |:--|:--|
 | `ml_lotto/features/CLAUDE.md` | the train/serve parity contract - the highest-risk file in the repo |
-| `tests/CLAUDE.md` | the thirteen real test files vs the thirteen legacy print-scripts |
+| `tests/CLAUDE.md` | the thirteen real test files vs the eleven legacy print-scripts |
 | `lotto_analysis/analyzers/CLAUDE.md` | the 16 analysis phases and which JSON each writes |
 | `ml_lotto/models/CLAUDE.md` | the six model configs, the noise floor, the overfit gap |
 | `ml_lotto/prediction/CLAUDE.md` | selection vs filters, the playable-ticket boundary |

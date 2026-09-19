@@ -11,7 +11,6 @@ Tests:
 5. Feature selection
 6. Hyperparameter tuning
 7. Model comparison
-8. Ensemble voting
 """
 
 import sys
@@ -33,7 +32,6 @@ from ml_lotto.features.extractor import extract_features_from_hmc_json, get_all_
 from ml_lotto.features.base import get_dynamic_recent_keys
 from ml_lotto.models.trainer import build_training_dataset, calculate_train_val_split, train_model
 from ml_lotto.models.model_metrics import compare_models
-from ml_lotto.prediction.ensemble import EnsembleVoter
 
 
 def create_mock_draw_history(n_draws=100):
@@ -351,54 +349,10 @@ def test_model_comparison():
         return None
 
 
-def test_ensemble_voting():
-    """Test ensemble voting with mock models."""
-    print("\n" + "="*80)
-    print("TEST 6: Ensemble Voting")
-    print("="*80)
-
-    # Create mock model predictions
-    model_predictions = {
-        'Model_1': [1, 5, 10, 15, 20, 25, 30],
-        'Model_2': [5, 10, 12, 20, 25, 28, 35],
-        'Model_3': [2, 5, 10, 20, 22, 25, 30]
-    }
-
-    model_probabilities = {
-        'Model_1': {num: 0.70 + (num % 10) * 0.01 for num in model_predictions['Model_1']},
-        'Model_2': {num: 0.68 + (num % 10) * 0.01 for num in model_predictions['Model_2']},
-        'Model_3': {num: 0.72 + (num % 10) * 0.01 for num in model_predictions['Model_3']}
-    }
-
-    # Test majority voting
-    voter = EnsembleVoter(strategy='majority')
-    ensemble, details = voter.vote(
-        model_predictions,
-        model_probabilities,
-        top_k=10
-    )
-
-    print(f"\n  Ensemble predictions (majority): {ensemble}")
-    print(f"  Number of predictions: {len(ensemble)}")
-
-    # Validate
-    assert isinstance(ensemble, list), "Ensemble should be a list"
-    assert len(ensemble) <= 10, "Should not exceed top_k"
-
-    # Numbers that appear in 2+ models should be in ensemble
-    # Numbers: 5, 10, 20, 25, 30 appear in multiple models
-    expected_in_ensemble = [5, 10, 20, 25]
-    for num in expected_in_ensemble:
-        assert num in ensemble, f"Number {num} should be in ensemble (appears in 2+ models)"
-
-    print("\n✅ Ensemble voting successful!")
-    return ensemble
-
-
 def test_full_pipeline_integration():
     """Test the full training pipeline integration."""
     print("\n" + "="*80)
-    print("TEST 7: Full Pipeline Integration")
+    print("TEST 6: Full Pipeline Integration")
     print("="*80)
 
     print("\n  Simulating full training pipeline...")
@@ -432,9 +386,6 @@ def test_full_pipeline_integration():
     # Step 4: Model training (simulated - would require actual implementation)
     print("  Step 4: Training models... (simulated) ✓")
 
-    # Step 5: Ensemble voting
-    print("  Step 5: Ensemble voting... ✓")
-
     print("\n✅ Full pipeline integration test completed!")
 
 
@@ -451,7 +402,6 @@ def main():
         test_training_dataset_creation()
         test_model_training_with_all_features()
         test_model_comparison()
-        test_ensemble_voting()
         test_full_pipeline_integration()
 
         print("\n" + "="*80)
