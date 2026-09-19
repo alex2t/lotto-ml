@@ -45,14 +45,24 @@ of `view/` turned it up; left out of F-28 because the fix is a design choice, no
 - `view/pages/draw_history.py:171` says recent bonus numbers "are likely to appear in main draw soon",
   and the `:227` "Strategy Tip" advises "including 1-2 of these in your selection" because they have
   a 74.25% chance of appearing in the main draw within 10 draws. That is chance: any number appears in
-  10 draws with probability 1 - (41/47)^10 = 74.5%.
+  10 draws with probability 1 - (41/47)^10 = 74.5%. Measured on the 488 draws with 10 following draws
+  (2026-09-19): bonus ball 74.59%, numbers not drawn at t 74.37% (19,520 cases), every number 74.48%;
+  binomial test of the bonus rate against 74.48%, p = 1.0.
+- **The source of the claim is a wrong baseline.** `lotto_analysis/analyzers/bonus_to_main_analyzer.py:460`
+  sets `expected_random = 10 / 47` (21.3%), counting one ball per draw instead of six, and writes
+  `boost_factor = 3.44` into `data/lotto_bonus_to_main_patterns.json`
+  (`transition_prediction_factors`). The correct random rate is 74.5%, a boost of 1.0.
+  `analysis/bonus_to_main_model_recommendation.md` and the mock 0.74 in
+  `demos/demo_unified_bonus_to_main_features.py` compare against no baseline at all.
 - `docs/dashboard-manual.md` repeats both: the Number Insights section ("OVERDUE (strong pick)",
   "STRONG PICK", "AVOID") and the Draw History "Strategy: Include 1-2 transition candidates".
 
 **Fix.** Decide first: drop the per-number score from Number Insights, or keep it as a neutral profile
 ("appeared less than usual recently") with no verdict. Either way, show a gap as a fact next to the
 fair-draw expectation, never as "overdue", and give the transition rate next to its 74.5% chance
-baseline. Extend `tests/test_site_wording.py` to both pages, adding "overdue", "pick" and "due".
+baseline. Correct `expected_random` in the analyzer to `1 - (1 - 6/47)**10` so the artifact's
+`boost_factor` reads ~1.0, then re-run `drawpick.py`. Extend `tests/test_site_wording.py` to both
+pages, adding "overdue", "pick" and "due".
 
 ---
 ## 2. F-29 — Sum alerts read a key that does not exist; the volatility alert can never fire
