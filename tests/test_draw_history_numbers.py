@@ -12,8 +12,10 @@ look all-hot.
 """
 
 import json
+from pathlib import Path
 
 import pytest
+from streamlit.testing.v1 import AppTest
 
 from view.pages.pattern_comparison import (
     find_similar_draws,
@@ -110,3 +112,25 @@ def test_player_line_with_an_unknown_number_raises(trigger_data):
     """A number missing from the categories is a bug, not a medium (F-27)."""
     with pytest.raises(KeyError):
         get_hmc_pattern([1, 2, 3, 4, 5, 99], trigger_data)
+
+
+def test_post_draw_autofill_uses_the_latest_draw_in_the_draw_history(history):
+    """Post Draw Analysis autofills the newest draw in lotto_draw_history.json (F-35)."""
+    latest = history[max(history, key=lambda d: history[d]['draw_index'])]
+    at = AppTest.from_string("from view.pages import post_draw_analysis; post_draw_analysis.show()",
+                             default_timeout=60)
+    at.run()
+    next(b for b in at.button if b.label.startswith('📥 Autofill')).click().run()
+    assert not at.exception
+    assert at.text_input(key='input_main_numbers').value == ', '.join(map(str, sorted(latest['main_numbers'])))
+    assert at.text_input(key='input_bonus_number').value == str(latest['bonus_number'])
+
+
+def test_no_website_module_reads_the_draw_csv():
+    """
+    The website reads data/*.json only; the CSV is drawpick.py's input (F-35).
+
+    Regression: Post Draw Analysis parsed data/irish500.csv itself to find the latest draw.
+    """
+    readers = [str(p) for p in Path('view').rglob('*.py') if 'irish500' in p.read_text(encoding='utf-8')]
+    assert not readers, f"website modules reading the CSV: {readers}"
