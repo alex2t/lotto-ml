@@ -17,6 +17,8 @@ Implements three core filters based on Irish Lotto 6/47 historical statistics:
 
 from typing import List, Tuple, Dict, Any
 
+from ml_lotto.prediction.constraints import LINE_SIZE
+
 
 # Global flag indicating if actual filters are available
 FILTERS_AVAILABLE = True
@@ -34,7 +36,9 @@ def validate_line(numbers: List[int]) -> Tuple[bool, List[str]]:
     Validate a line of numbers against all Phase 1 filters.
 
     Args:
-        numbers: Sorted list of 6-7 numbers
+        numbers: The LINE_SIZE main numbers of a ticket - not the bonus ball. A different
+                 length raises: the odd count once ran over 7 numbers while the sum and span
+                 used the first 6, so an odd bonus could fail a rule the ticket meets (F-39).
 
     Returns:
         Tuple of (is_valid, list_of_failures)
@@ -44,9 +48,10 @@ def validate_line(numbers: List[int]) -> Tuple[bool, List[str]]:
         2. Sum Constraint: Sum must be between 84 and 206
         3. Range Distribution: Span (max - min) must be at least 20
     """
+    if len(numbers) != LINE_SIZE:
+        raise ValueError(f"validate_line takes the {LINE_SIZE} main numbers, got {len(numbers)}: {numbers}")
+
     failures = []
-    if not numbers:
-        return (False, ["empty_line"])
 
     # Filter 1: Odd/Even Balance
     odd_count = sum(1 for n in numbers if n % 2 == 1)
@@ -55,12 +60,12 @@ def validate_line(numbers: List[int]) -> Tuple[bool, List[str]]:
         failures.append(f'odd_even_balance ({odd_count} odd / {even_count} even)')
 
     # Filter 2: Sum Constraint Filter
-    line_sum = sum(numbers[:6])
+    line_sum = sum(numbers)
     if line_sum < MIN_SUM or line_sum > MAX_SUM:
         failures.append(f'sum_constraint (sum={line_sum}, valid: [{MIN_SUM}, {MAX_SUM}])')
 
     # Filter 3: Range Distribution Filter
-    line_span = max(numbers[:6]) - min(numbers[:6])
+    line_span = max(numbers) - min(numbers)
     if line_span < MIN_SPAN:
         failures.append(f'range_distribution (span={line_span}, min required: {MIN_SPAN})')
 

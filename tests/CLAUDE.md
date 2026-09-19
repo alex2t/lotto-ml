@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The twenty real tests (191 tests, ~30s)
+## The twenty real tests (192 tests, ~30s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -27,7 +27,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_walk_forward_parity.py` | train/serve parity - 0/47 mismatches on `recent_*`, `total_count`, `draws_since_bonus`, and extractor vs engine on `days_since_last`, `category`, `days_since_bonus`; the served row equals the training row on every main-model column (F-34), and the Bonus-to-Main predictor scores the rows its trainer builds (F-40); the next-draw date follows the schedule. The most important file here |
 | `test_no_constant_features.py` | no model trains on a value that never varies, including a string column that every row turns into 0.0 (F-41); the C-5 full-history features stay out of all six models (F-21) |
 | `test_model_capacity.py` | the constrained model params and tuning grids stay constrained |
-| `test_selection_invariants.py` | the ILP line meets every constraint and is the brute-force optimum |
+| `test_selection_invariants.py` | the ILP line meets every constraint and is the brute-force optimum; `validate_line` takes exactly the 6 main numbers and raises otherwise (F-39) |
 | `test_prediction_alignment.py` | predictions line up with the numbers they claim to be for |
 | `test_freshness_target.py` | freshness target is sized for a 6-number line |
 | `test_metrics.py` | metric computation |
