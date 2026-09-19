@@ -69,6 +69,12 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
   A spurious diff is worse than untidy: it masks the real one. This class has recurred three times
   (C-2, N-4, F-12).
 
+- **A "random" baseline is the chance in a fair draw, counted the same way as the rate it is
+  compared with.** `bonus_to_main_analyzer.py` compared "comes up as a main number within 10 draws"
+  with 10/47 - one ball per draw instead of six - and reported a 3.44x boost for what is chance
+  (1 - (41/47)^10 = 74.5%). Test a baseline on simulated fair draws: the boost must come out ~1.0
+  (`tests/test_bonus_transition_baseline.py`, F-30).
+
 ## After changing anything here
 
 Re-run `python drawpick.py` then `python quickpick.py`. The ML layer never reads the CSV, only these

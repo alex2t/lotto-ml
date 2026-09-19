@@ -107,24 +107,20 @@ def validate_hmc_pattern(numbers: List[int], trigger_data: Dict, odds_data: Dict
 
 def validate_bonus_transition(numbers: List[int], bonus_data: Dict) -> Tuple[str, str, float]:
     """
-    Check if selection includes recent bonus numbers.
+    Check if the line includes a number that was a bonus ball in the last 150 days.
+
+    Nearly every past draw did (99.6%, F-30), so this measures typicality. A recent bonus ball is no
+    likelier to come up than any other number - there is no transition-rate filter.
     Returns: (status, message, score)
     """
-    per_number_data = bonus_data.get('per_number_transition_profile', {})
+    per_number_data = bonus_data['per_number_transition_profile']
 
-    candidates = []
-    for num in numbers:
-        stats = per_number_data.get(str(num), {})
-        transition_rate = stats.get('transition_rate', 0)
-        days_since = stats.get('days_since_last_bonus', 999)
+    recent = [num for num in numbers if per_number_data[str(num)]['days_since_last_bonus'] < 150]
 
-        if transition_rate > 0.65 and days_since < 150:
-            candidates.append(num)
-
-    if len(candidates) >= 1:
-        return "✅", f"Includes {len(candidates)} recent bonus transition candidate(s): {candidates}", 100.0
+    if recent:
+        return "✅", f"Includes {len(recent)} number(s) that were a bonus ball in the last 150 days: {recent}", 100.0
     else:
-        return "⚠️", "No recent bonus transition candidates included", 70.0
+        return "⚠️", "No number that was a bonus ball in the last 150 days - unusual in past draws", 70.0
 
 
 def validate_range_spread(numbers: List[int]) -> Tuple[str, str, float]:
@@ -445,7 +441,7 @@ def show():
                 if score3 < 100:
                     st.write("- 🎯 Try a more common HMC pattern (check Statistics page)")
                 if score4 < 100:
-                    st.write("- 🎲 Include 1-2 recent bonus numbers (check Draw History)")
+                    st.write("- 🎲 Most past draws had a number that was a bonus ball in the last 150 days (see Draw History)")
                 if score5 < 100:
                     st.write("- 📏 Spread numbers across more ranges (1-10, 11-20, etc.)")
             else:
@@ -475,8 +471,8 @@ def show():
             - Optimal: Matches one of the top 10 historical patterns
 
             **4. Bonus Transition**
-            - Checks if you include recent bonus numbers
-            - Optimal: 1-2 numbers with high transition probability
+            - Whether your line has a number that was a bonus ball in the last 150 days
+            - Nearly every past draw did; it does not change the chance of winning
 
             **5. Range Spread**
             - Ensures numbers are well-distributed across 1-47
