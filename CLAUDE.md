@@ -9,8 +9,9 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
 - **The website, for players.** `view/` is for people who want to have fun picking their own line
   from a few facts about past draws - hot/medium/cold numbers, odd vs even, whether a ball was
   recently a bonus, how many numbers are 32 or above. It is a toy, not a tipster: every line is
-  equally likely to win, and the site says so. It is Streamlit today and will move to **React**
-  later, so picking a line can be made playful (spinning wheels and the like).
+  equally likely to win, and the site says so. It is Streamlit today and will move to **Next.js
+  (React)**, so picking a line can be made playful (spinning wheels and the like) - see
+  [`plan.md`](plan.md).
 - **The ML layer, for the owner only.** `ml_lotto/` and `quickpick.py` are a personal learning
   project - vibe coding put on a proper footing, applying the techniques from Ed Donner's Udemy
   course *AI Coder: Complete Claude Code & Coding Agents Course*. All six models sit at chance,
@@ -23,15 +24,21 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
 
 - **`data/*.json` is the website's API.** A statistic the site shows is computed in
   `lotto_analysis/` and written by `drawpick.py`, never in a page. A page only reads and displays.
-  That is what lets a React front end replace Streamlit without redoing any analysis.
+  That is what lets a Next.js front end replace Streamlit without redoing any analysis.
+- **The VPS runs `drawpick.py`; the owner's PC runs `quickpick.py`.** Per `plan.md`, the VPS
+  (Docker, no bare-metal Python or Node) hosts the public site and rebuilds `data/*.json` when n8n
+  ingests a new draw. Model training never runs there. Keep `drawpick.py` and `lotto_analysis/`
+  light and free of any dependency on `ml_lotto/`.
 - **Site features are about informed fun, not prediction.** Show what past draws looked like and let
   the player decide. Do not score a line as "more likely to win" - nothing is.
 - **The ML layer is where engineering discipline is practised** - parity, tests, `issue.md`. It does
   not need to beat chance; it needs to be correct.
 
 **Read [`issue.md`](issue.md) before starting work.** It is the register of known open defects with
-file:line evidence, and it will save you rediscovering them. [`review.md`](review.md) holds the
-architecture overview, the scraping plan and the VPS/automation plan.
+file:line evidence, and it will save you rediscovering them. [`plan.md`](plan.md) is the roadmap:
+the Next.js front end, the Docker stack on the VPS, n8n scraping of each draw (Phase A test emails,
+then Phase B commits to `data/irish500.csv` and a rebuild webhook), and the single-admin data
+download. [`README.md`](README.md) holds the architecture overview.
 
 ## Folder guides
 
@@ -197,5 +204,7 @@ file at all - it gets trusted over the source. Specifically:
 | a documented fact - metrics, features, models, artifacts | the matching file in `docs/`, verified against the code |
 | added a folder worth documenting | its own `CLAUDE.md`, an `@` import line **and** a row in the table above |
 
-`/lotto-verify` ends with this check. State in your report which `CLAUDE.md` files you updated, or
+`GEMINI.md` and its copy `.gemini/GEMINI.md` restate these invariants and the roadmap for Gemini;
+update them in the same change as any `CLAUDE.md` fact they repeat. `/lotto-verify` ends with this
+check. State in your report which `CLAUDE.md` files you updated, or
 that none needed it.

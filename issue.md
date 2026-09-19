@@ -17,7 +17,7 @@ effect. A fix is not finished until this file says so.
 
 **Improvements are tracked the same way.** Planned work that is not a defect also gets the next
 free F-n, a Priority summary row with severity `Improvement`, and its own section. When done, it
-moves to section 6 (Improvements done). Nothing open lives only in a list or in `review.md`.
+moves to section 6 (Improvements done). Nothing open lives only in a list or in `plan.md`.
 
 ---
 
@@ -61,7 +61,7 @@ bonus_idx = (model_idx - 1) % len(bonus_predictions)
 `scripts/train_with_all_features.py` and three test scripts. `quickpick.py` never imports it, so no
 ensembling happens in the path that produces `lottery_picks.txt`.
 
-`review.md` used to propose soft voting as an improvement, apparently unaware that hard voting
+The old roadmap used to propose soft voting as an improvement, apparently unaware that hard voting
 already existed but was unreachable. That proposal was removed on 2026-09-18 - averaging four models
 at chance yields a model at chance. `ENSEMBLE_MODE = False` in `ml_lotto/config.py` is commented
 "not used currently", confirming the module is dead either way.
@@ -233,7 +233,7 @@ Kept for the record; each is complete and covered by tests.
   `tests/test_wheel.py`. A guarantee over the whole 20 does not fit a 4-8 line budget - even "all 6
   winners in the pool" needs more than 8 lines and fires in 0.36% of draws. It is not an edge and
   does not reduce blanks: 4 unrelated lines catch a match-3 in ~7.2% of draws.
-- **2026-09-18 - MILP selection** (`review.md` §3.2). `ml_lotto/prediction/ilp_selection.py` replaces
+- **2026-09-18 - MILP selection**. `ml_lotto/prediction/ilp_selection.py` replaces
   greedy picking and the filter repair pass with `scipy.optimize.milp`: HMC quotas, the reachable
   freshness target and the ticket rules are constraints, so a line meets all of them or the solver
   raises. Not a prediction change - it removed a defect surface (F-14).

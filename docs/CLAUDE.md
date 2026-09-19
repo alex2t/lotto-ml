@@ -42,7 +42,7 @@ teaching material and describe ML in general, **not** this system.
 | How does a person use the dashboard? | `dashboard-manual.md` |
 | What is logistic regression / XGBoost? | `ml-concepts.md` (general background) |
 
-Not here: open defects (`issue.md`), architecture and automation plans (`review.md`), per-folder
+Not here: open defects (`issue.md`), architecture (`README.md`), roadmap (`plan.md`), per-folder
 invariants (each folder's `CLAUDE.md`).
 
 ## Writing or updating a doc here
