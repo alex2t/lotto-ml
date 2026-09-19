@@ -87,7 +87,6 @@ def validate_bonus_feature():
             print(f"   - Recent bonus numbers picked: {total_bonus_picks}")
             print(f"   - % of picks that are recent bonus: {total_bonus_picks/total_picks*100:.1f}%")
             print(f"   - Expected if random (no feature): {len(recent_bonus_nums)/47*100:.1f}%")
-            print(f"   - Expected with 3.42x lift: ~{len(recent_bonus_nums)/47*3.42*100:.1f}%")
             
             if total_bonus_picks/total_picks > len(recent_bonus_nums)/47 * 1.5:
                 print(f"   ✓ FEATURE IS WORKING! Models favor recent bonus numbers.")

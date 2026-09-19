@@ -141,7 +141,7 @@ BONUS_MODEL_CONFIG = {
 
 BONUS_TO_MAIN_MODEL_CONFIG = {
     'name': 'Bonus-to-Main Transition Predictor',
-    'description': '74% of bonus numbers appear as main within 10 draws (3.48x boost over random)',
+    'description': 'Bonus balls in the main draw within 10 draws - 74.6%, the same as any number by chance (F-30, F-32)',
     'algorithm': 'logistic_regression',
     'features': [
         # === BONUS-TO-MAIN SPECIFIC FEATURES (11) ===
@@ -186,7 +186,7 @@ BONUS_TO_MAIN_MODEL_CONFIG = {
     'algorithm_params': {
         'penalty': 'l1',
         'C': 0.005,
-        'class_weight': {0: 1.0, 1: 3.5},  # Reflect 3.5x boost over random
+        'class_weight': {0: 1.0, 1: 3.5},  # Set from a 3.5x "boost" that was a baseline error (F-30); kept, unmeasured
         'solver': 'liblinear',
         'max_iter': 1000,
         'random_state': 42  # Fixed for reproducibility - predictions change only when data changes

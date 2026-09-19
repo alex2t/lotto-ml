@@ -73,7 +73,8 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
   compared with.** `bonus_to_main_analyzer.py` compared "comes up as a main number within 10 draws"
   with 10/47 - one ball per draw instead of six - and reported a 3.44x boost for what is chance
   (1 - (41/47)^10 = 74.5%). Test a baseline on simulated fair draws: the boost must come out ~1.0
-  (`tests/test_bonus_transition_baseline.py`, F-30).
+  (`tests/test_bonus_transition_baseline.py`, F-30). The rate's denominator counts only the cases
+  that could succeed: a bonus ball in the last 10 draws has no 10-draw window yet (F-32).
 - **A significance test runs on independent data.** `advanced_pattern_analyzer.py` ran Kendall's tau
   on a rolling, smoothed series - neighbouring points share most of their data - and flagged 61% of
   numbers on fair draws. `trend_is_significant` is now Fisher's exact test on the raw counts of the

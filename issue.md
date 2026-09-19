@@ -25,49 +25,30 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **F-29** | Sum alerts use hard-coded mean/std from a key that does not exist; the volatility alert can never fire | Low | XS |
-| 2 | **F-32** | Bonus-to-main transition rate divides by bonus appearances that have no 10-draw future | Low | XS |
+| 1 | **F-33** | Every draw's "recent bonus numbers" includes its own bonus, so the repeat statistic always reads 100% | Low | XS |
 
-**2 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
-
----
-
-## 1. F-29 — Sum alerts read a key that does not exist; the volatility alert can never fire
-
-**Severity: Low.** Found 2026-09-19 while fixing F-28.
-
-- `view/utils/anomaly_detector.py:100-101` and `view/pages/pattern_comparison.py:259-260` read
-  `summary_statistics.mean/std` from `lotto_sum_contribution_validated.json`, which has no such key
-  (the figures are under `overall_distribution`, as `prediction_validator.py` and
-  `trigger_analysis.py` read them). `.get(..., 144.87)` / `.get(..., 30.4)` hide it, so both always use
-  hard-coded constants - today's real values are 145.95 and 30.71, and they move with every draw.
-- `view/utils/anomaly_detector.py:285` flags a number as highly volatile at
-  `appearance_volatility >= 1.5`; the highest of the 47 is 1.16, so the alert can never fire. The
-  Trigger Periods page and the manual call >= 1.15 "High".
-- The whole detector reads its data with `.get(key, default)` - the pattern `view/pages/CLAUDE.md`
-  forbids since F-25.
-
-**Fix.** Read `overall_distribution` with direct access in both places; set the volatility threshold
-from the same band the Trigger Periods page uses; replace the detector's `.get` defaults with direct
-access. Test: a sum alert quotes the mean in the JSON, and a line of the most volatile numbers fires
-the volatility alert.
+**1 open defect, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
-## 2. F-32 — The bonus-to-main transition rate divides by appearances with no 10-draw future
 
-**Severity: Low.** Found 2026-09-19 while fixing F-30.
+## 1. F-33 — Every draw's "recent bonus numbers" includes its own bonus
 
-`lotto_analysis/analyzers/bonus_to_main_analyzer.py` counts transitions only for draws with 10
-draws after them (`range(len(sorted_draws) - 10)`, `:63`), but `overall_transition_rate` divides by
-all bonus appearances (`total_bonuses`, `:449`), including the last 10, which cannot transition. So
-the rate reads 73.09% (364/498) where it is 74.59% (364/488). Per-number `transition_rate` has the
-same denominator. The error is ~2% and shrinks as draws accumulate, but it makes bonus balls look
-slightly below chance (74.48%). `base_rate` in the same artifact is read by
-`ml_lotto/features/bonus_to_main_features.py:51`, so the fix changes a Bonus-to-Main feature value -
-re-run `quickpick.py` and compare metrics.
+**Severity: Low.** Found 2026-09-19 while fixing F-32.
 
-**Fix.** Divide by the bonus appearances that have a full 10-draw window, overall and per number.
-Test on simulated fair draws: the rate is within noise of 1 - (41/47)^10.
+`recent_bonus_numbers` in `data/lotto_draw_history.json` holds the last 10 bonus balls *including the
+draw's own*: 498 of 498 draws contain their own bonus (2026-09-16: bonus 31, list ends with 31).
+`lotto_analysis/analyzers/bonus_analyzer.py` `calculate_recent_bonus_exclusion` asks whether each
+bonus was in that list, so `recent_bonus_exclusion.was_bonus_last_10.rate` in
+`lotto_bonus_analysis.json` is 1.0 against an `expected_if_random` of 0.2128 - a statistic that cannot
+come out any other way. Measured against the previous 10 draws only, a bonus ball repeats 18.3% of the
+time; chance is 1 - (46/47)^10 = 19.4%.
+
+The main-number statistic in the same file (`main_from_recent_bonus`, boost 0.92) is not affected: a
+draw's own bonus is never one of its main numbers. The Draw History page labels the list "Last 10
+Bonus Numbers at time of draw", which includes that draw's bonus.
+
+**Fix.** Measure the repeat against the previous 10 draws' bonus balls, and say which window the Draw
+History label shows. Check which ML feature, if any, reads the per-draw list before changing it.
 
 ---
 ## 6. Improvements done
@@ -246,6 +227,8 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-32 | Bonus-to-main transition rate divided by bonus appearances with no 10-draw window | `bonus_to_main_analyzer.py` |
+| F-29 | Sum alerts used hard-coded mean/std from a key that never existed; the volatility alert could never fire | `anomaly_detector.py`, `pattern_comparison.py`, `prediction_validator.py` |
 | F-31 | The "significant trend" flag ran Kendall's tau on a smoothed rolling series and flagged 61% of numbers on fair draws | `advanced_pattern_analyzer.py` |
 | F-30 | Number Insights graded numbers STRONG PICK / AVOID and rewarded "overdue"; bonus balls were called likely to come up, from a 10/47 baseline | `number_insights.py`, `draw_history.py`, `prediction_validator.py`, `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | F-28 | Pattern Comparison, Trigger Periods, the anomaly alerts and the manual graded lines strong / weak / risky and quoted false frequencies | `pattern_comparison.py`, `trigger_analysis.py`, `anomaly_detector.py`, `prediction_validator.py`, `statistics.py`, `dashboard-manual.md` |
@@ -289,6 +272,59 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-32 — Transition rate divided by bonus balls that could not yet transition
+
+**Root cause.** `bonus_to_main_analyzer.py` counted transitions only for bonus balls with 10 draws
+after them (`range(len(sorted_draws) - 10)`) but divided by every bonus appearance, including the
+last 10. Overall that read 364/498 = 73.09% instead of 364/488 = 74.59%, and each number that was a
+recent bonus ball had its per-number rate understated (e.g. 0.5556 -> 0.625). It made bonus balls look
+slightly *below* chance (74.48%) - the mirror of F-30's false boost.
+
+**Fix.** Profiles count `eligible_bonus_appearances` (with a full 10-draw window) and divide by it,
+overall and per number; `total_bonus_appearances` still counts every appearance for the pages. The
+standalone `analysis/generate_bonus_to_main_json.py` counted inside the loop and was already right.
+The remaining "3.48x boost" text went too: the Bonus-to-Main config description and trainer
+docstring, the class-weight comment (the 3.5 weight was set from that boost; kept, unmeasured), a
+print in `generate_bonus_to_main_json.py`, and a "3.42x lift" in `analysis/validate_bonus.py` -
+`main_from_recent_bonus` in the artifact shows 0.92.
+
+**Measured.** `drawpick.py`: `overall_transition_rate` and `base_rate` 0.7309 -> 0.7459 - the
+figure measured independently for F-30 - and `boost_factor` 0.98 -> 1.00; 10 per-number rates changed.
+`quickpick.py`: picks identical and Bonus-to-Main metrics bit-identical, although its
+`historical_transition_rate` column held the new values (22 distinct in training). Probed: L1 at
+C = 0.005 keeps 2 of its 34 coefficients, so that feature has none - the constrained capacity working.
+
+**Tests.** `tests/test_bonus_transition_baseline.py` 3 -> 4: in a 40-draw history where every bonus
+ball is a main number in the next draw, the rate is 1.0 overall and per number (the old code: 0.75).
+
+### F-29 — Sum alerts used hard-coded figures; the volatility alert could never fire
+
+**Root cause.** `view/utils/anomaly_detector.py` and `view/pages/pattern_comparison.py` read
+`summary_statistics.mean/std` from `lotto_sum_contribution_validated.json`; the file keeps them under
+`overall_distribution`. `.get(..., 144.87)` / `.get(..., 30.4)` hid the miss, so both always used
+constants (real today: 145.95 / 30.71). The bands moved: a line summing 237 was "Very unusual" (past
+the constant 3 SD of 236.1; the real one is 238.1), and Pattern Comparison called a sum of 206-207
+unusual (constant range 84-206; real 85-207). The volatility alert needed 4 numbers at
+`appearance_volatility >= 1.5`; the highest of the 47 is 1.16 and only one is >= 1.15, so no line
+could fire it. The whole detector loaded files with `except FileNotFoundError: {}` and read with
+`.get` defaults, and loaded two artifacts no check used.
+
+**Fix.** The detector loads the four artifacts it uses with direct access - a missing file or key
+raises - and reads the sum statistics from `overall_distribution`; every check reads its fields
+directly. Pattern Comparison does the same. The volatility check is removed rather than re-thresholded:
+at the page's own "High" band (>= 1.15) only one number qualifies, so it still could not fire, and
+the values (0.69-1.16) are what gap regularity looks like in a fair draw. With it went the `info`
+alert level, its only source, and the validator's always-zero "Note" counter.
+
+**Measured.** Sum 237: "Very unusual" -> "Unusual", quoting mean 146.0 instead of 144.9. Pattern
+Comparison, sum 207: typical range 84-206 -> 85-207. `AppTest`: Prediction Validator and Pattern
+Comparison render with no exceptions or error boxes.
+
+**Tests.** `tests/test_anomaly_detector.py` (new, 4 tests): the sum alert quotes the artifact's mean;
+237 is "Unusual", not "Very unusual"; Pattern Comparison's typical range is the artifact's mean +- 2
+SD; every `_check_` method fires on at least one line built from the current data. All 4 failed on the
+old code; the last names `_check_extreme_volatility`.
 
 ### F-31 — The "significant trend" flag flagged most numbers on fair draws
 
