@@ -467,8 +467,13 @@ def main(permutation_runs: int = 0):
         else:
             print(f"  ⚠️  No consecutive patterns found in odds_data")
 
+        # One point-in-time engine per run; each model takes a view with its own base features (C-15a).
+        # Built before serving features so they all count days to its next_draw_date (C-6b).
+        base_engine = PointInTimeFeatureEngine(all_draws)
+        print(f"  Serving reference date (next draw): {base_engine.next_draw_date.date()}")
+
         print("  Calculating 'days_since_bonus' feature...")
-        days_since_bonus_data = calculate_days_since_bonus(all_draws)
+        days_since_bonus_data = calculate_days_since_bonus(all_draws, base_engine.next_draw_date)
 
         print("  Calculating 'was_recent_bonus' feature...")
         was_recent_bonus_data = calculate_was_recent_bonus(all_draws, lookback_draws=10)
@@ -547,7 +552,8 @@ def main(permutation_runs: int = 0):
                 long_term_pattern_features,
                 advanced_pattern_features_dict,
                 consecutive_pairs_validated,
-                rolling_stats_features
+                rolling_stats_features,
+                reference_date=base_engine.next_draw_date
             )
             print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
         except Exception as e:
@@ -604,9 +610,6 @@ def main(permutation_runs: int = 0):
         # scored out-of-sample on the same scoreboard (F-2)
         train_end_idx, val_start_idx = calculate_train_val_split(len(all_draws))
         aux_metrics = {}
-
-        # One point-in-time engine per run; each model takes a view with its own base features (C-15a)
-        base_engine = PointInTimeFeatureEngine(all_draws)
 
         try:
             bonus_pipeline, bonus_features, bonus_metrics = train_bonus_model(

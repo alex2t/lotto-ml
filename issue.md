@@ -25,33 +25,15 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 | # | ID | Issue | Severity | Effort |
 |--:|:--|:--|:--|:--|
-| 1 | **C-6b** | Serving reference date differs between the two feature paths | Low | S |
-| 2 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
-| 3 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 1 | **C-17b** | Legacy `tests/*.py` are print scripts, not tests | Low | M |
+| 2 | **F-7** | `analysis/` scripts read a window that has never existed | Low | S |
+| 3 | **F-24** | Delete the full-history features that are computed but used by no model | Improvement | M |
 
-**3 open defects, nothing High; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
-
----
-
-## 1. C-6b — The two feature paths use different serving reference dates
-
-**Severity: Low.** Carried from the code review.
-
-- `walk_forward.py` anchors the serving row (`t = N`) to an **estimated next-draw date** (last draw
-  + median inter-draw gap, currently 3 days), matching how every training row uses its own draw's
-  date.
-- `extractor.py:90-97` anchors the main path to the **latest draw's date**.
-
-Both are internally consistent and reproducible (C-6 fixed the wall-clock dependency), but they sit
-about 3 days apart. `days_since_last` is Model 1's top feature and the HMC bands are 13 / 27 days,
-so a 3-day offset can move numbers across a category boundary.
-
-**Fix.** Use one anchor. The engine's convention is more defensible — features for the draw being
-predicted should be measured as of that draw — so move `extractor.py` onto the estimated next-draw
-date, or retire the JSON serving path in favour of `engine.extract_features_for_next_draw()`.
+**2 open defects, nothing High; 1 improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 
 ---
-## 2. C-17b — The legacy test files are not tests
+
+## 1. C-17b — The legacy test files are not tests
 
 **Severity: Low.** Carried from the code review.
 
@@ -73,7 +55,7 @@ real and run in about 5 seconds. A plain `pytest tests/` still cannot be used be
 `pytest.ini` so `pytest` runs clean from the repo root.
 
 ---
-## 3. F-7 — Standalone analysis scripts read a window that has never existed
+## 2. F-7 — Standalone analysis scripts read a window that has never existed
 
 **Severity: Low.** Carried from the code review, confirmed in the final pass.
 
@@ -91,6 +73,27 @@ None of these scripts feed `drawpick.py` or `quickpick.py`, so the prediction pa
 
 **Fix.** Point them at `last_24` or remove the field. Better, have them fail on a missing key rather
 than defaulting to 0, which is what let this hide.
+
+---
+## 3. F-24 — Delete the full-history features that are computed but used by no model
+
+**Severity: Improvement.** Registered 2026-09-19 after F-21.
+
+Since F-21, no model uses any of the C-5 full-history features, but every run still computes them
+for all 47 numbers: `lt_category_alignment` and `lt_recency_weight` (`long_term_patterns.py`, wired
+in `quickpick.py:501` and `extractor.py`), `window_saturation_penalty` (`window_saturation.py`,
+`extractor.py:192-207`), and `series_*` / `*_json` (see `docs/feature_review.md`). The engine copies
+them into training rows as static values (`walk_forward.py` `static_feat`). They are the code that
+still reads the JSON category dated at the last draw (F-21), and they default missing keys
+(`.get('category', 'cold')`).
+
+`tests/test_no_constant_features.py` keeps them out of all six models, so nothing is wrong today -
+this is dead code that looks load-bearing.
+
+**Fix.** Delete the computations, their `extractor.py` keywords and parameters, the engine's
+`static_feat` lines and the `LONG_TERM_PATTERN_WEIGHTS` constant; keep `C5_REMOVED` in the test so
+none comes back. Check first whether the website reads `lotto_long_term_patterns.json` or
+`lotto_window_saturation_calculated.json` before touching the `drawpick.py` phases that write them.
 
 ---
 ## 6. Improvements done
@@ -243,6 +246,10 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-21 | Bonus-to-Main trained on a C-5 full-history feature computed from last-draw categories | `config.py`, `window_saturation.py`, `bonus_to_main_trainer.py` |
+| C-6b | Training dated rows at their own draw; serving dated them at the last draw | `extractor.py`, `walk_forward.py`, `quickpick.py` |
+| F-22 | Next-draw date ignored the 2026 move to Mon/Wed/Sat draws | `walk_forward.py` |
+| F-23 | `days_since_bonus` was served from the wall clock | `timing.py`, `quickpick.py` |
 | F-6 | Ensemble code was unreachable, and each entry point was broken | deletes `ensemble.py`, `ensemble_predict.py`, `analysis/ensemble.py`; `config.py`, `quickpick.py` |
 | F-20 | Bonus prediction 2 claimed category diversity it never applied | `bonus_predictor.py` |
 | F-5 | A too-small bonus pool crashed with a bare IndexError; the registered divide-by-zero was unreachable | `bonus_predictor.py` |
@@ -263,6 +270,70 @@ Every item below was fixed and verified against the live pipeline.
 | F-12 | `max(set(...), key=list.count)` tie-break was non-deterministic | `bonus_to_main_analyzer.py`, `generate_bonus_to_main_json.py` |
 | N-1 | Serving row was stale by one draw | `walk_forward.py`, `quickpick.py` |
 | N-1b | `draws_since_bonus` was exactly inverted | `walk_forward.py` |
+
+### F-21 — Bonus-to-Main trained on a C-5 full-history feature
+
+**Root cause.** Six places read `category` from `lotto_trigger_periods.json`, dated at the last draw
+rather than the draw being predicted. Traced 2026-09-19, only one reached a model:
+
+| Site | Reaches a model? |
+|:--|:--|
+| `long_term_patterns.py:79,172` | no - `lt_*` removed from every config in C-5 |
+| `window_saturation.py:357,423` | no - `get_saturation_explanation`, `get_saturation_statistics` had no callers |
+| `bonus_to_main_trainer.py:228` | no - `extract_bonus_to_main_features_for_number` had no callers |
+| `window_saturation.py:245` | **yes** - `window_saturation_penalty`, in `BONUS_TO_MAIN_MODEL_CONFIG` |
+
+Re-dating that category would not have made the feature correct. `window_saturation_penalty` is one
+of the C-5 full-history features: in training every row gets the same per-number value
+(`walk_forward.py:356`, `static_feat`), estimated over the whole timeline including the validation
+window. C-5 removed it from the four main models, but its guard test only checked those four, so
+Bonus-to-Main kept it.
+
+**Fix.** Removed `window_saturation_penalty` from `BONUS_TO_MAIN_MODEL_CONFIG`. Deleted the three
+functions with no callers. The remaining last-draw category reads feed only features no model uses;
+deleting those is F-24.
+
+**Measured before/after.** Bonus-to-Main val AUC 0.4979 -> 0.4978, train/val gap 0.0331 -> 0.0332,
+Top-7 unchanged - all far inside the noise floor, consistent with the L1 penalty (C=0.005) having
+kept almost no weight on it. Every other model +0.0000. `lottery_picks.txt` identical.
+
+**Tests.** `tests/test_no_constant_features.py::test_the_removed_c5_features_stay_out_of_the_auxiliary_models`
+checks both auxiliary configs against the C-5 list (now `C5_REMOVED`, shared with the main-model
+test). It failed on Bonus-to-Main before the config change.
+
+### C-6b, F-22, F-23 — The serving row was dated differently from the training rows
+
+**Root cause.** Every training row counts days to its own draw's date; the main models are served
+from `extractor.py`, which counted to a different date. Three defects, one cause - no single serving
+date:
+
+- **C-6b.** `extractor.py` counted `days_since_last` to the latest draw (14 Sep), the engine to the
+  estimated next draw. Measured on 2026-09-19: every one of the 47 served values was 3 days short of
+  the training convention, and 4 numbers (2, 37, 41, 46) were served as hot at 12 days where training
+  would call them medium at 15. `category` came from the JSON, dated at the last draw.
+- **F-22.** The engine's next-draw estimate was last draw + median gap over all history (3 days).
+  Irish Lotto added Monday draws in September 2026 (Mon/Wed/Sat), so after Mon 14 Sep it gave Thu
+  17 Sep - not a draw day - instead of Wed 16 Sep.
+- **F-23.** `calculate_days_since_bonus` counted to `datetime.now()` (`timing.py:32`), so Model 3's
+  `days_since_bonus` input changed with the day `quickpick.py` ran.
+
+**Fix.** One serving date, `engine.next_draw_date`: the first day after the last draw on a weekday
+used by the latest 6 draws (`walk_forward.next_draw_date()`). `quickpick.py` builds the engine
+before any serving feature and passes the date to `extract_features_from_hmc_json(reference_date=)`
+and `calculate_days_since_bonus(draws, reference_date)`; both now require it. `category` is derived
+by the shared `walk_forward.hmc_category()` in the engine and the extractor.
+
+**Measured before/after.** Extractor vs engine serving row: `days_since_last` differed by 3 on 47/47
+numbers and `category` on 4/47; now 0/47 on both, and on `days_since_bonus`. Picks changed, as they
+should: Model 1 `[5, 13, 15, 24, 42, 43]` -> `[5, 13, 20, 27, 38, 42]`, Model 2
+`[6, 9, 23, 31, 38, 39]` -> `[8, 9, 23, 31, 39, 40]`, Model 3 `[10, 19, 22, 32, 40, 47]` ->
+`[6, 10, 19, 22, 32, 47]`. Validation metrics unchanged (+0.0000 on every model): training and
+validation rows were always dated correctly; only the serving row moved.
+
+**Tests.** `tests/test_walk_forward_parity.py`: `test_next_draw_date_follows_the_current_schedule`
+(Wed/Sat and Mon/Wed/Sat cases), and `test_extractor_serving_row_matches_the_engine` on
+`days_since_last`, `category` and `days_since_bonus`. Putting the extractor's date back to the last
+draw fails the first two.
 
 ### F-6 — Ensemble code was unreachable, and each entry point was broken
 

@@ -136,7 +136,8 @@ def test_feature_extraction():
         pattern_score_data,
         consecutive_patterns=consecutive_patterns,
         consecutive_pairs_validated=consecutive_pairs_validated,
-        rolling_stats_features=rolling_features
+        rolling_stats_features=rolling_features,
+        reference_date=pd.Timestamp('2026-01-01')  # mock data has no last_seen dates
     )
 
     all_feature_names = get_all_feature_names(features_dict)

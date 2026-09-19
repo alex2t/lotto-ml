@@ -22,6 +22,7 @@ from typing import Dict, Any, List, Tuple
 from ml_lotto.config import MAX_NUMBER, FRESHNESS_PATTERN_WEIGHTS, LONG_TERM_PATTERN_WEIGHTS
 
 from ml_lotto.features.timing import calculate_recency_zone_score, load_recency_zones
+from ml_lotto.features.walk_forward import hmc_category
 from ml_lotto.features.patterns import (
     calculate_has_consecutive_partner,
     calculate_consecutive_pair_affinity
@@ -56,7 +57,9 @@ def extract_features_from_hmc_json(
     long_term_features: Dict[int, Dict[str, float]] = None,
     advanced_pattern_features: Dict[int, Dict[str, float]] = None,
     consecutive_pairs_validated: Dict[str, Any] = None,
-    rolling_stats_features: Dict[int, Dict[str, float]] = None
+    rolling_stats_features: Dict[int, Dict[str, float]] = None,
+    *,
+    reference_date: pd.Timestamp
 ) -> Dict[int, Dict[str, Any]]:
     """
     Extract ML features for each number, incorporating ALL custom features including new JSON features.
@@ -82,20 +85,15 @@ def extract_features_from_hmc_json(
         long_term_features: NEW - Long-term pattern analysis features
         advanced_pattern_features: NEW - Volatility and trend features (v3.13)
         rolling_stats_features: NEW - Rolling statistics features (v3.14)
+        reference_date: Date days are counted to - the engine's next_draw_date, so
+            days_since_last and category match the training rows (C-6b)
 
     Returns:
         Dictionary mapping number (1-47) -> feature dictionary
     """
     features = {}
-    # Determine reference timestamp from latest draw date in hmc_data (reproducible & wall-clock independent)
-    ref_dates = []
-    for k, v in hmc_data.items():
-        if isinstance(v, dict) and 'last_seen' in v:
-            try:
-                ref_dates.append(pd.to_datetime(v['last_seen'].replace('/', '-')))
-            except Exception:
-                pass
-    current_timestamp = max(ref_dates) if ref_dates else pd.Timestamp.now()
+    # The next draw's date, as training rows are dated at their own draw (C-6b)
+    current_timestamp = reference_date
     ml_feature_names = [ml_key for data_key, ml_key in dynamic_recent_keys]
 
     if freshness_features is None:
@@ -286,10 +284,9 @@ def extract_features_from_hmc_json(
             continue
         
         num_data = hmc_data[num_key]
-        category = num_data.get('category', 'unknown')
         total_count = num_data.get('total_count', 0)
         days_since = 999
-        
+
         if 'last_seen' in num_data:
             try:
                 last_date_str = num_data['last_seen'].replace('/', '-')
@@ -297,6 +294,9 @@ def extract_features_from_hmc_json(
                 days_since = (current_timestamp - last_date).days
             except Exception:
                 pass
+        # Derived here, not read from the JSON: the JSON's category is dated at the last draw,
+        # training's at the draw being predicted (C-6b).
+        category = hmc_category(days_since)
         
         recent_data = num_data.get('recent', {})
         for data_key, ml_feature_key in dynamic_recent_keys:

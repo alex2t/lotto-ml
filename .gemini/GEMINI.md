@@ -83,6 +83,7 @@ This is the single highest-risk invariant in the entire repository. Training fea
   - `recent_9` counts over 10 draws (`last_9` in JSON).
   - `recent_24` counts over 25 draws (`last_24` in JSON).
 * **Serving Row Construction**: Only `engine.extract_features_for_next_draw()` ($t = N$) builds a valid serving row. `extract_features_at_draw(N-1)` drops the latest draw.
+* **One Serving Date**: Every serving path counts days to `engine.next_draw_date` (the next draw on the current Mon/Wed/Sat schedule), matching training rows dated at their own draw. `category` is derived with `hmc_category()` in both paths, never read from the JSON. Never use `datetime.now()` (C-6b).
 * **No Silent Defaults**: Never use `feat.get(key, 0)` for feature values. A missing key indicates a distribution mismatch or missing column; let it fail loudly with `feat[col]`.
 * **Single Engine Instance**: `quickpick.py` instantiates one `PointInTimeFeatureEngine`, and models consume views via `engine.with_base_features()`.
 
@@ -177,7 +178,7 @@ Always execute commands inside the project's virtual environment:
 # Launch the Streamlit dashboard
 .\venv\Scripts\streamlit.exe run app.py
 
-# Execute the 13 verified test suites (127 tests, ~50s)
+# Execute the 13 verified test suites (135 tests, ~50s)
 .\venv\Scripts\python.exe -m pytest tests/test_walk_forward_parity.py tests/test_selection_invariants.py tests/test_metrics.py tests/test_no_constant_features.py tests/test_freshness_target.py tests/test_threshold_holdout.py tests/test_model_capacity.py tests/test_prediction_alignment.py tests/test_scraper_sources.py tests/test_wheel.py tests/test_permutation_check.py tests/test_high_number_distribution.py tests/test_bonus_predictor.py -q
 
 # Run the comprehensive lotto verification suite
