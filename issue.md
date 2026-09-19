@@ -23,11 +23,7 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 ## Priority summary
 
-| # | ID | Issue | Severity | Effort |
-|--:|:--|:--|:--|:--|
-| 1 | **F-39** | `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6 (latent) | Low | S |
-
-**1 open defect (1 Low); no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
+**No open defects; no improvement open.** Everything resolved is in Appendix A and appears nowhere above.
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
@@ -47,17 +43,8 @@ None open.
 
 ## 3. Low severity defects
 
-### F-39 — `filters.py:validate_line` counts odd balls over 7 numbers instead of main 6
+None open.
 
-**Severity: Low.** Registered 2026-09-19. Latent: every current caller passes 6 numbers
-(`.claude/skills/lotto-verify/verify.py:134`, `tests/test_selection_invariants.py`).
-
-**Root cause.** The docstring (`ml_lotto/prediction/filters.py:37`) accepts "6-7 numbers". Sum and
-span use `numbers[:6]` (`:58`, `:63`), but the odd count (`:52-54`) counts every number, so a
-7-number line with 4 odd main numbers and an odd bonus fails with 5 odd.
-
-**Fix.** Make `validate_line` take exactly the 6 main numbers and raise on any other length, rather
-than slicing.
 ---
 ## 6. Improvements done
 
@@ -235,6 +222,7 @@ Every item below was fixed and verified against the live pipeline.
 | C-13 | Streamlit autofill inert; CSV assumed newest-first | `post_draw_analysis.py` |
 | C-14 | Scraper had no fallback source and accepted any game sharing the draw date | `scrape_lotto.py` |
 | C-15a | Feature engine rebuilt 5x per run; O(N^2) gap-list memory | `walk_forward.py`, `trainer.py`, `bonus_trainer.py`, `bonus_to_main_trainer.py`, `quickpick.py` |
+| F-39 | `validate_line` counted odd balls over 7 numbers while sum and span used the main 6 | `filters.py` |
 | F-41 | Bonus-to-Main selected `category`, a string every row turned into a constant 0.0 | `config.py`, `bonus_to_main_features.py` |
 | F-36 | A bonus ball repeated inside the 10-draw window was counted from its oldest appearance | `bonus_window.py` |
 | F-38 | Odd/even affinity tested each number against 0.5 and validated all 24 odd numbers; overall test expected 50/50 | `odd_even_analyzer.py`, `statistics.py` |
@@ -287,6 +275,24 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-39 — `validate_line` counted odd balls over seven numbers
+
+**Root cause.** `validate_line` documented "a sorted list of 6-7 numbers". Sum and span sliced
+`numbers[:6]`, but the odd count ran over every number given. A 7-number line whose 6 main numbers
+hold 4 odd, with an odd bonus, counted 5 odd and failed `odd_even_balance` - a rule its ticket meets.
+Latent: every caller passed 6 numbers, so no generated ticket was ever misjudged.
+
+**Fix.** The ticket rules are about the 6 main numbers, so `validate_line` takes exactly `LINE_SIZE`
+of them and raises on any other length, rather than slicing one part of the input and not another.
+The bonus ball is not a ticket-rule input.
+
+**Measured.** `quickpick.py`: metrics and picks identical - nothing in generation calls it.
+`/lotto-verify` validates all three tickets as before.
+
+**Tests.** `tests/test_selection_invariants.py`,
+`test_validate_line_takes_exactly_the_six_main_numbers`: a valid 6-number line passes, and 7, 5 and 0
+numbers each raise. It failed on the old code, which returned a verdict for all three.
 
 ### F-41 — Bonus-to-Main trained on `category` as a constant 0.0
 

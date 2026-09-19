@@ -202,3 +202,18 @@ def test_minimum_counts_the_whole_ticket_including_pre_assigned():
     selected = solve(world, quotas(2, 1, 1), target={0: 2, 1: 1, 2: 1}, pre=pre, min_high=2)
     assert high_count(pre + selected) >= 2
     assert high_count(selected) == 1, "the pre-assigned 40 already counts toward the minimum"
+
+
+def test_validate_line_takes_exactly_the_six_main_numbers():
+    """
+    The ticket rules are about the 6 main numbers, so a 7th is a caller error (F-39).
+
+    Regression: the docstring accepted "6-7 numbers", sum and span sliced [:6] but the odd
+    count ran over all of them. A line of 4 odd main numbers with an odd bonus counted 5 odd
+    and failed a rule its ticket meets.
+    """
+    line = [3, 5, 12, 23, 31, 44]
+    assert validate_line(line) == (True, [])
+    for wrong in (line + [7], line[:5], []):
+        with pytest.raises(ValueError):
+            validate_line(wrong)

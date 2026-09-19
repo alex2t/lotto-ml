@@ -7,7 +7,7 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 | `predictor.py` | orchestrator - generates predictions and picks from the trained models |
 | `ilp_selection.py` | `solve_line()` - picks the best line by integer linear programming |
 | `constraints.py` | HMC and freshness pattern constraints feeding selection |
-| `filters.py` | the ticket-rule bounds and `validate_line()`; no repair |
+| `filters.py` | the ticket-rule bounds and `validate_line()`, which takes exactly the 6 main numbers; no repair |
 | `pool_generator.py` | ranked candidate pool for Model 4 |
 | `wheel.py` | 4-line covering-design wheel over the pool's top 8 |
 | `bonus_predictor.py` | 3 diverse bonus-ball predictions |
@@ -16,7 +16,8 @@ Turns trained model probabilities into playable lines. Writes `lottery_picks.txt
 ## The boundary that matters
 
 **Constraints on a ticket live in `filters.py`, not in model features.** Sum 84-206, span >= 20,
-2-4 odd. A model must not be taught to satisfy a rule that a filter already enforces - that spends
+2-4 odd - all three over the 6 main numbers, never the bonus. `validate_line` raises on any other
+length; the odd count once ran over 7 numbers while the sum and span used the first 6 (F-39). A model must not be taught to satisfy a rule that a filter already enforces - that spends
 model capacity on a deterministic check and makes the feature set harder to reason about.
 
 `ilp_selection.py` solves for the whole line at once with `scipy.optimize.milp`: maximise the
