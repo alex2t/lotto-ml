@@ -57,13 +57,16 @@ fitted on one distribution and applied to another. If parity fails, you changed 
 over **all 7**, and both sides must agree.
 
 **Metric moves under the noise floor mean nothing.** The floor is ~0.031 AUC and ~0.227 Top-7
-AvgCaught over the 60-draw validation window. All six models sit at chance (AUC 0.50-0.55, Top-7
-lift 0.90-1.18), which is the correct answer for a fair draw. Do not report a sub-2-SE move as an
-improvement, and do not tune until something exceeds it.
+AvgCaught over the 60-draw validation window. All six models sit at chance - AUC close to 0.50 -
+which is the correct answer for a fair draw. Do not report a sub-2-SE move as an improvement, and do
+not tune until something exceeds it.
 
-**Watch the overfit gap as well as the AUC.** All six models sit at a train/validation AUC gap of
-0.002-0.078. A gap back above ~0.1 means capacity was handed back to a model, not that it learned
-something.
+**Watch the overfit gap as well as the AUC.** A train/validation AUC gap above ~0.1 means capacity
+was handed back to a model, not that it learned something.
+
+The figures themselves are in this run's output and `model_metrics/model_comparison.csv`;
+`docs/metrics.md` has a dated example. A new draw moving them within the noise floor needs no doc
+update.
 
 **A constant feature is a defect.** `test_no_constant_features.py` fails if a model trains on a
 value that never changes: per-number constants leak outcome information from the validation window,

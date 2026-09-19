@@ -13,8 +13,8 @@ Standalone utilities. **None of these run as part of `drawpick.py` or `quickpick
 
 - It does not mention `scrape_lotto.py` at all.
 - Its "Example Output" blocks are illustrative, not captured runs. The numbers in them (AUC 0.69,
-  Top-7 0.43) are **not** this system's actual metrics - the real models sit at AUC 0.50-0.55. Check
-  `model_metrics/model_comparison.csv` for real figures.
+  Top-7 0.43) are **not** this system's actual metrics - the real models sit at chance, AUC close to 0.50.
+  Check `model_metrics/model_comparison.csv` for real figures.
 
 ## Rules
 
