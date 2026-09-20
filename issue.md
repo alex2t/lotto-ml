@@ -193,6 +193,14 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-55 | n8n.md 3.6 read the current CSV with an unguarded `split` chain, so a GitHub 404 threw and lost a draw that had passed every validation | `nextStep/n8n.md` 3.6 |
+| F-54 | n8n.md 3.5 capped retries with a counter in workflow static data that never reset, so after three lifetime attempts the workflow would give up on every future draw silently | `nextStep/n8n.md` 3.5 |
+| F-53 | n8n.md 3.4 downgraded a draw rejected by `buildDraw()` to `not_published`, making a malformed published result indistinguishable from no result | `nextStep/n8n.md` 3.4 |
+| F-52 | n8n.md 3.4 computed `httpErrors` and never routed on it, so a dead fetch was reported as `not_published` and the email blamed the lottery site | `nextStep/n8n.md` 3.4 |
+| F-51 | n8n.md 3.4 claimed the Code node never throws but had no `try`/`catch`; a thrown Code node ends the execution with no email at all | `nextStep/n8n.md` 3.4 |
+| F-50 | n8n.md monitoring check 5 gated Phase 2B on parser notes about rejected Plus rows, which neither page produces - the archive table carries the main draw only | `nextStep/n8n.md` 6 |
+| F-49 | n8n.md wired both HTTP nodes into one Code node input, which n8n runs once per incoming branch - two executions and two emails per draw | `nextStep/n8n.md` 3 |
+| F-48 | n8n.md specified error output on both HTTP nodes while its Code node read the failed item from the main output, so a fetch failure would have thrown instead of emailing | `nextStep/n8n.md` 3.2 |
 | F-46 | Artifact floats differed between platforms although the engine versions were pinned | `lotto_analysis/utils/serialization.py`, 14 `json.dump` sites |
 | F-47 | A failed data load printed an error and exited 0, so the stack started on stale data | `drawpick.py` |
 | F-45 | Docker plumbing: junk files from `echo >>`, no service ordering, unowned bind mount | `scripts/docker_*.bat`, `docker-compose.yml`, both Dockerfiles, `.dockerignore` |
