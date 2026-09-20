@@ -10,8 +10,10 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
   from a few facts about past draws - hot/medium/cold numbers, odd vs even, whether a ball was
   recently a bonus, how many numbers are 32 or above. It is a toy, not a tipster: every line is
   equally likely to win, and the site says so. It is Streamlit today and will move to **Next.js
-  (React)**, so picking a line can be made playful (spinning wheels and the like) - see
-  [`plan.md`](plan.md).
+  (React)**, so picking a line can be made playful (spinning wheels and the like). The build
+  document is [`nextStep/web.md`](nextStep/web.md) - the five destinations, the picker, the
+  completeness matrix that says every current statistic must survive the move, and the cutover
+  order for deleting `view/`.
 - **The ML layer, for the owner only.** `ml_lotto/` and `quickpick.py` are a personal learning
   project - vibe coding put on a proper footing, applying the techniques from Ed Donner's Udemy
   course *AI Coder: Complete Claude Code & Coding Agents Course*. All six models sit at chance,
@@ -38,7 +40,9 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
 file:line evidence, and it will save you rediscovering them. [`plan.md`](plan.md) is the roadmap:
 the Next.js front end, the Docker stack on the VPS, n8n scraping of each draw (Phase A test emails,
 then Phase B commits to `data/irish500.csv` and a rebuild webhook), and the single-admin data
-download. [`README.md`](README.md) holds the architecture overview.
+download. `nextStep/` holds the build documents: [`n8n.md`](nextStep/n8n.md) for Phase 2
+ingestion, [`web.md`](nextStep/web.md) for the Phase 3-4 website.
+[`README.md`](README.md) holds the architecture overview.
 
 ## Folder guides
 

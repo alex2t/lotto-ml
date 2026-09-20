@@ -164,7 +164,12 @@ The VPS will run Docker and Docker Compose. No Python, Node.js, or virtual envir
 
 ### 3.4. Automated Web Scraping via n8n
 
-The automated workflow will run on n8n to ingest new draws following Irish Lotto draws (Wednesday and Saturday evenings ~20:00, published ~20:45–21:15).
+The automated workflow will run on n8n to ingest new draws following Irish Lotto draws (**Monday, Wednesday and Saturday** evenings ~20:00, published ~20:45–21:15). Monday draws began in September 2026;
+the Wed/Sat pair is history.
+
+**The build document is [`nextStep/n8n.md`](nextStep/n8n.md)** - the node-by-node design, the parser in full,
+the CSV contract, the error path and how to verify it. The section below is the summary; where the two
+disagree, `nextStep/n8n.md` is the one that was written against the code.
 
 #### Workflow Architecture:
 
@@ -191,10 +196,11 @@ scrapes two sources (irish.national-lottery.com primary, lottery.ie fallback), c
 against the other, rejects Lotto Plus 1/2 rows, and prepends new draws to `data/irish500.csv`
 atomically. It supports `--dry-run`.
 
-Before building the n8n parsing nodes, decide how n8n should use it. The options are to reimplement
-the parsing in an n8n Code node, or to have n8n call this script (for example with `--dry-run`
-for Phase A) and keep one tested parser. Either way, keep the file: it is the tested reference for
-the parsing rules and the fallback if n8n breaks.
+**Decided 2026-09-20: the parsing is re-implemented in an n8n Code node**, not delegated to this script.
+The VPS runs Docker with no bare-metal Python and the engine image does not carry `scripts/`, so calling
+it would mean changing the image, adding a machine-readable output mode, and giving n8n SSH or
+Docker-socket access. Keep the file: it is the tested reference for the parsing rules, the source every
+rule in `nextStep/n8n.md` is quoted from, and the manual fallback (`--dry-run`) if n8n breaks.
 
 #### Implementation Phases for n8n:
 - **Phase A (Initial Validation & Email Alert)**:
@@ -239,11 +245,17 @@ To preserve maximum responsiveness and avoid VPS overload:
 - [x] Provide cross-platform start and stop scripts for Linux, Windows, and macOS (`scripts/docker_start.*`, `scripts/docker_stop.*`).
 
 ### Phase 2: n8n Automation Setup
-- [ ] Configure n8n HTTP Request node with realistic browser headers targeting the Irish Lotto results.
-- [ ] Write schema validation JavaScript in n8n (extract 6 main + 1 bonus; enforce distinct 1–47 range).
-- [ ] **Phase 2A**: Connect Gmail/SMTP node to dispatch validation emails on Wed/Sat at 21:05.
-- [ ] Monitor Phase 2A for 2–4 consecutive draws to ensure zero parsing glitches.
-- [ ] **Phase 2B**: Implement GitHub API commit node to append validated draws to `data/irish500.csv`.
+Built from [`nextStep/n8n.md`](nextStep/n8n.md) in the existing n8n instance (`n8n.catcheroo.com`) - no n8n
+install and no change to `docker-compose.yml`.
+- [ ] Set the workflow timezone to Europe/Dublin and the Schedule Trigger to `5 21 * * 1,3,6` (Mon/Wed/Sat 21:05).
+- [ ] Configure the two HTTP Request nodes with the browser headers of `scripts/scrape_lotto.py:44-51`.
+- [ ] Write the Code node: parse both sources, reject Lotto Plus 1/2 three ways, validate 6 main + 1 bonus
+      distinct in 1–47, cross-check the sources against each other.
+- [ ] Backtest the parser against `results-archive-2025` - all 105 rows must match `data/irish500.csv`.
+- [ ] **Phase 2A**: Gmail node sends the result email; a second Gmail node sends the failure email with the log.
+- [ ] Monitor Phase 2A for 3 consecutive draws (one week) with no failure email.
+- [ ] **Phase 2B**: GitHub node commits the row to `data/irish500.csv` on `main` - **inserted after the
+      header**, since the file is newest-first. `data/irish500.csv` is already tracked and not ignored.
 - [ ] Create a webhook receiver on the VPS to run `drawpick.py` upon commit.
 
 ### Phase 3: Next.js Foundation & Single-User Authentication
