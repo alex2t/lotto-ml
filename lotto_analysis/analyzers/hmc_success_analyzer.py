@@ -366,14 +366,8 @@ class HMCSuccessAnalyzer:
         Similar to how feature importance is used in ML models.
         """
 
-        try:
-            from sklearn.linear_model import LogisticRegression
-            from sklearn.preprocessing import StandardScaler
-        except ImportError:
-            return {
-                'error': 'scikit-learn not available',
-                'message': 'Install scikit-learn to enable weight learning'
-            }
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.preprocessing import StandardScaler
 
         import pandas as pd
         df = pd.DataFrame(backtest_results)

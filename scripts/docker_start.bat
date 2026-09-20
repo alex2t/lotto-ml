@@ -20,7 +20,7 @@ if %ERRORLEVEL% neq 0 (
 
 if not exist "data\analysis" mkdir "data\analysis"
 
-echo >> Step 1/2: Running data-engine to generate/update ~24 JSON artifacts...
+echo [Step 1/2] Running data-engine to generate/update ~24 JSON artifacts...
 docker compose run --rm data-engine
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Data engine execution failed!
@@ -28,8 +28,8 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
-echo >> Step 2/2: Starting Streamlit Web Dashboard...
-docker compose up -d streamlit-web
+echo [Step 2/2] Starting Streamlit Web Dashboard...
+docker compose up -d --no-deps streamlit-web
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to start Streamlit web dashboard!
     pause

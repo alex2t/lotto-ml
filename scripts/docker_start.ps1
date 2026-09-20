@@ -66,7 +66,7 @@ if ($EngineOnly) {
 }
 
 Write-Host ">> Step 2: Starting Streamlit Web Dashboard..." -ForegroundColor Green
-docker compose up -d streamlit-web
+docker compose up -d --no-deps streamlit-web
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Failed to start Streamlit web dashboard."
     exit $LASTEXITCODE

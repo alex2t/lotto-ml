@@ -42,6 +42,9 @@ TEST_FILES = [
     'tests/test_anomaly_detector.py',
     'tests/test_bonus_window.py',
     'tests/test_odd_even_affinity.py',
+    'tests/test_pipeline_completeness.py',
+    'tests/test_docker_stack.py',
+    'tests/test_artifact_rounding.py',
 ]
 
 # Validation window: 60 draws, 47 numbers, 7 winners per draw

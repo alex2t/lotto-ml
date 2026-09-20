@@ -17,6 +17,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple
 import numpy as np
 import json
+from lotto_analysis.utils.serialization import round_floats
 
 # Try to import scipy for advanced time series analysis
 try:
@@ -497,7 +498,7 @@ def save_analysis(results: Dict, output_file: str = 'data/lotto_advanced_pattern
         output_file: Output file path
     """
     with open(output_file, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(round_floats(results), f, indent=2)
 
     print(f"\n✓ Analysis saved to {output_file}")
 

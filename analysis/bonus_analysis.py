@@ -15,6 +15,7 @@ from pathlib import Path
 from collections import defaultdict, Counter
 from typing import Dict, List, Any, Tuple
 from datetime import datetime
+from lotto_analysis.utils.serialization import round_floats
 
 
 def load_draw_history(filename: str = None) -> Dict[str, Any]:
@@ -498,7 +499,7 @@ def save_results(results: Dict, output_file: str = None):
 
     try:
         with open(output_file, 'w') as f:
-            json.dump(results, f, indent=4)
+            json.dump(round_floats(results), f, indent=4)
         print(f"\n✓ Results saved to {output_file}")
     except Exception as e:
         print(f"\n✗ Error saving results: {e}")
