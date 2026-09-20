@@ -6,6 +6,11 @@ likelier to win. It is Streamlit today and will be rebuilt in **React** (with sp
 pickers), so keep pages thin: everything they show comes from `data/*.json`, produced upstream by
 `drawpick.py`, and that JSON is what the React site will read too.
 
+**The replacement is designed in [`../../nextStep/web.md`](../../nextStep/web.md).** Its section 6 is the
+completeness matrix - every section of these eight pages and where it lands in the new site. Nothing
+here is deleted until that matrix is walked; this folder is the reference for what the new site must
+reproduce.
+
 The Streamlit dashboard's eight pages. `app.py` at the repo root holds the `PAGES` dict and the
 navigation; each module here exposes the entry point that dict calls.
 

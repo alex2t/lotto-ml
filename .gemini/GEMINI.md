@@ -11,7 +11,7 @@ The **Irish Lotto ML System** is an end-to-end lottery analysis, machine learnin
 The project is structured around **two distinct audiences fed by a single data pipeline**:
 
 1. **The Web Dashboard (`view/`, `app.py`) — For Players & Fun**:
-   - An 8-page Streamlit application (planned for migration to a game-like Next.js (React) interface - see `plan.md`).
+   - An 8-page Streamlit application (planned for migration to a game-like Next.js (React) interface - designed in `nextStep/web.md`).
    - Allows users to explore factual historical statistics (hot/medium/cold recency bands, odd/even splits, sum distributions, freshness patterns, bonus-to-main transitions, and high number frequencies >= 32).
    - Features an interactive **Prediction Validator** where users can build and validate their own ticket lines against historical distributions.
    - **Crucial Invariant**: It is an informed toy, **never a tipster**. In a fair lottery, every combination has an identical probability of being drawn. The site explicitly states this and never claims a line is "more likely to win."
@@ -151,9 +151,10 @@ All defects, active issues, and planned improvements are tracked **exclusively i
 
 The roadmap is maintained **exclusively in [`plan.md`](plan.md)** to prevent documentation divergence. The architecture overview is in [`README.md`](README.md). `plan.md` covers:
 - Phase 1: Docker for the Python data engine; `drawpick.py` writes the JSON artifacts into a shared volume.
-- Phase 2: n8n scraping on Wed/Sat at 21:05 - Phase 2A sends test emails, Phase 2B commits new draws to `data/irish500.csv` and calls a VPS rebuild webhook.
+- Phase 2: n8n scraping on Mon/Wed/Sat at 21:05, built in the existing n8n instance - Phase 2A sends test emails, Phase 2B commits new draws to `data/irish500.csv` (inserted after the header; the file is newest-first) and calls a VPS rebuild webhook. The node-by-node design is `nextStep/n8n.md`.
 - Phase 3: Next.js foundation and single-admin login for downloading the data bundle.
 - Phase 4: migrating the 8 Streamlit pages to Next.js, including the interactive Prediction Validator.
+- Phases 3-4 are designed node by node in `nextStep/web.md`: five destinations (Home, Pick, Explore, Numbers, Review), the completeness matrix that keeps every current statistic, the wording test that must replace `tests/test_site_wording.py`, and the cutover order for deleting `view/`.
 - Phase 5: VPS deployment with Docker Compose and Caddy/Nginx SSL.
 
 Separation of concerns: the VPS runs only `drawpick.py` and the public site; `quickpick.py` (model training) runs on the owner's PC. Keep `lotto_analysis/` light and free of any dependency on `ml_lotto/`.
