@@ -26,6 +26,7 @@ from lotto_analysis.core.interaction_thresholds import recency_level, split_thre
 MIN_QUADRANT_SAMPLES = 30
 MIN_QUADRANT_SHARE = 0.01
 from typing import Dict, List, Tuple, Any
+from lotto_analysis.utils.serialization import round_floats
 
 
 def extract_features_from_draw(winning_details: List[Dict]) -> Dict[int, Dict[str, Any]]:
@@ -508,7 +509,7 @@ def save_feature_interaction_outputs(analysis_data: Dict[str, Any],
     # Full JSON
     json_path = os.path.join(output_dir, 'lotto_feature_interactions.json')
     with open(json_path, 'w') as f:
-        json.dump(analysis_data, f, indent=2)
+        json.dump(round_floats(analysis_data), f, indent=2)
 
     # CSV summary of interactions
     csv_path = os.path.join(output_dir, 'lotto_interaction_summary.csv')
@@ -524,7 +525,7 @@ def save_feature_interaction_outputs(analysis_data: Dict[str, Any],
     # Composite features JSON
     composite_path = os.path.join(output_dir, 'lotto_composite_features.json')
     with open(composite_path, 'w') as f:
-        json.dump({
+        json.dump(round_floats({
             'composite_features': analysis_data['recommended_composite_features'],
             'usage_notes': 'These composite features can be added to ML models for improved prediction'
-        }, f, indent=2)
+        }), f, indent=2)

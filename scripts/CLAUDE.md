@@ -6,6 +6,7 @@ Standalone utilities. **None of these run as part of `drawpick.py` or `quickpick
 |:--|:--|
 | `scrape_lotto.py` | fetches Irish National Lottery results; the only thing here that writes `data/irish500.csv`. Covered by `../tests/test_scraper_sources.py` |
 | `train_with_all_features.py` | demonstration of the full training pipeline with SMOTE, feature selection and tuning all enabled. Not the production path |
+| `docker_start.*`, `docker_stop.*` | the Docker launchers for Linux/macOS (`.sh`), PowerShell (`.ps1`) and cmd (`.bat`). Each runs the data engine, checks its exit code, then starts the dashboard with `--no-deps` |
 
 ## Reading README.md in this folder
 
@@ -18,6 +19,13 @@ Standalone utilities. **None of these run as part of `drawpick.py` or `quickpick
 
 ## Rules
 
+- **`echo >> text` in a `.bat` is a file redirect, not an arrow.** `cmd` takes the first word as a
+  filename and writes the rest into it, silently - three of these wrote `Step` and `Docker` into the
+  repo root and printed nothing (F-45). Write `echo [Step 1/2] ...`. `tests/test_docker_stack.py`
+  rejects any `>` on an `echo` line.
+- **The launchers run the engine themselves**, so their `docker compose up` passes `--no-deps`; the
+  `depends_on: service_completed_successfully` in `docker-compose.yml` is there for a bare
+  `docker compose up`. Both rely on `drawpick.py` exiting non-zero when it fails (F-43, F-47).
 - After adding a draw with `scrape_lotto.py`, the pipeline must be re-run: `python drawpick.py` then
   `python quickpick.py`, then `/lotto-verify`.
 - `train_with_all_features.py` enables options the production configs deliberately leave off. Do not

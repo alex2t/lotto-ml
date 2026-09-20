@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from datetime import datetime
 from collections import defaultdict
+from lotto_analysis.utils.serialization import round_floats
 
 # Try to import scipy, fall back to basic stats if not available
 try:
@@ -399,7 +400,7 @@ def generate_recency_zones_data(draw_history_file: str, output_file: str):
     # Save
     print(f"\n💾 Saving to {output_file}...")
     with open(output_file, 'w') as f:
-        json.dump(output_data, f, indent=2)
+        json.dump(round_floats(output_data), f, indent=2)
 
     print(f"  ✓ Saved {output_file}")
     print("\n" + "=" * 70)

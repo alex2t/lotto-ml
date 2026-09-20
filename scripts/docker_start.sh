@@ -75,7 +75,7 @@ if [ "$ENGINE_ONLY" = true ]; then
 fi
 
 echo ">> Step 2: Starting Streamlit Web Dashboard..."
-docker compose up -d streamlit-web
+docker compose up -d --no-deps streamlit-web
 
 echo "===================================================================="
 echo " SUCCESS: Data analysis complete & Streamlit dashboard is running!"

@@ -1,0 +1,6 @@
+# The artifacts under data/ are written by drawpick.py on Windows (CRLF) and in the Linux
+# data-engine container (LF). Store and check them out as LF so an alternation between the
+# owner's PC and the VPS is not a whole-file diff with the real one-draw change buried in it (F-44).
+data/**/*.json text eol=lf
+data/**/*.csv text eol=lf
+data/**/*.txt text eol=lf

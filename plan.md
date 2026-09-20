@@ -230,8 +230,11 @@ To preserve maximum responsiveness and avoid VPS overload:
 
 ### Phase 1: Dockerization & Environment Setup
 - [x] Create `Dockerfile.data_engine` for the Python data core.
-- [ ] Verify that `drawpick.py` runs inside Docker and writes all ~24 JSON artifacts into a shared volume.
-      (Currently 22 of 24: Phase 16 fails in the container for want of `scikit-learn` - see F-43 in `issue.md`.)
+- [x] Verify that `drawpick.py` runs inside Docker and writes all ~24 JSON artifacts into a shared volume.
+      (Verified 2026-09-20 with a rebuilt image: 24/24, exit 0. It took F-43 - `scikit-learn` was
+      missing from `requirements-engine.txt`, and a failed phase or a stale artifact now exits
+      non-zero. Since F-46 rounds every artifact float to 12 significant digits, a container run
+      and a host run produce identical artifacts apart from `generated_date`.)
 - [x] Create `docker-compose.yml` defining the data engine and shared storage volumes.
 - [x] Provide cross-platform start and stop scripts for Linux, Windows, and macOS (`scripts/docker_start.*`, `scripts/docker_stop.*`).
 
@@ -261,7 +264,10 @@ To preserve maximum responsiveness and avoid VPS overload:
 - [ ] Build dossiers for individual numbers (`/insights`) and patterns (`/patterns`).
 
 ### Phase 5: VPS Deployment & Production Hardening
-- [ ] Deploy Docker Compose stack on VPS.
+- [ ] Deploy Docker Compose stack on VPS. The containers run as UID:GID 1000:1000 by default and
+      `./data` is bind-mounted over the image's own directory, so the host `data/` must be writable
+      by that user: either `chown -R 1000:1000 data` once, or set `UID`/`GID` in a `.env` beside
+      `docker-compose.yml` (F-45). Docker Desktop masks this; the VPS will not.
 - [ ] Configure Caddy or Nginx with automated SSL certificates.
 - [ ] Verify public access to all 8 dashboard pages without login.
 - [ ] Test admin login and data bundle download from an external browser.
