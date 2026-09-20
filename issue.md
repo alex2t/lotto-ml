@@ -193,6 +193,7 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-56 | n8n.md 3.6 tested the scraped date for string equality with the CSV's top row, so a date that was older but already present was reported as new - a duplicate row inserted out of order | `nextStep/n8n.md` 3.6 |
 | F-55 | n8n.md 3.6 read the current CSV with an unguarded `split` chain, so a GitHub 404 threw and lost a draw that had passed every validation | `nextStep/n8n.md` 3.6 |
 | F-54 | n8n.md 3.5 capped retries with a counter in workflow static data that never reset, so after three lifetime attempts the workflow would give up on every future draw silently | `nextStep/n8n.md` 3.5 |
 | F-53 | n8n.md 3.4 downgraded a draw rejected by `buildDraw()` to `not_published`, making a malformed published result indistinguishable from no result | `nextStep/n8n.md` 3.4 |
