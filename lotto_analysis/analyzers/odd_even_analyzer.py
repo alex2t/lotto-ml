@@ -22,6 +22,7 @@ from typing import Dict, Any, List
 from collections import defaultdict
 from scipy import stats
 import numpy as np
+from lotto_analysis.utils.serialization import round_floats
 
 # Try to import statsmodels for FDR correction
 try:
@@ -359,7 +360,7 @@ def main():
     # Save results
     output_file = 'data/lotto_odd_even_validated.json'
     with open(output_file, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(round_floats(results), f, indent=2)
 
     print(f"\n✓ Analysis saved to {output_file}")
     print()

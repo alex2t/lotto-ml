@@ -1,8 +1,14 @@
+# The containers run as UID:GID (default 1000:1000) and the host's ./data is bind-mounted over the
+# image's own directory, so the host directory must be writable by that user. On the VPS either set
+# UID/GID in a .env file to the owner of ./data, or run `chown -R 1000:1000 data` once (F-45).
 services:
   data-engine:
     build:
       context: .
       dockerfile: Dockerfile.data_engine
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     image: lotto-data-engine:latest
     container_name: lotto-data-engine
     restart: "no"
@@ -15,9 +21,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.streamlit
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     image: lotto-streamlit:latest
     container_name: lotto-streamlit
     restart: unless-stopped
+    # A bare `docker compose up` must not serve a half-written artifact: the dashboard starts only
+    # after the engine has exited 0. The start scripts run the engine themselves and then pass
+    # --no-deps, so it runs once.
+    depends_on:
+      data-engine:
+        condition: service_completed_successfully
     ports:
       - "8501:8501"
     volumes:

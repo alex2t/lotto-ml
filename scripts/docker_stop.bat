@@ -11,5 +11,5 @@ echo ====================================================================
 
 docker compose down --remove-orphans
 
-echo >> Docker services stopped.
+echo [Done] Docker services stopped.
 endlocal

@@ -9,6 +9,7 @@ from scipy import stats
 import numpy as np
 import json
 from pathlib import Path
+from lotto_analysis.utils.serialization import round_floats
 
 
 def load_baseline_category_weights() -> Dict[str, float]:
@@ -471,7 +472,7 @@ def save_analysis(results: Dict, output_file: str = 'data/lotto_long_term_patter
         output_file: Output file path
     """
     with open(output_file, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(round_floats(results), f, indent=2)
 
     print(f"\n✓ Analysis saved to {output_file}")
 

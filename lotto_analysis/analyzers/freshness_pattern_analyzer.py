@@ -21,6 +21,7 @@ from typing import Dict, Any, List, Tuple
 from collections import defaultdict
 from scipy import stats
 import numpy as np
+from lotto_analysis.utils.serialization import round_floats
 
 
 def calculate_pattern_significance(
@@ -426,7 +427,7 @@ def main():
     # Save results
     output_file = 'data/lotto_freshness_patterns_validated.json'
     with open(output_file, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(round_floats(results), f, indent=2)
 
     print(f"\n✓ Analysis saved to {output_file}")
     print()

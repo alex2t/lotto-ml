@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The twenty real tests (193 tests, ~30s)
+## The twenty-three real tests (231 tests, ~35s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -17,7 +17,9 @@ python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invarian
                  tests/test_bonus_predictor.py tests/test_draw_history_numbers.py \
                  tests/test_site_wording.py tests/test_bonus_transition_baseline.py \
                  tests/test_trend_significance.py tests/test_anomaly_detector.py \
-                 tests/test_bonus_window.py tests/test_odd_even_affinity.py -q
+                 tests/test_bonus_window.py tests/test_odd_even_affinity.py \
+                 tests/test_pipeline_completeness.py tests/test_docker_stack.py \
+                 tests/test_artifact_rounding.py -q
 ```
 
 This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two in sync.
@@ -43,6 +45,9 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_anomaly_detector.py` | the sum alerts and Pattern Comparison's typical range use the mean and std in `lotto_sum_contribution_validated.json`, not hard-coded figures; every `_check_` in the anomaly detector can fire on the current data (F-29). Reads `data/*.json` |
 | `test_bonus_window.py` | bonus statistics use the 10 bonus balls before each draw, not a list ending with the draw's own bonus: on fair draws the repeat rate matches chance (was 1.0), the main-from-recent-bonus boost and recency penalty are ~1.0 (were 0.92 and 4.7); Draw History shows the pre-draw window (F-33); `bonus_window_positions()` counts a repeated bonus ball from its most recent appearance, over the last 10 draws only (F-36). Reads `data/*.json` |
 | `test_odd_even_affinity.py` | odd/even tests measure against a fair draw: on simulated fair draws about 5% of numbers have p < 0.05 (was 56%) and FDR validates almost none (was 254 of 470); the stated chance of an odd draw matches simulation; a real affinity is still flagged; the overall test expects 24/47 odd; the Statistics page shows each number's chance (F-38) |
+| `test_pipeline_completeness.py` | a phase failure in the data engine stops the run (F-43): the engine requirements list `scikit-learn`, the lazy import raises instead of returning an error stub, the Phase 16 handler re-raises, and `verify_artifacts` rejects an artifact left from an earlier run as well as a missing one; the artifacts are stored with LF endings and the engine dependencies are pinned with `==`, so a host/VPS alternation is not a whole-file diff (F-44); a missing draw CSV exits non-zero rather than printing an error and returning 0 (F-47) |
+| `test_artifact_rounding.py` | every float in the 22 JSON artifacts carries at most 12 significant digits, so a host run and a container run are byte-identical (F-46); a tiny p-value survives the rounding and ints, bools and strings are untouched. Reads `data/*.json` |
+| `test_docker_stack.py` | the Docker stack orders its services and stays out of the repo (F-45): no `echo` redirect in either `.bat`, `streamlit-web` waits for `service_completed_successfully`, the container uid is a build arg, and `.dockerignore` excludes `data/` |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5), as does an empty bonus window (F-42) |
 
 ## Not tests

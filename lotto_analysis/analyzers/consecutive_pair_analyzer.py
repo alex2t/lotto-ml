@@ -22,6 +22,7 @@ from typing import Dict, Any, List, Tuple, Set
 from collections import defaultdict
 from scipy import stats
 import numpy as np
+from lotto_analysis.utils.serialization import round_floats
 
 
 def extract_pairs_from_draws(draw_history: List[Dict[str, Any]]) -> Dict[Tuple[int, int], int]:
@@ -439,7 +440,7 @@ def main():
     # Save results
     output_file = 'data/lotto_consecutive_pairs_validated.json'
     with open(output_file, 'w') as f:
-        json.dump(results, f, indent=2)
+        json.dump(round_floats(results), f, indent=2)
 
     print(f"\n✓ Analysis saved to {output_file}")
     print()

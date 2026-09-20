@@ -3,7 +3,7 @@
     "analysis_type": "recency_zone_optimization",
     "description": "Data-driven recency zone scoring to replace hard-coded thresholds",
     "version": "1.0",
-    "generated_date": "2026-09-19 19:07:24",
+    "generated_date": "2026-09-20 09:46:28",
     "total_draws": 498,
     "calculation_method": "empirical_win_rate",
     "bins": [
@@ -153,7 +153,7 @@
   },
   "statistical_validation": {
     "test": "Kruskal-Wallis H-test",
-    "h_statistic": 2568.4258222607023,
+    "h_statistic": 2568.42582226,
     "p_value": 0.0,
     "significant": true,
     "interpretation": "Category recency distributions are significantly different (p=0.0000)",
@@ -190,7 +190,7 @@
       },
       "medium_vs_cold": {
         "u_statistic": 0.0,
-        "p_value": 1.4327782484057646e-257,
+        "p_value": 1.43277824841e-257,
         "significant": true
       }
     }

@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from datetime import datetime
+from lotto_analysis.utils.serialization import round_floats
 
 # Try to import scipy, fall back to basic stats if not available
 try:
@@ -634,7 +635,7 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
     # Save
     print(f"\n💾 Saving to {output_file}...")
     with open(output_file, 'w') as f:
-        json.dump(output_data, f, indent=4)
+        json.dump(round_floats(output_data), f, indent=4)
 
     print(f"  ✓ Saved {output_file}")
     print("\n" + "=" * 70)
