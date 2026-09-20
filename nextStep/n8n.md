@@ -76,9 +76,9 @@ when the receiver exists; it is not designed here.
 ```
 [Schedule Trigger  Mon/Wed/Sat 21:05 Europe/Dublin]
               |
-              +--> [HTTP: archive]  --+
-              |                       +--> [Code: parse, validate, cross-check]
-              +--> [HTTP: lottery.ie]-+                |
+              v
+     [HTTP: archive] --> [HTTP: lottery.ie] --> [Code: parse, validate, cross-check]
+                                                       |
                                                        v
                                         [IF status == "ok"] --no--> [IF "not_published"]
                                                 |                        |        |
@@ -97,6 +97,12 @@ when the receiver exists; it is not designed here.
                                               (Phase 2B: section 7)
 ```
 
+The two HTTP nodes are **chained, not parallel**. The Code node reads both by name with
+`$('Fetch archive')` and `$('Fetch lottery.ie')`, so it does not need them as inputs - and two
+connections into one node input is not a join in n8n, it runs the node once per incoming branch.
+Chaining gives one execution without a Merge node. With regular output (3.2) a failed archive
+fetch still emits an item, so the rest of the chain still runs and the failure email still sends.
+
 ### 3.1 Schedule Trigger
 
 - Mode: **Cron**, expression `5 21 * * 1,3,6` (Monday, Wednesday, Saturday at 21:05).
@@ -114,7 +120,7 @@ Why 21:05: the draw is at about 20:00 and the result is published somewhere betw
 | Method | GET |
 | Response format | **Text** (property name `data`) |
 | Timeout | 15000 ms |
-| On error | **Continue (using error output)** - the Code node reports the status, rather than the run dying with no email |
+| On error | **Continue (using regular output)** - the failed item stays on the main output carrying an `error` property, which is what 3.4's `archiveItem.error` check reads. Error output would send it down a second connector, leaving `$('Fetch archive').first()` undefined and the Code node throwing with no email sent |
 | Header `User-Agent` | `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36` |
 | Header `Accept-Language` | `en-IE,en-US;q=0.9` |
 
@@ -127,9 +133,26 @@ Identical settings, URL `https://www.lottery.ie/results/lotto/history`.
 
 ### 3.4 Code node - parse, validate, cross-check
 
-One Code node, **Run Once for All Items**, language JavaScript. It never throws: it returns a
-`status` of `ok`, `not_published` or `failed`, so the IF nodes can route the three cases. Everything
-it rejects is recorded in `notes`, which goes into the email.
+One Code node, **Run Once for All Items**, language JavaScript. Everything it rejects is recorded in
+`notes`, which goes into the email.
+
+**Two guarantees this node is built around.** Both are about making a wrong row or a silent evening
+impossible, and both cost a few lines that look redundant until the day they fire:
+
+1. **It always returns exactly one item, and never throws.** The whole body sits in `try`/`catch`,
+   and the `catch` returns `status: 'failed'` with the exception message. A Code node that throws
+   ends the execution with no email - the only failure the owner cannot see. Every return goes
+   through one `result()` helper, so every field the email templates reference is always present and
+   no downstream expression can throw either.
+2. **`not_published` means the draw is genuinely absent, nothing else.** Three conditions that used
+   to collapse into it are now `failed`, because each is a real fault wearing a quiet evening's
+   clothes: a fetch that failed or returned a challenge page; a page the parser read to completion
+   but found **zero** draws on, which cannot happen on pages that list the whole year; and a target
+   date that **was** on the page and was thrown out by validation. Only "both pages parsed fine and
+   neither lists today yet" waits and retries.
+
+`status` is therefore `ok`, `not_published` or `failed` on every path, and the IF nodes of 3.5 route
+the three cases with no fourth possibility.
 
 The three defences against Lotto Plus 1 and Plus 2, all from `scripts/scrape_lotto.py`:
 
@@ -239,54 +262,109 @@ function parseLotteryIe(html) {
 }
 
 // --- main -------------------------------------------------------------------
-const archiveItem = $('Fetch archive').first().json;
-const lotteryItem = $('Fetch lottery.ie').first().json;
-const archiveHtml = archiveItem.data || '';
-const lotteryHtml = lotteryItem.data || '';
+// This node must ALWAYS return exactly one item and must NEVER throw. A thrown
+// Code node ends the execution with no email at all - the one failure mode that
+// is invisible. Every return goes through result(), so every downstream
+// expression finds every field present and cannot throw either.
 
-const today = $now.setZone('Europe/Dublin');
-const targetKey = today.toFormat('yyyy-MM-dd');
-const httpErrors = [];
-if (archiveItem.error || archiveHtml.length < 500) httpErrors.push('archive fetch failed or empty');
-if (lotteryItem.error || lotteryHtml.length < 500) httpErrors.push('lottery.ie fetch failed or empty');
+const CSV_ROW_RE =
+  /^\d{2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}(,\d{2}){7}$/;
 
-const fromArchive = parseArchive(archiveHtml);
-const fromLottery = parseLotteryIe(lotteryHtml);
-const a = fromArchive[targetKey];
-const b = fromLottery[targetKey];
-
-function fail(reason) {
-  return [{ json: { status: 'failed', reason, targetKey, notes, httpErrors,
-                    archive: a || null, lotteryIe: b || null } }];
+function result(status, extra) {
+  return [{ json: Object.assign({
+    status, targetKey: null, reason: '', notes, httpErrors: [],
+    csvDate: null, csvRow: null, numbers: [], bonus: null, sources: [],
+    archive: null, lotteryIe: null,
+  }, extra) }];
 }
 
-if (!a && !b) {
-  // Neither source has today's draw yet: not an error until the retries run out.
-  return [{ json: { status: 'not_published', targetKey, notes, httpErrors } }];
+let targetKey = null;
+try {
+  targetKey = $now.setZone('Europe/Dublin').toFormat('yyyy-MM-dd');
+
+  // 1. Did we actually get two pages? A fetch failure is never "not published".
+  const httpErrors = [];
+  const read = (node) => {
+    const item = $(node).first();          // regular output (3.2): always an item
+    if (!item) { httpErrors.push(`${node}: no item returned`); return ''; }
+    if (item.json.error) { httpErrors.push(`${node}: ${item.json.error}`); return ''; }
+    const html = item.json.data;
+    if (typeof html !== 'string') { httpErrors.push(`${node}: no text body`); return ''; }
+    if (html.length < 500) { httpErrors.push(`${node}: body only ${html.length} bytes`); return ''; }
+    if (/Just a moment|cf-browser-verification/i.test(html)) {
+      httpErrors.push(`${node}: bot challenge page, User-Agent rejected`); return '';
+    }
+    return html;
+  };
+  const archiveHtml = read('Fetch archive');
+  const lotteryHtml = read('Fetch lottery.ie');
+  if (httpErrors.length) {
+    return result('failed', { targetKey, httpErrors,
+                              reason: 'one or both sources could not be fetched' });
+  }
+
+  const fromArchive = parseArchive(archiveHtml);
+  const fromLottery = parseLotteryIe(lotteryHtml);
+
+  // 2. Both pages list many past draws. Zero parsed cannot mean "no draw yet" -
+  //    it means the markup changed and the parser is blind. This is the guard
+  //    that stops a silent parser failure looking like a quiet evening.
+  if (!Object.keys(fromArchive).length || !Object.keys(fromLottery).length) {
+    const dead = !Object.keys(fromArchive).length ? 'the archive' : 'lottery.ie';
+    return result('failed', { targetKey,
+      reason: `parsed 0 draws from ${dead} - page structure changed` });
+  }
+
+  const a = fromArchive[targetKey] || null;
+  const b = fromLottery[targetKey] || null;
+
+  // 3. A note naming the target date means the draw WAS on the page and
+  //    validation rejected it. That is a failure, not "not published yet".
+  if (!a && !b) {
+    if (notes.some((n) => n.startsWith(targetKey))) {
+      return result('failed', { targetKey,
+        reason: `${targetKey} is published but failed validation - see notes` });
+    }
+    return result('not_published', { targetKey });
+  }
+  if (!a || !b) {
+    return result('failed', { targetKey, archive: a, lotteryIe: b,
+      reason: `only ${a ? 'the archive' : 'lottery.ie'} has ${targetKey}` });
+  }
+
+  // 4. Cross-check. scripts/scrape_lotto.py:185-208
+  if (a.main.join(',') !== b.main.join(',') || a.bonus !== b.bonus) {
+    return result('failed', { targetKey, archive: a, lotteryIe: b,
+      reason: `sources disagree - archive ${a.main.join(',')}+${a.bonus}, ` +
+              `lottery.ie ${b.main.join(',')}+${b.bonus}` });
+  }
+
+  // 5. Build the row, then prove the finished string against the section 4
+  //    contract and read it back. Nothing leaves as ok unless the exact text
+  //    that would be written to the CSV parses back to the numbers checked above.
+  const [y, mo, d] = targetKey.split('-').map(Number);
+  const csvDate = `${pad(d)} ${MON[mo - 1]} ${y}`;
+  const csvRow = [csvDate, ...a.main.map(pad), pad(a.bonus)].join(',');
+  if (!CSV_ROW_RE.test(csvRow)) {
+    return result('failed', { targetKey,
+      reason: `built row breaks the CSV contract: "${csvRow}"` });
+  }
+  const back = csvRow.split(',');
+  if (back[0] !== csvDate ||
+      back.slice(1, 7).map(Number).join(',') !== a.main.join(',') ||
+      Number(back[7]) !== a.bonus) {
+    return result('failed', { targetKey,
+      reason: `row does not round-trip: "${csvRow}"` });
+  }
+
+  return result('ok', { targetKey, csvDate, csvRow,
+    numbers: a.main, bonus: a.bonus,
+    sources: ['irish.national-lottery.com', 'lottery.ie'] });
+
+} catch (err) {
+  return result('failed', { targetKey,
+    reason: `code node exception: ${err && err.message ? err.message : err}` });
 }
-if (!a || !b) return fail(`only ${a ? 'the archive' : 'lottery.ie'} has ${targetKey}`);
-
-// Cross-check. scripts/scrape_lotto.py:185-208
-const sameMain = a.main.join(',') === b.main.join(',');
-if (!sameMain || a.bonus !== b.bonus) {
-  return fail(`sources disagree - archive ${a.main.join(',')}+${a.bonus}, ` +
-              `lottery.ie ${b.main.join(',')}+${b.bonus}`);
-}
-
-const [y, mo, d] = targetKey.split('-').map(Number);
-const csvDate = `${pad(d)} ${MON[mo - 1]} ${y}`;
-const csvRow = [csvDate, ...a.main.map(pad), pad(a.bonus)].join(',');
-
-return [{ json: {
-  status: 'ok', targetKey, csvDate, csvRow,
-  numbers: a.main, bonus: a.bonus,
-  sources: ['irish.national-lottery.com', 'lottery.ie'],
-  checks: {
-    mainCount: a.main.length === 6, bonusCount: 1, range: true, distinct: true,
-    sourcesAgree: true, notPlus: true,
-  },
-  notes,
-} }];
 ```
 
 Node-reference note: `$('Fetch archive')` must match the exact node names you give the two HTTP
@@ -295,12 +373,32 @@ two `.data` reads - run the node once and look at the output panel.
 
 ### 3.5 IF nodes and the retry
 
-- **IF "parsed ok"**: `{{ $json.status }}` equals `ok` -> continue to 3.6. Otherwise -> next IF.
-- **IF "not published yet"**: `{{ $json.status }}` equals `not_published` -> **Wait** node, 15
-  minutes, then back to the two HTTP nodes. Cap it at 3 attempts (a counter in workflow static data,
-  or three explicit Wait/retry branches - the first is tidier, the second is easier to read on the
-  canvas). After the third, route to the error email with reason "no result published by 21:50".
-- Anything else (`failed`) goes straight to the error email of section 5.
+Three statuses, three routes, and **every route except "already in the CSV" ends in an email.**
+Silence is not a state this workflow is allowed to reach.
+
+- **IF "parsed ok"**: `{{ $json.status }}` equals `ok` -> 3.6. Otherwise -> next IF.
+- **IF "not published yet"**: `{{ $json.status }}` equals `not_published` -> the attempt counter
+  below. Anything else falls through to **Send failure email** (section 5).
+- There is no fourth case. `status` is only ever `ok`, `not_published` or `failed`, and the Code node
+  returns one of them on every path, its `catch` included.
+
+**The attempt counter must reset itself.** A bare counter in workflow static data persists across
+executions, so after three lifetime attempts the workflow would give up on every future draw - and
+do it silently. Key the counter on the draw date; a new date then resets it with no maintenance:
+
+```javascript
+// Code node "Count attempt", between the not_published IF and the Wait node.
+const store = $getWorkflowStaticData('global');
+const key = $json.targetKey;
+if (store.retryKey !== key) { store.retryKey = key; store.attempts = 0; }
+store.attempts += 1;
+return [{ json: { ...$json, attempt: store.attempts,
+                  reason: `no result published by 21:50 (${store.attempts} attempts)` } }];
+```
+
+Then an **IF "attempts left"**: `{{ $json.attempt }}` less than `3` -> **Wait** 15 minutes -> back to
+**Fetch archive**, the head of the chain, so both sources are re-fetched. Otherwise -> **Send
+failure email**. Three attempts at 21:05, 21:20 and 21:35 cover publication out to about 21:50.
 
 ### 3.6 HTTP Request - the current CSV
 
@@ -316,8 +414,29 @@ Then an IF node comparing dates. The file is **newest-first**, so the current ne
 {{ $json.data.split('\n')[1].split(',')[0] }}      // e.g. "16 Sep 2026"
 ```
 
-If that equals the scraped `csvDate`, the draw is already in the repository: end quietly, no email.
-Otherwise continue.
+**Guard that expression.** If the fetch 404s or returns an empty body, `split('\n')[1]` is
+`undefined` and `.split(',')` throws - losing a draw that has just passed every check in 3.4. Give
+this node **On Error: Continue (using regular output)** too, and read the value in a Code node
+rather than an inline expression:
+
+```javascript
+// Code node "Read current CSV head".
+const parsed = $('Parse and validate').first().json;
+const item = $('Fetch current CSV').first();
+const csv = item && !item.json.error && typeof item.json.data === 'string' ? item.json.data : '';
+const newest = (csv.split('\n')[1] || '').split(',')[0] || null;
+if (!newest) {
+  // Cannot prove the draw is absent, so do not claim it is new. Send the email
+  // and let a person look. Never end quietly on an unreadable CSV.
+  return [{ json: { ...parsed, status: 'failed',
+                    reason: 'could not read the current irish500.csv to check for a duplicate' } }];
+}
+return [{ json: { ...parsed, newest } }];
+```
+
+If `newest` equals the scraped `csvDate`, the draw is already in the repository: end quietly, no
+email - that is the one silent exit, and it is silent only because it has proved the draw is already
+there. A `failed` item from this node routes to **Send failure email** like any other.
 
 `raw.githubusercontent.com` caches for a few minutes. That is harmless here - a stale copy can only
 make the workflow think a draw is missing, and the Phase 2B commit re-reads the file through the
@@ -412,8 +531,12 @@ What the reasons mean when one arrives:
 | `only the archive has ...` / `only lottery.ie has ...` | one site has not published yet, or its markup changed | re-run manually in an hour; if it repeats, the parser for the silent source needs fixing |
 | `sources disagree - ...` | the two sites gave different numbers | **do not commit anything**; check the official result by hand. This is the check that catches a Plus row leaking through one parser |
 | `... is outside 1-47` / `duplicate ball` | the parse picked up the wrong element | the page markup changed; compare with `tests/fixtures/*.html` |
-| `no result published by 21:50` | nothing on either page an hour after the draw | usually a delayed publication; check manually |
-| `archive fetch failed or empty` | HTTP error, block, or an empty body | check the site is up and the User-Agent header is still being sent |
+| `no result published by 21:50 (3 attempts)` | both pages parsed fine, neither listed the date | usually a delayed publication; check manually |
+| `one or both sources could not be fetched` | HTTP error, timeout, empty body, or a bot-challenge page | read `HTTP problems` in the email; check the site is up and the User-Agent header is still being sent |
+| `parsed 0 draws from ... - page structure changed` | the fetch worked and the parser found nothing on a page that lists the whole year | the markup changed. Compare the live page with `tests/fixtures/*.html` and fix both the Code node and `scripts/scrape_lotto.py` |
+| `... is published but failed validation - see notes` | the date was on the page and `buildDraw()` rejected it | read `notes`: wrong ball count, a duplicate, or a ball outside 1-47. Never transcribe the row by hand from the page - find out why it failed |
+| `code node exception: ...` | a bug in the Code node itself, or a renamed HTTP node | the `$('Fetch archive')` references must match the node names exactly |
+| `could not read the current irish500.csv ...` | the raw.githubusercontent fetch failed | the draw may be fine; re-run once GitHub is reachable |
 
 Fallback while a parser is being fixed: run `python scripts/scrape_lotto.py --dry-run` on the PC. It
 prints the rows it would add, using the tested parser, and writes nothing.
@@ -431,7 +554,12 @@ each email, check:
 3. `csvRow` is in the exact CSV format - day zero-padded, month as `Jan`..`Dec`, every number two
    digits, seven commas.
 4. The email arrived within about ten minutes of 21:05.
-5. The parser notes mention the Plus rows being rejected - that is the filter proving it ran.
+5. `notes` is **empty**, or holds only a note you can explain. Do not expect notes about rejected
+   Plus rows: the archive table carries the main draw only - `tests/fixtures/archive_rows.html` has
+   three rows, all tagged `irish-lotto`, and no `irish-lotto-plus-1` or `-plus-2` anywhere - and on
+   lottery.ie the word `Plus` appears in prose after the main block, not before it. Both Plus
+   defences of 3.4 are guards against the page changing, not filters that fire each run. A note that
+   a Plus row was rejected means the markup has changed; read it, do not tick it off.
 
 **Go/no-go for Phase 2B:** three consecutive draws, all five points correct, no failure email in
 between. Anything less, fix and restart the week.
