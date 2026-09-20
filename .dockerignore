@@ -17,6 +17,9 @@ demos/
 # Tests (excluded from production containers)
 tests/
 
+# Artifacts and draw data - bind-mounted at runtime, never copied into an image
+data/
+
 # Git & Agent Metadata
 .git/
 .gitignore

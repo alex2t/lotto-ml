@@ -5,6 +5,7 @@ Orchestrates all analysis phases and generates output files
 """
 
 import sys
+import time
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
@@ -71,8 +72,66 @@ from lotto_analysis.utils.output_generator import (
     generate_range_spread_analysis
 )
 
+EXPECTED_ARTIFACTS = [
+    "data/lotto_odds_results.json",
+    "data/lotto_trigger_periods.json",
+    "data/lotto_draw_history.json",
+    "data/lotto_7_number_freshness_results.json",
+    "data/lotto_distribution_stats.json",
+    "data/lotto_bonus_analysis.json",
+    "data/lotto_bonus_to_main_patterns.json",
+    "data/lotto_consecutive_pairs_validated.json",
+    "data/lotto_odd_even_validated.json",
+    "data/lotto_range_spread_validated.json",
+    "data/lotto_sum_contribution_validated.json",
+    "data/lotto_freshness_patterns_validated.json",
+    "data/lotto_hmc_categorization_validated.json",
+    "data/lotto_long_term_patterns.json",
+    "data/lotto_statistics_analysis.json",
+    "data/lotto_window_saturation_calculated.json",
+    "data/lotto_advanced_patterns.json",
+    "data/lotto_recency_zones_calculated.json",
+    "data/analysis/lotto_feature_interactions.json",
+    "data/analysis/lotto_interaction_summary.csv",
+    "data/analysis/lotto_composite_features.json",
+    "data/lotto_hmc_success_patterns_validated.json",
+    "data/lotto_hmc_recommendations.json",
+    "data/lotto_hmc_recommendations.txt"
+]
+
+
+def verify_artifacts(expected_files, run_started):
+    """Exit non-zero unless every expected artifact was written by this run."""
+    bad_files = []
+    generated_files = []
+
+    for file_path in expected_files:
+        path = Path(file_path)
+        if not path.exists():
+            bad_files.append(f"  {file_path} - MISSING!")
+        elif path.stat().st_mtime < run_started:
+            bad_files.append(f"  {file_path} - STALE, left from an earlier run!")
+        else:
+            generated_files.append(f"  ✓ {file_path} ({path.stat().st_size:,} bytes)")
+
+    print(f"\nGenerated {len(generated_files)}/{len(expected_files)} JSON files:")
+    for f in generated_files:
+        print(f)
+
+    if bad_files:
+        print(f"\n⚠️  WARNING: {len(bad_files)} files were not written by this run:")
+        for f in bad_files:
+            print(f)
+        print("\n❌ INCOMPLETE: Not all JSON files were generated!")
+        print("   Please check the error messages above for details.")
+        sys.exit(1)
+
+    print(f"\n✅ SUCCESS: All {len(expected_files)} JSON files generated successfully!")
+
+
 def main():
     """Main execution function"""
+    run_started = time.time()
     print("=" * 70)
     print("Lottery Analysis Program")
     print("Pattern + HMC + Distributions + Bonus + Scipy Validation")
@@ -83,7 +142,7 @@ def main():
         target_scenario = SCENARIOS[FRESHNESS_WINDOW_INDEX]
     except IndexError:
         print(f"\nERROR: FRESHNESS_WINDOW_INDEX {FRESHNESS_WINDOW_INDEX} is out of bounds for SCENARIOS list.")
-        return
+        sys.exit(1)
         
     TARGET_FRESHNESS_WINDOW = target_scenario["window"]
     C_MAX_THRESHOLD = max(target_scenario["targets"])
@@ -95,14 +154,14 @@ def main():
         all_draws, available_draws, skipped_rows = load_lotto_data(CSV_FILE, TOTAL_DRAWS)
     except FileNotFoundError:
         print(f"\nERROR: CSV file '{CSV_FILE}' not found. Please place it in the 'data/' folder.")
-        return
+        sys.exit(1)
     except ValueError as e:
         print(f"\nERROR: Data loading failed: {e}")
-        return
+        sys.exit(1)
         
     if not all_draws:
         print("No valid draws were loaded.")
-        return
+        sys.exit(1)
     
     print(f"\nLoaded {len(all_draws)} draws "
           f"(available: {available_draws}, requested: {TOTAL_DRAWS if TOTAL_DRAWS else 'ALL'}, skipped: {skipped_rows})")
@@ -705,10 +764,8 @@ def main():
         print("  ✓ HMC recommendation analysis complete")
 
     except Exception as e:
-        print(f"  ⚠️  Warning: HMC recommendation analysis failed: {e}")
-        print("  System will continue without HMC recommendations")
-        import traceback
-        traceback.print_exc()
+        print(f"  ERROR: HMC recommendation analysis failed: {e}")
+        raise
 
     print("\n" + "=" * 70)
     print("✓ All Analysis Phases Complete!")
@@ -719,59 +776,7 @@ def main():
     print("VERIFICATION: Checking all JSON files were generated")
     print("=" * 70)
 
-    import os
-    from pathlib import Path
-
-    expected_files = [
-        "data/lotto_odds_results.json",
-        "data/lotto_trigger_periods.json",
-        "data/lotto_draw_history.json",
-        "data/lotto_7_number_freshness_results.json",
-        "data/lotto_distribution_stats.json",
-        "data/lotto_bonus_analysis.json",
-        "data/lotto_bonus_to_main_patterns.json",
-        "data/lotto_consecutive_pairs_validated.json",
-        "data/lotto_odd_even_validated.json",
-        "data/lotto_range_spread_validated.json",
-        "data/lotto_sum_contribution_validated.json",
-        "data/lotto_freshness_patterns_validated.json",
-        "data/lotto_hmc_categorization_validated.json",
-        "data/lotto_long_term_patterns.json",
-        "data/lotto_statistics_analysis.json",
-        "data/lotto_window_saturation_calculated.json",
-        "data/lotto_advanced_patterns.json",
-        "data/lotto_recency_zones_calculated.json",
-        "data/analysis/lotto_feature_interactions.json",
-        "data/analysis/lotto_interaction_summary.csv",
-        "data/analysis/lotto_composite_features.json",
-        "data/lotto_hmc_success_patterns_validated.json",
-        "data/lotto_hmc_recommendations.json",
-        "data/lotto_hmc_recommendations.txt"
-    ]
-
-    missing_files = []
-    generated_files = []
-
-    for file_path in expected_files:
-        if Path(file_path).exists():
-            size = Path(file_path).stat().st_size
-            generated_files.append(f"  ✓ {file_path} ({size:,} bytes)")
-        else:
-            missing_files.append(f"  ✗ {file_path} - MISSING!")
-
-    print(f"\nGenerated {len(generated_files)}/{len(expected_files)} JSON files:")
-    for f in generated_files:
-        print(f)
-
-    if missing_files:
-        print(f"\n⚠️  WARNING: {len(missing_files)} files are MISSING:")
-        for f in missing_files:
-            print(f)
-        print("\n❌ INCOMPLETE: Not all JSON files were generated!")
-        print("   Please check the error messages above for details.")
-        sys.exit(1)
-    else:
-        print(f"\n✅ SUCCESS: All {len(expected_files)} JSON files generated successfully!")
+    verify_artifacts(EXPECTED_ARTIFACTS, run_started)
 
     print("=" * 70)
 

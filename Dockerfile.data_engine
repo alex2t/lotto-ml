@@ -7,9 +7,12 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-# Create non-root user and group
-RUN groupadd -g 1000 lotto && \
-    useradd -u 1000 -g lotto -s /bin/bash -m lotto
+# Create non-root user and group. The uid must own the host's data/ directory, which the
+# bind mount puts in place of the image's own - set UID/GID at build time to match the VPS.
+ARG UID=1000
+ARG GID=1000
+RUN groupadd -g ${GID} lotto && \
+    useradd -u ${UID} -g ${GID} -s /bin/bash -m lotto
 
 # Install minimal engine dependencies
 COPY requirements-engine.txt .

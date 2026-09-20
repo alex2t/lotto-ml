@@ -1,4 +1,8 @@
-pandas>=2.0.0
-scipy>=1.10.0
-numpy>=1.24.0
-statsmodels>=0.14.0
+# Pinned exactly so the VPS container and the owner's PC compute identical artifacts (F-44).
+# Matched to the versions in the owner's venv on 2026-09-20; the ML layer trains on what this
+# produces, so a drifting engine is a drifting training set.
+pandas==2.3.3
+scipy==1.16.2
+numpy==2.3.4
+statsmodels==0.14.5
+scikit-learn==1.7.2

@@ -89,6 +89,28 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
   two windows. Check a new test on simulated fair draws: about 5% flagged
   (`tests/test_trend_significance.py`, F-31).
 
+- **A phase that fails must stop the run** (F-43). `drawpick.py` re-raises out of the Phase 16
+  handler rather than printing a warning and carrying on, and `verify_artifacts()` compares each
+  expected artifact's mtime with the start of the run, so a file left from an earlier run cannot
+  satisfy the completeness check. An analyzer must not degrade either: a missing optional dependency
+  raises, it does not return an error stub that the next phase then reads as data - that is what left
+  `lotto_hmc_recommendations.json` a run behind for a day.
+- **Every float written into an artifact is rounded to 12 significant digits** (F-46). Each
+  `json.dump` in this folder, in `../utils/output_generator.py` and in `analysis/bonus_analysis.py`
+  wraps its payload in `round_floats()` from `../utils/serialization.py`. Without it the Windows and
+  manylinux scipy builds disagreed in the last digits of 146 p-values, so the same draws gave
+  different artifacts on the owner's PC and on the VPS. A new writer must use it -
+  `../../tests/test_artifact_rounding.py` checks the written files, not the call sites. Use
+  significant digits, never `round(x, 12)`, which flushes a p-value of 1.99e-307 to zero.
+- **The artifacts are stored LF, and the engine is pinned** (F-44). `.gitattributes` marks
+  `data/**/*.json|csv|txt` as `text eol=lf`, so a Windows run and a container run do not produce a
+  whole-file diff, and `requirements-engine.txt` pins every package with `==`. Both are checked by
+  `../../tests/test_pipeline_completeness.py`. With F-46's rounding in place a host run and a
+  container run now produce identical artifacts apart from `generated_date`.
+- **An import inside a function is still a dependency.** `hmc_success_analyzer._learn_feature_weights`
+  imports `sklearn` lazily; `requirements-engine.txt` must list every such package, because a
+  dependency list built by reading the top of each file will miss it.
+
 ## After changing anything here
 
 Re-run `python drawpick.py` then `python quickpick.py`. The ML layer never reads the CSV, only these

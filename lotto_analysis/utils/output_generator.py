@@ -6,6 +6,7 @@ import json
 from collections import defaultdict
 from typing import Dict
 from ..config import RANGE_BINS
+from lotto_analysis.utils.serialization import round_floats
 
 
 def format_date_iso(date_str: str) -> str:
@@ -151,7 +152,7 @@ def generate_range_spread_analysis(draw_history_log: Dict, max_number: int = 47)
 def write_json_file(filepath: str, data: Dict, description: str = ""):
     """Write data to JSON file with optional description."""
     with open(filepath, "w") as f:
-        json.dump(data, f, indent=4)
+        json.dump(round_floats(data), f, indent=4)
     print(f"✅ Wrote: {filepath}")
     if description:
         print(f"   - {description}")
