@@ -80,22 +80,29 @@ when the receiver exists; it is not designed here.
      [HTTP: archive] --> [HTTP: lottery.ie] --> [Code: parse, validate, cross-check]
                                                        |
                                                        v
-                                        [IF status == "ok"] --no--> [IF "not_published"]
-                                                |                        |        |
-                                                |                     yes|        |no
-                                                v                        v        v
-                              [HTTP: current irish500.csv]         [Wait 15m]  [Gmail: FAILED]
-                                                |                        |
-                                                v                     (retry, max 3)
-                                    [IF date newer than top row]
-                                        |               |
-                                     no |               | yes
-                                        v               v
+                                    [Switch on status]
+                                            |                      |                |
+                                           ok                not published  failed / fallback
+                                            v                      v                v
+                              [HTTP: current irish500.csv]  [Count attempt]  [Gmail: FAILED]
+                                                |                        |         ^
+                                                v                        v         |
+                                    [Code: read current CSV head] [IF attempts < 3]-+ no
+                                                |                        | yes
+                                                v                        v
+                                    [IF date newer than top row]    [Wait 15m]
+                                        |               |                |
+                                     no |               | yes            +--> back to
+                                        v               v                     [HTTP: archive]
                                    [No-op: end]   [Gmail: result]
                                                         |
                                                         v
                                               (Phase 2B: section 7)
 ```
+
+Every `failed` item converges on **Gmail: FAILED**, including one raised by *Code: read current CSV
+head* (3.6). **No-op: end** is the only exit without an email, and it is reached only after
+proving the draw is already in `data/irish500.csv`.
 
 The two HTTP nodes are **chained, not parallel**. The Code node reads both by name with
 `$('Fetch archive')` and `$('Fetch lottery.ie')`, so it does not need them as inputs - and two
@@ -151,8 +158,9 @@ impossible, and both cost a few lines that look redundant until the day they fir
    date that **was** on the page and was thrown out by validation. Only "both pages parsed fine and
    neither lists today yet" waits and retries.
 
-`status` is therefore `ok`, `not_published` or `failed` on every path, and the IF nodes of 3.5 route
-the three cases with no fourth possibility.
+`status` is therefore `ok`, `not_published` or `failed` on every path, and the Switch node of 3.5
+routes the three cases to three destinations, with its fallback output covering a fourth that cannot
+currently occur.
 
 The three defences against Lotto Plus 1 and Plus 2, all from `scripts/scrape_lotto.py`:
 
@@ -371,16 +379,30 @@ Node-reference note: `$('Fetch archive')` must match the exact node names you gi
 nodes. If your n8n version puts a text response under a different property than `data`, adjust the
 two `.data` reads - run the node once and look at the output panel.
 
-### 3.5 IF nodes and the retry
+### 3.5 The Switch node and the retry
 
-Three statuses, three routes, and **every route except "already in the CSV" ends in an email.**
-Silence is not a state this workflow is allowed to reach.
+Three statuses need three destinations, so use **one Switch node**, not IF nodes. An IF has exactly
+two outputs, so three routes would take two of them chained; worse, the two tests cannot be combined
+into one IF whatever combinator is chosen - `AND` is never true, because `status` cannot hold two
+values at once, and `OR` is true for both `ok` and `not_published`, which would send a
+`not_published` item down the `ok` branch and email a result built from `null` fields.
 
-- **IF "parsed ok"**: `{{ $json.status }}` equals `ok` -> 3.6. Otherwise -> next IF.
-- **IF "not published yet"**: `{{ $json.status }}` equals `not_published` -> the attempt counter
-  below. Anything else falls through to **Send failure email** (section 5).
-- There is no fourth case. `status` is only ever `ok`, `not_published` or `failed`, and the Code node
-  returns one of them on every path, its `catch` included.
+**Switch**, Mode **Rules**, three rules on `{{ $json.status }}`, each with *Rename Output* on:
+
+| # | Condition | Output name | Goes to |
+|:--|:--|:--|:--|
+| 1 | equals `ok` | `ok` | 3.6, the duplicate check |
+| 2 | equals `not_published` | `not published` | the attempt counter below, then Wait and retry |
+| 3 | equals `failed` | `failed` | **Send failure email** (section 5) |
+
+**Set Options > Fallback Output > Extra Output, and wire it to Send failure email.** This is the
+one setting on this node that can reintroduce a silent failure: the default is *None*, which
+**discards** an item matching no rule. `status` is only ever those three values today, so the
+fallback should never fire - which is exactly why it must not be left pointing at the bin. If a
+future edit adds a status and forgets a rule, the fallback turns a vanished draw into an email.
+
+**Every route except "already in the CSV" ends in an email.** Silence is not a state this workflow
+is allowed to reach.
 
 **The attempt counter must reset itself.** A bare counter in workflow static data persists across
 executions, so after three lifetime attempts the workflow would give up on every future draw - and
@@ -414,29 +436,56 @@ Then an IF node comparing dates. The file is **newest-first**, so the current ne
 {{ $json.data.split('\n')[1].split(',')[0] }}      // e.g. "16 Sep 2026"
 ```
 
-**Guard that expression.** If the fetch 404s or returns an empty body, `split('\n')[1]` is
-`undefined` and `.split(',')` throws - losing a draw that has just passed every check in 3.4. Give
-this node **On Error: Continue (using regular output)** too, and read the value in a Code node
-rather than an inline expression:
+**Guard that expression, and compare dates rather than strings.** Two faults to avoid. If the fetch
+404s or returns an empty body, `split('\n')[1]` is `undefined` and `.split(',')` throws - losing a
+draw that has just passed every check in 3.4. And an equality test against line 2 only catches a
+re-run of the **newest** draw: a date that is older but already present is not equal to the top row,
+so it would be reported as new, emailed, and in Phase 2B inserted after the header - a duplicate row,
+out of order, against both rules in section 4.
+
+Give this node **On Error: Continue (using regular output)** too, and decide in a Code node:
 
 ```javascript
 // Code node "Read current CSV head".
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const toStamp = (s) => {
+  const m = /^(\d{2}) ([A-Za-z]{3}) (\d{4})$/.exec(s || '');
+  const i = m ? MON.indexOf(m[2]) : -1;
+  return i === -1 ? null : Date.UTC(Number(m[3]), i, Number(m[1]));
+};
+
 const parsed = $('Parse and validate').first().json;
 const item = $('Fetch current CSV').first();
 const csv = item && !item.json.error && typeof item.json.data === 'string' ? item.json.data : '';
 const newest = (csv.split('\n')[1] || '').split(',')[0] || null;
-if (!newest) {
-  // Cannot prove the draw is absent, so do not claim it is new. Send the email
-  // and let a person look. Never end quietly on an unreadable CSV.
-  return [{ json: { ...parsed, status: 'failed',
-                    reason: 'could not read the current irish500.csv to check for a duplicate' } }];
+
+const fail = (reason) => [{ json: { ...parsed, status: 'failed', newest, reason } }];
+
+// Cannot prove the draw is absent, so do not claim it is new. Email it and let a
+// person look. Never end quietly on a CSV that could not be read.
+if (!newest) return fail('could not read the current irish500.csv to check for a duplicate');
+
+const newestAt = toStamp(newest);
+const scrapedAt = toStamp(parsed.csvDate);
+if (newestAt === null) return fail(`top row of irish500.csv is not a date: "${newest}"`);
+if (scrapedAt === null) return fail(`scraped date is not in DD Mon YYYY form: "${parsed.csvDate}"`);
+
+if (scrapedAt === newestAt) return [{ json: { ...parsed, newest, isNew: false } }];
+if (scrapedAt < newestAt) {
+  return fail(`scraped ${parsed.csvDate} is older than the newest row ${newest} - ` +
+              `this workflow only ever scrapes the current draw`);
 }
-return [{ json: { ...parsed, newest } }];
+return [{ json: { ...parsed, newest, isNew: true } }];
 ```
 
-If `newest` equals the scraped `csvDate`, the draw is already in the repository: end quietly, no
-email - that is the one silent exit, and it is silent only because it has proved the draw is already
-there. A `failed` item from this node routes to **Send failure email** like any other.
+**To exercise this node before a draw exists**, pin two items on *Parse and validate* - one whose
+`csvDate` is the top row of `data/irish500.csv` and one later than it. Both are written out in
+section 8, step 4; paste the whole item, because flipping only `status` to `ok` leaves `csvDate`
+null and this node will (correctly) refuse it.
+
+The IF after it tests `{{ $json.isNew }}` is true. False is the **one silent exit** in the whole
+workflow, and it is silent only because it has proved the draw is already there. Everything else,
+including a `failed` item from this node, routes to **Send failure email**.
 
 `raw.githubusercontent.com` caches for a few minutes. That is harmless here - a stale copy can only
 make the workflow think a draw is missing, and the Phase 2B commit re-reads the file through the
@@ -617,7 +666,10 @@ Do these in order. The backtest is the one that matters.
 
 1. **Manual run.** Disable the Schedule Trigger, use "Execute Workflow", and read the Code node's
    output panel. On a non-draw day it should return `not_published` - which is itself a useful check
-   that the date logic uses Irish time.
+   that the date logic uses Irish time. Note what follows from that once the retry is wired: the run
+   waits 15 minutes three times and emails a failure at about 21:50. While building, pin the Code
+   node's output (step 4) or disconnect the Wait node, or every manual run costs 45 minutes and ends
+   in an email you already expected.
 
 2. **Backtest against the CSV.** Point the archive node at `results-archive-2025` and change the Code
    node's last block to return every parsed draw instead of only `targetKey`. Copy the output into a
@@ -630,11 +682,53 @@ Do these in order. The backtest is the one that matters.
    `python scripts/scrape_lotto.py --dry-run`. It prints the rows it would add, using the tested
    parser. It must print the same row the email carried.
 
-4. **Force the failure path.** Point the lottery.ie node at a URL that 404s and run manually. The
+4. **Drive the downstream path with pinned data.** On a non-draw day the Code node returns
+   `not_published`, so the Switch's `ok` branch never runs and 3.6, 3.7 and the duplicate check stay
+   untested. Do not add a test override to the Code node - pin its output instead. Open **Parse and
+   validate**, click the pin icon on its output panel, choose **Edit Output**, and paste one of the
+   items below. Downstream nodes then run against it on every manual execution.
+
+   **Pinned data is used by manual executions only; a scheduled production run ignores it.** That is
+   what makes this safe to leave pinned while building - but unpin it before the monitoring week, so
+   what you are watching is the real parser.
+
+   Two ways the pin appears not to work. The node must show the **thumbtack badge** on the canvas -
+   pasting into *Edit Output* without saving leaves no pin, and the node simply runs. And the run
+   must be **Execute Workflow**, not *Test step* on a node further down: executing one node pulls
+   whatever the previous run left upstream, so you get the live `not_published` item back, with
+   `csvDate: null`. If a `not_published` item ever reaches 3.6 during a full run, the Switch is
+   wired to the wrong outputs - that status belongs to *Count attempt*.
+
+   Already in the CSV, expect the quiet exit and **no email** (`isNew: false`):
+
+   ```json
+   [{ "status": "ok", "targetKey": "2026-09-16", "reason": "", "notes": [], "httpErrors": [],
+      "csvDate": "16 Sep 2026", "csvRow": "16 Sep 2026,04,07,19,20,35,42,31",
+      "numbers": [4, 7, 19, 20, 35, 42], "bonus": 31,
+      "sources": ["irish.national-lottery.com", "lottery.ie"], "archive": null, "lotteryIe": null }]
+   ```
+
+   A genuinely new draw, expect **Gmail: result** (`isNew: true`). The date is later than the top row
+   of `data/irish500.csv`, which is what 3.6 now compares:
+
+   ```json
+   [{ "status": "ok", "targetKey": "2026-09-19", "reason": "", "notes": [], "httpErrors": [],
+      "csvDate": "19 Sep 2026", "csvRow": "19 Sep 2026,03,11,24,28,33,45,08",
+      "numbers": [3, 11, 24, 28, 33, 45], "bonus": 8,
+      "sources": ["irish.national-lottery.com", "lottery.ie"], "archive": null, "lotteryIe": null }]
+   ```
+
+   Change `"status"` to `"failed"` with a `"reason"` to exercise the Switch's `failed` output, and to
+   `"not_published"` to exercise the counter, the Wait and the three-attempt cap. Both must end in an
+   email. The first payload is the real output of the Code node run against
+   `tests/fixtures/`, so the shape matches `result()` exactly - a hand-written pin that omits a field
+   tests the template as much as the route.
+
+5. **Force the failure path.** Point the lottery.ie node at a URL that 404s and run manually. The
    failure email must arrive, name the node, and carry the HTTP problem. Then break the other one the
    same way. A failure path that has never fired is not a safeguard.
 
-5. **Check the CSV shape before the first commit.** After Phase 2B's first run, `git diff` on the repo
+6. **Check the CSV shape before the first commit.** After Phase 2B's first run, `git diff` on the repo
    must show exactly one added line, in position 2, with no line-ending change anywhere else in the
    file. A whole-file diff means the content was rebuilt with CRLF.
 
