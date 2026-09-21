@@ -39,3 +39,35 @@ services:
       - ./data:/app/data:ro
     environment:
       - PYTHONUNBUFFERED=1
+
+  nextjs-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: lotto-nextjs:latest
+    container_name: lotto-nextjs
+    restart: unless-stopped
+    # Same guard as the dashboard: a bare `docker compose up` must not serve a half-written
+    # artifact. The start scripts run the engine themselves and then pass --no-deps.
+    depends_on:
+      data-engine:
+        condition: service_completed_successfully
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data:ro
+    # The admin account and session secret come from the .env beside this file, passed with
+    # env_file rather than `environment:` interpolation: a bcrypt hash always contains `$$`,
+    # and compose expands `$$name` inside an interpolated value, so the hash arrived mangled
+    # and every login failed (F-58). env_file values are passed through literally.
+    # The file is optional - unset, the public site still works and only the login route
+    # fails, and one account's failure must never take the site down.
+    env_file:
+      - path: .env
+        required: false
+        format: raw
+    environment:
+      - DATA_DIR=/app/data

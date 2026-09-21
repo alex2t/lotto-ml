@@ -1,5 +1,5 @@
 """
-The Docker stack must order its two services and must not write into the repo (F-45).
+The Docker stack must order its services and must not write into the repo (F-45).
 
 `echo >> Step 1/2: ...` in the `.bat` scripts is a file redirect, not an arrow: cmd wrote four junk
 files into the repo root and printed nothing. `docker-compose.yml` expressed the engine-before-web
@@ -23,28 +23,81 @@ def test_batch_scripts_echo_instead_of_redirecting():
                 assert ">" not in stripped, f"{name}: {stripped}"
 
 
-def test_web_service_waits_for_a_successful_engine_run():
+def test_web_services_wait_for_a_successful_engine_run():
     """A bare `docker compose up` must not serve an artifact the engine has not finished writing."""
     compose = yaml.safe_load((REPO_ROOT / "docker-compose.yml").read_text())
-    depends = compose["services"]["streamlit-web"]["depends_on"]
-    assert depends["data-engine"]["condition"] == "service_completed_successfully"
+    for service in ("streamlit-web", "nextjs-web"):
+        depends = compose["services"][service]["depends_on"]
+        assert depends["data-engine"]["condition"] == "service_completed_successfully"
+
+
+def test_web_services_mount_the_artifacts_read_only():
+    """Only the engine writes data/. Both sites read it."""
+    compose = yaml.safe_load((REPO_ROOT / "docker-compose.yml").read_text())
+    for service in ("streamlit-web", "nextjs-web"):
+        mounts = compose["services"][service]["volumes"]
+        assert "./data:/app/data:ro" in mounts
 
 
 def test_container_uid_is_a_build_arg():
     """The bind mount replaces the image's data/ with the host's, so the uid must be settable."""
-    for name in ("Dockerfile.data_engine", "Dockerfile.streamlit"):
+    for name in ("Dockerfile.data_engine", "Dockerfile.streamlit", "Dockerfile.web"):
         dockerfile = (REPO_ROOT / name).read_text()
         assert "ARG UID=1000" in dockerfile
-        assert "useradd -u ${UID}" in dockerfile
+        assert "${UID}" in dockerfile
     compose = yaml.safe_load((REPO_ROOT / "docker-compose.yml").read_text())
-    for service in ("data-engine", "streamlit-web"):
+    for service in ("data-engine", "streamlit-web", "nextjs-web"):
         assert compose["services"][service]["build"]["args"]["UID"] == "${UID:-1000}"
+
+
+def test_the_web_image_runs_as_the_build_arg_user():
+    """A root container would write root-owned files through any future writable mount."""
+    dockerfile = (REPO_ROOT / "Dockerfile.web").read_text()
+    assert "USER ${UID}:${GID}" in dockerfile
+
+
+def test_admin_secrets_are_passed_without_interpolation():
+    """
+    A bcrypt hash always contains `$`, and compose expands `$name` inside an interpolated
+    value, so `environment: ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}` delivered a mangled
+    hash and every login failed with 401 (F-58). env_file with `format: raw` is passed
+    through literally.
+    """
+    compose = yaml.safe_load((REPO_ROOT / "docker-compose.yml").read_text())
+    service = compose["services"]["nextjs-web"]
+
+    env_files = service["env_file"]
+    assert any(
+        entry["path"] == ".env" and entry.get("format") == "raw" for entry in env_files
+    ), env_files
+    # The file is optional: the public site must start without an admin account.
+    assert all(entry.get("required") is False for entry in env_files), env_files
+
+    for entry in service.get("environment", []):
+        assert "ADMIN_" not in entry and "SESSION_SECRET" not in entry, entry
+
+
+def test_the_env_file_is_not_committed_or_shipped():
+    """It holds the admin hash and the session secret."""
+    ignored = [line.strip() for line in (REPO_ROOT / ".gitignore").read_text().splitlines()]
+    assert ".env" in ignored
+    docker_ignored = [
+        line.strip() for line in (REPO_ROOT / ".dockerignore").read_text().splitlines()
+    ]
+    assert ".env" in docker_ignored
 
 
 def test_data_is_not_sent_to_the_build_context():
     """Neither image copies data/; it is bind-mounted at runtime."""
     ignored = (REPO_ROOT / ".dockerignore").read_text().splitlines()
     assert "data/" in [line.strip() for line in ignored]
-    for name in ("Dockerfile.data_engine", "Dockerfile.streamlit"):
+    for name in ("Dockerfile.data_engine", "Dockerfile.streamlit", "Dockerfile.web"):
         dockerfile = (REPO_ROOT / name).read_text()
         assert "COPY data" not in dockerfile
+
+
+def test_the_frontend_build_context_excludes_installed_and_built_output():
+    """node_modules and .next come from the image's own npm ci and build, never the host."""
+    ignored = [line.strip() for line in (REPO_ROOT / ".dockerignore").read_text().splitlines()]
+    for pattern in ("frontend/node_modules/", "frontend/.next/"):
+        assert pattern in ignored

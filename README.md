@@ -10,7 +10,8 @@ line than take a random quick pick. It shows the facts behind past draws - which
 medium or cold, how odd and even numbers split, which balls were recently a bonus, how many numbers
 of 32 or above a typical draw holds - and leaves the choice to you. It never promises a better
 chance of winning: in a fair draw every line is equally likely. The aim is simply to make picking a
-line more fun. Built in Streamlit today; a React version with spinning, game-like pickers is planned.
+line more fun. Built in Streamlit today; the Next.js replacement in `frontend/` has its Phase 3
+foundation built, and both run side by side until the cutover.
 
 **The ML layer - a learning project.** Six models (logistic regression, random forest, XGBoost,
 CatBoost and two auxiliary models) trained on the same history to generate picks. They are for my
@@ -77,13 +78,16 @@ data/irish500.csv -> drawpick.py -> data/*.json -> quickpick.py -> lottery_picks
      freshness target and ticket rules (sum 84-206, span 20+, 2-4 odd).
 4. **Website** - `app.py` and `view/pages/`: trigger periods, draw history, statistics, freshness,
    prediction validator, number insights, pattern comparison, post-draw analysis.
+5. **The Next.js site** - `frontend/`: the same artifacts, read server-side and served through API
+   routes, plus the admin login and the data-bundle download. The UI migration is Phase 4.
 
 ## Layout
 
 | Path | What |
 |:--|:--|
 | `lotto_analysis/`, `drawpick.py` | statistics over the draw history -> `data/*.json` |
-| `view/`, `app.py` | the website (8 pages) |
+| `view/`, `app.py` | the website (8 pages, Streamlit) |
+| `frontend/` | the Next.js site replacing it - see `frontend/CLAUDE.md` |
 | `ml_lotto/`, `quickpick.py` | features, models, line selection |
 | `tests/` | the real tests - see `tests/CLAUDE.md` for which files they are |
 | `docs/` | reference: metrics, features, models, JSON files, dashboard manual |

@@ -20,9 +20,20 @@ tests/
 # Artifacts and draw data - bind-mounted at runtime, never copied into an image
 data/
 
+# Secrets - the admin hash and session secret reach the container at runtime, never the image
+.env
+.env.local
+
 # Git & Agent Metadata
 .git/
 .gitignore
 .claude/
 .gemini/
 *.log
+
+# Next.js site: installed and built inside the image, never copied from the host
+frontend/node_modules/
+frontend/.next/
+frontend/test/
+frontend/.env
+frontend/.env.local

@@ -1,0 +1,20 @@
+# Development overlay: `next dev` with frontend/ bind-mounted for hot reload.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up nextjs-web
+# The artifacts stay read-only, as in production, so the site is developed against exactly
+# what drawpick.py writes.
+services:
+  nextjs-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      target: deps
+    image: lotto-nextjs-dev:latest
+    command: ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - ./data:/app/data:ro
+    environment:
+      - NODE_ENV=development
+      - DATA_DIR=/app/data

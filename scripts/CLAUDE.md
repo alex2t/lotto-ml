@@ -6,7 +6,7 @@ Standalone utilities. **None of these run as part of `drawpick.py` or `quickpick
 |:--|:--|
 | `scrape_lotto.py` | fetches Irish National Lottery results; the only thing here that writes `data/irish500.csv`. Covered by `../tests/test_scraper_sources.py` |
 | `train_with_all_features.py` | demonstration of the full training pipeline with SMOTE, feature selection and tuning all enabled. Not the production path |
-| `docker_start.*`, `docker_stop.*` | the Docker launchers for Linux/macOS (`.sh`), PowerShell (`.ps1`) and cmd (`.bat`). Each runs the data engine, checks its exit code, then starts the dashboard with `--no-deps` |
+| `docker_start.*`, `docker_stop.*` | the Docker launchers for Linux/macOS (`.sh`), PowerShell (`.ps1`) and cmd (`.bat`). Each runs the data engine, checks its exit code, then starts both front ends with `--no-deps` - Streamlit on 8501 and the Next.js site on 3000, which run side by side until the cutover in `nextStep/web.md` section 8 |
 
 ## Reading README.md in this folder
 

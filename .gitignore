@@ -12,3 +12,7 @@ model_metrics/Test_*
 
 # CatBoost training telemetry - rewritten on every quickpick.py run, not source
 catboost_info/
+
+# Secrets for the Docker stack: the admin account and session secret. Never committed.
+.env
+.env.local
