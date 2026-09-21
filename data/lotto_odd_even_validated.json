@@ -6,19 +6,19 @@
             "binomial_test",
             "fdr_correction"
         ],
-        "total_draws": 498,
+        "total_draws": 499,
         "significance_level": 0.05,
         "fdr_correction_applied": true
     },
     "overall_distribution_test": {
         "significant": false,
-        "chi2_stat": 0.292853175989,
-        "p_value": 0.588397922781,
-        "cramers_v": 0.00989998810036,
-        "total_odd": 1511,
-        "total_even": 1477,
-        "odd_percentage": 50.5689424364,
-        "even_percentage": 49.4310575636,
+        "chi2_stat": 0.33583168753,
+        "p_value": 0.562245189885,
+        "cramers_v": 0.0105909504912,
+        "total_odd": 1513,
+        "total_even": 1481,
+        "odd_percentage": 50.5344021376,
+        "even_percentage": 49.4655978624,
         "expected_odd_percentage": 51.0638297872,
         "interpretation": "Odd/even split is what a fair draw gives (24 of the 47 numbers are odd)"
     },
@@ -71,7 +71,7 @@
             "preferred_type": "neutral",
             "number_parity": "odd",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "6": {
             "affinity_score": 0.5,
@@ -114,24 +114,24 @@
             "p_value_adjusted": 0.240145612259
         },
         "10": {
-            "affinity_score": 0.634920634921,
+            "affinity_score": 0.625,
             "chance_affinity_score": 0.542635658915,
             "statistically_validated": false,
-            "p_value": 0.164256972916,
+            "p_value": 0.210174102157,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "11": {
-            "affinity_score": 0.791044776119,
+            "affinity_score": 0.779411764706,
             "chance_affinity_score": 0.826873385013,
             "statistically_validated": false,
-            "p_value": 0.420614821381,
+            "p_value": 0.334320713113,
             "preferred_type": "neutral",
             "number_parity": "odd",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.941376028805
+            "p_value_adjusted": 0.785653675815
         },
         "12": {
             "affinity_score": 0.493150684932,
@@ -141,7 +141,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.941376028805
+            "p_value_adjusted": 0.923644831113
         },
         "13": {
             "affinity_score": 0.823529411765,
@@ -181,7 +181,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "17": {
             "affinity_score": 0.836363636364,
@@ -201,7 +201,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "19": {
             "affinity_score": 0.734375,
@@ -214,10 +214,10 @@
             "p_value_adjusted": 0.526276710188
         },
         "20": {
-            "affinity_score": 0.558823529412,
+            "affinity_score": 0.550724637681,
             "chance_affinity_score": 0.542635658915,
             "statistically_validated": false,
-            "p_value": 0.808967295079,
+            "p_value": 0.904588611116,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
@@ -231,7 +231,7 @@
             "preferred_type": "neutral",
             "number_parity": "odd",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "22": {
             "affinity_score": 0.546875,
@@ -251,7 +251,7 @@
             "preferred_type": "neutral",
             "number_parity": "odd",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "24": {
             "affinity_score": 0.58904109589,
@@ -294,14 +294,14 @@
             "p_value_adjusted": 1.0
         },
         "28": {
-            "affinity_score": 0.47619047619,
+            "affinity_score": 0.46875,
             "chance_affinity_score": 0.542635658915,
             "statistically_validated": false,
-            "p_value": 0.312966875833,
+            "p_value": 0.259577902227,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "29": {
             "affinity_score": 0.714285714286,
@@ -391,7 +391,7 @@
             "preferred_type": "neutral",
             "number_parity": "odd",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "38": {
             "affinity_score": 0.478873239437,
@@ -401,7 +401,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "39": {
             "affinity_score": 0.816666666667,
@@ -424,10 +424,10 @@
             "p_value_adjusted": 0.971369601875
         },
         "41": {
-            "affinity_score": 0.828125,
+            "affinity_score": 0.815384615385,
             "chance_affinity_score": 0.826873385013,
             "statistically_validated": false,
-            "p_value": 1.0,
+            "p_value": 0.744869758567,
             "preferred_type": "neutral",
             "number_parity": "odd",
             "alignment": "misaligned",
@@ -441,7 +441,7 @@
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "43": {
             "affinity_score": 0.876923076923,
@@ -451,17 +451,17 @@
             "preferred_type": "neutral",
             "number_parity": "odd",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.813998616482
+            "p_value_adjusted": 0.785653675815
         },
         "44": {
-            "affinity_score": 0.5,
+            "affinity_score": 0.491525423729,
             "chance_affinity_score": 0.542635658915,
             "statistically_validated": false,
-            "p_value": 0.513772021628,
+            "p_value": 0.436447032447,
             "preferred_type": "neutral",
             "number_parity": "even",
             "alignment": "misaligned",
-            "p_value_adjusted": 0.971369601875
+            "p_value_adjusted": 0.932409569318
         },
         "45": {
             "affinity_score": 0.819444444444,
@@ -504,8 +504,8 @@
         "7": 0.824561403509,
         "8": 0.515151515152,
         "9": 0.679245283019,
-        "10": 0.634920634921,
-        "11": 0.791044776119,
+        "10": 0.625,
+        "11": 0.779411764706,
         "12": 0.493150684932,
         "13": 0.823529411765,
         "14": 0.403225806452,
@@ -514,7 +514,7 @@
         "17": 0.836363636364,
         "18": 0.470588235294,
         "19": 0.734375,
-        "20": 0.558823529412,
+        "20": 0.550724637681,
         "21": 0.878378378378,
         "22": 0.546875,
         "23": 0.760869565217,
@@ -522,7 +522,7 @@
         "25": 0.840579710145,
         "26": 0.426470588235,
         "27": 0.821917808219,
-        "28": 0.47619047619,
+        "28": 0.46875,
         "29": 0.714285714286,
         "30": 0.439393939394,
         "31": 0.842105263158,
@@ -535,10 +535,10 @@
         "38": 0.478873239437,
         "39": 0.816666666667,
         "40": 0.5,
-        "41": 0.828125,
+        "41": 0.815384615385,
         "42": 0.613333333333,
         "43": 0.876923076923,
-        "44": 0.5,
+        "44": 0.491525423729,
         "45": 0.819444444444,
         "46": 0.709677419355,
         "47": 0.847457627119
