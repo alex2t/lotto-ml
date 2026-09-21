@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The twenty-six real tests (277 tests, ~60s)
+## The twenty-six real tests (293 tests, ~60s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -50,7 +50,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_artifact_rounding.py` | every float in the 22 JSON artifacts carries at most 12 significant digits, so a host run and a container run are byte-identical (F-46); a tiny p-value survives the rounding and ints, bools and strings are untouched. Reads `data/*.json` |
 | `test_docker_stack.py` | the Docker stack orders its services and stays out of the repo (F-45): no `echo` redirect in either `.bat`, `streamlit-web` and `nextjs-web` both wait for `service_completed_successfully` and mount the artifacts read-only, all three images take the uid as a build arg and the web image runs as it, and `.dockerignore` excludes `data/` and the frontend's `node_modules`/`.next`; the admin hash and session secret reach `nextjs-web` through `env_file` with `format: raw` from `secrets.env`, never `.env` and never `environment:` interpolation (F-58); and the root layout reads no artifact, so the image builds without the data mount (F-62) |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5), as does an empty bonus window (F-42) |
-| `test_rebuild_webhook.py` | the receiver that runs `drawpick.py` when n8n asks: a signed request runs it, an unsigned or wrongly-signed one does not, a signature over different content does not, two at once get 409 rather than interleaving writes, a failing engine answers 500 with the tail of its log, an oversized body is refused before it is read, and it refuses to start without a secret. The engine is stubbed - that the real one works is `test_pipeline_completeness.py` |
+| `test_rebuild_webhook.py` | the receiver that appends n8n's draw and runs `drawpick.py`: a signed request runs it, an unsigned or wrongly-signed one does not, a signature over different content does not, two at once get 409 rather than interleaving writes, a failing engine answers 500 with the tail of its log, an oversized body is refused before it is read, and it refuses to start without a secret. And the draw itself (F-64): a new draw lands after the header zero-padded and LF, the same draw twice rebuilds once, a retry with artifacts older than the CSV rebuilds without appending, a malformed draw is rejected and writes nothing, an interrupted write leaves the file intact, and the engine's log is decoded as UTF-8 so its emoji do not turn a successful rebuild into a crash. The engine is stubbed - that the real one works is `test_pipeline_completeness.py` |
 | `test_number_pairs.py` | the pair counts the dossier shows are written by the engine, not counted in a page: every number has partners, a pair counts the same from both sides, the totals add up to 15 a draw, the bonus is not part of a pair, ties break on the number (F-12), and the fair-draw expectation is published beside the counts so they are never read as a pairing. Also that `draw_range_6` is written beside `draw_range` and sits lower, because a seventh ball can only widen a span (F-63) |
 
 ## The site's own tests are not here

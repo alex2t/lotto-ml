@@ -178,31 +178,49 @@ CSV, and step 6's second condition rebuilds from the corrected file.
 | Runs `drawpick.py` and reports its exit code and log tail | built |
 | `/health` for the container healthcheck | built |
 | Not published, not proxied, no Docker socket | built, `docker-compose.prod.yml` |
-| 16 tests | built, `tests/test_rebuild_webhook.py` |
+| The draw in the body, validated at the receiver | built, `parse_draw()` |
+| ISO date to `19 Sep 2026` in one place | built, `format_row()` |
+| Dedupe by date; append after the header, zero-padded, LF | built, `handle_draw()`, `append_draw()` |
+| Atomic write - temp file then rename | built, `append_draw()` |
+| Rebuild only when the CSV changed or the artifacts are stale | built, `artifact_state()` |
+| The response of section 4, with `csv_rows` | built |
+| The engine's log decoded as UTF-8, not the locale codec (F-65) | built, `run_drawpick()` |
+| 32 tests | built, `tests/test_rebuild_webhook.py` |
 
-Everything in sections 3 and 4 above is **not** built. The receiver currently ignores the
-body except to check its signature.
+**Sections 3 and 4 are built.** What is left is not code: the two n8n nodes of section 3,
+which are built in n8n itself, against the design in [`n8n.md`](n8n.md) section 7.
 
 ---
 
 ## 7. Checklist
 
-- [ ] The payload of section 3: `date`, `main`, `bonus`, validated at the receiver against the
-      same rules `scrape_lotto.py` applies.
-- [ ] Date conversion in one place - ISO on the wire, `19 Sep 2026` in the file.
-- [ ] Dedupe by date: a draw already in the CSV appends nothing.
-- [ ] The row inserted after the header, zero-padded, LF (F-44).
-- [ ] Atomic write - temp file, then rename.
-- [ ] Rebuild only when the CSV changed, **or** the artifacts are older than the CSV.
-- [ ] The response of section 4, including `csv_rows` for the drift check.
-- [ ] Tests: a new draw rebuilds; the same draw twice rebuilds once; a stale-artifact retry
+- [x] The payload of section 3: `date`, `main`, `bonus`, validated at the receiver against the
+      same rules `scrape_lotto.py` applies. `parse_draw()`, which raises `Rejected` and never
+      reaches the file.
+- [x] Date conversion in one place - ISO on the wire, `19 Sep 2026` in the file. `CSV_DATE_FORMAT`
+      is read by `format_row()` and by `row_date()`, so the writer and the reader cannot disagree.
+- [x] Dedupe by date: a draw already in the CSV appends nothing. A date older than the newest row
+      is rejected, so the only date that can already be present is the newest one.
+- [x] The row inserted after the header, zero-padded, LF (F-44).
+- [x] Atomic write - temp file, then rename, with an `fsync` before it.
+- [x] Rebuild only when the CSV changed, **or** the artifacts are older than the CSV.
+      `artifact_state()` reads `drawpick.EXPECTED_ARTIFACTS` rather than a second copy of the list.
+- [x] The response of section 4, including `csv_rows` for the drift check.
+- [x] Tests: a new draw rebuilds; the same draw twice rebuilds once; a stale-artifact retry
       rebuilds without appending; a malformed draw is rejected and writes nothing; a
       half-written CSV is impossible; the row lands after the header with LF endings.
-- [ ] `n8n.md` gains the Code node and the HTTP Request node, after the section 7 commit node,
-      with the non-200 branch routed into the existing failure email.
-- [ ] `vps.md` section 4 updated - it currently describes a body-less webhook.
-- [ ] Run it locally end to end: post a synthetic draw, watch the CSV grow by one row, the
-      artifacts rebuild, and the site serve the new draw without a restart.
+      31 tests, ~22s. The existing tests posted an empty body and now post a real draw - the
+      receiver's contract changed by design, not to make anything pass.
+- [x] `n8n.md` gains the Code node and the HTTP Request node, after the section 7 commit node,
+      with the non-200 branch routed into the existing failure email. Section 7, steps 4 and 5.
+- [x] `vps.md` section 4 updated - it described a body-less webhook.
+- [x] Run it locally end to end: posted a synthetic draw at the real repo, the CSV grew by one
+      row, `drawpick.py` rewrote the 25 artifacts in 39.5s, and the same request again
+      answered `already had it` in 0.0s without running anything. That run is what found
+      F-65: the engine's emoji killed the log reader thread, so a rebuild that had worked
+      came back as a crash.
+      The site serving it without a restart is `npm --prefix frontend run test:integration`,
+      which appends a row, runs `drawpick.py` and asserts the new draw is served.
 
 ---
 

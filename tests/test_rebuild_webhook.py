@@ -23,6 +23,24 @@ import rebuild_webhook
 
 SECRET = b'a-secret-at-least-sixteen-chars'
 
+HEADER = 'Date,Num1,Num2,Num3,Num4,Num5,Num6,Bonus'
+EXISTING = ['16 Sep 2026,04,07,19,20,35,42,31', '14 Sep 2026,02,09,18,26,33,40,11']
+NEW_DRAW = {'date': '2026-09-19', 'main': [44, 10, 28, 11, 41, 20], 'bonus': 2}
+NEW_DRAW_ROW = '19 Sep 2026,10,11,20,28,41,44,02'
+
+
+def seed_csv(root, rows=EXISTING):
+    """The CSV as the VPS holds it: newest-first, LF endings."""
+    path = root / 'data' / 'irish500.csv'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'w', encoding='utf-8', newline='') as handle:
+        handle.write('\n'.join([HEADER] + list(rows)) + '\n')
+    return path
+
+
+def body_for(draw=NEW_DRAW):
+    return json.dumps(draw).encode()
+
 
 def sign(body: bytes, key: bytes = SECRET) -> str:
     return hmac.new(key, body, hashlib.sha256).hexdigest()
@@ -39,12 +57,13 @@ def receiver(monkeypatch, tmp_path):
 
     monkeypatch.setattr(rebuild_webhook, 'run_drawpick', fake_run)
 
+    seed_csv(tmp_path)
     server = rebuild_webhook.serve('127.0.0.1', 0, str(tmp_path), SECRET)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     port = server.server_address[1]
 
-    yield f'http://127.0.0.1:{port}', calls
+    yield f'http://127.0.0.1:{port}', calls, tmp_path
 
     server.shutdown()
     server.server_close()
@@ -62,26 +81,26 @@ def post(url, body=b'{}', signature=None, header=rebuild_webhook.SIGNATURE_HEADE
 
 
 def test_a_correctly_signed_request_runs_the_engine(receiver):
-    url, calls = receiver
-    body = json.dumps({'draw': '2026-09-19'}).encode()
+    url, calls, root = receiver
+    body = body_for()
 
     status, payload = post(url, body, sign(body))
 
     assert status == 200
-    assert payload['state'] == 'ok'
+    assert payload['state'] == 'rebuilt'
     assert len(calls) == 1
 
 
 def test_an_unsigned_request_is_refused_and_runs_nothing(receiver):
-    url, calls = receiver
-    status, payload = post(url, b'{}')
+    url, calls, root = receiver
+    status, payload = post(url, body_for())
     assert status == 401
     assert payload == {'error': 'bad signature'}
     assert calls == []
 
 
 def test_a_wrong_secret_is_refused(receiver):
-    url, calls = receiver
+    url, calls, root = receiver
     body = b'{}'
     status, _ = post(url, body, sign(body, b'a-different-secret-entirely'))
     assert status == 401
@@ -93,14 +112,14 @@ def test_a_signature_over_different_content_is_refused(receiver):
     The signature covers the body that was actually posted. Signing one payload and sending
     another is exactly what a replay looks like.
     """
-    url, calls = receiver
+    url, calls, root = receiver
     status, _ = post(url, b'{"draw": "tampered"}', sign(b'{"draw": "original"}'))
     assert status == 401
     assert calls == []
 
 
 def test_only_the_rebuild_path_accepts_a_post(receiver):
-    url, calls = receiver
+    url, calls, root = receiver
     body = b'{}'
     request = urllib.request.Request(url + '/anything', data=body, method='POST')
     request.add_header(rebuild_webhook.SIGNATURE_HEADER, sign(body))
@@ -111,7 +130,7 @@ def test_only_the_rebuild_path_accepts_a_post(receiver):
 
 
 def test_the_health_endpoint_needs_no_signature_and_runs_nothing(receiver):
-    url, calls = receiver
+    url, calls, root = receiver
     with urllib.request.urlopen(url + '/health', timeout=30) as response:
         payload = json.loads(response.read())
     assert response.status == 200
@@ -134,6 +153,7 @@ def test_two_rebuilds_at_once_are_refused_not_queued(monkeypatch, tmp_path):
 
     monkeypatch.setattr(rebuild_webhook, 'run_drawpick', slow_run)
 
+    seed_csv(tmp_path)
     server = rebuild_webhook.serve('127.0.0.1', 0, str(tmp_path), SECRET)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     url = f'http://127.0.0.1:{server.server_address[1]}'
@@ -141,14 +161,14 @@ def test_two_rebuilds_at_once_are_refused_not_queued(monkeypatch, tmp_path):
     first_result = {}
 
     def first_call():
-        first_result['status'], first_result['payload'] = post(url, b'{}', sign(b'{}'))
+        first_result['status'], first_result['payload'] = post(url, body_for(), sign(body_for()))
 
     first = threading.Thread(target=first_call)
     first.start()
     assert started.wait(timeout=10), 'the first rebuild never started'
 
     try:
-        status, payload = post(url, b'{}', sign(b'{}'))
+        status, payload = post(url, body_for(), sign(body_for()))
         assert status == 409
         assert 'already running' in payload['error']
     finally:
@@ -161,9 +181,9 @@ def test_two_rebuilds_at_once_are_refused_not_queued(monkeypatch, tmp_path):
 
 
 def test_the_lock_is_released_so_a_later_rebuild_can_run(receiver):
-    url, calls = receiver
+    url, calls, root = receiver
     for _ in range(3):
-        status, _ = post(url, b'{}', sign(b'{}'))
+        status, _ = post(url, body_for(), sign(body_for()))
         assert status == 200
     assert len(calls) == 3
 
@@ -180,12 +200,13 @@ def test_a_failing_engine_answers_500_with_the_tail_of_its_log(monkeypatch, tmp_
         }
 
     monkeypatch.setattr(rebuild_webhook, 'run_drawpick', failing_run)
+    seed_csv(tmp_path)
     server = rebuild_webhook.serve('127.0.0.1', 0, str(tmp_path), SECRET)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     url = f'http://127.0.0.1:{server.server_address[1]}'
 
     try:
-        status, payload = post(url, b'{}', sign(b'{}'))
+        status, payload = post(url, body_for(), sign(body_for()))
         assert status == 500
         assert payload['state'] == 'failed'
         assert payload['exit_code'] == 1
@@ -201,7 +222,7 @@ def test_an_oversized_body_is_refused_before_it_is_read(receiver):
     connection reset rather than the response. That is the point - the bytes are never
     buffered - so this asserts what matters: the engine did not run.
     """
-    url, calls = receiver
+    url, calls, root = receiver
     body = b'x' * (rebuild_webhook.MAX_BODY_BYTES + 1)
     try:
         status, _ = post(url, body, sign(body))
@@ -228,9 +249,9 @@ def test_it_refuses_to_start_without_a_long_enough_secret(monkeypatch):
 
 def test_signature_comparison_does_not_leak_its_length(receiver):
     """A wrong-length signature is a mismatch, not a crash."""
-    url, calls = receiver
+    url, calls, root = receiver
     for sent in ('', 'ab', 'z' * 64, 'not-hex-at-all'):
-        status, _ = post(url, b'{}', sent)
+        status, _ = post(url, body_for(), sent)
         assert status == 401
     assert calls == []
 
@@ -297,7 +318,161 @@ def test_the_engine_is_never_run_through_a_shell(monkeypatch, tmp_path):
 
 
 def test_the_time_it_took_is_reported(receiver):
-    url, _ = receiver
-    status, payload = post(url, b'{}', sign(b'{}'))
+    url, _, root = receiver
+    status, payload = post(url, body_for(), sign(body_for()))
     assert status == 200
     assert isinstance(payload['seconds'], (int, float))
+
+
+# The draw in the body: appending it, recognising it again, and rebuilding when the
+# artifacts are older than the CSV. nextStep/lottodraw.md sections 3 and 4.
+
+
+def artifacts_fresh(root):
+    """Write every artifact drawpick.py is expected to produce, newer than the CSV."""
+    for relative in rebuild_webhook.expected_artifacts():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('{}', encoding='utf-8')
+
+
+def test_a_new_draw_is_appended_after_the_header_and_rebuilds(receiver):
+    url, calls, root = receiver
+    body = body_for()
+
+    status, payload = post(url, body, sign(body))
+
+    assert status == 200
+    assert payload['state'] == 'rebuilt'
+    assert payload['appended'] is True
+    assert payload['draw'] == '2026-09-19'
+    assert payload['csv_rows'] == len(EXISTING) + 1
+    assert len(calls) == 1
+
+    raw = (root / 'data' / 'irish500.csv').read_bytes()
+    assert b'\r\n' not in raw, 'the CSV is stored LF (F-44)'
+    lines = raw.decode().rstrip('\n').split('\n')
+    assert lines[0] == HEADER
+    assert lines[1] == '19 Sep 2026,10,11,20,28,41,44,02'
+    assert lines[2:] == EXISTING
+
+
+def test_the_same_draw_twice_appends_once_and_rebuilds_once(receiver):
+    url, calls, root = receiver
+    body = body_for()
+
+    post(url, body, sign(body))
+    artifacts_fresh(root)
+
+    status, payload = post(url, body, sign(body))
+
+    assert status == 200
+    assert payload['state'] == 'already had it'
+    assert payload['appended'] is False
+    assert payload['csv_rows'] == len(EXISTING) + 1
+    assert len(calls) == 1, 'a retried webhook must cost nothing'
+
+
+def test_a_retry_rebuilds_when_the_artifacts_are_older_than_the_csv(receiver):
+    """
+    The append succeeded and the engine then failed, so the row is in the file and the
+    artifacts are stale. Posting the same draw again is the repair.
+    """
+    url, calls, root = receiver
+    body = body_for()
+
+    artifacts_fresh(root)
+    time.sleep(0.01)
+    seed_csv(root, [NEW_DRAW_ROW] + EXISTING)
+
+    status, payload = post(url, body, sign(body))
+
+    assert status == 200
+    assert payload['state'] == 'rebuilt stale artifacts'
+    assert payload['appended'] is False
+    assert payload['csv_rows'] == len(EXISTING) + 1
+    assert len(calls) == 1
+
+
+@pytest.mark.parametrize('draw, why', [
+    ({'date': '19 Sep 2026', 'main': [1, 2, 3, 4, 5, 6], 'bonus': 7}, 'not ISO'),
+    ({'date': '2099-01-01', 'main': [1, 2, 3, 4, 5, 6], 'bonus': 7}, 'in the future'),
+    ({'date': '2026-09-01', 'main': [1, 2, 3, 4, 5, 6], 'bonus': 7}, 'older than the newest row'),
+    ({'date': '2026-09-19', 'main': [1, 2, 3, 4, 5], 'bonus': 7}, 'five numbers'),
+    ({'date': '2026-09-19', 'main': [1, 2, 3, 4, 5, 5], 'bonus': 7}, 'a repeated number'),
+    ({'date': '2026-09-19', 'main': [1, 2, 3, 4, 5, 48], 'bonus': 7}, 'out of range'),
+    ({'date': '2026-09-19', 'main': [1, 2, 3, 4, 5, 6], 'bonus': 6}, 'bonus among the main'),
+    ({'date': '2026-09-19', 'main': [1, 2, 3, 4, 5, 6], 'bonus': 0}, 'bonus out of range'),
+    ({'date': '2026-09-19', 'main': [1, 2, 3, 4, 5, 6]}, 'no bonus'),
+])
+def test_a_malformed_draw_is_rejected_and_writes_nothing(receiver, draw, why):
+    url, calls, root = receiver
+    path = root / 'data' / 'irish500.csv'
+    before = path.read_bytes()
+    body = body_for(draw)
+
+    status, payload = post(url, body, sign(body))
+
+    assert status == 400, why
+    assert payload['state'] == 'rejected'
+    assert calls == []
+    assert path.read_bytes() == before
+
+
+def test_a_body_that_is_not_json_is_rejected(receiver):
+    url, calls, root = receiver
+    status, payload = post(url, b'not json at all', sign(b'not json at all'))
+    assert status == 400
+    assert payload['state'] == 'rejected'
+    assert calls == []
+
+
+def test_the_csv_is_replaced_atomically(monkeypatch, tmp_path):
+    """
+    A crash partway through leaves the original file intact, not a truncated one that
+    drawpick.py would read without complaint.
+    """
+    path = seed_csv(tmp_path)
+    original = path.read_bytes()
+
+    def crash(source, destination):
+        raise OSError('interrupted before the rename')
+
+    monkeypatch.setattr(rebuild_webhook.os, 'replace', crash)
+    draw = rebuild_webhook.parse_draw(body_for())
+    with pytest.raises(OSError):
+        rebuild_webhook.append_draw(path, draw, rebuild_webhook.csv_lines(path))
+
+    assert path.read_bytes() == original
+
+
+def test_the_iso_date_becomes_the_format_the_file_holds():
+    """One place knows the file's format; n8n only ever sends ISO."""
+    draw = rebuild_webhook.parse_draw(
+        body_for({'date': '2026-09-05', 'main': [8, 11, 15, 21, 33, 44], 'bonus': 14})
+    )
+    assert rebuild_webhook.format_row(draw) == '05 Sep 2026,08,11,15,21,33,44,14'
+
+
+def test_the_engine_log_is_decoded_as_utf8(monkeypatch, tmp_path):
+    """
+    drawpick.py prints emoji. text=True decodes with the locale codec - cp1252 on Windows -
+    which raises on the first one and leaves stdout as None, so a rebuild that worked is
+    reported as a crash.
+    """
+    seen = {}
+
+    class Finished:
+        returncode = 0
+        stdout = 'done'
+        stderr = ''
+
+    def capture(cmd, **kwargs):
+        seen.update(kwargs)
+        return Finished()
+
+    monkeypatch.setattr(rebuild_webhook.subprocess, 'run', capture)
+    rebuild_webhook.run_drawpick(str(tmp_path))
+
+    assert seen['encoding'] == 'utf-8'
+    assert seen['errors'] == 'replace'

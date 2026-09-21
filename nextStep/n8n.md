@@ -652,11 +652,37 @@ Guards, all of which must hold before the commit node runs:
 - the scraped date is not already the newest row;
 - the result email has been sent.
 
-**After the commit, the website does not change yet.** `data/*.json` is rebuilt by `drawpick.py`, and
-the models by `quickpick.py` (`scripts/CLAUDE.md`). The rebuild trigger - `plan.md`'s
-`POST /api/webhook/rebuild` to the VPS, which runs the `data-engine` container - is the second half of
-Phase 2B and is not designed here. Until it exists, run `python drawpick.py` and `python quickpick.py`
-by hand after each ingested draw, then `/lotto-verify`.
+4. **Code node - sign the draw for the receiver.** The commit is the history; this is what makes
+   the site change. The receiver appends the draw to the VPS's own CSV and rebuilds - see
+   [`lottodraw.md`](lottodraw.md).
+
+```javascript
+const crypto = require('crypto');
+const draw = $('Parse and validate').first().json;
+const body = JSON.stringify({
+  date: draw.isoDate,
+  main: draw.mainNumbers,
+  bonus: draw.bonusNumber,
+});
+const signature = crypto
+  .createHmac('sha256', $env.REBUILD_SECRET)
+  .update(body)
+  .digest('hex');
+return [{ json: { body, signature } }];
+```
+
+5. **HTTP Request node - the rebuild.** `POST http://lotto-rebuild:8080/rebuild`, header
+   `X-Lotto-Signature: {{$json.signature}}`, body `{{$json.body}}` sent **raw** with
+   `Content-Type: application/json`. The signature covers the exact bytes, so letting n8n
+   re-serialise the object produces a 401 that looks like a wrong secret.
+
+   The response carries `state` and `csv_rows`. `rebuilt`, `already had it` and
+   `rebuilt stale artifacts` are all success - a retried execution is meant to be free. Anything
+   else, or a `csv_rows` that does not match the row count just committed to GitHub, routes into
+   the same failure email as section 5.
+
+**`quickpick.py` never runs on the VPS** (`plan.md` 3.5). The models are the owner's, and the site
+does not read them; run it on the PC when you want new picks, then `/lotto-verify`.
 
 ---
 

@@ -151,9 +151,9 @@ log in once to download the bundle.
 
 ## 4. The rebuild receiver
 
-n8n commits a draw to `data/irish500.csv`, then asks the VPS to rewrite the artifacts. That
-is `rebuild-receiver`, the only network-facing thing in this repo that writes files, which is
-why it is built the way it is:
+n8n commits a draw to GitHub, then **posts that draw to the VPS**, which appends it to its own
+`data/irish500.csv` and rewrites the artifacts. That is `rebuild-receiver`, the only
+network-facing thing in this repo that writes files, which is why it is built the way it is:
 
 - **It never gets the Docker socket.** A receiver that shells out to `docker run` needs the
   socket, which is root on the host. It runs `drawpick.py` in its own process instead.
@@ -164,6 +164,10 @@ why it is built the way it is:
   in constant time. A bare token is fine until it turns up in a proxy log.
 - **One rebuild at a time.** A second request while one is running gets 409, not a queue
   slot: a rebuild rewrites the files the site is reading.
+- **It rebuilds because the data changed, not because it was asked.** A draw already in the
+  CSV appends nothing and runs nothing, so a retried execution is free. The exception is the
+  repair case: if the artifacts are older than the CSV - an append that succeeded before a
+  failed run - the same request rebuilds. See [`lottodraw.md`](lottodraw.md).
 
 If n8n and the lotto stack are not on the same Docker network, attach them:
 
@@ -171,29 +175,31 @@ If n8n and the lotto stack are not on the same Docker network, attach them:
 docker network connect lotto-ml-system_default <n8n-container>
 ```
 
-The n8n side, in a Code node before the HTTP Request node:
+**The draw travels in the body.** The receiver is what converts the ISO date to the
+`19 Sep 2026` the file holds, and what validates the numbers again before writing them:
 
-```javascript
-const crypto = require('crypto');
-const body = JSON.stringify({ draw: $json.date });
-const signature = crypto
-  .createHmac('sha256', $env.REBUILD_SECRET)
-  .update(body)
-  .digest('hex');
-return [{ json: { body, signature } }];
+```
+{"date": "2026-09-19", "main": [10, 11, 20, 28, 41, 44], "bonus": 2}
 ```
 
-and the HTTP Request node posts `{{$json.body}}` with header
-`X-Lotto-Signature: {{$json.signature}}`. A non-200 is a failure the workflow must email
-about, exactly like the parse failures in [`n8n.md`](n8n.md) section 5.
+The n8n nodes that build and sign it are in [`n8n.md`](n8n.md) section 7. The reply says what
+happened - `rebuilt`, `already had it`, `rebuilt stale artifacts`, `rejected` or `failed` -
+with `csv_rows` for the drift check against GitHub. The first three are success; anything
+else is a failure the workflow must email about, exactly like the parse failures in
+[`n8n.md`](n8n.md) section 5.
 
-Check it by hand from the host:
+Check it by hand from the host. Posting the same draw twice must rebuild once:
 
 ```bash
-BODY='{"draw":"manual"}'
+BODY='{"date":"2026-09-19","main":[10,11,20,28,41,44],"bonus":2}'
 SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$REBUILD_SECRET" | awk '{print $2}')
-docker compose exec rebuild-receiver \
-  python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/health').read())"
+docker compose exec -T -e BODY="$BODY" -e SIG="$SIG" rebuild-receiver python -c "import os,urllib.request as u; r=u.Request('http://127.0.0.1:8080/rebuild', data=os.environ['BODY'].encode(), headers={'X-Lotto-Signature': os.environ['SIG'], 'Content-Type': 'application/json'}); print(u.urlopen(r).read().decode())"
+```
+
+`/health` needs no signature and runs nothing:
+
+```bash
+docker compose exec -T rebuild-receiver python -c "import urllib.request;print(urllib.request.urlopen('http://127.0.0.1:8080/health').read())"
 ```
 
 ---
