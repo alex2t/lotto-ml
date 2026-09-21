@@ -333,6 +333,8 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-65 | The receiver decoded `drawpick.py`'s log with the locale codec, so the engine's emoji killed the reader thread on Windows and a rebuild that had succeeded was reported as a crash | `rebuild_webhook.py`, `tests/test_rebuild_webhook.py` |
+| F-64 | The rebuild receiver ran `drawpick.py` on whatever CSV was already on the VPS, and nothing put the new draw there - every webhook regenerated the same artifacts from unchanged input, and a retried n8n execution paid for a second pointless run | `rebuild_webhook.py`, `tests/test_rebuild_webhook.py`, `nextStep/lottodraw.md`, `nextStep/n8n.md`, `nextStep/vps.md` |
 | F-63 | A six-number line's spread was compared with a seven-ball distribution, overstating how ordinary a wide line is | `lotto_analysis/analyzers/hmc_analyzer.py`, `lotto_analysis/utils/output_generator.py`, `drawpick.py`, `frontend/lib/scoring/line.ts` |
 | F-59 | A six-ball hot/medium/cold pattern was looked up in a seven-ball distribution, so every line was told its pattern had never been observed | `lotto_analysis/analyzers/hmc_analyzer.py`, `drawpick.py`, `view/pages/prediction_validator.py` |
 | F-60 | The six-ball pattern distribution was aggregated in the front end instead of written by the engine | `frontend/lib/data/hmc.ts` |

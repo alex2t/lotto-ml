@@ -2,11 +2,18 @@
 """
 The rebuild receiver: runs drawpick.py when a new draw has been committed.
 
-This is the second half of Phase 2B. n8n commits the row to data/irish500.csv, then posts
-here, and the artifacts the website serves are rewritten. It lives in the data-engine image
-because that is the only container with Python, the analysis code and write access to data/.
+This is the second half of Phase 2B. n8n commits the row to GitHub for history, then posts
+the draw here; this appends it to the VPS's own data/irish500.csv and rewrites the artifacts
+the website serves. It lives in the data-engine image because that is the only container
+with Python, the analysis code and write access to data/. The design is
+nextStep/lottodraw.md.
 
 Design notes, in order of how much trouble they save:
+
+- **It rebuilds because the data changed, not because it was asked** (F-64). A draw already
+  in the CSV appends nothing and runs nothing, so a retried n8n execution is free. The one
+  exception is the repair case: artifacts older than the CSV mean an append survived a run
+  that did not, and the same request is what fixes it.
 
 - **No Docker socket.** A receiver that shells out to `docker run` needs the socket mounted,
   which is root on the host. This runs drawpick.py in its own process instead.
@@ -32,11 +39,18 @@ import subprocess
 import sys
 import threading
 import time
+from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 
 PATH = "/rebuild"
 SIGNATURE_HEADER = "X-Lotto-Signature"
 MAX_BODY_BYTES = 64 * 1024
+
+CSV_RELATIVE = "data/irish500.csv"
+CSV_DATE_FORMAT = "%d %b %Y"
+LINE_SIZE = 6
+NUMBER_MAX = 47
 
 # drawpick.py takes about a minute; well short of this, and a hung run must not hold the
 # lock for ever.
@@ -65,6 +79,158 @@ def signature_ok(body: bytes, sent: str, key: bytes) -> bool:
     return hmac.compare_digest(expected_signature(body, key), (sent or "").strip())
 
 
+class Rejected(Exception):
+    """The body is signed but the draw in it is not one we will write to the CSV."""
+
+
+def parse_draw(body: bytes, newest_in_csv=None) -> dict:
+    """The payload of nextStep/lottodraw.md section 3, validated. Raises Rejected."""
+    try:
+        payload = json.loads(body or b"")
+    except ValueError:
+        raise Rejected("body is not JSON")
+    if not isinstance(payload, dict):
+        raise Rejected("body is not an object")
+
+    try:
+        drawn_on = datetime.strptime(str(payload.get("date")), "%Y-%m-%d").date()
+    except ValueError:
+        raise Rejected("date must be ISO YYYY-MM-DD")
+    if drawn_on > date.today():
+        raise Rejected("date is in the future")
+    if newest_in_csv is not None and drawn_on < newest_in_csv:
+        raise Rejected(f"date is older than the newest row ({newest_in_csv.isoformat()})")
+
+    main = payload.get("main")
+    if not isinstance(main, list) or len(main) != LINE_SIZE:
+        raise Rejected(f"main must be {LINE_SIZE} numbers")
+    if not all(isinstance(n, int) and not isinstance(n, bool) for n in main):
+        raise Rejected("main must be integers")
+    if len(set(main)) != LINE_SIZE:
+        raise Rejected("main numbers must be distinct")
+    if not all(1 <= n <= NUMBER_MAX for n in main):
+        raise Rejected(f"main numbers must be 1-{NUMBER_MAX}")
+
+    bonus = payload.get("bonus")
+    if not isinstance(bonus, int) or isinstance(bonus, bool):
+        raise Rejected("bonus must be an integer")
+    if not 1 <= bonus <= NUMBER_MAX:
+        raise Rejected(f"bonus must be 1-{NUMBER_MAX}")
+    if bonus in main:
+        raise Rejected("bonus must not be one of the main numbers")
+
+    return {"date": drawn_on, "main": sorted(main), "bonus": bonus}
+
+
+def csv_path(repo_root: str) -> Path:
+    return Path(repo_root) / CSV_RELATIVE
+
+
+def csv_lines(path: Path) -> list:
+    """The file as lines, without endings. The CSV is stored LF (F-44)."""
+    text = path.read_text(encoding="utf-8").replace("\r\n", "\n")
+    return text.rstrip("\n").split("\n")
+
+
+def row_date(line: str):
+    """The date of a CSV row, or None for the header or a blank line."""
+    try:
+        return datetime.strptime(line.split(",")[0].strip(), CSV_DATE_FORMAT).date()
+    except (ValueError, IndexError):
+        return None
+
+
+def newest_date(lines: list):
+    """The date of the first data row; the file is newest-first."""
+    for line in lines[1:]:
+        found = row_date(line)
+        if found:
+            return found
+    return None
+
+
+def format_row(draw: dict) -> str:
+    """`19 Sep 2026,10,11,20,28,41,44,02` - the format the file already holds."""
+    numbers = ",".join(f"{n:02d}" for n in draw["main"] + [draw["bonus"]])
+    return f"{draw['date'].strftime(CSV_DATE_FORMAT)},{numbers}"
+
+
+def append_draw(path: Path, draw: dict, lines: list) -> None:
+    """Insert the row after the header and replace the file atomically.
+
+    A direct write that is interrupted leaves a truncated CSV that drawpick.py would read
+    without complaint, so the new content goes to a temp file in the same directory first.
+    """
+    content = "\n".join([lines[0], format_row(draw)] + lines[1:]) + "\n"
+    temp = path.with_name(path.name + ".new")
+    with open(temp, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(content)
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temp, path)
+
+
+def expected_artifacts() -> list:
+    """drawpick.py's own list, so the two can never drift."""
+    from drawpick import EXPECTED_ARTIFACTS
+
+    return EXPECTED_ARTIFACTS
+
+
+def artifact_state(repo_root: str) -> tuple:
+    """(how many expected artifacts exist, whether any is missing or older than the CSV)."""
+    csv_mtime = csv_path(repo_root).stat().st_mtime
+    present = 0
+    stale = False
+    for relative in expected_artifacts():
+        path = Path(repo_root) / relative
+        if not path.exists():
+            stale = True
+        else:
+            present += 1
+            if path.stat().st_mtime < csv_mtime:
+                stale = True
+    return present, stale
+
+
+def handle_draw(repo_root: str, body: bytes) -> tuple:
+    """Append the draw if it is new, rebuild if the data changed or the artifacts are stale.
+
+    Returns (http status, response body). Raises Rejected for a draw we will not write.
+    """
+    path = csv_path(repo_root)
+    lines = csv_lines(path)
+    newest = newest_date(lines)
+    draw = parse_draw(body, newest)
+
+    # A date older than the newest row is already rejected, so the only date that can
+    # already be in the file is the newest one.
+    appended = draw["date"] != newest
+    if appended:
+        append_draw(path, draw, lines)
+
+    _, stale = artifact_state(repo_root)
+    result = {
+        "draw": draw["date"].isoformat(),
+        "appended": appended,
+        "csv_rows": len(csv_lines(path)) - 1,
+    }
+
+    if not appended and not stale:
+        result.update(state="already had it", seconds=0.0,
+                      artifacts=artifact_state(repo_root)[0])
+        return 200, result
+
+    run = run_drawpick(repo_root)
+    result["seconds"] = run["seconds"]
+    result["artifacts"] = artifact_state(repo_root)[0]
+    if run["state"] != "ok":
+        result.update(state="failed", **{k: v for k, v in run.items() if k != "state"})
+        return 500, result
+    result["state"] = "rebuilt" if appended else "rebuilt stale artifacts"
+    return 200, result
+
+
 def run_drawpick(repo_root: str) -> dict:
     """Run the engine once and report what happened. Never raises."""
     started = time.time()
@@ -73,7 +239,11 @@ def run_drawpick(repo_root: str) -> dict:
             [sys.executable, "drawpick.py"],
             cwd=repo_root,
             capture_output=True,
-            text=True,
+            # The engine prints emoji. text=True decodes with the locale codec, which is
+            # cp1252 on the owner's PC and raises on the first one, killing the reader
+            # thread and leaving stdout as None - a successful rebuild reported as a crash.
+            encoding="utf-8",
+            errors="replace",
             timeout=REBUILD_TIMEOUT_SECONDS,
         )
     except subprocess.TimeoutExpired:
@@ -140,11 +310,17 @@ class Handler(BaseHTTPRequestHandler):
             self._reply(409, {"error": "a rebuild is already running"})
             return
 
+        # The CSV is read, compared and appended under the lock, so two draws arriving
+        # together cannot both decide they are new.
         try:
             global _last_result
-            _last_result = run_drawpick(self.repo_root)
-            status = 200 if _last_result["state"] == "ok" else 500
-            self._reply(status, _last_result)
+            try:
+                status, result = handle_draw(self.repo_root, body)
+            except Rejected as rejected:
+                self._reply(400, {"state": "rejected", "error": str(rejected)})
+                return
+            _last_result = result
+            self._reply(status, result)
         finally:
             _lock.release()
 
