@@ -82,12 +82,18 @@ export function validateLine(numbers: unknown): number[] {
   return [...line].sort((a, b) => a - b);
 }
 
-/** Draw-range shares from lotto_odds_results.json, in the band order the site shows. */
+/**
+ * Draw-range shares over the MAIN SIX, in the band order the site shows.
+ *
+ * `draw_range` beside it spans all seven balls and is systematically wider - the latest
+ * draw records 42 there while its six main numbers span 34 - so comparing a six-number
+ * line with it overstated how ordinary a wide line is (F-63).
+ */
 export function spreadBandShares(): Record<string, number> {
   const odds = artifact<Record<string, unknown>>('odds');
   const block = requireKey<Record<string, { percentage: number }>>(
     odds,
-    'draw_range',
+    'draw_range_6',
     'lotto_odds_results.json',
   );
   const ordered: Record<string, number> = {};

@@ -182,11 +182,16 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         draw_range, rating_counts, hmc_dist = get_draw_metrics(winning_numbers, categories)
         hmc_distribution_counts[hmc_dist] += 1
 
-        _, _, hmc_dist_6 = get_draw_metrics(winning_numbers[:MAIN_BALLS], categories)
+        draw_range_6, _, hmc_dist_6 = get_draw_metrics(
+            winning_numbers[:MAIN_BALLS], categories
+        )
         hmc_distribution_counts_6[hmc_dist_6] += 1
         
         categorization_history[draw_date] = {
             "draw_range": draw_range,
+            # The same span over the main 6 only, for anything comparing a six-number
+            # line - the seven-ball figure is systematically wider (F-63).
+            "draw_range_6": draw_range_6,
             "frequency_rating": rating_counts,
             "hmc_distribution": hmc_dist,
             **categories

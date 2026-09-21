@@ -69,7 +69,10 @@ export default async function NumberPage({ params }: PageProps<'/numbers/[n]'>) 
             ago. {d.profile.totalCount} appearances in the history.
           </p>
         </div>
-        <Link href="/pick" className="ml-auto rounded-full bg-accent px-4 py-2 text-sm text-accent-foreground">
+        <Link
+          href={`/pick?numbers=${d.number}`}
+          className="ml-auto rounded-full bg-accent px-4 py-2 text-sm text-accent-foreground"
+        >
           Add {d.number} to a line
         </Link>
       </header>
@@ -152,6 +155,25 @@ export default async function NumberPage({ params }: PageProps<'/numbers/[n]'>) 
             {oddEven.statistically_validated
               ? 'The difference survives a fair-draw test.'
               : 'The difference does not survive a fair-draw test (F-38).'}
+          </p>
+        </Section>
+
+        <Section title="Often drawn with">
+          <ul className="flex flex-wrap gap-2">
+            {d.partners.top.map((partner) => (
+              <li key={partner.number}>
+                <Link href={`/numbers/${partner.number}`}>
+                  <Badge>
+                    {partner.number} - {partner.count} times
+                  </Badge>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm text-muted">
+            Chance alone puts any two numbers together about{' '}
+            {d.partners.expected.toFixed(1)} times over this history, so these counts are
+            what a fair draw looks like, not a pairing.
           </p>
         </Section>
 

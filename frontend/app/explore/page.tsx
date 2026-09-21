@@ -88,7 +88,9 @@ export default async function ExplorePage({ searchParams }: PageProps<'/explore'
           query={query}
         />
       )}
-      {active === 'statistics' && <StatisticsTab />}
+      {active === 'statistics' && (
+        <StatisticsTab from={one(params.from)} to={one(params.to)} />
+      )}
       {active === 'freshness' && (
         <FreshnessTab
           bin={one(params.bin) ? Number(one(params.bin)) : undefined}

@@ -187,7 +187,7 @@ npm --prefix frontend run dev
 npm --prefix frontend test
 npm --prefix frontend run test:e2e
 
-# Execute all 23 test files (241 tests, ~50s) - pytest.ini limits pytest to tests/
+# Execute all 23 test files (251 tests, ~60s) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite
@@ -218,7 +218,7 @@ python .claude/skills/lotto-verify/verify.py
 | **`frontend/`** | `lib/data/`, `lib/scoring/`, `app/`, `proxy.ts` | The Next.js site, Phases 3-4 built. Reads `data/*.json` server-side, computes nothing, never sends the 4.4 MB draw history to the browser, and describes a line rather than advising on it. |
 | **`scripts/`** | `scrape_lotto.py`, `train_with_all_features.py` | Independent utilities; web scraper for new draw ingestion. |
 | **`analysis/`** | `bonus_analysis.py`, exploratory scripts | Phase 11 statistical analysis; exploratory data science scripts. |
-| **`tests/`** | 23 test files, nothing else (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
+| **`tests/`** | 24 test files, nothing else (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
 | **`demos/`** | `demo_*.py` | Feature-discovery scripts moved out of `tests/` (C-17b). Not tests; run with `python -m demos.<name>`. Never write to `model_metrics/` or `data/`. |
 | **`docs/`** | `metrics.md`, `features.md`, `models.md`, `json-artifacts.md` | Reference documentation. Code and artifacts always supersede docs in conflicts. |
 | **`data/`** | `irish500.csv`, `*.json` | Ground-truth historical draws and generated analytical artifacts. |

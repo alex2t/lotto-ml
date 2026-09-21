@@ -22,7 +22,7 @@ writes into either, you have changed the serving distribution and must change
 | 6-7 | `distribution_analyzer.py` | `lotto_distribution_stats.json` (odd/even, sums, and `high_number_distribution` - draws by count of main numbers >= 32, for the dashboard) |
 | 8 | `bonus_analyzer.py` | `lotto_bonus_analysis.json` |
 | 9 | `bonus_to_main_analyzer.py` | `lotto_bonus_to_main_patterns.json` |
-| 10 | `consecutive_pair_analyzer.py`, `odd_even_analyzer.py`, `range_spread_analyzer.py`, `sum_contribution_analyzer.py`, `freshness_pattern_analyzer.py`, `hmc_categorization_analyzer.py`, `long_term_pattern_analyzer.py` | the seven `*_validated.json` / `lotto_long_term_patterns.json` |
+| 10 | `consecutive_pair_analyzer.py`, `number_pair_analyzer.py`, `odd_even_analyzer.py`, `range_spread_analyzer.py`, `sum_contribution_analyzer.py`, `freshness_pattern_analyzer.py`, `hmc_categorization_analyzer.py`, `long_term_pattern_analyzer.py` | the seven `*_validated.json` / `lotto_long_term_patterns.json`, plus `lotto_number_pairs.json` (every pair of main numbers drawn together, for the dossier) |
 | 11 | `analysis/bonus_analysis.py` (not in this folder) | `lotto_statistics_analysis.json` |
 | 12 | `window_saturation_analyzer.py` | `lotto_window_saturation_calculated.json` |
 | 13 | `advanced_pattern_analyzer.py` | `lotto_advanced_patterns.json` |
@@ -36,12 +36,23 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
 
 - `hmc_analyzer.py` counts `recent_*` and `freshness_bin` over the **main 6 balls**. `walk_forward.py`
   (`cum_main`) must match. Do not change one side.
+- **A number is counted over the main 6 or over all 7, and the two must never be swapped.** This
+  has now caused two defects, F-59 and F-63, and the shape is always the same: a six-number line
+  compared with a seven-ball distribution. `lotto_odds_results.json` carries both of each, named so
+  they cannot be mistaken - `hmc` and `draw_range` span all seven balls, `hmc_6` and `draw_range_6`
+  the main six. Anything scoring a player's line reads the `_6` one. Adding a seventh ball can only
+  widen a span, so the seven-ball spread sits systematically higher: 31.1% of draws in 40-45 against
+  23.5%.
 - **A hot/medium/cold pattern is counted twice, over different balls, and the two must not be
   confused.** `lotto_odds_results.json` `hmc` is over all 7 balls, so every key in it sums to 7;
   `hmc_6` is over the main 6 and every key sums to 6. Anything comparing a six-number line - the
   Prediction Validator, the Next.js shape card - must read `hmc_6`. Reading `hmc` instead found
   nothing, every time, and told every line its pattern had never been observed (F-59). Both are
   counted in `hmc_analyzer.py`'s draw loop from the same pre-draw categories.
+- **A raw count is published with what chance alone gives.** `number_pair_analyzer.py` writes the
+  fair-draw expectation beside every pair count, because over 499 draws the busiest pair is a few
+  appearances above chance and reads as a pairing without it - the same requirement F-38 put on
+  odd/even affinity.
 - SCENARIOS window naming is off by one **by design**: window 5 produces key `last_4` -> feature
   `recent_4`. `recent_4` counts over 5 draws, `recent_9` over 10, `recent_24` over 25. The windows
   are defined in `../config/config.py`.

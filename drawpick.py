@@ -36,6 +36,7 @@ from lotto_analysis.analyzers.bonus_to_main_analyzer import generate_bonus_to_ma
 
 # Import scipy validation analyzers (Phase 10)
 from lotto_analysis.analyzers.consecutive_pair_analyzer import analyze_consecutive_pairs
+from lotto_analysis.analyzers.number_pair_analyzer import analyze_number_pairs
 from lotto_analysis.analyzers.odd_even_analyzer import analyze_odd_even_patterns
 from lotto_analysis.analyzers.range_spread_analyzer import analyze_range_spread
 from lotto_analysis.analyzers.sum_contribution_analyzer import analyze_sum_contribution
@@ -81,6 +82,7 @@ EXPECTED_ARTIFACTS = [
     "data/lotto_bonus_analysis.json",
     "data/lotto_bonus_to_main_patterns.json",
     "data/lotto_consecutive_pairs_validated.json",
+    "data/lotto_number_pairs.json",
     "data/lotto_odd_even_validated.json",
     "data/lotto_range_spread_validated.json",
     "data/lotto_sum_contribution_validated.json",
@@ -317,6 +319,9 @@ def main():
     hmc_analysis_6 = generate_hmc_analysis(hmc_counts_6, total_hmc_draws)
     draw_range_analysis = generate_draw_range_analysis(categorization_history, 
                                                        total_hmc_draws)
+    draw_range_analysis_6 = generate_draw_range_analysis(categorization_history,
+                                                         total_hmc_draws,
+                                                         range_key='draw_range_6')
     
     recent_bonus_analysis = {}
     for key in ['1_hit', '2_hits', '3_or_more']:
@@ -362,6 +367,8 @@ def main():
     # Over the main 6, for anything comparing a six-number line (F-59).
     final_main["hmc_6"] = hmc_analysis_6
     final_main["draw_range"] = draw_range_analysis
+    # Over the main 6, for anything comparing a six-number line (F-63).
+    final_main["draw_range_6"] = draw_range_analysis_6
     final_main["patterns"] = consecutive_patterns
     final_main["recent_bonus_analysis"] = recent_bonus_analysis
     final_main["range_spread_analysis"] = range_spread_analysis
@@ -516,6 +523,16 @@ def main():
     write_json_file(OUTPUT_FILE_CONSECUTIVE_PAIRS, consecutive_pairs_results,
                    "Scipy-validated consecutive pair analysis with binomial significance tests")
     print(f"        ✓ Saved to {OUTPUT_FILE_CONSECUTIVE_PAIRS}")
+
+    # 1b. Every pair, not only the neighbours: the dossier's "often with".
+    print("\n  [1b/7] Number Pair Co-occurrence (raw counts over the main 6)...")
+    number_pairs_results = analyze_number_pairs(draw_list)
+    OUTPUT_FILE_NUMBER_PAIRS = "data/lotto_number_pairs.json"
+    write_json_file(OUTPUT_FILE_NUMBER_PAIRS, number_pairs_results,
+                   "How often each pair of main numbers has been drawn together")
+    print(f"        ✓ Saved to {OUTPUT_FILE_NUMBER_PAIRS}")
+    print(f"        Expected per pair in a fair draw: "
+          f"{number_pairs_results['expected_count_per_pair']:.2f}")
 
     # Show validation summary
     chi2_test = consecutive_pairs_results.get('overall_chi_square_test', {})
