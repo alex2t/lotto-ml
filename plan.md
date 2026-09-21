@@ -260,6 +260,11 @@ install and no change to `docker-compose.yml`.
       `rebuild_webhook.py` and wired in `docker-compose.prod.yml`; see
       [`nextStep/vps.md`](nextStep/vps.md) section 4 for the n8n side, including the HMAC the
       Code node has to compute. **Not yet reachable - it needs the VPS.**
+- [ ] Carry the draw in the webhook body, so the rebuild has something new to rebuild from.
+      The receiver currently regenerates from whatever CSV is on the VPS disk, and nothing puts
+      the new row there. Designed in [`nextStep/lottodraw.md`](nextStep/lottodraw.md), whose
+      first rule is that a retried webhook costs nothing: it rebuilds because the data changed,
+      not because it was asked.
 
 ### Phase 3: Next.js Foundation & Single-User Authentication
 Built from [`nextStep/web.md`](nextStep/web.md) section 3. Both sites run side by side until the
