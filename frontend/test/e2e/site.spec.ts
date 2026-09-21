@@ -35,6 +35,29 @@ async function visibleText(page: import('@playwright/test').Page): Promise<strin
   return (await page.locator('body').innerText()).toLowerCase();
 }
 
+/** The numbers currently in the line tray, read off their labels. */
+async function trayNumbers(page: import('@playwright/test').Page): Promise<number[]> {
+  return page
+    .locator('.fixed [aria-label]')
+    .evaluateAll((nodes) =>
+      nodes
+        .map((n) => n.getAttribute('aria-label') ?? '')
+        .filter((label) => /^\d+(,|$)/.test(label))
+        .map((label) => Number(label.split(',')[0])),
+    );
+}
+
+/** web.md 7.3: every method must produce six distinct numbers in 1-47. */
+async function assertAPlayableLine(page: import('@playwright/test').Page) {
+  const numbers = await trayNumbers(page);
+  expect(numbers).toHaveLength(6);
+  expect(new Set(numbers).size).toBe(6);
+  for (const n of numbers) {
+    expect(n).toBeGreaterThanOrEqual(1);
+    expect(n).toBeLessThanOrEqual(47);
+  }
+}
+
 function assertNoAdvice(text: string) {
   for (const phrase of ADVICE) {
     expect(text, `banned phrase: ${phrase}`).not.toContain(phrase);
@@ -72,6 +95,7 @@ test.describe('picking a line', () => {
 
     await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
     await expect(page.getByText(/next to \d+ past draws/i)).toBeVisible();
+    await assertAPlayableLine(page);
 
     const text = await visibleText(page);
     expect(text).toMatch(/this line looks (typical|uncommon|unusual) /);
@@ -86,6 +110,11 @@ test.describe('picking a line', () => {
     const count = await spins.count();
     for (let i = 0; i < count; i += 1) await spins.nth(i).click();
     await expect(page.getByText(new RegExp(`${count} of 6 chosen`))).toBeVisible();
+
+    // One per band, all different: a wheel never hands back a number already in the line.
+    const numbers = await trayNumbers(page);
+    expect(numbers).toHaveLength(count);
+    expect(new Set(numbers).size).toBe(count);
   });
 
   test('picking by hand toggles a number in and out', async ({ page }) => {
@@ -187,6 +216,15 @@ test.describe('a number dossier', () => {
     await expect(page).toHaveURL(/\/numbers\/7$/);
   });
 
+  test('opens from a freshness bin', async ({ page }) => {
+    await page.goto('/explore?tab=freshness');
+    const first = page.locator('a[href^="/numbers/"]').first();
+    const href = await first.getAttribute('href');
+    await first.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await expect(page.getByText(/last drawn/i)).toBeVisible();
+  });
+
   test('a number outside 1-47 is not a page', async ({ page }) => {
     const response = await page.goto('/numbers/48');
     expect(response?.status()).toBe(404);
@@ -284,6 +322,7 @@ test.describe('the pieces added after the first pass', () => {
     await page.getByRole('button', { name: 'Fill a line with this shape' }).click();
     await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
     await expect(page.getByText(/140-154/).first()).toBeVisible();
+    await assertAPlayableLine(page);
   });
 
   test('a finished line can be saved as a PNG', async ({ page }) => {
@@ -320,16 +359,7 @@ test.describe('the methods and the ways out', () => {
     await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
     await expect(page.getByText(/next to \d+ past draws/i)).toBeVisible();
 
-    const chosen = await page
-      .locator('[aria-label]')
-      .evaluateAll((nodes) =>
-        nodes
-          .map((n) => n.getAttribute('aria-label') ?? '')
-          .filter((l) => /^\d+,/.test(l))
-          .map((l) => Number(l.split(',')[0])),
-      );
-    const inTray = chosen.filter((n) => n >= 1 && n <= 47);
-    expect(inTray.length).toBeGreaterThanOrEqual(6);
+    await assertAPlayableLine(page);
   });
 
   test('a wheel can be used without spinning it', async ({ page }) => {

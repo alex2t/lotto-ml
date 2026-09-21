@@ -524,7 +524,7 @@ in any artifact and the site computes nothing.
 
 - [x] The section 6 completeness matrix walked and signed off, with a column recording where each
       row landed.
-- [x] Section 7 green: 159 vitest, 64 Playwright on desktop and mobile, and 7.2's ingestion
+- [x] Section 7 green: 159 vitest, 66 Playwright on desktop and mobile, and 7.2's ingestion
       integration test. The itemised status, including four rows that are not done, is at the end
       of section 7.
 
@@ -714,8 +714,11 @@ single documented exception of the admin download route.
 
 ### Section 7 checklist
 
-Green 2026-09-21, all of it. The four rows that were outstanding on the first pass - 7.2's two
-fixture tests, shake the bag, and logging out - were closed the same day.
+Green 2026-09-21, all of it, and re-checked line by line against the prose above rather than
+against the summary: that pass found three rows that had been ticked while doing less than this
+section asks - the integration test asserted the data layer rather than the homepage, "six
+distinct numbers in 1-47" existed only in a test's name, and the dossier was opened from two
+routes where three are asked for. All three are now what they say.
 
 **7.1 Unit - the data layer**
 
@@ -740,19 +743,22 @@ fixture tests, shake the bag, and logging out - were closed the same day.
       relative to today; it asserts the state and the banner's own words, which is what the
       homepage is made of.
 - [x] **The integration test, the real chain**: a row appended to a copy of `data/irish500.csv`,
-      `drawpick.py` run against that copy, and the site serving the new draw **without a restart**,
-      which is what the mtime cache exists for. `npm run test:integration`; the real CSV is never
-      touched.
+      `drawpick.py` run against that copy, and **the homepage** serving the new draw **without a
+      restart**, which is what the mtime cache exists for. It starts the standalone build - the
+      same server the container runs - against the copied mount, checks the old draw is showing,
+      rebuilds, and then reads the page. `npm run test:integration`; the real CSV is never touched.
 
 **7.3 End to end**
 
 - [x] Playwright against a real build of the site, reading the real artifacts.
 - [x] A line picked by each of the five methods, shake the bag included - the one most likely to
-      break quietly now that it fills the tray one number at a time. The wheel's plain fallback
-      and the sheet opening and closing are covered too.
+      break quietly now that it fills the tray one number at a time - and each asserted to be **six
+      distinct numbers in 1-47**, read off the tray rather than promised in a test name. The
+      wheel's plain fallback and the sheet opening and closing are covered too.
 - [x] Filters shrink the pool and say so, and an emptied wheel says so rather than spinning
       nothing.
-- [x] A number dossier opened from two routes - the numbers table and the picker's peek card.
+- [x] A number dossier opened from three routes - the numbers table, the picker's peek card and a
+      freshness bin.
 - [x] The draw list paginates.
 - [x] Log in and download the zip. The e2e checks the status, the type and that a body comes back;
       that the zip holds the artifacts is asserted in `routes.test.ts`, which opens it.
@@ -804,7 +810,7 @@ been deployed.
 
 **3. Section 7's tests all pass**
 
-- [x] 277 pytest across 26 files, 159 vitest, 64 Playwright on desktop and mobile.
+- [x] 277 pytest across 26 files, 159 vitest, 66 Playwright on desktop and mobile.
 - [x] The 7.2 freshness integration test: a row appended to a copy of the CSV, `drawpick.py` run
       against it, and the site serving the new draw with no restart.
 - [x] The 7.4 wording guard, both halves: the source lint over `frontend/` and the Playwright pass
