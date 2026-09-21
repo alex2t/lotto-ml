@@ -1,0 +1,41 @@
+# The Next.js site. Multi-stage so the runtime image carries the standalone build only.
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY frontend/ ./
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# The uid must own the host's data/ directory, which the bind mount puts in place of the
+# image's own - set UID/GID at build time to match the VPS (F-45). node:alpine already has
+# a node user at 1000, so only a different id needs creating.
+ARG UID=1000
+ARG GID=1000
+RUN if [ "${UID}:${GID}" != "1000:1000" ]; then \
+      addgroup -g ${GID} lotto && adduser -u ${UID} -G lotto -D -s /bin/sh lotto; \
+    fi
+
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0 \
+    DATA_DIR=/app/data
+
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
+RUN mkdir -p /app/data && chown -R ${UID}:${GID} /app
+
+USER ${UID}:${GID}
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]

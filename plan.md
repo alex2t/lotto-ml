@@ -247,22 +247,41 @@ To preserve maximum responsiveness and avoid VPS overload:
 ### Phase 2: n8n Automation Setup
 Built from [`nextStep/n8n.md`](nextStep/n8n.md) in the existing n8n instance (`n8n.catcheroo.com`) - no n8n
 install and no change to `docker-compose.yml`.
-- [ ] Set the workflow timezone to Europe/Dublin and the Schedule Trigger to `5 21 * * 1,3,6` (Mon/Wed/Sat 21:05).
-- [ ] Configure the two HTTP Request nodes with the browser headers of `scripts/scrape_lotto.py:44-51`.
-- [ ] Write the Code node: parse both sources, reject Lotto Plus 1/2 three ways, validate 6 main + 1 bonus
+- [x] Set the workflow timezone to Europe/Dublin and the Schedule Trigger to `5 21 * * 1,3,6` (Mon/Wed/Sat 21:05).
+- [x] Configure the two HTTP Request nodes with the browser headers of `scripts/scrape_lotto.py:44-51`.
+- [x] Write the Code node: parse both sources, reject Lotto Plus 1/2 three ways, validate 6 main + 1 bonus
       distinct in 1–47, cross-check the sources against each other.
-- [ ] Backtest the parser against `results-archive-2025` - all 105 rows must match `data/irish500.csv`.
-- [ ] **Phase 2A**: Gmail node sends the result email; a second Gmail node sends the failure email with the log.
-- [ ] Monitor Phase 2A for 3 consecutive draws (one week) with no failure email.
+- [x] Backtest the parser against `results-archive-2025` - all 105 rows must match `data/irish500.csv`.
+- [x] **Phase 2A**: Gmail node sends the result email; a second Gmail node sends the failure email with the log.
+- [x] Monitor Phase 2A for 3 consecutive draws (one week) with no failure email.
 - [ ] **Phase 2B**: GitHub node commits the row to `data/irish500.csv` on `main` - **inserted after the
       header**, since the file is newest-first. `data/irish500.csv` is already tracked and not ignored.
 - [ ] Create a webhook receiver on the VPS to run `drawpick.py` upon commit.
 
 ### Phase 3: Next.js Foundation & Single-User Authentication
-- [ ] Initialize Next.js 14 project (`frontend/`) with TypeScript, Tailwind CSS, and Lucide icons.
-- [ ] Implement data loading utilities reading directly from the mounted `data/*.json` volume.
-- [ ] Set up NextAuth or lightweight session authentication for the admin login page (`/login`).
-- [ ] Build the protected API endpoint (`/api/download/data`) to zip and stream `data/*.json` and `irish500.csv`.
+Built from [`nextStep/web.md`](nextStep/web.md) section 3. Both sites run side by side until the
+cutover of section 8 - Streamlit on 8501, Next.js on 3000.
+- [x] Initialize Next.js project (`frontend/`) with TypeScript, Tailwind CSS, and Lucide icons.
+      (Next.js 16 + Tailwind 4, the current releases on 2026-09-21, not the 14 this line first named.)
+- [x] Implement data loading utilities reading directly from the mounted `data/*.json` volume.
+      (`frontend/lib/data/`: artifacts, draws, numbers, distributions, schedule - cached per file
+      mtime, so a `drawpick.py` rebuild is served without a restart, and a missing key throws.)
+- [x] Set up NextAuth or lightweight session authentication for the admin login page (`/login`).
+      (A signed httpOnly cookie via `jose`, a bcrypt hash from the environment and an in-memory
+      rate limit - one account needs no provider machinery.)
+- [x] Build the protected API endpoint (`/api/download/data`) to zip and stream `data/*.json` and `irish500.csv`.
+      (Streamed with `archiver`, never buffered; `lotto-data-<latest draw>.zip`. Verified over HTTP:
+      200 with a session, 401 without, 30 entries including `analysis/` and the CSV.)
+- [x] The admin account and session secret in a gitignored `.env` at the repo root, passed with
+      `env_file: format: raw` - compose's interpolation mangles a bcrypt hash (F-58). `.env.example`
+      documents it.
+- [x] `Dockerfile.web` (standalone build, non-root, `ARG UID/GID`) and the `nextjs-web` service,
+      with `docker-compose.dev.yml` for hot reload. Built and run 2026-09-21 (F-57): 385 MB, runs as
+      uid 1000, the artifact mount refuses a write, and a bare `docker compose up nextjs-web` starts
+      the site only after the engine exits 0. The dev overlay runs `next dev` against the same mount.
+- [x] The test harness: 50 vitest tests over the data layer, the auth layer and the routes, plus the
+      ingestion integration test - append a row to a copy of the CSV, run `drawpick.py`, assert the
+      site serves the new draw with no restart.
 
 ### Phase 4: Frontend UI Migration & Component Build
 - [ ] Build shared navigation and responsive layout with light/dark theme support.

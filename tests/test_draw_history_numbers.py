@@ -134,3 +134,19 @@ def test_no_website_module_reads_the_draw_csv():
     """
     readers = [str(p) for p in Path('view').rglob('*.py') if 'irish500' in p.read_text(encoding='utf-8')]
     assert not readers, f"website modules reading the CSV: {readers}"
+
+
+def test_no_frontend_module_reads_the_draw_csv():
+    """
+    The same rule for the Next.js site, with one documented exception: the admin download
+    route, where the owner retrieves their own input file (nextStep/web.md 3.3).
+    """
+    allowed = {Path('frontend/app/api/download/data/route.ts')}
+    sources = [
+        p
+        for pattern in ('*.ts', '*.tsx')
+        for p in Path('frontend').rglob(pattern)
+        if 'node_modules' not in p.parts and '.next' not in p.parts and 'test' not in p.parts
+    ]
+    readers = [str(p) for p in sources if 'irish500' in p.read_text(encoding='utf-8') and p not in allowed]
+    assert not readers, f"frontend modules reading the CSV: {readers}"

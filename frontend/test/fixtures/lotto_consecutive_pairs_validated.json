@@ -1,0 +1,644 @@
+{
+    "metadata": {
+        "analysis_type": "consecutive_pair_validation",
+        "statistical_methods": [
+            "chi_square_test_of_independence",
+            "binomial_test",
+            "lift_analysis"
+        ],
+        "total_draws": 498,
+        "total_pairs": 46,
+        "significance_level": 0.05
+    },
+    "overall_chi_square_test": {
+        "significant": false,
+        "chi2_stat": 33.8401720569,
+        "p_value": 0.888528752749,
+        "degrees_of_freedom": 45,
+        "num_pairs": 46,
+        "pair_details": {
+            "41-42": {
+                "observed": 7,
+                "expected": 9.63855421687,
+                "chi2_contribution": 0.722304216867,
+                "lift": 0.72625,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "12-13": {
+                "observed": 11,
+                "expected": 9.96787148594,
+                "chi2_contribution": 0.106872291746,
+                "lift": 1.1035455278,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "25-26": {
+                "observed": 6,
+                "expected": 9.42168674699,
+                "chi2_contribution": 1.242658614,
+                "lift": 0.636828644501,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "4-5": {
+                "observed": 10,
+                "expected": 7.04819277108,
+                "chi2_contribution": 1.23622695912,
+                "lift": 1.4188034188,
+                "over_represented": true,
+                "under_represented": false
+            },
+            "24-25": {
+                "observed": 10,
+                "expected": 10.1144578313,
+                "chi2_contribution": 0.0012952345415,
+                "lift": 0.988683740322,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "35-36": {
+                "observed": 11,
+                "expected": 10.2088353414,
+                "chi2_contribution": 0.0613137048588,
+                "lift": 1.07749803304,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "23-24": {
+                "observed": 6,
+                "expected": 6.74297188755,
+                "chi2_contribution": 0.0818640852869,
+                "lift": 0.889815366289,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "9-10": {
+                "observed": 8,
+                "expected": 6.70481927711,
+                "chi2_contribution": 0.250192143236,
+                "lift": 1.19317160827,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "43-44": {
+                "observed": 4,
+                "expected": 7.5702811245,
+                "chi2_contribution": 1.68380897596,
+                "lift": 0.528381962865,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "7-8": {
+                "observed": 6,
+                "expected": 7.55421686747,
+                "chi2_contribution": 0.319767106704,
+                "lift": 0.794258373206,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "30-31": {
+                "observed": 8,
+                "expected": 7.55421686747,
+                "chi2_contribution": 0.0263061816645,
+                "lift": 1.05901116427,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "1-2": {
+                "observed": 5,
+                "expected": 7.71686746988,
+                "chi2_contribution": 0.956523988225,
+                "lift": 0.647931303669,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "28-29": {
+                "observed": 13,
+                "expected": 8.85542168675,
+                "chi2_contribution": 1.93977542824,
+                "lift": 1.46802721088,
+                "over_represented": true,
+                "under_represented": false
+            },
+            "45-46": {
+                "observed": 8,
+                "expected": 8.96385542169,
+                "chi2_contribution": 0.103640367923,
+                "lift": 0.89247311828,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "20-21": {
+                "observed": 8,
+                "expected": 10.1044176707,
+                "chi2_contribution": 0.438280945722,
+                "lift": 0.79173290938,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "38-39": {
+                "observed": 7,
+                "expected": 8.55421686747,
+                "chi2_contribution": 0.282385881554,
+                "lift": 0.818309859155,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "21-22": {
+                "observed": 6,
+                "expected": 9.51004016064,
+                "chi2_contribution": 1.29551313362,
+                "lift": 0.630912162162,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "34-35": {
+                "observed": 8,
+                "expected": 8.89156626506,
+                "chi2_contribution": 0.08939824338,
+                "lift": 0.89972899729,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "10-11": {
+                "observed": 10,
+                "expected": 8.47590361446,
+                "chi2_contribution": 0.274055711117,
+                "lift": 1.17981520967,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "40-41": {
+                "observed": 10,
+                "expected": 8.48192771084,
+                "chi2_contribution": 0.271700438116,
+                "lift": 1.17897727273,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "46-47": {
+                "observed": 10,
+                "expected": 7.3453815261,
+                "chi2_contribution": 0.959378245623,
+                "lift": 1.36139967195,
+                "over_represented": true,
+                "under_represented": false
+            },
+            "27-28": {
+                "observed": 8,
+                "expected": 9.23493975904,
+                "chi2_contribution": 0.16514197691,
+                "lift": 0.866275277234,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "39-40": {
+                "observed": 7,
+                "expected": 7.95180722892,
+                "chi2_contribution": 0.113928441037,
+                "lift": 0.880303030303,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "18-19": {
+                "observed": 6,
+                "expected": 6.55421686747,
+                "chi2_contribution": 0.0468639262934,
+                "lift": 0.915441176471,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "32-33": {
+                "observed": 7,
+                "expected": 7.13052208835,
+                "chi2_contribution": 0.00238916804927,
+                "lift": 0.981695297099,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "11-12": {
+                "observed": 11,
+                "expected": 9.82128514056,
+                "chi2_contribution": 0.141465062869,
+                "lift": 1.12001635657,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "16-17": {
+                "observed": 9,
+                "expected": 7.28915662651,
+                "chi2_contribution": 0.401553320721,
+                "lift": 1.2347107438,
+                "over_represented": true,
+                "under_represented": false
+            },
+            "26-27": {
+                "observed": 8,
+                "expected": 9.96787148594,
+                "chi2_contribution": 0.388500011327,
+                "lift": 0.802578565673,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "13-14": {
+                "observed": 7,
+                "expected": 8.46586345382,
+                "chi2_contribution": 0.253814117952,
+                "lift": 0.826850094877,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "14-15": {
+                "observed": 4,
+                "expected": 5.72690763052,
+                "chi2_contribution": 0.520736522528,
+                "lift": 0.698457223001,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "3-4": {
+                "observed": 3,
+                "expected": 6.72289156627,
+                "chi2_contribution": 2.06160124368,
+                "lift": 0.44623655914,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "36-37": {
+                "observed": 6,
+                "expected": 8.59036144578,
+                "chi2_contribution": 0.781104783792,
+                "lift": 0.698457223001,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "8-9": {
+                "observed": 7,
+                "expected": 7.02409638554,
+                "chi2_contribution": 8.2663415239e-05,
+                "lift": 0.996569468268,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "6-7": {
+                "observed": 7,
+                "expected": 7.09638554217,
+                "chi2_contribution": 0.00130914148956,
+                "lift": 0.986417657046,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "2-3": {
+                "observed": 7,
+                "expected": 7.84337349398,
+                "chi2_contribution": 0.0906853219329,
+                "lift": 0.89247311828,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "17-18": {
+                "observed": 6,
+                "expected": 5.63253012048,
+                "chi2_contribution": 0.0239739707493,
+                "lift": 1.06524064171,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "42-43": {
+                "observed": 7,
+                "expected": 9.78915662651,
+                "chi2_contribution": 0.794695088044,
+                "lift": 0.715076923077,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "22-23": {
+                "observed": 4,
+                "expected": 5.91164658635,
+                "chi2_contribution": 0.618168325476,
+                "lift": 0.676630434783,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "44-45": {
+                "observed": 4,
+                "expected": 8.38554216867,
+                "chi2_contribution": 2.29358814569,
+                "lift": 0.477011494253,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "29-30": {
+                "observed": 5,
+                "expected": 9.27710843373,
+                "chi2_contribution": 1.97191362854,
+                "lift": 0.538961038961,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "5-6": {
+                "observed": 4,
+                "expected": 8.09236947791,
+                "chi2_contribution": 2.06954069379,
+                "lift": 0.49429280397,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "19-20": {
+                "observed": 5,
+                "expected": 8.73895582329,
+                "chi2_contribution": 1.59970949976,
+                "lift": 0.572150735294,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "33-34": {
+                "observed": 6,
+                "expected": 5.74698795181,
+                "chi2_contribution": 0.0111388952035,
+                "lift": 1.04402515723,
+                "over_represented": false,
+                "under_represented": false
+            },
+            "37-38": {
+                "observed": 4,
+                "expected": 9.83734939759,
+                "chi2_contribution": 3.46380377603,
+                "lift": 0.406613594611,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "31-32": {
+                "observed": 5,
+                "expected": 7.6686746988,
+                "chi2_contribution": 0.928690409714,
+                "lift": 0.652003142184,
+                "over_represented": false,
+                "under_represented": true
+            },
+            "15-16": {
+                "observed": 2,
+                "expected": 6.09638554217,
+                "chi2_contribution": 2.75251202438,
+                "lift": 0.328063241107,
+                "over_represented": false,
+                "under_represented": true
+            }
+        },
+        "interpretation": "Consecutive pairs occur at expected frequency (independence assumption holds)"
+    },
+    "top_pairs_validation": {
+        "top_pairs": [
+            {
+                "pair": "28-29",
+                "observed": 13,
+                "expected": 8.85542168675,
+                "p_value": 0.11200555848,
+                "significant": false,
+                "confidence": 0.206349206349,
+                "lift": 1.46802721088,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "12-13",
+                "observed": 11,
+                "expected": 9.96787148594,
+                "p_value": 0.412895603745,
+                "significant": false,
+                "confidence": 0.150684931507,
+                "lift": 1.1035455278,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "35-36",
+                "observed": 11,
+                "expected": 10.2088353414,
+                "p_value": 0.443335883112,
+                "significant": false,
+                "confidence": 0.134146341463,
+                "lift": 1.07749803304,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "11-12",
+                "observed": 11,
+                "expected": 9.82128514056,
+                "p_value": 0.394385591922,
+                "significant": false,
+                "confidence": 0.164179104478,
+                "lift": 1.12001635657,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "4-5",
+                "observed": 10,
+                "expected": 7.04819277108,
+                "p_value": 0.172989604913,
+                "significant": false,
+                "confidence": 0.185185185185,
+                "lift": 1.4188034188,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "24-25",
+                "observed": 10,
+                "expected": 10.1144578313,
+                "p_value": 0.557721339095,
+                "significant": false,
+                "confidence": 0.13698630137,
+                "lift": 0.988683740322,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "10-11",
+                "observed": 10,
+                "expected": 8.47590361446,
+                "p_value": 0.343310013674,
+                "significant": false,
+                "confidence": 0.15873015873,
+                "lift": 1.17981520967,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "40-41",
+                "observed": 10,
+                "expected": 8.48192771084,
+                "p_value": 0.344097460476,
+                "significant": false,
+                "confidence": 0.151515151515,
+                "lift": 1.17897727273,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "46-47",
+                "observed": 10,
+                "expected": 7.3453815261,
+                "p_value": 0.204812258279,
+                "significant": false,
+                "confidence": 0.161290322581,
+                "lift": 1.36139967195,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "16-17",
+                "observed": 9,
+                "expected": 7.28915662651,
+                "p_value": 0.308598625183,
+                "significant": false,
+                "confidence": 0.136363636364,
+                "lift": 1.2347107438,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "9-10",
+                "observed": 8,
+                "expected": 6.70481927711,
+                "p_value": 0.357096892933,
+                "significant": false,
+                "confidence": 0.150943396226,
+                "lift": 1.19317160827,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "30-31",
+                "observed": 8,
+                "expected": 7.55421686747,
+                "p_value": 0.483906243184,
+                "significant": false,
+                "confidence": 0.121212121212,
+                "lift": 1.05901116427,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "45-46",
+                "observed": 8,
+                "expected": 8.96385542169,
+                "p_value": 0.673960705795,
+                "significant": false,
+                "confidence": 0.111111111111,
+                "lift": 0.89247311828,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "20-21",
+                "observed": 8,
+                "expected": 10.1044176707,
+                "p_value": 0.791811995982,
+                "significant": false,
+                "confidence": 0.117647058824,
+                "lift": 0.79173290938,
+                "strength": "not_significant"
+            },
+            {
+                "pair": "34-35",
+                "observed": 8,
+                "expected": 8.89156626506,
+                "p_value": 0.665297125126,
+                "significant": false,
+                "confidence": 0.148148148148,
+                "lift": 0.89972899729,
+                "strength": "not_significant"
+            }
+        ],
+        "num_significant": 0,
+        "proportion_significant": 0.0
+    },
+    "number_pair_scores": {
+        "1": 0.5,
+        "2": 0.5,
+        "3": 0.5,
+        "4": 0.5,
+        "5": 0.5,
+        "6": 0.5,
+        "7": 0.5,
+        "8": 0.5,
+        "9": 0.5,
+        "10": 0.5,
+        "11": 0.5,
+        "12": 0.5,
+        "13": 0.5,
+        "14": 0.5,
+        "15": 0.5,
+        "16": 0.5,
+        "17": 0.5,
+        "18": 0.5,
+        "19": 0.5,
+        "20": 0.5,
+        "21": 0.5,
+        "22": 0.5,
+        "23": 0.5,
+        "24": 0.5,
+        "25": 0.5,
+        "26": 0.5,
+        "27": 0.5,
+        "28": 0.5,
+        "29": 0.5,
+        "30": 0.5,
+        "31": 0.5,
+        "32": 0.5,
+        "33": 0.5,
+        "34": 0.5,
+        "35": 0.5,
+        "36": 0.5,
+        "37": 0.5,
+        "38": 0.5,
+        "39": 0.5,
+        "40": 0.5,
+        "41": 0.5,
+        "42": 0.5,
+        "43": 0.5,
+        "44": 0.5,
+        "45": 0.5,
+        "46": 0.5,
+        "47": 0.5
+    },
+    "pair_counts": {
+        "41-42": 7,
+        "12-13": 11,
+        "25-26": 6,
+        "4-5": 10,
+        "24-25": 10,
+        "35-36": 11,
+        "23-24": 6,
+        "9-10": 8,
+        "43-44": 4,
+        "7-8": 6,
+        "30-31": 8,
+        "1-2": 5,
+        "28-29": 13,
+        "45-46": 8,
+        "20-21": 8,
+        "38-39": 7,
+        "21-22": 6,
+        "34-35": 8,
+        "10-11": 10,
+        "40-41": 10,
+        "46-47": 10,
+        "27-28": 8,
+        "39-40": 7,
+        "18-19": 6,
+        "32-33": 7,
+        "11-12": 11,
+        "16-17": 9,
+        "26-27": 8,
+        "13-14": 7,
+        "14-15": 4,
+        "3-4": 3,
+        "36-37": 6,
+        "8-9": 7,
+        "6-7": 7,
+        "2-3": 7,
+        "17-18": 6,
+        "42-43": 7,
+        "22-23": 4,
+        "44-45": 4,
+        "29-30": 5,
+        "5-6": 4,
+        "19-20": 5,
+        "33-34": 6,
+        "37-38": 4,
+        "31-32": 5,
+        "15-16": 2
+    }
+}

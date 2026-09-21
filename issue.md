@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-20
+**Last updated:** 2026-09-21
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -23,7 +23,7 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 ## Priority summary
 
-No defect is open as of 2026-09-20. A new one takes the next free `F-n`, a row in this
+No defect is open as of 2026-09-21. A new one takes the next free `F-n`, a row in this
 table in severity order, and a section with file:line evidence.
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
@@ -34,6 +34,51 @@ order, so ties resolve the same way on every run. It is not reused.
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-21 - F-58, the admin login could not work in Docker.**
+  `docker-compose.yml` passed the account through `environment: ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}`.
+  A bcrypt hash is `$2b$12$<22-char salt><31-char hash>`, and compose expands `$name` inside an
+  interpolated value. The `$<salt>` run was read as a variable name and expanded to nothing, so a
+  hash `$2b$12$SALT/HASH` reached the container as `$2b$12/HASH` - the cost marker and the whole
+  salt gone - and `bcrypt.compare` returned false for the correct password. (No real hash is quoted
+  here: it is the hash of a live password, and an offline attack on it is exactly what a public
+  repository would enable.) Every login answered 401 and the data bundle was unreachable from the
+  container - found by the owner, who had no login button and no download.
+
+  **Two faults, one symptom.** There was also no `.env` at all (the container had only been started
+  with inline shell variables), and `.env` was in neither `.gitignore` nor `.dockerignore`, so the
+  first `git add -A` would have committed the admin hash and the session secret.
+
+  **Fixed.** The service now takes the file with `env_file: [{path: .env, required: false, format: raw}]`
+  - `format: raw` disables interpolation, `required: false` keeps the public site starting without an
+  admin account, since one account's failure must never take the site down. `.env` is gitignored and
+  dockerignored, and `.env.example` in the repo root documents the two generator commands.
+
+  **Verified** in the running container: the hash arrives byte-identical to the file, login returns a
+  131-character session cookie, the download returns 200 with 30 entries, and a wrong password still
+  returns 401. `tests/test_docker_stack.py` gained
+  `test_admin_secrets_are_passed_without_interpolation` and `test_the_env_file_is_not_committed_or_shipped`.
+
+- **2026-09-21 - F-57, build and run the Next.js image.**
+  Phase 3 wrote `Dockerfile.web`, the `nextjs-web` service and `docker-compose.dev.yml` on a day
+  Docker Desktop was down, so the image had never been built. `tests/test_docker_stack.py` covers
+  the wiring only - a file-copy or permission fault inside the image would have surfaced first on
+  the VPS in Phase 5. Built and exercised on Docker 29.8.0:
+
+  - `docker compose build nextjs-web` succeeds; the image is 385 MB and `/app/data` inside it is
+    empty, so no artifact is baked in.
+  - The container runs as `uid=1000(node)`, not root, and a write to `/app/data` is refused -
+    `Read-only file system`.
+  - Served from the container: the home page, `/api/schedule`, `/api/draws`, a login (401 on a wrong
+    password) and the zip download - 30 entries, `irish500.csv` included, the 4.4 MB draw history
+    among them. `/api/download/data` is 401 without a session.
+  - `docker compose up -d nextjs-web` with no `--no-deps` ran the engine first and started the site
+    only after it exited 0, which is what F-45's `service_completed_successfully` is for. The
+    container's rebuild changed three lines of `data/` against the host's run - two `generated_date`
+    and one `analysis_date` - so F-46's rounding holds across platforms; the artifacts were restored
+    with `git checkout -- data/`.
+  - `docker compose -f docker-compose.yml -f docker-compose.dev.yml up nextjs-web` builds the `deps`
+    stage and runs `next dev` against the same read-only artifacts.
 
 - **2026-09-19 - F-24, delete the ML code for features no model uses.**
   After F-21 no model used any C-5 full-history feature, but every run still built them for all 47
@@ -193,6 +238,8 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-58 | Compose interpolated the `$` in the bcrypt hash, so the admin login failed with 401 in every container | `docker-compose.yml`, `.gitignore`, `.dockerignore` |
+| F-57 | The Next.js image and its compose service existed only on paper - never built, never started | `Dockerfile.web`, `docker-compose.yml`, `docker-compose.dev.yml` |
 | F-56 | n8n.md 3.6 tested the scraped date for string equality with the CSV's top row, so a date that was older but already present was reported as new - a duplicate row inserted out of order | `nextStep/n8n.md` 3.6 |
 | F-55 | n8n.md 3.6 read the current CSV with an unguarded `split` chain, so a GitHub 404 threw and lost a draw that had passed every validation | `nextStep/n8n.md` 3.6 |
 | F-54 | n8n.md 3.5 capped retries with a counter in workflow static data that never reset, so after three lifetime attempts the workflow would give up on every future draw silently | `nextStep/n8n.md` 3.5 |

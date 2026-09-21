@@ -163,14 +163,23 @@ checklist is complete.
 
 ### Phase 3 checklist
 
-- [ ] `frontend/` scaffolded: Next.js + TypeScript + Tailwind, standalone output.
-- [ ] `lib/data/` reads every artifact in section 2, typed, cached on mtime, no silent defaults.
-- [ ] `schedule.ts` derives the next draw date from the history, with unit tests including a
+Done 2026-09-21. Next.js 16 and Tailwind 4 - the current releases, not the 14 named in `plan.md`.
+
+- [x] `frontend/` scaffolded: Next.js + TypeScript + Tailwind, standalone output.
+- [x] `lib/data/` reads every artifact in section 2, typed, cached on mtime, no silent defaults.
+- [x] `schedule.ts` derives the next draw date from the history, with unit tests including a
       schedule change.
-- [ ] Admin login: signed cookie session, hashed password from env, rate-limited.
-- [ ] `/api/download/data` streams the zip, admin only, 401 when logged out.
-- [ ] `Dockerfile.web` and the compose services, dev and prod.
-- [ ] The test harness of section 7 running against fixture artifacts.
+- [x] Admin login: signed cookie session, hashed password from env, rate-limited.
+- [x] `/api/download/data` streams the zip, admin only, 401 when logged out.
+- [x] `Dockerfile.web` and the compose services, dev and prod - built, started and exercised from
+      the container on 2026-09-21 (F-57 in `issue.md`), including the engine-before-site ordering.
+- [x] The test harness of section 7 running against fixture artifacts: 50 vitest tests, plus 7.2's
+      integration test as `npm run test:integration`.
+
+**What Phase 4 inherits.** `app/page.tsx` is a holding page, not the home of section 4.1. There is
+no `lib/scoring/` and no `/api/validate` yet - they arrive with the picker, since the vocabulary
+they score in is decided there. The wording guard is still Streamlit's `test_site_wording.py`;
+section 7.4's Playwright replacement and source lint are Phase 4 work, before `view/` is deleted.
 
 ---
 

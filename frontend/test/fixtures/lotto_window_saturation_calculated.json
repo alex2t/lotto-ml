@@ -1,0 +1,193 @@
+{
+    "description": "Data-driven window saturation penalty configuration",
+    "version": "2.0",
+    "scipy_optimized": true,
+    "generated_date": "2026-09-20 09:46:28",
+    "data_source": {
+        "statistics": "data/lotto_statistics_analysis.json",
+        "odds": "data/lotto_odds_results.json",
+        "draw_history": "data/lotto_draw_history.json",
+        "method": "calculated from actual historical saturation rates + scipy optimization"
+    },
+    "saturation_rates_by_category": {
+        "last_4": {
+            "cold": {
+                "high_saturation_probability": 0.0,
+                "expected_frequency": 0.0,
+                "threshold": 2
+            },
+            "hot": {
+                "high_saturation_probability": 28.9029535865,
+                "expected_frequency": 1.24613220816,
+                "threshold": 2
+            },
+            "medium": {
+                "high_saturation_probability": 0.0,
+                "expected_frequency": 0.257452574526,
+                "threshold": 2
+            }
+        },
+        "last_5": {
+            "cold": {
+                "high_saturation_probability": 0.0,
+                "expected_frequency": 0.0,
+                "threshold": 2
+            },
+            "hot": {
+                "high_saturation_probability": 36.9901547117,
+                "expected_frequency": 1.37834036568,
+                "threshold": 2
+            },
+            "medium": {
+                "high_saturation_probability": 2.9810298103,
+                "expected_frequency": 0.527100271003,
+                "threshold": 2
+            }
+        },
+        "last_9": {
+            "cold": {
+                "high_saturation_probability": 0.0,
+                "expected_frequency": 0.287439613526,
+                "threshold": 3
+            },
+            "hot": {
+                "high_saturation_probability": 25.0351617441,
+                "expected_frequency": 1.88537271449,
+                "threshold": 3
+            },
+            "medium": {
+                "high_saturation_probability": 6.36856368564,
+                "expected_frequency": 1.28726287263,
+                "threshold": 3
+            }
+        },
+        "last_24": {
+            "cold": {
+                "high_saturation_probability": 0.0,
+                "expected_frequency": 2.21859903382,
+                "threshold": 8
+            },
+            "hot": {
+                "high_saturation_probability": 1.68776371308,
+                "expected_frequency": 3.80098452883,
+                "threshold": 8
+            },
+            "medium": {
+                "high_saturation_probability": 0.542005420055,
+                "expected_frequency": 3.08536585366,
+                "threshold": 8
+            }
+        }
+    },
+    "statistical_validation": {
+        "test": "One-way ANOVA",
+        "f_statistic": 8.14947931635,
+        "p_value": 0.00955277151551,
+        "significant": true,
+        "interpretation": "Category saturation rates are significantly different",
+        "hot_mean": 23.1540084388,
+        "medium_mean": 2.472899729,
+        "cold_mean": 0.0
+    },
+    "penalty_configuration_manual": {
+        "penalty_thresholds": {
+            "at_or_exceeding": {
+                "description": "Recent count >= target (already saturated)",
+                "base_multiplier": 1.0,
+                "category_adjustments": {
+                    "hot": 3.11392405064,
+                    "medium": 1.0,
+                    "cold": 0.5
+                }
+            },
+            "one_away": {
+                "description": "Recent count = target - 1 (approaching saturation)",
+                "base_multiplier": 0.6,
+                "category_adjustments": {
+                    "hot": 3.11392405064,
+                    "medium": 1.0,
+                    "cold": 0.5
+                }
+            },
+            "two_away": {
+                "description": "Recent count = target - 2 (near saturation)",
+                "base_multiplier": 0.3,
+                "category_adjustments": {
+                    "hot": 3.11392405064,
+                    "medium": 1.0,
+                    "cold": 0.5
+                }
+            }
+        },
+        "window_weights": {
+            "5": 0.6,
+            "6": 1.0,
+            "10": 1.0,
+            "25": 0.7
+        },
+        "window_mapping": {
+            "5": {
+                "data_window": "last_5",
+                "data_window_size": 5,
+                "exact_match": true
+            },
+            "6": {
+                "data_window": "last_5",
+                "data_window_size": 5,
+                "exact_match": false
+            },
+            "10": {
+                "data_window": "last_9",
+                "data_window_size": 9,
+                "exact_match": false
+            },
+            "25": {
+                "data_window": "last_24",
+                "data_window_size": 24,
+                "exact_match": false
+            }
+        },
+        "available_data_windows": [
+            "last_4",
+            "last_5",
+            "last_9",
+            "last_24"
+        ],
+        "calculation_method": "data_driven",
+        "source": "calculated from lotto_statistics_analysis.json",
+        "statistical_validation": "derived from actual historical saturation rates"
+    },
+    "penalty_configuration_optimized": {
+        "optimization_successful": true,
+        "objective_value": 0.00593890413414,
+        "optimization_method": "differential_evolution",
+        "validation_draws": 50,
+        "penalty_weights": {
+            "at_or_exceeding": {
+                "hot": 0.361809276638,
+                "medium": 0.1,
+                "cold": 0.594015283152
+            },
+            "one_away": {
+                "hot": 0.671399977492,
+                "medium": 0.109578362322,
+                "cold": 0.293575606967
+            },
+            "two_away": {
+                "hot": 1.31813028559,
+                "medium": 0.1,
+                "cold": 1.26788479599
+            }
+        }
+    },
+    "recommended_configuration": "optimized",
+    "advanced_settings": {
+        "enable_dynamic_scaling": true,
+        "use_category_adjustments": true,
+        "apply_window_weights": true,
+        "combine_multiple_scenarios": "max",
+        "penalty_cap": 1.0,
+        "minimum_penalty_threshold": 0.05,
+        "use_optimized_penalties": true
+    }
+}
