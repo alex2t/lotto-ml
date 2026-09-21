@@ -11,6 +11,6 @@
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 33.58060836791992,
+  "elapsed_time": 31.952351570129395,
   "total_fits": 12
 }
