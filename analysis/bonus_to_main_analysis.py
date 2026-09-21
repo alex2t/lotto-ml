@@ -306,7 +306,7 @@ def main():
     print(f"Total bonus numbers analyzed:  {results['total_bonuses']}")
     print(f"Appeared as main within 10:    {results['appeared_as_main']}")
     print(f"Transition rate:               {results['overall_rate']:.2f}%")
-    print(f"\n✓ VALIDATION: {results['overall_rate']:.0f}% ≈ 80% claimed rate")
+    print(f"\nVALIDATION: {results['overall_rate']:.0f}% ≈ 80% claimed rate")
 
     analyze_timing_patterns(results['timing_distribution'], results['appeared_as_main'])
     analyze_category_patterns(results['category_distribution'])

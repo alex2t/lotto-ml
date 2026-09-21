@@ -122,21 +122,21 @@ def verify_artifacts(expected_files, run_started):
         elif path.stat().st_mtime < run_started - MTIME_TOLERANCE_SECONDS:
             bad_files.append(f"  {file_path} - STALE, left from an earlier run!")
         else:
-            generated_files.append(f"  ✓ {file_path} ({path.stat().st_size:,} bytes)")
+            generated_files.append(f"  {file_path} ({path.stat().st_size:,} bytes)")
 
     print(f"\nGenerated {len(generated_files)}/{len(expected_files)} JSON files:")
     for f in generated_files:
         print(f)
 
     if bad_files:
-        print(f"\n⚠️  WARNING: {len(bad_files)} files were not written by this run:")
+        print(f"\nWARNING: {len(bad_files)} files were not written by this run:")
         for f in bad_files:
             print(f)
-        print("\n❌ INCOMPLETE: Not all JSON files were generated!")
+        print("\nINCOMPLETE: Not all JSON files were generated!")
         print("   Please check the error messages above for details.")
         sys.exit(1)
 
-    print(f"\n✅ SUCCESS: All {len(expected_files)} JSON files generated successfully!")
+    print(f"\nSUCCESS: All {len(expected_files)} JSON files generated successfully!")
 
 
 def main():
@@ -269,8 +269,8 @@ def main():
         draw_history_log, MAX_NUMBER
     )
     
-    print(f"✓ Calculated odd/even analysis for {len(odd_even_analysis)} numbers")
-    print(f"✓ Calculated sum contribution analysis for {len(sum_contribution_analysis)} numbers")
+    print(f"Calculated odd/even analysis for {len(odd_even_analysis)} numbers")
+    print(f"Calculated sum contribution analysis for {len(sum_contribution_analysis)} numbers")
 
     # ===== BONUS BALL ANALYSIS =====
     print("\n" + "=" * 70)
@@ -284,11 +284,11 @@ def main():
         MAX_NUMBER
     )
     
-    print(f"✓ Completed bonus validation statistics")
-    print(f"✓ Completed bonus category preference analysis")
-    print(f"✓ Completed recent bonus exclusion patterns")
-    print(f"✓ Completed bonus timing analysis")
-    print(f"✓ Completed per-number bonus profiles for {MAX_NUMBER} numbers")
+    print(f"Completed bonus validation statistics")
+    print(f"Completed bonus category preference analysis")
+    print(f"Completed recent bonus exclusion patterns")
+    print(f"Completed bonus timing analysis")
+    print(f"Completed per-number bonus profiles for {MAX_NUMBER} numbers")
 
     # ===== BUILD SUPPORTING DATA (for lotto_trigger_periods.json) =====
     # Counted over pattern_draws, NOT all_draws. The ML training matrix is built from
@@ -478,9 +478,9 @@ def main():
         MAX_NUMBER
     )
 
-    print(f"✓ Analyzed {bonus_to_main_analysis['metadata']['total_bonus_appearances']} bonus appearances")
-    print(f"✓ Overall transition rate: {bonus_to_main_analysis['metadata']['overall_transition_rate']*100:.2f}%")
-    print(f"✓ Boost over random: {bonus_to_main_analysis['transition_prediction_factors']['boost_factor']}x")
+    print(f"Analyzed {bonus_to_main_analysis['metadata']['total_bonus_appearances']} bonus appearances")
+    print(f"Overall transition rate: {bonus_to_main_analysis['metadata']['overall_transition_rate']*100:.2f}%")
+    print(f"Boost over random: {bonus_to_main_analysis['transition_prediction_factors']['boost_factor']}x")
 
     # ===== WRITE BONUS-TO-MAIN ANALYSIS FILE =====
     OUTPUT_FILE_BONUS_TO_MAIN = "data/lotto_bonus_to_main_patterns.json"
@@ -514,7 +514,7 @@ def main():
             })
 
     draw_list.sort(key=lambda x: x['date'])
-    print(f"  ✓ Prepared {len(draw_list)} draws for scipy validation")
+    print(f"  Prepared {len(draw_list)} draws for scipy validation")
 
     # 1. Consecutive Pairs Validation
     print("\n  [1/7] Consecutive Pair Analysis (chi-square + binomial tests)...")
@@ -522,7 +522,7 @@ def main():
     OUTPUT_FILE_CONSECUTIVE_PAIRS = "data/lotto_consecutive_pairs_validated.json"
     write_json_file(OUTPUT_FILE_CONSECUTIVE_PAIRS, consecutive_pairs_results,
                    "Scipy-validated consecutive pair analysis with binomial significance tests")
-    print(f"        ✓ Saved to {OUTPUT_FILE_CONSECUTIVE_PAIRS}")
+    print(f"        Saved to {OUTPUT_FILE_CONSECUTIVE_PAIRS}")
 
     # 1b. Every pair, not only the neighbours: the dossier's "often with".
     print("\n  [1b/7] Number Pair Co-occurrence (raw counts over the main 6)...")
@@ -530,7 +530,7 @@ def main():
     OUTPUT_FILE_NUMBER_PAIRS = "data/lotto_number_pairs.json"
     write_json_file(OUTPUT_FILE_NUMBER_PAIRS, number_pairs_results,
                    "How often each pair of main numbers has been drawn together")
-    print(f"        ✓ Saved to {OUTPUT_FILE_NUMBER_PAIRS}")
+    print(f"        Saved to {OUTPUT_FILE_NUMBER_PAIRS}")
     print(f"        Expected per pair in a fair draw: "
           f"{number_pairs_results['expected_count_per_pair']:.2f}")
 
@@ -545,7 +545,7 @@ def main():
     OUTPUT_FILE_ODD_EVEN = "data/lotto_odd_even_validated.json"
     write_json_file(OUTPUT_FILE_ODD_EVEN, odd_even_results,
                    "Scipy-validated odd/even distribution analysis with per-number affinity scores")
-    print(f"        ✓ Saved to {OUTPUT_FILE_ODD_EVEN}")
+    print(f"        Saved to {OUTPUT_FILE_ODD_EVEN}")
 
     overall_test = odd_even_results.get('overall_distribution_test', {})
     print(f"        Chi-square p-value: {overall_test.get('p_value', 1.0):.6f}")
@@ -557,7 +557,7 @@ def main():
     OUTPUT_FILE_RANGE_SPREAD = "data/lotto_range_spread_validated.json"
     write_json_file(OUTPUT_FILE_RANGE_SPREAD, range_spread_results,
                    "Scipy-validated range spread analysis with Levene variance tests")
-    print(f"        ✓ Saved to {OUTPUT_FILE_RANGE_SPREAD}")
+    print(f"        Saved to {OUTPUT_FILE_RANGE_SPREAD}")
 
     levene = range_spread_results.get('levene_analysis', {})
     print(f"        Levene p-value: {levene.get('p_value', 1.0):.6f}")
@@ -569,7 +569,7 @@ def main():
     OUTPUT_FILE_SUM_CONTRIBUTION = "data/lotto_sum_contribution_validated.json"
     write_json_file(OUTPUT_FILE_SUM_CONTRIBUTION, sum_contribution_results,
                    "Scipy-validated sum contribution analysis with independent t-tests")
-    print(f"        ✓ Saved to {OUTPUT_FILE_SUM_CONTRIBUTION}")
+    print(f"        Saved to {OUTPUT_FILE_SUM_CONTRIBUTION}")
 
     anova = sum_contribution_results.get('anova_analysis', {})
     print(f"        ANOVA p-value: {anova.get('p_value', 1.0):.6f}")
@@ -581,7 +581,7 @@ def main():
     OUTPUT_FILE_FRESHNESS_PATTERNS = "data/lotto_freshness_patterns_validated.json"
     write_json_file(OUTPUT_FILE_FRESHNESS_PATTERNS, freshness_pattern_results,
                    "Scipy-validated freshness pattern distribution with chi-square tests")
-    print(f"        ✓ Saved to {OUTPUT_FILE_FRESHNESS_PATTERNS}")
+    print(f"        Saved to {OUTPUT_FILE_FRESHNESS_PATTERNS}")
 
     pattern_test = freshness_pattern_results.get('pattern_distribution_test', {})
     print(f"        Chi-square p-value: {pattern_test.get('p_value', 1.0):.6f}")
@@ -593,7 +593,7 @@ def main():
     OUTPUT_FILE_HMC_CATEGORIZATION = "data/lotto_hmc_categorization_validated.json"
     write_json_file(OUTPUT_FILE_HMC_CATEGORIZATION, hmc_categorization_results,
                    "Scipy-validated HMC categorization with ANOVA and Bonferroni-corrected tests")
-    print(f"        ✓ Saved to {OUTPUT_FILE_HMC_CATEGORIZATION}")
+    print(f"        Saved to {OUTPUT_FILE_HMC_CATEGORIZATION}")
 
     anova_test = hmc_categorization_results.get('anova_test', {})
     print(f"        ANOVA p-value: {anova_test.get('p_value', 1.0):.6f}")
@@ -606,14 +606,14 @@ def main():
     OUTPUT_FILE_LONG_TERM = "data/lotto_long_term_patterns.json"
     write_json_file(OUTPUT_FILE_LONG_TERM, long_term_pattern_results,
                    "Scipy-validated long-term pattern analysis with chi-square and correlation tests")
-    print(f"        ✓ Saved to {OUTPUT_FILE_LONG_TERM}")
+    print(f"        Saved to {OUTPUT_FILE_LONG_TERM}")
 
     hmc_pattern = long_term_pattern_results.get('hmc_pattern_analysis', {})
     print(f"        HMC pattern chi-square p-value: {hmc_pattern.get('p_value', 1.0):.6f}")
     print(f"        Statistically significant: {hmc_pattern.get('significant', False)}")
 
     print("\n" + "=" * 70)
-    print("✓ Phase 10 Complete: All scipy validation files generated")
+    print("Phase 10 Complete: All scipy validation files generated")
     print("=" * 70)
     print("\nValidation Summary:")
     print("  These files provide statistically rigorous feature data for ML models:")
@@ -630,7 +630,7 @@ def main():
 
     # Get recent count keys dynamically
     recent_keys = get_dynamic_recent_count_keys(draw_history_log)
-    print(f"  ✓ Found {len(recent_keys)} recent count windows: {recent_keys}")
+    print(f"  Found {len(recent_keys)} recent count windows: {recent_keys}")
 
     # Run all statistics analyses
     hmc_stats = analyze_hmc_distribution(draw_history_log)
@@ -657,7 +657,7 @@ def main():
     OUTPUT_FILE_STATISTICS = "data/lotto_statistics_analysis.json"
     write_json_file(OUTPUT_FILE_STATISTICS, statistics_results,
                    "Comprehensive statistical analysis of draw history patterns")
-    print(f"  ✓ Saved to {OUTPUT_FILE_STATISTICS}")
+    print(f"  Saved to {OUTPUT_FILE_STATISTICS}")
 
     # ===== WINDOW SATURATION ANALYSIS (PHASE 12) =====
     print("\n" + "=" * 70)
@@ -671,7 +671,7 @@ def main():
     draw_history_file = OUTPUT_FILE_HISTORY  # Enable scipy optimization
 
     generate_window_saturation_data(stats_file, odds_file, output_file, draw_history_file)
-    print(f"  ✓ Window saturation analysis complete")
+    print(f"  Window saturation analysis complete")
 
     # ===== ADVANCED PATTERN ANALYSIS (PHASE 13) =====
     print("\n" + "=" * 70)
@@ -683,7 +683,7 @@ def main():
     OUTPUT_FILE_ADVANCED = "data/lotto_advanced_patterns.json"
     write_json_file(OUTPUT_FILE_ADVANCED, advanced_pattern_results,
                    "Advanced pattern features: volatility, trend, and temporal analysis")
-    print(f"  ✓ Saved to {OUTPUT_FILE_ADVANCED}")
+    print(f"  Saved to {OUTPUT_FILE_ADVANCED}")
 
     # ===== RECENCY ZONE ANALYSIS (PHASE 14) =====
     print("\n" + "=" * 70)
@@ -695,7 +695,7 @@ def main():
     output_file_recency = "data/lotto_recency_zones_calculated.json"
 
     generate_recency_zones_data(draw_history_file, output_file_recency)
-    print(f"  ✓ Recency zone analysis complete")
+    print(f"  Recency zone analysis complete")
 
     # ===== FEATURE INTERACTION ANALYSIS (PHASE 15) =====
     print("\n" + "=" * 70)
@@ -708,17 +708,17 @@ def main():
         print("\n  Generating feature interaction analysis...")
         interaction_analysis = generate_feature_interaction_analysis(draw_history_log)
 
-        print(f"  ✓ Analyzed {interaction_analysis['metadata']['total_draws']} draws")
-        print(f"  ✓ Found {interaction_analysis['metadata']['total_pairwise_interactions']} pairwise interactions")
-        print(f"  ✓ Found {interaction_analysis['metadata']['total_triple_interactions']} triple interactions")
-        print(f"  ✓ Generated {interaction_analysis['metadata']['total_composite_features']} composite features")
+        print(f"  Analyzed {interaction_analysis['metadata']['total_draws']} draws")
+        print(f"  Found {interaction_analysis['metadata']['total_pairwise_interactions']} pairwise interactions")
+        print(f"  Found {interaction_analysis['metadata']['total_triple_interactions']} triple interactions")
+        print(f"  Generated {interaction_analysis['metadata']['total_composite_features']} composite features")
 
         print("  Saving interaction analysis outputs...")
         save_feature_interaction_outputs(interaction_analysis, output_dir="data/analysis")
-        print("  ✓ Interaction analysis complete")
+        print("  Interaction analysis complete")
 
     except Exception as e:
-        print(f"  ⚠️  Warning: Feature interaction analysis failed: {e}")
+        print(f"  Warning: Feature interaction analysis failed: {e}")
         print("  System will continue without interaction features")
         import traceback
         traceback.print_exc()
@@ -742,7 +742,7 @@ def main():
         # Save success patterns
         hmc_success_file = 'data/lotto_hmc_success_patterns_validated.json'
         write_json_file(hmc_success_file, hmc_success_results)
-        print(f"  ✓ HMC success patterns saved to {hmc_success_file}")
+        print(f"  HMC success patterns saved to {hmc_success_file}")
 
         # Step 2: Generate HMC recommendations
         print("\n[HMC] Generating HMC configuration recommendations...")
@@ -756,12 +756,12 @@ def main():
         # Save JSON recommendations
         hmc_json_file = 'data/lotto_hmc_recommendations.json'
         write_json_file(hmc_json_file, hmc_recommendations)
-        print(f"  ✓ HMC recommendations (JSON) saved to {hmc_json_file}")
+        print(f"  HMC recommendations (JSON) saved to {hmc_json_file}")
 
         # Generate and save text file
         hmc_text_file = 'data/lotto_hmc_recommendations.txt'
         hmc_recommender.generate_text_report(hmc_recommendations, hmc_text_file)
-        print(f"  ✓ HMC recommendations (TEXT) saved to {hmc_text_file}")
+        print(f"  HMC recommendations (TEXT) saved to {hmc_text_file}")
 
         # Print top recommendation summary
         if hmc_recommendations['recommendations']:
@@ -787,17 +787,17 @@ def main():
                   f"- {top_rec['model_3_config']['probability']:.2f}%")
             print(f"\nEnsemble Coverage: {top_rec['ensemble_metrics']['total_coverage']:.2f}%")
             print(f"Diversity Score:   {top_rec['ensemble_metrics']['diversity_score']:.2f}")
-            print(f"\n📄 Review full report: {hmc_text_file}")
+            print(f"\nReview full report: {hmc_text_file}")
             print("-" * 70)
 
-        print("  ✓ HMC recommendation analysis complete")
+        print("  HMC recommendation analysis complete")
 
     except Exception as e:
         print(f"  ERROR: HMC recommendation analysis failed: {e}")
         raise
 
     print("\n" + "=" * 70)
-    print("✓ All Analysis Phases Complete!")
+    print("All Analysis Phases Complete!")
     print("=" * 70)
 
     # ===== VERIFICATION: CHECK ALL JSON FILES WERE GENERATED =====

@@ -3,12 +3,12 @@ train_with_all_features.py
 ===========================
 Comprehensive training script that demonstrates all ML improvements:
 
-1. ✅ SMOTE (class balancing)
-2. ✅ Optimal threshold selection
-3. ✅ Feature selection (correlation + importance)
-4. ✅ Rolling statistics (temporal features)
-5. ✅ Hyperparameter tuning (TimeSeriesSplit CV)
-6. ✅ Enhanced metrics (Top-K accuracy, PR-AUC)
+1. SMOTE (class balancing)
+2. Optimal threshold selection
+3. Feature selection (correlation + importance)
+4. Rolling statistics (temporal features)
+5. Hyperparameter tuning (TimeSeriesSplit CV)
+6. Enhanced metrics (Top-K accuracy, PR-AUC)
 
 This script shows how to integrate all features into your training pipeline.
 """
@@ -52,21 +52,21 @@ def main():
     Train models with all ML improvements enabled.
     """
     print("\n" + "="*80)
-    print("  🚀 COMPREHENSIVE ML TRAINING WITH ALL FEATURES")
+    print("  COMPREHENSIVE ML TRAINING WITH ALL FEATURES")
     print("="*80)
     print("\nEnabled Features:")
-    print("  ✅ SMOTE (class balancing)")
-    print("  ✅ Optimal threshold selection")
-    print("  ✅ Feature selection (correlation + importance)")
-    print("  ✅ Rolling statistics (9 temporal features per number)")
-    print("  ✅ Hyperparameter tuning with TimeSeriesSplit CV")
-    print("  ✅ Enhanced metrics (Top-K accuracy, PR-AUC)")
+    print("  SMOTE (class balancing)")
+    print("  Optimal threshold selection")
+    print("  Feature selection (correlation + importance)")
+    print("  Rolling statistics (9 temporal features per number)")
+    print("  Hyperparameter tuning with TimeSeriesSplit CV")
+    print("  Enhanced metrics (Top-K accuracy, PR-AUC)")
     print("="*80)
 
     # ========================================
     # 1. LOAD DATA
     # ========================================
-    print("\n📂 Loading data...")
+    print("\nLoading data...")
     all_draws, _ = load_draw_history_with_bias_ratios(DRAW_HISTORY_JSON)
     hmc_data = load_hmc_json(HMC_JSON)
 
@@ -75,7 +75,7 @@ def main():
     # ========================================
     # 2. EXTRACT ROLLING STATISTICS FEATURES
     # ========================================
-    print("\n📊 Extracting rolling statistics features...")
+    print("\nExtracting rolling statistics features...")
     rolling_stats_features = extract_rolling_features_for_all_numbers(
         all_draws,
         current_draw_idx=len(all_draws),
@@ -85,7 +85,7 @@ def main():
     # ========================================
     # 3. EXTRACT ALL FEATURES
     # ========================================
-    print("\n🔧 Extracting all features...")
+    print("\nExtracting all features...")
     dynamic_recent_keys = get_dynamic_recent_keys(hmc_data)
 
     # Minimal feature extraction (add your own feature data as needed)
@@ -107,7 +107,7 @@ def main():
     # ========================================
     # 4. BUILD TRAINING/VALIDATION DATASETS
     # ========================================
-    print("\n📚 Building training and validation datasets...")
+    print("\nBuilding training and validation datasets...")
     train_end_idx, val_start_idx = calculate_train_val_split(len(all_draws))
 
     train_df = build_training_dataset(
@@ -134,7 +134,7 @@ def main():
     # ========================================
     # 5. TRAIN MODELS WITH ALL FEATURES
     # ========================================
-    print("\n🎯 Training models with all features enabled...")
+    print("\nTraining models with all features enabled...")
     print("="*80)
 
     trained_models = {}
@@ -179,34 +179,34 @@ def main():
     # ========================================
     # 6. COMPARE MODELS
     # ========================================
-    print("\n📊 Comparing all models...")
+    print("\nComparing all models...")
     comparison_df = compare_models(all_metrics, output_dir='model_metrics')
 
     # ========================================
     # 7. COMPARE HYPERPARAMETER TUNING RESULTS
     # ========================================
     if all_tuning_results:
-        print("\n🔧 Comparing hyperparameter tuning results...")
+        print("\nComparing hyperparameter tuning results...")
         tuning_comparison = compare_tuning_results(all_tuning_results, output_dir='model_metrics')
 
     # ========================================
     # 8. SUMMARY
     # ========================================
     print("\n" + "="*80)
-    print("  ✅ TRAINING COMPLETE!")
+    print("  TRAINING COMPLETE!")
     print("="*80)
-    print(f"\n📊 Summary:")
+    print(f"\nSummary:")
     print(f"   Models trained: {len(trained_models)}")
     print(f"   Features per model: {len(features)} (after selection)")
-    print(f"   Hyperparameter tuning: {'✅ Completed' if all_tuning_results else '❌ Skipped'}")
+    print(f"   Hyperparameter tuning: {'Completed' if all_tuning_results else 'Skipped'}")
 
-    print(f"\n📁 Results saved to:")
+    print(f"\nResults saved to:")
     print(f"   model_metrics/model_comparison.csv")
     if all_tuning_results:
         print(f"   model_metrics/tuning_comparison.csv")
         print(f"   model_metrics/*_tuning_results.json")
 
-    print("\n💡 Next steps:")
+    print("\nNext steps:")
     print("   1. Review model_comparison.csv for best model")
     print("   2. Check Top-K accuracy (most relevant for lottery)")
     print("   3. Adjust tuning_mode to 'extensive' for better results")
@@ -220,7 +220,7 @@ if __name__ == '__main__':
         main()
         sys.exit(0)
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nError: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

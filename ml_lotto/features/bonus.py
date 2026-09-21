@@ -44,7 +44,7 @@ def calculate_was_recent_bonus(
     for num in range(1, MAX_NUMBER + 1):
         was_recent_bonus[num] = 1 if num in recent_bonus_numbers else 0
 
-    print(f"✓ Custom feature 'was_recent_bonus' calculated (last {lookback_draws} draws).")
+    print(f"Custom feature 'was_recent_bonus' calculated (last {lookback_draws} draws).")
     print(f"  {len(recent_bonus_numbers)} numbers were recent bonus balls: {sorted(recent_bonus_numbers)}")
 
     return was_recent_bonus

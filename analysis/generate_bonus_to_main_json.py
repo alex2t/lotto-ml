@@ -373,23 +373,23 @@ def main():
 
     print("\n1. Calculating per-number transition profiles...")
     per_number_profiles = calculate_per_number_profiles(draw_history)
-    print(f"   ✓ Generated profiles for {len(per_number_profiles)} numbers")
+    print(f"   Generated profiles for {len(per_number_profiles)} numbers")
 
     print("\n2. Calculating category transition weights...")
     category_weights = calculate_category_weights(draw_history)
-    print(f"   ✓ Generated weights for {len(category_weights)} categories")
+    print(f"   Generated weights for {len(category_weights)} categories")
 
     print("\n3. Calculating freshness transition weights...")
     freshness_weights = calculate_freshness_weights(draw_history)
-    print(f"   ✓ Generated weights for {len(freshness_weights)} freshness bins")
+    print(f"   Generated weights for {len(freshness_weights)} freshness bins")
 
     print("\n4. Calculating timing decay weights...")
     timing_weights = calculate_timing_decay_weights(draw_history)
-    print(f"   ✓ Generated weights for {len(timing_weights)} draw positions")
+    print(f"   Generated weights for {len(timing_weights)} draw positions")
 
     print("\n5. Getting current bonus window...")
     current_window = get_current_bonus_window(draw_history)
-    print(f"   ✓ Tracked last {len(current_window)} bonus numbers")
+    print(f"   Tracked last {len(current_window)} bonus numbers")
 
     # Calculate overall stats
     total_transitions = sum(1 for p in per_number_profiles.values()

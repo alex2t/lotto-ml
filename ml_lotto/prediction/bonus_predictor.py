@@ -126,7 +126,7 @@ def generate_bonus_predictions(
         predictions.append(selected_num)
         used_categories.add(selected_cat)
     
-    print(f"\n✓ Generated {len(predictions)} bonus predictions: {predictions}")
+    print(f"\nGenerated {len(predictions)} bonus predictions: {predictions}")
     print(f"  Category distribution: {[category_dict.get(p, 'unknown') for p in predictions]}")
 
     # Prepare top 6 predictions data for file output

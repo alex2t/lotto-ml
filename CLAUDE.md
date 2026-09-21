@@ -111,14 +111,14 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: twenty-six files, 277 tests, ~60s. The Next.js site has its own
+`tests/` holds only real tests: twenty-six files, 293 tests, ~60s. The Next.js site has its own
 suites in `frontend/` - `npm --prefix frontend test` (159 vitest) and `npm --prefix frontend run
 test:e2e` (66 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
-python -m pytest -q                                                              # all 231
+python -m pytest -q                                                              # all 293
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
 python -m demos.demo_interactions                                                # a demo, from the root
 ```
@@ -194,8 +194,11 @@ code does not do (a "proportionally adjusted" freshness target that is never adj
 advertised but unimplemented, resolution matrices for fixes not made). Check `lottery_picks.txt` and
 `model_metrics/model_comparison.csv` rather than trusting a summary.
 
-**Do not use emoji in new code**, matching the user's global instruction - though note much of the
-existing code already prints them.
+**Do not use emoji in new code**, matching the user's global instruction. The engine and the ML
+layer are now clear of them - `drawpick.py`, `quickpick.py`, `lotto_analysis/`, `ml_lotto/`,
+`analysis/`, `scripts/` and `demos/` were stripped on 2026-09-21. `app.py` and `view/` still use
+them in page titles and `st.markdown`, and are left alone because the cutover in
+`nextStep/web.md` section 8 deletes that folder.
 
 **`issue.md` is part of the work, not a report about it.** Every defect found and every defect fixed
 updates it in the same change:

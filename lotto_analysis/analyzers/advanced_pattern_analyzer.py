@@ -26,7 +26,7 @@ try:
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
-    print("⚠️  scipy not available - using basic time series analysis")
+    print("scipy not available - using basic time series analysis")
 
 
 def calculate_volatility_features(
@@ -387,8 +387,8 @@ def detect_regime_shifts(
     shifts_detected = sum(1 for f in regime_features.values() if f['regime_shifts_detected'] > 0)
     currently_shifting = sum(1 for f in regime_features.values() if f['in_regime_shift'])
 
-    print(f"    ✓ {shifts_detected}/{max_number} numbers show regime shifts")
-    print(f"    ✓ {currently_shifting}/{max_number} numbers currently in regime shift")
+    print(f"    {shifts_detected}/{max_number} numbers show regime shifts")
+    print(f"    {currently_shifting}/{max_number} numbers currently in regime shift")
 
     return regime_features
 
@@ -475,16 +475,16 @@ def generate_advanced_pattern_analysis(
         'per_number_features': per_number_features
     }
 
-    print(f"  ✓ Volatility features calculated for {max_number} numbers")
+    print(f"  Volatility features calculated for {max_number} numbers")
     print(f"     Mean volatility (CV): {results['summary_statistics']['volatility']['mean']:.2f}")
     print(f"     Range: {results['summary_statistics']['volatility']['min']:.2f} - {results['summary_statistics']['volatility']['max']:.2f}")
 
-    print(f"  ✓ Trend features calculated for {max_number} numbers")
+    print(f"  Trend features calculated for {max_number} numbers")
     print(f"     Trending up: {results['summary_statistics']['trend']['trending_up_count']} numbers")
     print(f"     Trending down: {results['summary_statistics']['trend']['trending_down_count']} numbers")
     if HAS_SCIPY:
         print(f"     Statistically significant trends: {significant_trends} numbers")
-        print(f"  ✓ Regime shift analysis: {numbers_in_regime_shift} numbers currently shifting")
+        print(f"  Regime shift analysis: {numbers_in_regime_shift} numbers currently shifting")
 
     return results
 
@@ -500,7 +500,7 @@ def save_analysis(results: Dict, output_file: str = 'data/lotto_advanced_pattern
     with open(output_file, 'w') as f:
         json.dump(round_floats(results), f, indent=2)
 
-    print(f"\n✓ Analysis saved to {output_file}")
+    print(f"\nAnalysis saved to {output_file}")
 
 
 if __name__ == '__main__':

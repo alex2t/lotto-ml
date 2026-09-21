@@ -55,7 +55,7 @@ def extract_bonus_features_from_json(
         num_str = str(num)
         
         if num_str not in per_number_profiles:
-            print(f"  ⚠️  WARNING: Number {num} not found in per_number_bonus_profile")
+            print(f"  WARNING: Number {num} not found in per_number_bonus_profile")
             bonus_features[num] = {
                 'category_weight': 1.0,
                 'was_bonus_last_10': 0,
@@ -121,7 +121,7 @@ def extract_bonus_features_from_json(
             'avg_days_between_bonus': float(avg_days_between_bonus)
         }
     
-    print(f"\n✓ Extracted bonus features for 47 numbers")
+    print(f"\nExtracted bonus features for 47 numbers")
     print(f"  Features per number: 8")
     print(f"  Category weights from JSON: {set(f['category_weight'] for f in bonus_features.values())}")
     print(f"  Recent bonus exclusions: {sum(f['was_bonus_last_10'] for f in bonus_features.values())} numbers")
@@ -230,7 +230,7 @@ def create_unified_bonus_features(
                 )
                 features.update(interaction_feat)
             except Exception as e:
-                print(f"  ⚠️  Warning: Could not add interaction features: {e}")
+                print(f"  Warning: Could not add interaction features: {e}")
                 print(f"     Continuing with base features only")
 
         unified_features[num] = features
@@ -241,7 +241,7 @@ def create_unified_bonus_features(
     interaction_count = sum(1 for k in sample_features.keys() if 'interaction' in k or 'triple_' in k)
     main_count = len(sample_features) - bonus_count - interaction_count
 
-    print(f"\n✓ Created unified bonus features for 47 numbers")
+    print(f"\nCreated unified bonus features for 47 numbers")
     print(f"  Bonus-specific features: {bonus_count}")
     print(f"  Main features: {main_count}")
     print(f"  Interaction features: {interaction_count}")
@@ -288,6 +288,6 @@ def get_unified_bonus_feature_names(include_interactions: bool = True) -> List[s
             interaction_features = get_interaction_feature_names(include_triples=True)
             all_features.extend(interaction_features)
         except Exception as e:
-            print(f"  ⚠️  Warning: Could not get interaction feature names: {e}")
+            print(f"  Warning: Could not get interaction feature names: {e}")
 
     return all_features

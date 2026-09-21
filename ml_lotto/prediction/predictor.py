@@ -67,7 +67,7 @@ def generate_predictions(
 
         probabilities = pipeline.predict_proba(X_pred)[:, 1]
         all_probabilities[model_name] = probabilities
-        print(f"  ✓ {model_name} predictions generated")
+        print(f"  {model_name} predictions generated")
     
     return all_probabilities
 
@@ -111,22 +111,22 @@ def generate_all_picks(
     
     if FILTERS_AVAILABLE:
         filter_stats = get_filter_statistics()
-        print("\n📋 PHASE 1 FILTERS ACTIVE:")
-        print("  1️⃣  Odd/Even Balance Filter")
+        print("\nPHASE 1 FILTERS ACTIVE:")
+        print("  1 ⃣  Odd/Even Balance Filter")
         print(f"     - {filter_stats['odd_even_filter']['description']}")
         print(f"     - Expected elimination: {filter_stats['odd_even_filter']['expected_elimination']}")
         
-        print("  2️⃣  Sum Constraint Filter")
+        print("  2 ⃣  Sum Constraint Filter")
         print(f"     - {filter_stats['sum_constraint']['description']}")
         print(f"     - Expected elimination: {filter_stats['sum_constraint']['expected_elimination']}")
         
-        print("  3️⃣  Range Distribution Filter")
+        print("  3 ⃣  Range Distribution Filter")
         print(f"     - {filter_stats['range_distribution']['description']}")
         print(f"     - Expected elimination: {filter_stats['range_distribution']['expected_elimination']}")
         
-        print(f"\n  📊 Combined Impact: {filter_stats['combined_impact']['total_elimination']}")
+        print(f"\n  Combined Impact: {filter_stats['combined_impact']['total_elimination']}")
     else:
-        print("\n⚠️  Phase 1 filters not available (running without post-generation validation)")
+        print("\nPhase 1 filters not available (running without post-generation validation)")
     
     c_max_threshold = freshness_data.get('c_max_threshold', 3) if freshness_data else 3
     
@@ -139,7 +139,7 @@ def generate_all_picks(
         else:
             pattern_display_parts.append(f"C>= {i}={target_pattern[i]}")
     
-    print(f"\n✓ Target Freshness Pattern (6 main numbers): {', '.join(pattern_display_parts)}")
+    print(f"\nTarget Freshness Pattern (6 main numbers): {', '.join(pattern_display_parts)}")
     print(f"  Source: observed freshness split of the 6 main balls (distribution_analysis_6_main)")
     
     number_categories = categorize_numbers_by_freshness(features_dict)
@@ -187,7 +187,7 @@ def generate_all_picks(
 
         total_picks = h + m + c + g
         if total_picks != numbers_to_select:
-            print(f"\n⚠️  WARNING: Model {model_idx} configured for {total_picks} numbers, adjusting to {numbers_to_select}")
+            print(f"\nWARNING: Model {model_idx} configured for {total_picks} numbers, adjusting to {numbers_to_select}")
             if total_picks > numbers_to_select:
                 while h + m + c + g > numbers_to_select:
                     if g > 0:
@@ -328,7 +328,7 @@ def generate_pool_picks(
         features_dict
     )
 
-    print(f"✓ Pool generated: {pool_data['pool_config']}")
+    print(f"Pool generated: {pool_data['pool_config']}")
     print(f"  Total candidates: {pool_data['pool_size']}")
     print(f"  Quality score: {pool_data['quality_score']:.0f}/100")
 

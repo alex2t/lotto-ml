@@ -374,12 +374,12 @@ def save_csv_summary(correlations: List[Dict[str, Any]]):
                            f"{corr['expected_count']},{corr['lift']},{corr['phi_coefficient']},"
                            f"{corr['chi_square']},{corr['significant']},{corr['relationship']}\n")
 
-            print(f"✓ CSV summary saved to {path}")
+            print(f"CSV summary saved to {path}")
             return
         except:
             continue
 
-    print("⚠️  Could not save CSV summary")
+    print("Could not save CSV summary")
 
 
 def print_results(insights: Dict[str, Any]):
@@ -404,7 +404,7 @@ def print_results(insights: Dict[str, Any]):
 
     for i, corr in enumerate(insights['top_20_attractors'][:10], 1):
         pair = f"{corr['number_1']}-{corr['number_2']}"
-        sig = "✓" if corr['significant'] else "✗"
+        sig = "" if corr['significant'] else ""
         print(f"{pair:<12} {corr['observed_count']:<10} {corr['expected_count']:<10} "
               f"{corr['lift']:<8.3f} {corr['phi_coefficient']:<8.3f} {sig:<6}")
 
@@ -416,7 +416,7 @@ def print_results(insights: Dict[str, Any]):
 
     for i, corr in enumerate(insights['top_20_repellers'][:10], 1):
         pair = f"{corr['number_1']}-{corr['number_2']}"
-        sig = "✓" if corr['significant'] else "✗"
+        sig = "" if corr['significant'] else ""
         print(f"{pair:<12} {corr['observed_count']:<10} {corr['expected_count']:<10} "
               f"{corr['lift']:<8.3f} {corr['phi_coefficient']:<8.3f} {sig:<6}")
 
@@ -462,23 +462,23 @@ def main():
     """Main execution function."""
     print("Loading draw history...")
     draw_history = load_draw_history()
-    print(f"✓ Loaded {len(draw_history)} draws")
+    print(f"Loaded {len(draw_history)} draws")
 
     print("\n1. Building co-occurrence matrix...")
     cooccurrence_counts, single_counts, total_draws = build_cooccurrence_matrix(draw_history)
-    print(f"✓ Analyzed {len(cooccurrence_counts)} number pairs")
+    print(f"Analyzed {len(cooccurrence_counts)} number pairs")
 
     print("\n2. Calculating correlation metrics...")
     correlations = calculate_correlation_metrics(cooccurrence_counts, single_counts, total_draws)
-    print(f"✓ Calculated correlations for {len(correlations)} pairs")
+    print(f"Calculated correlations for {len(correlations)} pairs")
 
     print("\n3. Analyzing HMC category correlations...")
     hmc_correlations = analyze_hmc_correlations(draw_history)
-    print(f"✓ Analyzed {hmc_correlations['total_pairs']} category pairs")
+    print(f"Analyzed {hmc_correlations['total_pairs']} category pairs")
 
     print("\n4. Analyzing temporal correlations...")
     temporal_correlations = analyze_temporal_correlations(draw_history)
-    print(f"✓ Calculated autocorrelations for 47 numbers")
+    print(f"Calculated autocorrelations for 47 numbers")
 
     print("\n5. Generating insights...")
     insights = generate_summary_insights(correlations, hmc_correlations, temporal_correlations)
@@ -500,7 +500,7 @@ def main():
         try:
             with open(path, 'w') as f:
                 json.dump(output_data, f, indent=2)
-            print(f"✓ Full results saved to {path}")
+            print(f"Full results saved to {path}")
             break
         except:
             continue

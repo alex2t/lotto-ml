@@ -95,7 +95,7 @@ def build_training_dataset(
         start_index=start_index,
         end_index=end_index
     )
-    print(f"✓ Dynamic walk-forward dataset created: {len(train_df)} records (zero future data leakage)")
+    print(f"Dynamic walk-forward dataset created: {len(train_df)} records (zero future data leakage)")
     return train_df
 
 
@@ -149,7 +149,7 @@ def analyze_feature_importance(
             'abs_importance': np.abs(importances)
         }).sort_values('abs_importance', ascending=False)
 
-        print(f"\n  📊 Feature Importance Analysis:")
+        print(f"\n  Feature Importance Analysis:")
         print(f"  Top {top_n} Most Important Features:")
         for idx, row in importance_df.head(top_n).iterrows():
             print(f"    {row['feature']:30s} : {row['abs_importance']:8.4f}")
@@ -158,7 +158,7 @@ def analyze_feature_importance(
         threshold = 0.01
         low_importance = importance_df[importance_df['abs_importance'] < threshold]
         if len(low_importance) > 0:
-            print(f"\n  ⚠️  {len(low_importance)} features with importance < {threshold}:")
+            print(f"\n  {len(low_importance)} features with importance < {threshold}:")
             print(f"      {', '.join(low_importance['feature'].tolist()[:5])}")
             if len(low_importance) > 5:
                 print(f"      ... and {len(low_importance) - 5} more")
@@ -175,7 +175,7 @@ def analyze_feature_importance(
         return top_features
 
     except Exception as e:
-        print(f"  ⚠️  Could not analyze feature importance: {e}")
+        print(f"  Could not analyze feature importance: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -214,20 +214,20 @@ def validate_calibration(
         # Calculate calibration error
         calibration_error = np.mean(np.abs(prob_true - prob_pred))
 
-        print(f"\n  🎯 Calibration Analysis:")
+        print(f"\n  Calibration Analysis:")
         print(f"     Mean Calibration Error: {calibration_error:.4f}")
 
         if calibration_error > 0.1:
-            print(f"     ⚠️  High calibration error - consider different calibration method")
+            print(f"     High calibration error - consider different calibration method")
         elif calibration_error > 0.05:
-            print(f"     ⚡ Moderate calibration - acceptable but could improve")
+            print(f"     Moderate calibration - acceptable but could improve")
         else:
-            print(f"     ✅ Good calibration")
+            print(f"     Good calibration")
 
         return calibration_error
 
     except Exception as e:
-        print(f"  ⚠️  Could not validate calibration: {e}")
+        print(f"  Could not validate calibration: {e}")
         return -1.0
 
 
@@ -283,7 +283,7 @@ def train_model(
     print(f"  Algorithm: {model_config['algorithm']}")
 
     if exclude_bonus:
-        print(f"  ⭐ SPECIAL TRAINING: Optimized for MAIN 6 BALLS (jackpot focus)")
+        print(f"  SPECIAL TRAINING: Optimized for MAIN 6 BALLS (jackpot focus)")
 
     # Expand feature selection (based on config)
     selected_features = expand_feature_selection(
@@ -303,7 +303,7 @@ def train_model(
         enable_selection = feature_sel_config.get('enable', enable_feature_selection)
         corr_thresh = feature_sel_config.get('correlation_threshold', correlation_threshold)
         imp_thresh = feature_sel_config.get('importance_threshold', importance_threshold)
-        print(f"\n  ⚙️  Using model-specific feature selection settings:")
+        print(f"\n  Using model-specific feature selection settings:")
         print(f"     Enable: {enable_selection}")
         print(f"     Correlation threshold: {corr_thresh}")
         print(f"     Importance threshold: {imp_thresh}")
@@ -315,7 +315,7 @@ def train_model(
 
     # Apply intelligent feature selection if enabled
     if enable_selection:
-        print(f"\n  🔍 FEATURE SELECTION ENABLED")
+        print(f"\n  FEATURE SELECTION ENABLED")
         selected_features, selection_info = select_features(
             train_df,
             selected_features,
@@ -327,14 +327,14 @@ def train_model(
         )
 
         if not selected_features:
-            print(f"  ⚠️  WARNING: Feature selection removed all features!")
-            print(f"  ⚠️  Reverting to original feature set...")
+            print(f"  WARNING: Feature selection removed all features!")
+            print(f"  Reverting to original feature set...")
             selected_features = expand_feature_selection(
                 model_config['features'],
                 all_feature_names
             )
     else:
-        print(f"  ℹ️  Feature selection disabled")
+        print(f"  ℹ Feature selection disabled")
 
     print(f"\n  Final features ({len(selected_features)}): {selected_features}")
 
@@ -350,7 +350,7 @@ def train_model(
     # Print class distribution before SMOTE
     n_positive = sum(y_train)
     n_negative = len(y_train) - n_positive
-    print(f"\n  📊 Class Distribution (Before SMOTE):")
+    print(f"\n  Class Distribution (Before SMOTE):")
     print(f"     Positive (wins): {n_positive:5d} ({n_positive/len(y_train)*100:.2f}%)")
     print(f"     Negative (losses): {n_negative:5d} ({n_negative/len(y_train)*100:.2f}%)")
     print(f"     Imbalance ratio: {n_negative/n_positive:.2f}:1")
@@ -358,7 +358,7 @@ def train_model(
     # Apply SMOTE if enabled
     if use_smote and n_positive > 0:
         try:
-            print(f"\n  🔄 Applying SMOTE (sampling_strategy={smote_sampling_strategy})...")
+            print(f"\n  Applying SMOTE (sampling_strategy={smote_sampling_strategy})...")
             smote = SMOTE(
                 sampling_strategy=smote_sampling_strategy,
                 random_state=42,
@@ -369,8 +369,8 @@ def train_model(
             # Print class distribution after SMOTE
             n_positive_new = sum(y_train_resampled)
             n_negative_new = len(y_train_resampled) - n_positive_new
-            print(f"  ✓ SMOTE applied successfully")
-            print(f"\n  📊 Class Distribution (After SMOTE):")
+            print(f"  SMOTE applied successfully")
+            print(f"\n  Class Distribution (After SMOTE):")
             print(f"     Positive (wins): {n_positive_new:5d} ({n_positive_new/len(y_train_resampled)*100:.2f}%)")
             print(f"     Negative (losses): {n_negative_new:5d} ({n_negative_new/len(y_train_resampled)*100:.2f}%)")
             print(f"     Imbalance ratio: {n_negative_new/n_positive_new:.2f}:1")
@@ -380,10 +380,10 @@ def train_model(
             y_train = y_train_resampled
 
         except Exception as e:
-            print(f"  ⚠️  SMOTE failed: {e}")
-            print(f"  ⚠️  Continuing with original imbalanced data...")
+            print(f"  SMOTE failed: {e}")
+            print(f"  Continuing with original imbalanced data...")
     else:
-        print(f"  ℹ️  SMOTE disabled - using original class distribution")
+        print(f"  ℹ SMOTE disabled - using original class distribution")
 
     # Calculate class imbalance for XGBoost (using resampled data if SMOTE was applied)
     scale_pos_weight = None
@@ -398,7 +398,7 @@ def train_model(
     # ========================================
     tuning_results = None
     if enable_hyperparameter_tuning:
-        print(f"\n  🔧 Hyperparameter Tuning Enabled (mode: {tuning_mode})")
+        print(f"\n  Hyperparameter Tuning Enabled (mode: {tuning_mode})")
 
         # Determine model type for pre-defined grids
         algo = model_config['algorithm'].lower()
@@ -411,7 +411,7 @@ def train_model(
         elif 'catboost' in algo or 'cat' in algo:
             model_type = 'catboost'
         else:
-            print(f"  ⚠️  Unknown model type '{algo}' - skipping tuning")
+            print(f"  Unknown model type '{algo}' - skipping tuning")
             pipeline.fit(X_train, y_train)
             model_type = None
 
@@ -442,7 +442,7 @@ def train_model(
                         n_iter=100
                     )
                 else:
-                    print(f"  ⚠️  Unknown tuning_mode '{tuning_mode}' - using defaults")
+                    print(f"  Unknown tuning_mode '{tuning_mode}' - using defaults")
                     pipeline.fit(X_train, y_train)
 
                 # Save tuning results
@@ -450,14 +450,14 @@ def train_model(
                     save_tuning_results(tuning_results, model_config['name'], output_dir)
 
             except Exception as e:
-                print(f"  ⚠️  Hyperparameter tuning failed: {e}")
-                print(f"  ℹ️  Falling back to default parameters")
+                print(f"  Hyperparameter tuning failed: {e}")
+                print(f"  ℹ Falling back to default parameters")
                 pipeline.fit(X_train, y_train)
     else:
         # Train with default parameters
         pipeline.fit(X_train, y_train)
 
-    print(f"  ✓ Training complete")
+    print(f"  Training complete")
 
     feature_importance_data = None
     metrics = None
@@ -532,7 +532,7 @@ def build_main_datasets(
         end_index=train_end_idx,
         exclude_bonus=False  # All 7 positions
     )
-    print(f"  ✓ Standard training dataset created: {len(train_df_standard)} records")
+    print(f"  Standard training dataset created: {len(train_df_standard)} records")
 
     print("\n2. Building standard VALIDATION dataset (Models 1, 3, 4)...")
     val_df_standard = engine.build_main_dataset(
@@ -541,25 +541,25 @@ def build_main_datasets(
         end_index=n_draws,
         exclude_bonus=False  # All 7 positions
     )
-    print(f"  ✓ Standard validation dataset created: {len(val_df_standard)} records")
+    print(f"  Standard validation dataset created: {len(val_df_standard)} records")
 
     print("\n3. Building specialized TRAINING dataset (Model 2)...")
     train_df_model2 = engine.build_main_dataset(
         all_feature_names=dataset_features,
         start_index=TRAINING_START_DRAW,
         end_index=train_end_idx,
-        exclude_bonus=True  # Main 6 only ⭐
+        exclude_bonus=True  # Main 6 only
     )
-    print(f"  ✓ Model 2 training dataset created: {len(train_df_model2)} records")
+    print(f"  Model 2 training dataset created: {len(train_df_model2)} records")
 
     print("\n4. Building specialized VALIDATION dataset (Model 2)...")
     val_df_model2 = engine.build_main_dataset(
         all_feature_names=dataset_features,
         start_index=val_start_idx,
         end_index=n_draws,
-        exclude_bonus=True  # Main 6 only ⭐
+        exclude_bonus=True  # Main 6 only
     )
-    print(f"  ✓ Model 2 validation dataset created: {len(val_df_model2)} records")
+    print(f"  Model 2 validation dataset created: {len(val_df_model2)} records")
 
     datasets = {
         False: (train_df_standard, val_df_standard),
@@ -606,7 +606,7 @@ def train_all_models(
     print("="*70)
     print("\nMODEL SPECIALIZATION:")
     print("  Model 1: Momentum specialist (all 7 positions)")
-    print("  Model 2: Jackpot optimizer (main 6 ONLY) ⭐")
+    print("  Model 2: Jackpot optimizer (main 6 ONLY)")
     print("  Model 3: Complexity explorer (all 7 positions)")
     print("\nDATA SOURCES:")
     print("  Features (X) ← lotto_trigger_periods.json + custom calculations")
@@ -618,15 +618,15 @@ def train_all_models(
     train_size = train_end_idx - TRAINING_START_DRAW
     val_size = len(all_draws) - val_start_idx
 
-    print(f"\n📊 TRAIN/VALIDATION SPLIT:")
+    print(f"\nTRAIN/VALIDATION SPLIT:")
     print(f"  Total available draws: {total_available}")
     print(f"  Training draws: {train_size} ({train_size/total_available*100:.1f}%)")
     print(f"  Validation draws: {val_size} ({val_size/total_available*100:.1f}%)")
     print(f"  Split ratio: {VALIDATION_SPLIT_RATIO:.2f}")
     if val_size > 0:
-        print(f"  ✓ Chronological validation set held out ({val_size} draws) for model evaluation")
+        print(f"  Chronological validation set held out ({val_size} draws) for model evaluation")
     else:
-        print(f"  ℹ️  100% of data used for training (no validation set held out)")
+        print(f"  ℹ 100% of data used for training (no validation set held out)")
 
     datasets, all_feature_names = build_main_datasets(model_configs, base_engine, features_dict, len(all_draws))
 
@@ -667,7 +667,7 @@ def train_all_models(
             all_metrics[model_config['name']] = metrics
 
     print("\n" + "="*70)
-    print("✓ ALL MODELS TRAINED WITH COMPREHENSIVE VALIDATION")
+    print("ALL MODELS TRAINED WITH COMPREHENSIVE VALIDATION")
     print("="*70)
 
     # Generate model comparison report
@@ -679,6 +679,6 @@ def train_all_models(
         comparison_df = compare_models(all_metrics, output_dir='model_metrics')
         plot_model_comparison(all_metrics, output_dir='model_metrics')
 
-        print("\n📁 Metrics and visualizations saved to model_metrics/")
+        print("\nMetrics and visualizations saved to model_metrics/")
 
     return models, model_features, feature_importance, all_metrics

@@ -44,7 +44,7 @@ def calculate_has_consecutive_partner(
             break
     
     if not recent_4_key:
-        print(f"\n⚠️  WARNING: 'recent_4' key not found in dynamic keys.")
+        print(f"\nWARNING: 'recent_4' key not found in dynamic keys.")
         print(f"   Continuing with all consecutive_partner values set to 0.")
         return {num: 0 for num in range(1, MAX_NUMBER + 1)}
     
@@ -70,7 +70,7 @@ def calculate_has_consecutive_partner(
         has_partner[num] = 1 if (left_hot or right_hot) else 0
     
     hot_neighbors = sum(has_partner.values())
-    print(f"✓ Custom feature 'has_consecutive_partner' calculated.")
+    print(f"Custom feature 'has_consecutive_partner' calculated.")
     print(f"  {hot_neighbors}/47 numbers have hot consecutive neighbors")
     
     return has_partner
@@ -98,7 +98,7 @@ def calculate_consecutive_pair_affinity(
     """
     # Check if scipy-validated scores are available
     if validated_scores and 'number_pair_scores' in validated_scores:
-        print(f"✓ Using SCIPY-VALIDATED consecutive pair scores (binomial tested)")
+        print(f"Using SCIPY-VALIDATED consecutive pair scores (binomial tested)")
 
         # Extract validated scores
         number_scores = validated_scores['number_pair_scores']
@@ -117,7 +117,7 @@ def calculate_consecutive_pair_affinity(
     all_pairs = consecutive_patterns.get('2_consecutive', {}).get('all_pairs', {})
     
     if not all_pairs:
-        print(f"\n❌ CRITICAL ERROR: Consecutive pairs data ('all_pairs') is missing.")
+        print(f"\nCRITICAL ERROR: Consecutive pairs data ('all_pairs') is missing.")
         print(f"   This data should be in lotto_odds_results.json under:")
         print(f"   patterns.2_consecutive.all_pairs")
         print(f"\n   REQUIRED ACTION: Run 'python drawpick.py' to regenerate data files.")
@@ -147,7 +147,7 @@ def calculate_consecutive_pair_affinity(
         affinity[num] = round(count / max_count, 3) if max_count > 0 else 0.0
     
     high_affinity = sum(1 for v in affinity.values() if v > 0.7)
-    print(f"✓ Custom feature 'consecutive_pair_affinity' calculated.")
+    print(f"Custom feature 'consecutive_pair_affinity' calculated.")
     print(f"  {high_affinity}/47 numbers have high pair affinity (>0.7)")
     print(f"  SOURCE: Standard frequency-based calculation")
 

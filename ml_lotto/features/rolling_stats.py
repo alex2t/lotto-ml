@@ -154,6 +154,6 @@ def extract_rolling_features_for_all_numbers(
             windows=[10, 20, 50]
         )
 
-    print(f"  ✓ Rolling statistics calculated for {len(rolling_features)} numbers at draw index {eval_idx}")
+    print(f"  Rolling statistics calculated for {len(rolling_features)} numbers at draw index {eval_idx}")
 
     return rolling_features

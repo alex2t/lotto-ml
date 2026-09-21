@@ -500,9 +500,9 @@ def save_results(results: Dict, output_file: str = None):
     try:
         with open(output_file, 'w') as f:
             json.dump(round_floats(results), f, indent=4)
-        print(f"\n✓ Results saved to {output_file}")
+        print(f"\nResults saved to {output_file}")
     except Exception as e:
-        print(f"\n✗ Error saving results: {e}")
+        print(f"\nError saving results: {e}")
 
 
 def main():

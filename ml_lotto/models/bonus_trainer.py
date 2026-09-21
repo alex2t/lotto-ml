@@ -147,7 +147,7 @@ def train_bonus_model(
 
     print(f"\n  Training bonus model...")
     pipeline.fit(X_train, y_train)
-    print(f"  ✓ Bonus model training complete")
+    print(f"  Bonus model training complete")
 
     # Evaluate on the held-out validation set, with the same metrics as the main models
     metrics = None

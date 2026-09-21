@@ -163,7 +163,7 @@ def validate_data_files() -> bool:
             missing_files.append(file_path)
     
     if missing_files:
-        print("\n✗ ERROR: Missing required data files:")
+        print("\nERROR: Missing required data files:")
         for file in missing_files:
             print(f"   - {file}")
         print("\nPlease run 'python drawpick.py' to generate all data files.")
@@ -195,7 +195,7 @@ def validate_loaded_data(all_draws, hmc_data, odds_data, freshness_data, distrib
         issues.append("Bonus analysis data is missing or invalid")
     
     if issues:
-        print("\n✗ DATA VALIDATION ERRORS:")
+        print("\nDATA VALIDATION ERRORS:")
         for issue in issues:
             print(f"   - {issue}")
         return False
@@ -228,11 +228,11 @@ def print_scipy_validation_summary(scipy_data):
             significant = test.get('significant', False)
 
             if significant and p_value < 0.05:
-                successful.append(f"  ✓ {name:25} (p={p_value:.4f})")
+                successful.append(f"  {name:25} (p={p_value:.4f})")
             else:
-                failed.append(f"  ✗ {name:25} (p={p_value:.4f}) - using standard fallback")
+                failed.append(f"  {name:25} (p={p_value:.4f}) - using standard fallback")
         else:
-            failed.append(f"  ✗ {name:25} - file not found")
+            failed.append(f"  {name:25} - file not found")
 
     if successful:
         print("\nSCIPY-VALIDATED Features:")
@@ -322,7 +322,7 @@ def main(permutation_runs: int = 0):
         if not validate_data_files():
             sys.exit(1)
         if VERBOSE:
-            print("✓ All required files present")
+            print("All required files present")
 
         if not VERBOSE:
             print("\nLoading data files...")
@@ -340,14 +340,14 @@ def main(permutation_runs: int = 0):
                 with open(FRESHNESS_JSON_INPUT, 'r') as f:
                     freshness_data = json.load(f)
                 if VERBOSE:
-                    print(f"✓ Loaded freshness data from {FRESHNESS_JSON_INPUT}")
+                    print(f"Loaded freshness data from {FRESHNESS_JSON_INPUT}")
                     print(f"  Contains {len(freshness_data.get('distribution_analysis_7_numbers', []))} pattern distributions")
             except FileNotFoundError:
                 if VERBOSE:
-                    print(f"✗ Error: {FRESHNESS_JSON_INPUT} not found.")
+                    print(f"Error: {FRESHNESS_JSON_INPUT} not found.")
             except json.JSONDecodeError as e:
                 if VERBOSE:
-                    print(f"✗ Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
+                    print(f"Error: Invalid JSON in {FRESHNESS_JSON_INPUT}: {e}")
 
         distribution_stats = {}
         with suppress_output():
@@ -355,14 +355,14 @@ def main(permutation_runs: int = 0):
                 with open(DISTRIBUTION_STATS_JSON, 'r') as f:
                     distribution_stats = json.load(f)
                 if VERBOSE:
-                    print(f"✓ Loaded distribution stats from {DISTRIBUTION_STATS_JSON}")
+                    print(f"Loaded distribution stats from {DISTRIBUTION_STATS_JSON}")
                     print(f"  Total draws analyzed: {distribution_stats.get('total_draws_analyzed', 0)}")
             except FileNotFoundError:
                 if VERBOSE:
-                    print(f"✗ Error: {DISTRIBUTION_STATS_JSON} not found.")
+                    print(f"Error: {DISTRIBUTION_STATS_JSON} not found.")
             except json.JSONDecodeError as e:
                 if VERBOSE:
-                    print(f"✗ Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
+                    print(f"Error: Invalid JSON in {DISTRIBUTION_STATS_JSON}: {e}")
 
         with suppress_output():
             bonus_analysis_data = load_bonus_analysis(BONUS_ANALYSIS_JSON)
@@ -406,7 +406,7 @@ def main(permutation_runs: int = 0):
             pair_frequency_data = load_number_pair_frequency(ODDS_JSON_INPUT)
 
         if VERBOSE:
-            print(f"\n✓ Data Loading Summary:")
+            print(f"\nData Loading Summary:")
             print(f"  - Historical draws: {len(all_draws)}")
             print(f"  - HMC numbers tracked: {len(hmc_data)}")
             print(f"  - Freshness patterns: {len(freshness_data.get('distribution_analysis_7_numbers', []))}")
@@ -423,9 +423,9 @@ def main(permutation_runs: int = 0):
 
         consecutive_patterns = odds_data.get('patterns', {})
         if consecutive_patterns:
-            print(f"  ✓ Loaded consecutive patterns data")
+            print(f"  Loaded consecutive patterns data")
         else:
-            print(f"  ⚠️  No consecutive patterns found in odds_data")
+            print(f"  No consecutive patterns found in odds_data")
 
         # One point-in-time engine per run; each model takes a view with its own base features (C-15a).
         # Built before serving features so they all count days to its next_draw_date (C-6b).
@@ -463,9 +463,9 @@ def main(permutation_runs: int = 0):
             for num_str, features in advanced_patterns_analysis['per_number_features'].items():
                 num = int(num_str)
                 advanced_pattern_features_dict[num] = features
-            print(f"    ✓ Loaded advanced features for {len(advanced_pattern_features_dict)} numbers")
+            print(f"    Loaded advanced features for {len(advanced_pattern_features_dict)} numbers")
         else:
-            print("    ⚠️  No advanced pattern features found - using defaults")
+            print("    No advanced pattern features found - using defaults")
             advanced_pattern_features_dict = {}
 
         pattern_score_data = {num: 0.0 for num in range(1, MAX_NUMBER + 1)}
@@ -503,15 +503,15 @@ def main(permutation_runs: int = 0):
                 rolling_stats_features,
                 reference_date=base_engine.next_draw_date
             )
-            print(f"  ✓ Main number features extracted for {len(features_dict)} numbers")
+            print(f"  Main number features extracted for {len(features_dict)} numbers")
         except Exception as e:
-            print(f"  ✗ Error extracting features: {e}")
+            print(f"  Error extracting features: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
 
         feature_time = time.time() - feature_start
-        print(f"✓ Main feature extraction completed in {feature_time:.2f} seconds")
+        print(f"Main feature extraction completed in {feature_time:.2f} seconds")
 
         if permutation_runs:
             print(f"\nPERMUTATION CHECK: {permutation_runs} shuffled-label runs per main model (F-17)")
@@ -541,15 +541,15 @@ def main(permutation_runs: int = 0):
                 features_dict,  # Pass main features for merging
                 include_interactions=True  # Enable interactions for logistic regression
             )
-            print(f"  ✓ Unified bonus features created for {len(bonus_features_dict)} numbers")
+            print(f"  Unified bonus features created for {len(bonus_features_dict)} numbers")
         except Exception as e:
-            print(f"  ✗ Error creating unified bonus features: {e}")
+            print(f"  Error creating unified bonus features: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
 
         bonus_feature_time = time.time() - bonus_feature_start
-        print(f"✓ Unified bonus feature creation completed in {bonus_feature_time:.2f} seconds")
+        print(f"Unified bonus feature creation completed in {bonus_feature_time:.2f} seconds")
         
         print("\nStep 3: Training BONUS BALL prediction model...")
         bonus_training_start = time.time()
@@ -571,9 +571,9 @@ def main(permutation_runs: int = 0):
             )
             if bonus_metrics is not None:
                 aux_metrics[BONUS_MODEL_CONFIG['name']] = bonus_metrics
-            print(f"✓ Bonus model training completed in {time.time() - bonus_training_start:.2f} seconds")
+            print(f"Bonus model training completed in {time.time() - bonus_training_start:.2f} seconds")
         except Exception as e:
-            print(f"✗ Error training bonus model: {e}")
+            print(f"Error training bonus model: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -594,9 +594,9 @@ def main(permutation_runs: int = 0):
                 category_dict,
                 num_predictions=3
             )
-            print(f"✓ Generated {len(bonus_predictions)} bonus predictions (top 6 data captured for file output)")
+            print(f"Generated {len(bonus_predictions)} bonus predictions (top 6 data captured for file output)")
         except Exception as e:
-            print(f"✗ Error generating bonus predictions: {e}")
+            print(f"Error generating bonus predictions: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -618,7 +618,7 @@ def main(permutation_runs: int = 0):
                 window_size=10,
                 hmc_data=hmc_data
             )
-            print(f"  ✓ Live bonus window calculated: {len(live_bonus_window)} entries")
+            print(f"  Live bonus window calculated: {len(live_bonus_window)} entries")
 
             # Extract unified features (bonus-to-main + main + interactions) using LIVE window
             bonus_to_main_features_dict = create_unified_bonus_to_main_features(
@@ -627,15 +627,15 @@ def main(permutation_runs: int = 0):
                 current_bonus_window=live_bonus_window,
                 include_interactions=True  # Enable interactions for logistic regression
             )
-            print(f"  ✓ Unified bonus-to-main features created for {len(bonus_to_main_features_dict)} numbers")
+            print(f"  Unified bonus-to-main features created for {len(bonus_to_main_features_dict)} numbers")
         except Exception as e:
-            print(f"  ✗ Error extracting bonus-to-main features: {e}")
+            print(f"  Error extracting bonus-to-main features: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
 
         bonus_to_main_feature_time = time.time() - bonus_to_main_feature_start
-        print(f"✓ Bonus-to-main feature extraction completed in {bonus_to_main_feature_time:.2f} seconds")
+        print(f"Bonus-to-main feature extraction completed in {bonus_to_main_feature_time:.2f} seconds")
 
         print("\nStep 4c: Training BONUS-TO-MAIN prediction model...")
         bonus_to_main_training_start = time.time()
@@ -652,9 +652,9 @@ def main(permutation_runs: int = 0):
             )
             if bonus_to_main_metrics is not None:
                 aux_metrics[BONUS_TO_MAIN_MODEL_CONFIG['name']] = bonus_to_main_metrics
-            print(f"✓ Bonus-to-main model training completed in {time.time() - bonus_to_main_training_start:.2f} seconds")
+            print(f"Bonus-to-main model training completed in {time.time() - bonus_to_main_training_start:.2f} seconds")
         except Exception as e:
-            print(f"✗ Error training bonus-to-main model: {e}")
+            print(f"Error training bonus-to-main model: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -677,9 +677,9 @@ def main(permutation_runs: int = 0):
                 category_dict,
                 num_predictions=3
             )
-            print(f"✓ Generated {len(bonus_to_main_predictions)} bonus-to-main predictions (top 6 data captured for file output)")
+            print(f"Generated {len(bonus_to_main_predictions)} bonus-to-main predictions (top 6 data captured for file output)")
         except Exception as e:
-            print(f"✗ Error generating bonus-to-main predictions: {e}")
+            print(f"Error generating bonus-to-main predictions: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -704,14 +704,14 @@ def main(permutation_runs: int = 0):
                 tuning_scoring=TUNING_SCORING,
                 extra_metrics=aux_metrics
             )
-            print(f"\n✓ Main model training completed in {time.time() - training_start:.2f} seconds")
+            print(f"\nMain model training completed in {time.time() - training_start:.2f} seconds")
 
             # Model training validation
             print("\n" + "="*70)
             print("MODEL TRAINING VALIDATION")
             print("="*70)
             print(f"Model 1: Trained on ALL 7 positions (momentum capture)")
-            print(f"Model 2: Trained on MAIN 6 ONLY (jackpot optimization) ⭐")
+            print(f"Model 2: Trained on MAIN 6 ONLY (jackpot optimization)")
             print(f"Model 3: Trained on ALL 7 positions (complexity)")
             print(f"\nModel 2 Key Differences:")
             print(f"  - Excludes bonus ball from training labels")
@@ -720,7 +720,7 @@ def main(permutation_runs: int = 0):
             print(f"  - Optimizes for 6-ball main prize")
 
         except Exception as e:
-            print(f"\n✗ Error during model training: {e}")
+            print(f"\nError during model training: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -730,9 +730,9 @@ def main(permutation_runs: int = 0):
         serving_rows = base_engine.with_base_features(features_dict).extract_serving_rows()
         try:
             all_probabilities = generate_predictions(models, model_features, serving_rows)
-            print(f"✓ Main number predictions generated for {len(all_probabilities)} models")
+            print(f"Main number predictions generated for {len(all_probabilities)} models")
         except Exception as e:
-            print(f"✗ Error generating predictions: {e}")
+            print(f"Error generating predictions: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -767,9 +767,9 @@ def main(permutation_runs: int = 0):
                 freshness_data,
                 pre_assigned_numbers=pre_assigned_numbers
             )
-            print(f"✓ Generated {len(lines)} lines of main number picks")
+            print(f"Generated {len(lines)} lines of main number picks")
         except Exception as e:
-            print(f"✗ Error generating picks: {e}")
+            print(f"Error generating picks: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
@@ -806,10 +806,10 @@ def main(permutation_runs: int = 0):
                 )
                 reason = 'duplicated a main number' if is_dup_main else 'was already assigned to another model'
                 if chosen is not None:
-                    print(f"  ⚠️  Model {model_idx} bonus #{candidate_bonus} {reason}; reassigned to #{chosen}")
+                    print(f"  Model {model_idx} bonus #{candidate_bonus} {reason}; reassigned to #{chosen}")
                 else:
                     chosen = candidate_bonus
-                    print(f"  ⚠️  Model {model_idx}: no distinct bonus available; keeping #{chosen}")
+                    print(f"  Model {model_idx}: no distinct bonus available; keeping #{chosen}")
 
             line['bonus_for_draw'] = chosen
             if chosen is not None:
@@ -820,7 +820,7 @@ def main(permutation_runs: int = 0):
         try:
             pool_data = generate_pool_picks(models, all_probabilities, serving_rows)
         except Exception as e:
-            print(f"⚠️  Error generating pool: {e}")
+            print(f"Error generating pool: {e}")
             pool_data = None
 
         print("\nStep 12: Displaying complete results (6 main + 1 bonus)...")
@@ -942,9 +942,9 @@ def main(permutation_runs: int = 0):
                                 f"({pred['draws_since_bonus']} draws since bonus)\n")
                     f.write("\n")
 
-                print("\n✓ Results saved to 'lottery_picks.txt'")
+                print("\nResults saved to 'lottery_picks.txt'")
             except Exception as e:
-                print(f"⚠️  Could not save to file: {e}")
+                print(f"Could not save to file: {e}")
             
             total_time = time.time() - start_time
             print("\n" + "=" * 70)
@@ -958,17 +958,17 @@ def main(permutation_runs: int = 0):
             
             display_completion_message()
         except Exception as e:
-            print(f"✗ Error displaying results: {e}")
+            print(f"Error displaying results: {e}")
             import traceback
             traceback.print_exc()
             sys.exit(1)
         
     except KeyboardInterrupt:
-        print("\n\n⚠️  Operation cancelled by user")
+        print("\n\nOperation cancelled by user")
         sys.exit(0)
         
     except Exception as e:
-        print(f"\n✗ FATAL ERROR: {str(e)}")
+        print(f"\nFATAL ERROR: {str(e)}")
         print("\nStack trace:")
         import traceback
         traceback.print_exc()

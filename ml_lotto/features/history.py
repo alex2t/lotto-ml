@@ -33,7 +33,7 @@ def extract_win_bias_ratio_from_history(
         ValueError: If draw history is empty or missing required data
     """
     if not draw_history_log:
-        print(f"\n❌ CRITICAL ERROR: Draw history log is empty.")
+        print(f"\nCRITICAL ERROR: Draw history log is empty.")
         raise ValueError("Cannot extract win_bias_ratio from empty draw history")
     
     sorted_dates = sorted(
@@ -42,19 +42,19 @@ def extract_win_bias_ratio_from_history(
     )
     
     if not sorted_dates:
-        print(f"\n❌ CRITICAL ERROR: No draws found in history log.")
+        print(f"\nCRITICAL ERROR: No draws found in history log.")
         raise ValueError("Draw history contains no draws")
     
     latest_date, latest_data = sorted_dates[-1]
     bias_ratios = latest_data.get('all_numbers_bias_ratios', {})
     
     if not bias_ratios:
-        print(f"\n❌ CRITICAL ERROR: 'all_numbers_bias_ratios' missing from latest draw.")
+        print(f"\nCRITICAL ERROR: 'all_numbers_bias_ratios' missing from latest draw.")
         raise ValueError("Latest draw missing required bias ratio data")
     
     result = {}
     for num in range(1, max_number + 1):
         result[num] = bias_ratios.get(num, 1.0)
     
-    print(f"✓ Extracted 'win_bias_ratio' from latest draw ({latest_date})")
+    print(f"Extracted 'win_bias_ratio' from latest draw ({latest_date})")
     return result

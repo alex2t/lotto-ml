@@ -110,7 +110,7 @@ def test_default_training():
     assert metrics is not None, "Should have metrics"
     assert tuning_results is None, "Should not have tuning results when disabled"
 
-    print(f"\n✅ PASS: Default training works")
+    print(f"\nPASS: Default training works")
     print(f"   Features selected: {len(features)}")
     print(f"   Val F1-Score: {metrics.get('f1_score_optimal', 0):.4f}")
 
@@ -168,7 +168,7 @@ def test_training_with_tuning():
     assert 'best_params' in tuning_results, "Should have best params"
     assert 'best_score' in tuning_results, "Should have best score"
 
-    print(f"\n✅ PASS: Training with tuning works")
+    print(f"\nPASS: Training with tuning works")
     print(f"   Features selected: {len(features)}")
     print(f"   Val F1-Score: {metrics.get('f1_score_optimal', 0):.4f}")
     print(f"   Tuning best score: {tuning_results['best_score']:.4f}")
@@ -192,10 +192,10 @@ def test_all_features_together():
     val_df = df.iloc[train_size:]
 
     print(f"\nEnabled:")
-    print(f"  ✅ SMOTE")
-    print(f"  ✅ Feature Selection")
-    print(f"  ✅ Hyperparameter Tuning")
-    print(f"  ✅ Enhanced Metrics")
+    print(f"  SMOTE")
+    print(f"  Feature Selection")
+    print(f"  Hyperparameter Tuning")
+    print(f"  Enhanced Metrics")
 
     # Model config - specify explicit features
     model_config = {
@@ -231,7 +231,7 @@ def test_all_features_together():
     assert 'top7_accuracy' in metrics, "Enhanced metrics should be calculated"
     assert 'pr_auc' in metrics, "PR-AUC should be calculated"
 
-    print(f"\n✅ PASS: All features work together")
+    print(f"\nPASS: All features work together")
     print(f"   Original features: {len(all_feature_names)}")
     print(f"   Selected features: {len(features)} (reduced by {len(all_feature_names) - len(features)})")
     print(f"   Val F1-Score: {metrics.get('f1_score_optimal', 0):.4f}")
@@ -260,7 +260,7 @@ def main():
             result = test_func()
             results.append((test_name, result))
         except Exception as e:
-            print(f"\n❌ EXCEPTION in {test_name}: {e}")
+            print(f"\nEXCEPTION in {test_name}: {e}")
             import traceback
             traceback.print_exc()
             results.append((test_name, False))
@@ -273,16 +273,16 @@ def main():
     total = len(results)
 
     for test_name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "PASS" if result else "FAIL"
         print(f"  {status}: {test_name}")
 
     print(f"\n  Results: {passed}/{total} tests passed")
 
     if passed == total:
-        print("\n✅ ALL TESTS PASSED - Integrated training pipeline ready!")
+        print("\nALL TESTS PASSED - Integrated training pipeline ready!")
         return 0
     else:
-        print(f"\n❌ {total - passed} TEST(S) FAILED")
+        print(f"\n{total - passed} TEST(S) FAILED")
         return 1
 
 

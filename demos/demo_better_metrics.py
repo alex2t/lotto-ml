@@ -50,19 +50,19 @@ def test_topk_accuracy():
         hit = topk_metrics[f'top{k}_hit']
         winners = topk_metrics[f'top{k}_winners']
         acc = topk_metrics[f'top{k}_accuracy']
-        hit_str = "✅ Yes" if hit else "❌ No"
+        hit_str = "Yes" if hit else "No"
         print(f"  Top-{k:<3} {hit_str:<10} {winners:<12} {acc*100:>6.2f}%")
 
     # Verify results make sense
     if topk_metrics['top7_winners'] > 0:
-        print(f"\n✅ PASS: Top-7 caught {topk_metrics['top7_winners']} winners")
+        print(f"\nPASS: Top-7 caught {topk_metrics['top7_winners']} winners")
     else:
-        print(f"\n⚠️  WARNING: Top-7 caught 0 winners (model may need improvement)")
+        print(f"\nWARNING: Top-7 caught 0 winners (model may need improvement)")
 
     if topk_metrics['top20_winners'] >= topk_metrics['top7_winners']:
-        print(f"✅ PASS: Top-20 ({topk_metrics['top20_winners']}) >= Top-7 ({topk_metrics['top7_winners']})")
+        print(f"PASS: Top-20 ({topk_metrics['top20_winners']}) >= Top-7 ({topk_metrics['top7_winners']})")
     else:
-        print(f"❌ FAIL: Top-20 should have >= winners than Top-7")
+        print(f"FAIL: Top-20 should have >= winners than Top-7")
         return False
 
     return True
@@ -106,15 +106,15 @@ def test_hit_rate():
 
     # Verify results
     if hit_rate_stats['hit_rate'] > 0:
-        print(f"\n✅ PASS: Hit rate = {hit_rate_stats['hit_rate']*100:.1f}%")
+        print(f"\nPASS: Hit rate = {hit_rate_stats['hit_rate']*100:.1f}%")
     else:
-        print(f"\n❌ FAIL: Hit rate should be > 0")
+        print(f"\nFAIL: Hit rate should be > 0")
         return False
 
     if hit_rate_stats['total_winners_caught'] <= num_draws * 7:
-        print(f"✅ PASS: Total winners caught ({hit_rate_stats['total_winners_caught']}) <= max possible ({num_draws * 7})")
+        print(f"PASS: Total winners caught ({hit_rate_stats['total_winners_caught']}) <= max possible ({num_draws * 7})")
     else:
-        print(f"❌ FAIL: Caught more winners than possible")
+        print(f"FAIL: Caught more winners than possible")
         return False
 
     return True
@@ -143,10 +143,10 @@ def test_pr_auc_interpretation():
         else:
             interpretation = f"Weak: Only {ratio:.2f}x better than random"
 
-        match = "✅" if interpretation == expected else "❌"
+        match = "" if interpretation == expected else ""
         print(f"  {match} PR-AUC={pr_auc:.2f}, Baseline={baseline:.2f} → {interpretation}")
 
-    print(f"\n✅ PASS: PR-AUC interpretation working correctly")
+    print(f"\nPASS: PR-AUC interpretation working correctly")
     return True
 
 
@@ -206,31 +206,31 @@ def test_metrics_integration():
     missing_metrics = [m for m in required_metrics if m not in metrics]
 
     if not missing_metrics:
-        print(f"\n✅ PASS: All {len(required_metrics)} required metrics present")
+        print(f"\nPASS: All {len(required_metrics)} required metrics present")
     else:
-        print(f"\n❌ FAIL: Missing metrics: {missing_metrics}")
+        print(f"\nFAIL: Missing metrics: {missing_metrics}")
         return False
 
     # Verify metric values are reasonable
     if 0 <= metrics['auc_val'] <= 1:
-        print(f"✅ PASS: AUC-ROC in valid range: {metrics['auc_val']:.4f}")
+        print(f"PASS: AUC-ROC in valid range: {metrics['auc_val']:.4f}")
     else:
-        print(f"❌ FAIL: AUC-ROC out of range: {metrics['auc_val']}")
+        print(f"FAIL: AUC-ROC out of range: {metrics['auc_val']}")
         return False
 
     if 0 <= metrics['pr_auc'] <= 1:
-        print(f"✅ PASS: PR-AUC in valid range: {metrics['pr_auc']:.4f}")
+        print(f"PASS: PR-AUC in valid range: {metrics['pr_auc']:.4f}")
     else:
-        print(f"❌ FAIL: PR-AUC out of range: {metrics['pr_auc']}")
+        print(f"FAIL: PR-AUC out of range: {metrics['pr_auc']}")
         return False
 
     if 0 <= metrics['optimal_threshold'] <= 1:
-        print(f"✅ PASS: Optimal threshold in valid range: {metrics['optimal_threshold']:.4f}")
+        print(f"PASS: Optimal threshold in valid range: {metrics['optimal_threshold']:.4f}")
     else:
-        print(f"❌ FAIL: Optimal threshold out of range: {metrics['optimal_threshold']}")
+        print(f"FAIL: Optimal threshold out of range: {metrics['optimal_threshold']}")
         return False
 
-    print(f"\n✅ PASS: Metrics integration working correctly")
+    print(f"\nPASS: Metrics integration working correctly")
     return True
 
 
@@ -253,7 +253,7 @@ def main():
             result = test_func()
             results.append((test_name, result))
         except Exception as e:
-            print(f"\n❌ EXCEPTION in {test_name}: {e}")
+            print(f"\nEXCEPTION in {test_name}: {e}")
             import traceback
             traceback.print_exc()
             results.append((test_name, False))
@@ -266,16 +266,16 @@ def main():
     total = len(results)
 
     for test_name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "PASS" if result else "FAIL"
         print(f"  {status}: {test_name}")
 
     print(f"\n  Results: {passed}/{total} tests passed")
 
     if passed == total:
-        print("\n✅ ALL TESTS PASSED - Better metrics ready for use!")
+        print("\nALL TESTS PASSED - Better metrics ready for use!")
         return 0
     else:
-        print(f"\n❌ {total - passed} TEST(S) FAILED")
+        print(f"\n{total - passed} TEST(S) FAILED")
         return 1
 
 

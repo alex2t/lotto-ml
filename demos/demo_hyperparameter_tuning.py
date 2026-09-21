@@ -59,7 +59,7 @@ def test_parameter_grids():
     assert 'classifier__estimator__C' in lr_quick, "Missing C in LR grid"
     assert 'classifier__estimator__n_estimators' in rf_quick, "Missing n_estimators in RF grid"
 
-    print(f"\n✅ PASS: Parameter grids generated correctly")
+    print(f"\nPASS: Parameter grids generated correctly")
     return True
 
 
@@ -108,7 +108,7 @@ def test_quick_tuning_logistic():
     assert 'best_score' in tuning_results, "Missing best_score in results"
     assert tuning_results['best_score'] >= 0, "Best score should be non-negative"
 
-    print(f"\n✅ PASS: Quick tuning completed successfully")
+    print(f"\nPASS: Quick tuning completed successfully")
     print(f"   Best Score: {tuning_results['best_score']:.4f}")
     print(f"   Total Fits: {tuning_results['total_fits']}")
     print(f"   Time: {tuning_results['elapsed_time']:.1f}s")
@@ -163,7 +163,7 @@ def test_quick_tuning_random_forest():
     best_params = tuning_results['best_params']
     assert any('n_estimators' in k for k in best_params.keys()), "Missing n_estimators in best params"
 
-    print(f"\n✅ PASS: Random Forest tuning completed successfully")
+    print(f"\nPASS: Random Forest tuning completed successfully")
     print(f"   Best Score: {tuning_results['best_score']:.4f}")
     print(f"   Total Fits: {tuning_results['total_fits']}")
 
@@ -216,7 +216,7 @@ def test_time_series_cv():
     assert tuning_results['cv_splits'] == 3, "Should use 3 CV splits"
     assert tuning_results['total_fits'] == 4, "Should have 4 unique parameter combinations"
 
-    print(f"\n✅ PASS: TimeSeriesSplit CV working correctly")
+    print(f"\nPASS: TimeSeriesSplit CV working correctly")
     print(f"   CV Splits: {tuning_results['cv_splits']}")
     print(f"   Total Fits: {tuning_results['total_fits']}")
 
@@ -283,9 +283,9 @@ def test_results_saving():
         assert 'best_params' in loaded_results, "Missing best_params in saved file"
         assert 'best_score' in loaded_results, "Missing best_score in saved file"
 
-        print(f"\n  ✅ Results saved and loaded correctly")
+        print(f"\n  Results saved and loaded correctly")
 
-    print(f"\n✅ PASS: Results saving and extraction working")
+    print(f"\nPASS: Results saving and extraction working")
 
     return True
 
@@ -332,7 +332,7 @@ def test_parameter_importance():
     assert 'Parameter' in importance_df.columns, "Missing Parameter column"
     assert 'Score Range' in importance_df.columns, "Missing Score Range column"
 
-    print(f"\n✅ PASS: Parameter importance analysis working")
+    print(f"\nPASS: Parameter importance analysis working")
 
     return True
 
@@ -358,7 +358,7 @@ def main():
             result = test_func()
             results.append((test_name, result))
         except Exception as e:
-            print(f"\n❌ EXCEPTION in {test_name}: {e}")
+            print(f"\nEXCEPTION in {test_name}: {e}")
             import traceback
             traceback.print_exc()
             results.append((test_name, False))
@@ -371,16 +371,16 @@ def main():
     total = len(results)
 
     for test_name, result in results:
-        status = "✅ PASS" if result else "❌ FAIL"
+        status = "PASS" if result else "FAIL"
         print(f"  {status}: {test_name}")
 
     print(f"\n  Results: {passed}/{total} tests passed")
 
     if passed == total:
-        print("\n✅ ALL TESTS PASSED - Hyperparameter tuning ready for use!")
+        print("\nALL TESTS PASSED - Hyperparameter tuning ready for use!")
         return 0
     else:
-        print(f"\n❌ {total - passed} TEST(S) FAILED")
+        print(f"\n{total - passed} TEST(S) FAILED")
         return 1
 
 

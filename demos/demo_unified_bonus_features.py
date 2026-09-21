@@ -92,7 +92,7 @@ def test_unified_bonus_features():
     bonus_feature_names = get_bonus_feature_names()
     for feat in bonus_feature_names:
         assert feat in sample_features_no_interact, f"Missing bonus feature: {feat}"
-    print(f"    ✓ All 8 bonus-specific features present")
+    print(f"    All 8 bonus-specific features present")
 
     # Verify main features
     main_feature_names = [
@@ -103,7 +103,7 @@ def test_unified_bonus_features():
     ]
     for feat in main_feature_names:
         assert feat in sample_features_no_interact, f"Missing main feature: {feat}"
-    print(f"    ✓ All 12 main features present")
+    print(f"    All 12 main features present")
 
     # Test WITH interactions
     print("\n  Test 2: Unified features WITH interactions")
@@ -126,12 +126,12 @@ def test_unified_bonus_features():
         print(f"    Interaction features found: {interaction_count}")
 
         if interaction_count > 0:
-            print(f"    ✓ Interaction features successfully added")
+            print(f"    Interaction features successfully added")
         else:
-            print(f"    ⚠️  No interaction features found (may need lotto_feature_interactions.json)")
+            print(f"    No interaction features found (may need lotto_feature_interactions.json)")
 
     except Exception as e:
-        print(f"    ⚠️  Interaction test failed: {e}")
+        print(f"    Interaction test failed: {e}")
         print(f"       This is OK if lotto_feature_interactions.json doesn't exist")
 
     # Test get_unified_bonus_feature_names
@@ -139,17 +139,17 @@ def test_unified_bonus_features():
     feature_names = get_unified_bonus_feature_names(include_interactions=False)
     print(f"    Feature names (no interactions): {len(feature_names)}")
     assert len(feature_names) == 20, f"Expected 20 features, got {len(feature_names)}"
-    print(f"    ✓ Correct number of feature names")
+    print(f"    Correct number of feature names")
 
     print("\n" + "="*80)
-    print("✅ ALL TESTS PASSED!")
+    print("ALL TESTS PASSED!")
     print("="*80)
     print("\nSummary:")
     print("  - create_unified_bonus_features() successfully merges all features")
     print("  - Feature counts are correct (8 bonus + 12 main + interactions)")
     print("  - All expected feature names are present")
     print("  - Implementation is backward compatible")
-    print("\n💡 Next: Run quickpick.py to verify integration with bonus_trainer.py")
+    print("\nNext: Run quickpick.py to verify integration with bonus_trainer.py")
 
     return 0
 
@@ -158,12 +158,12 @@ if __name__ == '__main__':
     try:
         sys.exit(test_unified_bonus_features())
     except AssertionError as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\nTEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ UNEXPECTED ERROR: {e}")
+        print(f"\nUNEXPECTED ERROR: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

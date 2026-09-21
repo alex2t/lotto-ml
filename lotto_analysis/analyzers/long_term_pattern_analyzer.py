@@ -451,7 +451,7 @@ def generate_long_term_pattern_analysis(
     results = convert_to_native_types(results)
 
     # Print summary
-    print(f"\n  ✓ Long-term pattern analysis complete:")
+    print(f"\n  Long-term pattern analysis complete:")
     print(f"    - HMC patterns analyzed: {hmc_analysis['num_patterns']}")
     print(f"    - Chi-square p-value: {hmc_analysis['p_value']:.4f}")
     print(f"    - Statistically significant: {hmc_analysis['significant']}")
@@ -474,7 +474,7 @@ def save_analysis(results: Dict, output_file: str = 'data/lotto_long_term_patter
     with open(output_file, 'w') as f:
         json.dump(round_floats(results), f, indent=2)
 
-    print(f"\n✓ Analysis saved to {output_file}")
+    print(f"\nAnalysis saved to {output_file}")
 
 
 if __name__ == '__main__':

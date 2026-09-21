@@ -58,14 +58,14 @@ def display_data_source_summary():
     print("\n" + "=" * 70)
     print("DATA SOURCE SUMMARY")
     print("=" * 70)
-    print("\n📄 FILE: lotto_draw_history.json (REPLACING irish500.csv)")
+    print("\nFILE: lotto_draw_history.json (REPLACING irish500.csv)")
     print("   PURPOSE: Training Labels (y) and Custom Feature Source")
     print("   USAGE: Provides draw dates, winning numbers, and bonus numbers")
     print("   EXAMPLE: Draw #250 → Numbers [2, 9, 24, 28, 33, 43] + Bonus [3]")
     print("            Creates labels: y(2)=1, y(3)=1, ..., y(43)=1, etc.")
     print("            Custom Feature: Calculates 'days_since_bonus' for all numbers")
     
-    print("\n📄 FILE: lotto_trigger_periods.json")
+    print("\nFILE: lotto_trigger_periods.json")
     print("   PURPOSE: Training Features (X)")
     print("   USAGE: Provides statistics for each number 1-47")
     print("   FEATURES EXTRACTED:")
@@ -78,7 +78,7 @@ def display_data_source_summary():
     print("     • recent_14       - Appearances in last 14 draws")
     print("     • category        - Hot/Medium/Cold classification")
     
-    print("\n📄 FILE: lotto_odds_results.json")
+    print("\nFILE: lotto_odds_results.json")
     print("   PURPOSE: Informational Only")
     print("   USAGE: Shows most common HMC pattern (e.g., '2-3-2' = 12.69%)")
     print("   NOTE: NOT used in ML training, just for display")
@@ -176,7 +176,7 @@ def display_pool_analysis(pool_data: Dict[str, Any]):
 
         # Check if within 10% of target
         deviation = abs(pct - target_pct)
-        status = "✓" if deviation < 10 else "~"
+        status = "" if deviation < 10 else "~"
 
         print(f"C{bin_val}:  {count:2d} numbers ({pct:5.1f}%)  Target: ~{target_pct:.0f}%  {status}")
 
@@ -210,5 +210,5 @@ def display_pool_analysis(pool_data: Dict[str, Any]):
 def display_completion_message():
     """Display completion message."""
     print("\n" + "=" * 70)
-    print("✓ Analysis complete!")
+    print("Analysis complete!")
     print("=" * 70)
