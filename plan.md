@@ -256,7 +256,10 @@ install and no change to `docker-compose.yml`.
 - [x] Monitor Phase 2A for 3 consecutive draws (one week) with no failure email.
 - [ ] **Phase 2B**: GitHub node commits the row to `data/irish500.csv` on `main` - **inserted after the
       header**, since the file is newest-first. `data/irish500.csv` is already tracked and not ignored.
-- [ ] Create a webhook receiver on the VPS to run `drawpick.py` upon commit.
+- [x] Create a webhook receiver on the VPS to run `drawpick.py` upon commit. Built as
+      `rebuild_webhook.py` and wired in `docker-compose.prod.yml`; see
+      [`nextStep/vps.md`](nextStep/vps.md) section 4 for the n8n side, including the HMAC the
+      Code node has to compute. **Not yet reachable - it needs the VPS.**
 
 ### Phase 3: Next.js Foundation & Single-User Authentication
 Built from [`nextStep/web.md`](nextStep/web.md) section 3. Both sites run side by side until the
@@ -311,14 +314,37 @@ one to read for what is not - eight specified pieces are unticked there, none of
       list. **`tests/test_site_wording.py` itself stays until `view/` is deleted.**
 
 ### Phase 5: VPS Deployment & Production Hardening
-- [ ] Deploy Docker Compose stack on VPS. The containers run as UID:GID 1000:1000 by default and
+Built from [`nextStep/vps.md`](nextStep/vps.md), which is the runbook: the ordered steps, the
+UID/GID trap, the two env files and the rebuild receiver. Everything below that does not need the
+server itself is built and provable locally; **nothing here has been run against a live VPS.**
+- [x] The production overlay `docker-compose.prod.yml`: Caddy is the only thing publishing a port,
+      `nextjs-web` stops publishing 3000 so the site cannot be reached around the proxy, everything
+      restarts unless stopped, and both the site and the receiver are health-checked.
+- [x] Configure Caddy with automated SSL certificates. `reverse_proxy/Caddyfile` sets HSTS,
+      `nosniff`, `DENY` framing, a referrer policy and a content security policy, and keeps its
+      certificates in a named volume. Validated against `caddy:2-alpine` with both a real hostname
+      and `:80`. It deliberately uses no plugin directive and no `email` line - the first needs a
+      custom image, the second fails to parse when the variable is empty and would take the site
+      down.
+- [x] `/api/health` reads an artifact, so a container that is listening but cannot see `data/` -
+      the F-45 permissions trap - is reported unhealthy rather than serving errors.
+- [x] The rebuild receiver (`rebuild_webhook.py`), which is also the second half of Phase 2B:
+      HMAC-signed requests compared in constant time, one rebuild at a time, no Docker socket, not
+      proxied, and it refuses to start without a secret. 16 tests in `tests/test_rebuild_webhook.py`.
+- [x] Deploy the Docker Compose stack **locally** under the production overlay (2026-09-21): the
+      proxy serves the site on 80 with its security headers, `/api/health` reports the latest draw,
+      port 3000 refuses a connection, and a signed request made the receiver run `drawpick.py` in
+      the container and rewrite the artifacts, which the site then served without a restart.
+- [ ] Deploy the stack on the VPS. The containers run as UID:GID 1000:1000 by default and
       `./data` is bind-mounted over the image's own directory, so the host `data/` must be writable
       by that user: either `chown -R 1000:1000 data` once, or set `UID`/`GID` in a `.env` beside
       `docker-compose.yml` (F-45). Docker Desktop masks this; the VPS will not.
-- [ ] Configure Caddy or Nginx with automated SSL certificates.
-- [ ] Verify public access to all 8 dashboard pages without login.
+- [ ] Verify public access to all five destinations without login, from an external browser.
 - [ ] Test admin login and data bundle download from an external browser.
 - [ ] Execute an end-to-end integration test: Trigger n8n $\rightarrow$ update CSV $\rightarrow$ VPS runs `drawpick.py` $\rightarrow$ Next.js updates live stats $\rightarrow$ download bundle to local PC $\rightarrow$ run `quickpick.py` locally.
+      The local half of this is already proved by `npm --prefix frontend run test:integration`,
+      which appends a row, runs `drawpick.py` and asserts the site serves the new draw without a
+      restart.
 
 ---
 

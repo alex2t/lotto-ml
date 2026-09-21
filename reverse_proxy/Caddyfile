@@ -1,0 +1,49 @@
+# The public edge. Caddy terminates TLS and proxies everything to nextjs-web:3000.
+#
+# DOMAIN comes from the .env beside docker-compose.yml. Set it to the hostname the site is
+# served on and Caddy gets a certificate for it on first start and renews it on its own. Set
+# it to :80 instead and Caddy serves plain HTTP - which is how this is tested locally, where
+# there is no public name to prove.
+#
+# ACME_EMAIL is where Let's Encrypt sends expiry warnings. It is optional; without it the
+# certificate still issues.
+
+# There is deliberately no `email` directive: `email {$ACME_EMAIL}` fails to parse when the
+# variable is empty, so a blank line in .env would stop the proxy starting and take the site
+# down. Let's Encrypt issues without a contact address. To get expiry warnings, add
+# `email you@example.com` in a global block here - a literal, not a placeholder.
+#
+# Caddy writes its certificates into /data, a named volume in the compose file. Losing it
+# means re-issuing on the next start, and Let's Encrypt rate-limits that.
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		# The site is entirely public and holds no third-party embeds, so it can be strict.
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# No inline script except the theme bootstrap, which Next renders with a nonce it
+		# controls; unsafe-inline stays for the styles Tailwind injects.
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+		# Caddy's own version is not interesting to anyone but an attacker.
+		-Server
+	}
+
+	# No rate limiting here on purpose: `rate_limit` is a plugin, not standard Caddy, and a
+	# Caddyfile that needs a custom build is a Caddyfile that does not start. The login route
+	# limits itself in frontend/lib/auth/rate-limit.ts, which is the account that matters.
+
+	reverse_proxy nextjs-web:3000 {
+		health_uri /api/health
+		health_interval 30s
+		health_timeout 5s
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
