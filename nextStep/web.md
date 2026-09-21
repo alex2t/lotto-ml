@@ -413,8 +413,9 @@ it is not, otherwise. The public half never depends on it.
 
 ### Phase 4 checklist
 
-Done 2026-09-21, apart from the unticked rows, which are not built. Nothing unticked blocks the
-cutover on its own; each is a piece of 4.2-4.4 that was specified and has not been done.
+Done 2026-09-21. The eight rows that were unticked on the first pass were completed the same day;
+two of them needed a phase in `lotto_analysis/` first, because the figures they show did not exist
+in any artifact and the site computes nothing.
 
 **Layout and the look of it (section 5)**
 
@@ -425,8 +426,9 @@ cutover on its own; each is a piece of 4.2-4.4 that was specified and has not be
 - [x] `prefers-reduced-motion` honoured, and no animation delays a number reaching the DOM (5.2).
 - [x] Designed at phone width first: the grid is six columns with 44px targets, the wheels stack,
       the tray is fixed to the bottom, and charts scroll rather than shrink (5.3).
-- [ ] The three animated moments of 5.2. The ball stagger on Home and the wheel spin are built;
-      **shake the bag is not animated** - it fills the tray instantly.
+- [x] The three animated moments of 5.2: the ball stagger on Home, the wheel spin, and the bag
+      shake, whose numbers land one at a time. With `prefers-reduced-motion` the whole line is in
+      the DOM at once - the animation may never delay the information.
 
 **4.1 Home**
 
@@ -442,9 +444,9 @@ cutover on its own; each is a piece of 4.2-4.4 that was specified and has not be
 - [x] The five methods: spin the wheels, pick by hand, shake the bag, follow a shape, surprise me.
 - [x] One wheel per hot/medium/cold band, spinning only what the filters leave in, and a band with
       nothing left says so rather than spinning nothing.
-- [ ] **The per-band `+` and `-` to add or remove a wheel within a band.** One wheel per band
-      today; the composition a player is building shows in the tray and in the shape card's
-      hot/medium/cold row.
+- [x] The per-band `+` and `-` to add or remove a wheel within a band, down to none, which is how
+      a 4 hot / 1 medium / 1 cold line gets built rather than handed out. A band with no wheel says
+      it contributes nothing.
 - [x] The filters of 4.2: drawn more than N times in the last 5 / 6 / 10 / 25 draws, not drawn at
       all in the last 5 / 10 / 25, freshness bin, was a bonus ball in the recent window, and the
       high or low half. The honest window size is shown, never the artifact's key name.
@@ -457,8 +459,9 @@ cutover on its own; each is a piece of 4.2-4.4 that was specified and has not be
 - [x] Shake the bag: six at once from whatever the filters leave in.
 - [x] Follow a shape: odd/even split and the count at 32 or above, each showing the share of past
       draws with it, and a line built to match.
-- [ ] **The sum band and the spread as shape options.** Both are passed to the page and both are
-      shown on the shape card; neither is yet a control you can build a line from.
+- [x] The sum band and the spread as shape controls, each showing the share of past draws with it,
+      and a line built to match. An impossible combination says so rather than returning a line that
+      does not have that shape.
 - [x] Surprise me: a uniform six from all 47, labelled as being as good as any other method here.
 - [x] The line tray, fixed at the bottom, mixing methods into one line, with clear and fill.
 - [x] The shape card: the six checks of the Prediction Validator as comparisons, each a small
@@ -469,7 +472,8 @@ cutover on its own; each is a piece of 4.2-4.4 that was specified and has not be
       that fires it (F-29).
 - [x] `/api/validate` scores the line server-side from `lib/scoring/`, and `/pick` calls it, so the
       page and the API cannot disagree.
-- [ ] **Save PNG.** The tray has no way to save or share a line as an image.
+- [x] Save PNG: the finished line drawn on a canvas in the browser, in the viewer's own theme,
+      carrying the verdict and the equal-chance sentence with it.
 
 **4.3 Explore**
 
@@ -483,14 +487,18 @@ cutover on its own; each is a piece of 4.2-4.4 that was specified and has not be
       the historical scenario table; and the high-number breakdown against a fair draw (F-19).
 - [x] Statistics: every chart says how many draws it is computed over, and carries a "show the
       numbers" table (5.4).
-- [ ] **Every chart filterable by date range.** The charts are the artifacts' own figures over the
-      whole history. Filtering them by date means recomputing a statistic in the front end, which
-      rule 5 forbids - it belongs in `lotto_analysis/`. The Draws tab, which shows raw history
-      rather than a statistic, does filter by date.
+- [x] A date range on the five charts that are **counted** from the draws - odd and even, sums,
+      spread, the high-number breakdown, the six-ball patterns - each saying how many draws and
+      which dates it covers. No artifact can hold every possible range, so these are counted in
+      `lib/data/ranged.ts`, and only counting is done there: never a statistic with a test or a
+      correction in it. `test/ranged.test.ts` recounts the whole history and asserts every figure
+      equals the artifact's own, which is what keeps rule 5 honest here - and is what found F-63.
+      The per-number odd/even affinity, the seven-ball patterns, the scenarios and the consecutive
+      pairs stay as the engine wrote them and say on the page that a range does not apply.
 - [x] Freshness: the C0-C2+ grid with the bin definitions beside it, a main-6 / all-7 toggle, and
       bin highlighting.
-- [ ] **"Send these to the picker" from a freshness bin.** Selecting a bin highlights it; it does
-      not hand those numbers to `/pick`.
+- [x] "Send these to the picker" from a freshness bin - as a filter rather than a line, since a
+      bin holds far more than six numbers: `/pick?bin=2` opens the picker narrowed to it.
 - [x] Patterns: enter a line and see the past draws most like it, each with how many it shared,
       how common that shape is, and the exact-match case working (F-25).
 - [x] The Trigger Periods filters - category, freshness, volatility, trend, momentum, regime shift
@@ -503,10 +511,13 @@ cutover on its own; each is a piece of 4.2-4.4 that was specified and has not be
 - [x] `/numbers/[n]` with the category, last seen, gaps, recent counts, trend and volatility,
       bonus profile, odd/even against a fair draw's chance, trigger series and appearance history.
 - [x] It reads as a fact sheet, never a rating (F-30).
-- [ ] **"Often with" - the numbers a number is most often drawn with.** No artifact holds general
-      pair counts, only consecutive ones, so this needs a phase in `lotto_analysis/` first.
-- [ ] **"Add this number to my line" actually adding it.** The button links to `/pick` but does not
-      carry the number into the tray.
+- [x] "Often drawn with" - the numbers it has come up with most often. It needed the phase in
+      `lotto_analysis/` first: `number_pair_analyzer.py` counts every pair of main numbers and
+      `drawpick.py` writes `lotto_number_pairs.json`. The fair-draw expectation is shown beside the
+      counts, because over 499 draws the busiest pair is a few appearances above chance and reads
+      as a pairing without it (F-38's rule).
+- [x] "Add this number to my line" carries it: `/pick?numbers=23` opens the picker with 23 already
+      in the tray.
 
 **4.5 Review**
 
@@ -520,7 +531,7 @@ cutover on its own; each is a piece of 4.2-4.4 that was specified and has not be
 
 - [x] The section 6 completeness matrix walked and signed off, with a column recording where each
       row landed.
-- [x] Section 7 green: 100 vitest over the data layer and the scoring, 44 Playwright over the
+- [x] Section 7 green: 118 vitest over the data layer and the scoring, 56 Playwright over the
       rendered pages on desktop and mobile, and 7.2's ingestion integration test.
 - [x] Section 7.4's replacement for `tests/test_site_wording.py`: the source lint over `frontend/`
       and the Playwright pass over every rendered page, both against the same `ADVICE` list.

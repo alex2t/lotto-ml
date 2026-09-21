@@ -35,6 +35,29 @@ order, so ties resolve the same way on every run. It is not reused.
 
 Kept for the record; each is complete and covered by tests.
 
+- **2026-09-21 - F-63, a six-number line was scored against a seven-ball spread.**
+  `lotto_odds_results.json` `draw_range` bins `max(numbers) - min(numbers)` over **all seven**
+  balls: the 19 Sep 2026 draw records 42 there, while its six main numbers span 34. The Phase 4
+  shape card computed a line's spread over its six numbers and looked the band up in that
+  distribution, so a wide line was told it was more ordinary than it is - the seven-ball
+  distribution puts 31.1% of draws in 40-45, the six-ball one 23.5%. The Statistics chart had the
+  same figures under the caption "the spread of the six main numbers".
+
+  This is F-59's shape a second time: a six-ball value read against a seven-ball distribution. It
+  did not announce itself the way F-59 did, because the band keys are shared - it returned a
+  plausible wrong number instead of nothing.
+
+  **Found by a test rather than by reading.** `frontend/test/ranged.test.ts` recounts every
+  distribution from the draw history and asserts it matches the artifact over the whole history.
+  It failed on the spread by 1.41 percentage points, which is what sent me to the analyzer.
+
+  **Fixed** the same way as F-59, upstream: `hmc_analyzer.py` already computed the six-ball metrics
+  and was discarding the range, so it now stores `draw_range_6` per draw,
+  `generate_draw_range_analysis` takes which key to bin, and `drawpick.py` writes
+  `lotto_odds_results.json` `draw_range_6` beside `draw_range`. `spreadBandShares()` reads it.
+  Covered by `tests/test_number_pairs.py::test_the_six_ball_spread_is_written_beside_the_seven_ball_one`,
+  which asserts adding a seventh ball can only widen a span, and by the agreement test that found it.
+
 - **2026-09-21 - F-59 and F-60, the six-ball hot/medium/cold distribution.**
   `validate_hmc_pattern` counted the player's **six** numbers into a pattern like `3-0-3` and looked
   it up in `lotto_odds_results.json` `hmc`, which is over **seven** balls: every key in it sums to 7.
@@ -310,6 +333,7 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-63 | A six-number line's spread was compared with a seven-ball distribution, overstating how ordinary a wide line is | `lotto_analysis/analyzers/hmc_analyzer.py`, `lotto_analysis/utils/output_generator.py`, `drawpick.py`, `frontend/lib/scoring/line.ts` |
 | F-59 | A six-ball hot/medium/cold pattern was looked up in a seven-ball distribution, so every line was told its pattern had never been observed | `lotto_analysis/analyzers/hmc_analyzer.py`, `drawpick.py`, `view/pages/prediction_validator.py` |
 | F-60 | The six-ball pattern distribution was aggregated in the front end instead of written by the engine | `frontend/lib/data/hmc.ts` |
 | F-61 | `verify_artifacts` could call the engine's own fresh artifact stale, over a 2.4e-7 second float rounding | `drawpick.py`, `tests/test_pipeline_completeness.py` |

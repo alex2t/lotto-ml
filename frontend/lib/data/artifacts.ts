@@ -62,6 +62,7 @@ export const ARTIFACTS = {
   recencyZones: 'lotto_recency_zones_calculated.json',
   windowSaturation: 'lotto_window_saturation_calculated.json',
   odds: 'lotto_odds_results.json',
+  numberPairs: 'lotto_number_pairs.json',
 } as const;
 
 export type ArtifactName = keyof typeof ARTIFACTS;

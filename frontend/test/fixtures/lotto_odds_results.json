@@ -294,6 +294,36 @@
             "percentage": 2.2
         }
     },
+    "draw_range_6": {
+        "<20": {
+            "count": 18,
+            "percentage": 3.61
+        },
+        "20-25": {
+            "count": 30,
+            "percentage": 6.01
+        },
+        "25-30": {
+            "count": 68,
+            "percentage": 13.63
+        },
+        "30-35": {
+            "count": 119,
+            "percentage": 23.85
+        },
+        "35-40": {
+            "count": 140,
+            "percentage": 28.06
+        },
+        "40-45": {
+            "count": 117,
+            "percentage": 23.45
+        },
+        ">45": {
+            "count": 7,
+            "percentage": 1.4
+        }
+    },
     "patterns": {
         "2_consecutive": {
             "hit_count": 355,

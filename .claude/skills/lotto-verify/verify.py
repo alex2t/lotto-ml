@@ -45,6 +45,7 @@ TEST_FILES = [
     'tests/test_pipeline_completeness.py',
     'tests/test_docker_stack.py',
     'tests/test_artifact_rounding.py',
+    'tests/test_number_pairs.py',
 ]
 
 # Validation window: 60 draws, 47 numbers, 7 winners per draw

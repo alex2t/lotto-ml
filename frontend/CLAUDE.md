@@ -35,6 +35,8 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 | `lib/data/draws.ts`, `explore.ts` | the draw history: pages, filters, one number's appearances, similar draws |
 | `lib/data/numbers.ts`, `pool.ts`, `table.ts`, `dossier.ts` | the 47 numbers, joined across artifacts |
 | `lib/data/distributions.ts`, `hmc.ts` | the distributions a line is described against |
+| `lib/data/ranged.ts` | the countable distributions over a date range, counted from the draw history |
+| `lib/pick/line-image.ts` | draws a finished line as a PNG, in the browser |
 | `lib/data/schedule.ts`, `staleness.ts` | the next draw, and the three freshness states |
 | `lib/data/picks.ts` | `lottery_picks.txt`, which is absent on the VPS by design |
 | `lib/scoring/` | `line.ts` describes a line, `notes.ts` states facts about it, `bands.ts` mirrors the analyzer's bins |
@@ -65,9 +67,15 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 - **A band boundary belongs to the analyzer, not here.** `lib/scoring/bands.ts` mirrors
   `lotto_analysis/config/config.py` and `utils/output_generator.py`, including that the spread bins
   are half-open while their labels read as inclusive: "20-25" is 20 to 24, and 25 is in "25-30".
-- **A six-number line needs a six-ball distribution.** `lotto_odds_results.json` holds both: every
-  key in `hmc` sums to 7, every key in `hmc_6` sums to 6. Reading `hmc` for a line matched nothing,
-  every time (F-59).
+- **A six-number line needs a six-ball distribution.** `lotto_odds_results.json` holds both of
+  each: `hmc` and `draw_range` span all seven balls, `hmc_6` and `draw_range_6` the main six.
+  Reading `hmc` for a line matched nothing at all (F-59); reading `draw_range` matched the wrong
+  band quietly, because the keys are shared (F-63). Always the `_6` one.
+- **A date range is counted, and the counting is held to the artifact.** No artifact can hold every
+  possible range, so `lib/data/ranged.ts` counts draws - and only counts draws, never a statistic
+  with a test or a correction in it. `test/ranged.test.ts` recounts the whole history and asserts
+  every figure matches the artifact's own. That test is what found F-63; if it ever fails, the
+  counting and the analyzer have drifted and the analyzer is right.
 - **The root layout reads no artifact.** `data/` is a runtime mount and is absent while the image
   builds, so anything the layout read would break Next's prerender of the error pages.
 - **The admin account lives in the repo-root `secrets.env`, not `.env`.** Compose reads `.env` for

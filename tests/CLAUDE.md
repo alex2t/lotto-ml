@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The twenty-three real tests (241 tests, ~50s)
+## The twenty-four real tests (251 tests, ~60s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -19,7 +19,7 @@ python -m pytest tests/test_walk_forward_parity.py tests/test_selection_invarian
                  tests/test_trend_significance.py tests/test_anomaly_detector.py \
                  tests/test_bonus_window.py tests/test_odd_even_affinity.py \
                  tests/test_pipeline_completeness.py tests/test_docker_stack.py \
-                 tests/test_artifact_rounding.py -q
+                 tests/test_artifact_rounding.py tests/test_number_pairs.py -q
 ```
 
 This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two in sync.
@@ -49,6 +49,7 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_artifact_rounding.py` | every float in the 22 JSON artifacts carries at most 12 significant digits, so a host run and a container run are byte-identical (F-46); a tiny p-value survives the rounding and ints, bools and strings are untouched. Reads `data/*.json` |
 | `test_docker_stack.py` | the Docker stack orders its services and stays out of the repo (F-45): no `echo` redirect in either `.bat`, `streamlit-web` and `nextjs-web` both wait for `service_completed_successfully` and mount the artifacts read-only, all three images take the uid as a build arg and the web image runs as it, and `.dockerignore` excludes `data/` and the frontend's `node_modules`/`.next`; the admin hash and session secret reach `nextjs-web` through `env_file` with `format: raw` from `secrets.env`, never `.env` and never `environment:` interpolation (F-58); and the root layout reads no artifact, so the image builds without the data mount (F-62) |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5), as does an empty bonus window (F-42) |
+| `test_number_pairs.py` | the pair counts the dossier shows are written by the engine, not counted in a page: every number has partners, a pair counts the same from both sides, the totals add up to 15 a draw, the bonus is not part of a pair, ties break on the number (F-12), and the fair-draw expectation is published beside the counts so they are never read as a pairing. Also that `draw_range_6` is written beside `draw_range` and sits lower, because a seventh ball can only widen a span (F-63) |
 
 ## The site's own tests are not here
 

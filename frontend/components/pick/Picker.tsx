@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Dices, Grid3x3, Hand, Shapes, Sparkles, X } from 'lucide-react';
+import { Dices, Download, Grid3x3, Hand, Minus, Plus, Shapes, Sparkles, X } from 'lucide-react';
 import { Ball } from '@/components/ui/Ball';
 import { ShapeCard } from './ShapeCard';
 import { Wheel } from './Wheel';
@@ -9,6 +9,8 @@ import { NumberGrid, NumberPeek } from './NumberGrid';
 import type { Pool, PoolNumber } from '@/lib/data/pool';
 import type { Category } from '@/lib/data/types';
 import type { LineShape } from '@/lib/scoring/line';
+import { spreadBand, sumBand } from '@/lib/scoring/bands';
+import { drawLineImage, saveImage } from '@/lib/pick/line-image';
 import {
   NO_FILTERS,
   applyFilters,
@@ -19,6 +21,13 @@ import {
 } from '@/lib/pick/filters';
 
 const LINE_SIZE = 6;
+
+/** The same fixed vocabulary the shape card uses. */
+const VERDICT_SENTENCE = {
+  typical: 'This line looks typical of past draws',
+  uncommon: 'This line looks uncommon next to past draws',
+  unusual: 'This line looks unusual next to past draws',
+} as const;
 const BANDS: Category[] = ['hot', 'medium', 'cold'];
 
 type Method = 'wheels' | 'hand' | 'shake' | 'shape' | 'surprise';
@@ -47,15 +56,39 @@ export interface ShapeOptions {
 interface PickerProps {
   pool: Pool;
   shapeOptions: ShapeOptions;
+  /** The newest draw on file, so a saved image says what it was drawn against. */
+  latestDraw: string;
+  /** Numbers to start the tray with, from /pick?numbers= - a dossier sends one this way. */
+  initialLine?: number[];
+  /** A freshness bin to start filtered to, from /pick?bin= - Explore sends one this way. */
+  initialBin?: number;
 }
 
-export function Picker({ pool, shapeOptions }: PickerProps) {
-  const [method, setMethod] = useState<Method>('wheels');
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
-  const [line, setLine] = useState<number[]>([]);
+export function Picker({
+  pool,
+  shapeOptions,
+  latestDraw,
+  initialLine,
+  initialBin,
+}: PickerProps) {
+  const [method, setMethod] = useState<Method>(
+    initialLine?.length ? 'hand' : 'wheels',
+  );
+  const [filters, setFilters] = useState<Filters>(
+    initialBin === undefined ? NO_FILTERS : { ...NO_FILTERS, bins: [initialBin] },
+  );
+  const [line, setLine] = useState<number[]>(initialLine ?? []);
   const [scored, setScored] = useState<{ key: string; shape: LineShape } | null>(null);
   const [peek, setPeek] = useState<PoolNumber | null>(null);
+  // One wheel per band by default; a band can be given more, or taken down to none, which
+  // is how a player builds a 4 hot / 1 medium / 1 cold line rather than being handed one.
+  const [wheels, setWheels] = useState<Record<Category, number>>({
+    hot: 1,
+    medium: 1,
+    cold: 1,
+  });
   const [note, setNote] = useState<string | null>(null);
+  const [shaking, setShaking] = useState(false);
 
   const available = useMemo(
     () => applyFilters(pool.numbers, filters, pool.highFrom),
@@ -128,7 +161,26 @@ export function Picker({ pool, shapeOptions }: PickerProps) {
       return;
     }
     setNote(null);
-    setLine(sample(available.map((n) => n.number), LINE_SIZE));
+    const picked = sample(available.map((n) => n.number), LINE_SIZE);
+
+    // Animation may never delay information (5.2): with reduced motion, or no window to
+    // schedule on, the whole line is in the DOM immediately.
+    const reduced =
+      typeof window === 'undefined' ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      setLine(picked);
+      return;
+    }
+
+    setShaking(true);
+    setLine([]);
+    picked.forEach((n, i) => {
+      window.setTimeout(() => {
+        setLine((current) => [...current, n]);
+        if (i === picked.length - 1) setShaking(false);
+      }, 90 * (i + 1));
+    });
   }
 
   function surprise() {
@@ -184,13 +236,56 @@ export function Picker({ pool, shapeOptions }: PickerProps) {
       {method === 'wheels' && (
         <section className="grid gap-3 sm:grid-cols-3">
           {BANDS.map((band) => (
-            <Wheel
-              key={band}
-              band={band}
-              numbers={bandNumbers(band)}
-              onPick={add}
-              disabled={line.length >= LINE_SIZE}
-            />
+            <div key={band} className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="capitalize text-muted">{band}</span>
+                <span className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setWheels((w) => ({ ...w, [band]: Math.max(0, w[band] - 1) }))
+                    }
+                    disabled={wheels[band] === 0}
+                    aria-label={`One fewer ${band} wheel`}
+                    className="rounded-full border border-border p-1 disabled:opacity-40"
+                  >
+                    <Minus className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+                  <span className="w-12 text-center text-xs text-muted" aria-live="polite">
+                    {wheels[band]} {wheels[band] === 1 ? 'wheel' : 'wheels'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setWheels((w) => ({ ...w, [band]: Math.min(LINE_SIZE, w[band] + 1) }))
+                    }
+                    disabled={wheels[band] >= LINE_SIZE}
+                    aria-label={`One more ${band} wheel`}
+                    className="rounded-full border border-border p-1 disabled:opacity-40"
+                  >
+                    <Plus className="h-3.5 w-3.5" aria-hidden />
+                  </button>
+                </span>
+              </div>
+
+              {wheels[band] === 0 ? (
+                <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted">
+                  No {band} wheel - this band contributes nothing.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: wheels[band] }, (_, i) => (
+                    <Wheel
+                      key={`${band}-${i}`}
+                      band={band}
+                      numbers={bandNumbers(band)}
+                      onPick={add}
+                      disabled={line.length >= LINE_SIZE}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </section>
       )}
@@ -215,9 +310,11 @@ export function Picker({ pool, shapeOptions }: PickerProps) {
           <button
             type="button"
             onClick={shakeTheBag}
-            className="rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-foreground"
+            className={`rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-foreground ${
+              shaking ? 'bag-shaking' : ''
+            }`}
           >
-            Shake
+            {shaking ? 'Shaking' : 'Shake'}
           </button>
         </section>
       )}
@@ -254,6 +351,7 @@ export function Picker({ pool, shapeOptions }: PickerProps) {
         line={line}
         pool={pool}
         shape={shape}
+        latestDraw={latestDraw}
         onClear={() => {
           setLine([]);
           setNote(null);
@@ -454,20 +552,41 @@ function ShapeBuilder({
 }) {
   const [odd, setOdd] = useState<number | null>(null);
   const [high, setHigh] = useState<number | null>(null);
+  const [sum, setSum] = useState<string | null>(null);
+  const [spread, setSpread] = useState<string | null>(null);
 
   function build() {
     const numbers = available.map((n) => n.number);
-    for (let attempt = 0; attempt < 4000; attempt += 1) {
+    for (let attempt = 0; attempt < 20000; attempt += 1) {
       const candidate = sample(numbers, LINE_SIZE);
       if (candidate.length < LINE_SIZE) break;
       const odds = candidate.filter((n) => n % 2 === 1).length;
       const highs = candidate.filter((n) => n >= pool.highFrom).length;
       if (odd !== null && odds !== odd) continue;
       if (high !== null && highs !== high) continue;
+      if (sum !== null) {
+        const total = candidate.reduce((a, b) => a + b, 0);
+        if (sumBand(total).key !== sum) continue;
+      }
+      if (spread !== null) {
+        const range = Math.max(...candidate) - Math.min(...candidate);
+        if (spreadBand(range).key !== spread) continue;
+      }
       onLine(candidate.sort((a, b) => a - b));
       return;
     }
-    onLine([], 'No line in the remaining pool has that shape - try relaxing a filter.');
+    onLine(
+      [],
+      'No line in the remaining pool has that shape - try dropping one of the choices or a filter.',
+    );
+  }
+
+  function reset() {
+    setOdd(null);
+    setHigh(null);
+    setSum(null);
+    setSpread(null);
+    onLine([]);
   }
 
   return (
@@ -521,13 +640,60 @@ function ShapeBuilder({
         </div>
       </fieldset>
 
-      <button
-        type="button"
-        onClick={build}
-        className="w-fit rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-foreground"
-      >
-        Fill a line with this shape
-      </button>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-medium">Sum</legend>
+        <div className="flex flex-wrap gap-2">
+          {options.sums.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              aria-pressed={sum === option.key}
+              onClick={() => setSum(sum === option.key ? null : option.key)}
+              className={`rounded-full border px-3 py-1.5 text-sm ${
+                sum === option.key
+                  ? 'border-accent bg-accent text-accent-foreground'
+                  : 'border-border'
+              }`}
+            >
+              {option.label} - {option.percentage.toFixed(1)}%
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-medium">Spread, highest minus lowest</legend>
+        <div className="flex flex-wrap gap-2">
+          {options.spreads.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              aria-pressed={spread === option.key}
+              onClick={() => setSpread(spread === option.key ? null : option.key)}
+              className={`rounded-full border px-3 py-1.5 text-sm ${
+                spread === option.key
+                  ? 'border-accent bg-accent text-accent-foreground'
+                  : 'border-border'
+              }`}
+            >
+              {option.label} - {option.percentage.toFixed(1)}%
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <div className="flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={build}
+          className="w-fit rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-foreground"
+        >
+          Fill a line with this shape
+        </button>
+        <button type="button" onClick={reset} className="text-sm underline">
+          Clear the shape
+        </button>
+      </div>
     </section>
   );
 }
@@ -536,6 +702,7 @@ function Tray({
   line,
   pool,
   shape,
+  latestDraw,
   onClear,
   onRemove,
   onFill,
@@ -543,6 +710,7 @@ function Tray({
   line: number[];
   pool: Pool;
   shape: LineShape | null;
+  latestDraw: string;
   onClear: () => void;
   onRemove: (n: number) => void;
   onFill: () => void;
@@ -550,6 +718,17 @@ function Tray({
   const slots = Array.from({ length: LINE_SIZE }, (_, i) => line[i]);
   const categoryOf = (n: number) =>
     pool.numbers.find((p) => p.number === n)?.category;
+
+  async function savePng() {
+    if (!shape) return;
+    const blob = await drawLineImage({
+      numbers: shape.line,
+      categoryOf,
+      verdict: VERDICT_SENTENCE[shape.verdict],
+      drawDate: latestDraw,
+    });
+    if (blob) saveImage(blob, shape.line);
+  }
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 backdrop-blur">
@@ -566,7 +745,7 @@ function Tray({
                 />
               ) : (
                 <button key={n} type="button" onClick={() => onRemove(n)} title={`Remove ${n}`}>
-                  <Ball number={n} category={categoryOf(n)} size="sm" />
+                  <Ball number={n} category={categoryOf(n)} size="sm" className="ball-enter" />
                 </button>
               ),
             )}
@@ -585,6 +764,16 @@ function Tray({
                 className="rounded-full border border-border px-3 py-1.5 text-sm"
               >
                 Fill the rest
+              </button>
+            )}
+            {shape && (
+              <button
+                type="button"
+                onClick={savePng}
+                className="flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-sm"
+              >
+                <Download className="h-3.5 w-3.5" aria-hidden />
+                Save PNG
               </button>
             )}
           </span>

@@ -3,6 +3,7 @@
  *
  * A fact sheet, never a rating: nothing here scores a number or calls it due (F-30).
  */
+import { artifact, requireKey } from './artifacts';
 import { allDraws, byNumber } from './draws';
 import { record, series, summary, type NumberRecord } from './numbers';
 import { pool, type PoolNumber } from './pool';
@@ -23,6 +24,18 @@ export interface GapStats {
   currentDraws: number;
 }
 
+export interface Partner {
+  number: number;
+  count: number;
+}
+
+export interface Partners {
+  /** The numbers most often drawn with this one. */
+  top: Partner[];
+  /** How often any pair comes up in a fair draw over the same history. */
+  expected: number;
+}
+
 export interface Dossier {
   number: number;
   profile: PoolNumber;
@@ -31,6 +44,8 @@ export interface Dossier {
   gaps: GapStats;
   /** The trigger series the artifact records for this number. */
   series: Record<string, unknown>;
+  /** The numbers it has come up with most often, and what chance alone gives (F-38's rule). */
+  partners: Partners;
 }
 
 /** Gaps measured in draws between appearances. */
@@ -84,5 +99,29 @@ export function dossier(n: number): Dossier {
       allDraws().map((d) => d.draw_date),
     ),
     series: series(n),
+    partners: partners(n),
+  };
+}
+
+/** Co-occurrence counts, written by drawpick.py - the site does not count them itself. */
+function partners(n: number): Partners {
+  const pairs = artifact<Record<string, unknown>>('numberPairs');
+  const perNumber = requireKey<Record<string, { top_partners: Partner[] }>>(
+    pairs,
+    'per_number',
+    'lotto_number_pairs.json',
+  );
+  const record = requireKey<{ top_partners: Partner[] }>(
+    perNumber,
+    String(n),
+    'lotto_number_pairs.json.per_number',
+  );
+  return {
+    top: record.top_partners,
+    expected: requireKey<number>(
+      pairs,
+      'expected_count_per_pair',
+      'lotto_number_pairs.json',
+    ),
   };
 }

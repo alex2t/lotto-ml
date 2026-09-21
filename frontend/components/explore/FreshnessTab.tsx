@@ -77,12 +77,17 @@ export function FreshnessTab({ bin, mode = '6' }: { bin?: number; mode?: '6' | '
                   </li>
                 ))}
               </ul>
-              <Link
-                href={selected ? '/explore?tab=freshness' : `/explore?tab=freshness&bin=${b}`}
-                className="text-xs underline"
-              >
-                {selected ? 'Clear highlight' : 'Highlight this bin'}
-              </Link>
+              <span className="flex flex-wrap gap-3 text-xs">
+                <Link
+                  href={selected ? '/explore?tab=freshness' : `/explore?tab=freshness&bin=${b}`}
+                  className="underline"
+                >
+                  {selected ? 'Clear highlight' : 'Highlight this bin'}
+                </Link>
+                <Link href={`/pick?bin=${b}`} className="underline">
+                  Send these to the picker
+                </Link>
+              </span>
             </div>
           );
         })}

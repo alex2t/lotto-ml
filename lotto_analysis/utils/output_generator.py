@@ -28,12 +28,18 @@ def generate_hmc_analysis(hmc_counts: Dict, total_analyzed_draws: int) -> Dict:
 
 
 def generate_draw_range_analysis(categorization_history: Dict, 
-                                 total_analyzed_draws: int) -> Dict:
-    """Generates the Draw Range Analysis data."""
+                                 total_analyzed_draws: int,
+                                 range_key: str = 'draw_range') -> Dict:
+    """
+    Generates the Draw Range Analysis data.
+
+    `range_key` picks which spread to bin: 'draw_range' spans all 7 balls, 'draw_range_6'
+    the main 6. A six-number line can only be compared with the second (F-63).
+    """
     range_counts = defaultdict(int)
     
     for draw_data in categorization_history.values():
-        draw_range = draw_data['draw_range']
+        draw_range = draw_data[range_key]
         
         # Categorize the draw range into the defined bins
         is_counted = False

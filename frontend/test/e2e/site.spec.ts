@@ -247,3 +247,65 @@ test.describe('the wording guard, on real lines', () => {
     });
   }
 });
+
+test.describe('the pieces added after the first pass', () => {
+  test('a dossier hands its number to the picker', async ({ page }) => {
+    await page.goto('/numbers/23');
+    await page.getByRole('link', { name: /add 23 to a line/i }).click();
+    await expect(page).toHaveURL(/\/pick\?numbers=23/);
+    await expect(page.getByText(/1 of 6 chosen/)).toBeVisible();
+  });
+
+  test('a freshness bin is sent to the picker as a filter', async ({ page }) => {
+    await page.goto('/explore?tab=freshness');
+    await page.getByRole('link', { name: 'Send these to the picker' }).first().click();
+    await expect(page).toHaveURL(/\/pick\?bin=/);
+    await expect(page.getByText(/freshness C/)).toBeVisible();
+  });
+
+  test('a band can be given another wheel, or none at all', async ({ page }) => {
+    await page.goto('/pick');
+    const before = await page.getByRole('button', { name: 'Spin', exact: true }).count();
+    await page.getByRole('button', { name: 'One more hot wheel' }).click();
+    await expect(page.getByRole('button', { name: 'Spin', exact: true })).toHaveCount(
+      before + 1,
+    );
+
+    for (let i = 0; i < 2; i += 1) {
+      await page.getByRole('button', { name: 'One fewer hot wheel' }).click();
+    }
+    await expect(page.getByText(/No hot wheel/)).toBeVisible();
+  });
+
+  test('a shape can be built from a sum band', async ({ page }) => {
+    await page.goto('/pick');
+    await page.getByRole('button', { name: 'Follow a shape' }).click();
+    await page.getByRole('button', { name: /^140-154/ }).click();
+    await page.getByRole('button', { name: 'Fill a line with this shape' }).click();
+    await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
+    await expect(page.getByText(/140-154/).first()).toBeVisible();
+  });
+
+  test('a finished line can be saved as a PNG', async ({ page }) => {
+    await page.goto('/pick');
+    await page.getByRole('button', { name: 'Surprise me', exact: true }).first().click();
+    await page.getByRole('button', { name: 'Surprise me', exact: true }).last().click();
+    await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Save PNG' }).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toMatch(/^lotto-line-[\d-]+\.png$/);
+  });
+
+  test('the counted charts follow a date range', async ({ page }) => {
+    await page.goto('/explore?tab=statistics');
+    const all = await page.getByText(/Over all \d+ draws/).first().innerText();
+
+    await page.goto('/explore?tab=statistics&from=2026-01-01');
+    const ranged = await page.getByText(/Over \d+ draws, /).first().innerText();
+    expect(ranged).not.toBe(all);
+    // The charts the engine wrote say plainly that a range does not apply to them.
+    await expect(page.getByText(/a date range does not apply/).first()).toBeVisible();
+  });
+});

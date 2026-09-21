@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { BarChart, type Bar } from '@/components/charts/BarChart';
 import { numberRows } from '@/lib/data/table';
+import { distributionsBetween } from '@/lib/data/ranged';
+import { allDraws } from '@/lib/data/draws';
 import {
   consecutivePairs,
   highNumbers,
@@ -11,7 +13,6 @@ import {
   sumDistributions,
   totalDraws,
 } from '@/lib/data/distributions';
-import { sixBallPatterns } from '@/lib/data/hmc';
 import { artifact, requireKey } from '@/lib/data/artifacts';
 import { record } from '@/lib/data/numbers';
 import { ALL_NUMBERS } from '@/lib/data/numbers';
@@ -60,8 +61,20 @@ function sevenBallPatterns(): Array<[string, number]> {
     .slice(0, 12);
 }
 
-export function StatisticsTab() {
+export function StatisticsTab({ from, to }: { from?: string; to?: string }) {
   const draws = totalDraws();
+  // A range is counted from the draw history; with no range these are the artifacts' own
+  // figures, and test/ranged.test.ts asserts the two agree over the whole history.
+  const ranged = distributionsBetween(from, to);
+  const filtered = Boolean(from || to);
+  const over = filtered
+    ? `${ranged.draws} draws, ${ranged.from} to ${ranged.to}`
+    : `all ${draws} draws`;
+  const share = (group: { key: string; percentage: number }[], key: string) =>
+    group.find((g) => g.key === key)?.percentage ?? 0;
+  const history = allDraws();
+  const firstDate = history[0].draw_date;
+  const lastDate = history[history.length - 1].draw_date;
   const rows = numberRows();
   const mostVolatile = [...rows].sort((a, b) => b.volatility - a.volatility).slice(0, 8);
   const biggestChange = [...rows]
@@ -77,10 +90,10 @@ export function StatisticsTab() {
     'lotto_consecutive_pairs_validated.json',
   );
 
-  const oddEvenBars: Bar[] = Object.entries(oddEvenPatterns('6_main')).map(([k, v]) => ({
+  const oddEvenBars: Bar[] = Object.keys(oddEvenPatterns('6_main')).map((k) => ({
     key: k,
     label: `${k.split('_')[0]} odd / ${k.split('_')[1]} even`,
-    value: v.percentage,
+    value: share(ranged.oddEven, k),
   }));
 
   const affinityBars: Bar[] = ALL_NUMBERS.map((n) => {
@@ -98,7 +111,49 @@ export function StatisticsTab() {
     .slice(0, 12);
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="flex flex-col gap-4">
+      <form className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface p-4 text-sm">
+        <input type="hidden" name="tab" value="statistics" />
+        <div className="flex flex-col gap-1">
+          <label htmlFor="stats-from">From</label>
+          <input
+            id="stats-from"
+            type="date"
+            name="from"
+            min={firstDate}
+            max={lastDate}
+            defaultValue={from ?? ''}
+            className="rounded border border-border bg-background p-1"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="stats-to">To</label>
+          <input
+            id="stats-to"
+            type="date"
+            name="to"
+            min={firstDate}
+            max={lastDate}
+            defaultValue={to ?? ''}
+            className="rounded border border-border bg-background p-1"
+          />
+        </div>
+        <button type="submit" className="rounded-full bg-accent px-4 py-2 text-accent-foreground">
+          Apply to the counted charts
+        </button>
+        {filtered && (
+          <Link href="/explore?tab=statistics" className="underline">
+            All draws
+          </Link>
+        )}
+        <p className="w-full text-xs text-muted">
+          The range applies to the five charts counted straight from the draws: odd and
+          even, sums, spread, the high-number breakdown and the six-ball patterns. The rest
+          are figures the engine wrote over the whole history, and say so.
+        </p>
+      </form>
+
+      <div className="grid gap-4 md:grid-cols-2">
       <Panel
         title="Hot, medium and cold right now"
         note={`How the 47 numbers split today. Recency-based: hot means drawn in the last 13 days, medium 14 to 26, cold 27 or more.`}
@@ -114,29 +169,32 @@ export function StatisticsTab() {
         />
       </Panel>
 
-      <Panel title="Six-ball hot/medium/cold patterns" note={`Over ${draws} draws.`}>
+      <Panel title="Six-ball hot/medium/cold patterns" note={`Over ${over}.`}>
         <BarChart
           caption="Each draw's six main numbers, by the categories they held before it."
-          bars={sixBallPatterns()
+          bars={ranged.hmc
             .slice(0, 12)
-            .map((p) => ({ key: p.pattern, label: p.pattern, value: p.percentage }))}
+            .map((p) => ({ key: p.key, label: p.key, value: p.percentage }))}
         />
       </Panel>
 
-      <Panel title="Seven-ball patterns" note="The same, counting the bonus ball.">
+      <Panel
+        title="Seven-ball patterns"
+        note={`The same, counting the bonus ball. Written by the engine over all ${draws} draws, so a date range does not apply.`}
+      >
         <BarChart
           caption="From lotto_odds_results.json."
           bars={sevenBallPatterns().map(([k, v]) => ({ key: k, label: k, value: v }))}
         />
       </Panel>
 
-      <Panel title="Odd and even" note={`Over ${draws} draws.`}>
+      <Panel title="Odd and even" note={`Over ${over}.`}>
         <BarChart caption="The split of the six main numbers." bars={oddEvenBars} />
       </Panel>
 
       <Panel
         title="Each number's odd-draw share"
-        note="Shown against what a fair draw gives, because the two only mean something together (F-38)."
+        note={`Shown against what a fair draw gives, because the two only mean something together (F-38). Written by the engine over all ${draws} draws, so a date range does not apply.`}
       >
         <BarChart
           caption="A number's share of odd-heavy draws."
@@ -147,28 +205,28 @@ export function StatisticsTab() {
 
       <Panel
         title="Sums"
-        note={`Mean ${sums.mean.toFixed(1)}, median ${sums.median}, standard deviation ${sums.std.toFixed(1)}.`}
+        note={`Over ${over}. Across the whole history the mean is ${sums.mean.toFixed(1)}, the median ${sums.median} and the standard deviation ${sums.std.toFixed(1)}.`}
       >
         <BarChart
           caption="The sum of the six main numbers."
-          bars={Object.entries(sumDistributions('6_main')).map(([k, v]) => ({
+          bars={Object.keys(sumDistributions('6_main')).map((k) => ({
             key: k,
             label: bandLabel(k),
-            value: v.percentage,
+            value: share(ranged.sums, k),
           }))}
         />
       </Panel>
 
       <Panel
         title="Spread"
-        note={`Highest minus lowest. Mean ${spreads.mean.toFixed(1)}, median ${spreads.median}.`}
+        note={`Highest minus lowest, over ${over}. Across the whole history the mean is ${spreads.mean.toFixed(1)} and the median ${spreads.median}.`}
       >
         <BarChart
           caption="The spread of the six main numbers."
-          bars={Object.entries(spreadBandShares()).map(([k, v]) => ({
+          bars={Object.keys(spreadBandShares()).map((k) => ({
             key: k,
             label: k,
-            value: v,
+            value: share(ranged.spreads, k),
           }))}
         />
       </Panel>
@@ -178,11 +236,11 @@ export function StatisticsTab() {
         note="Next to what a fair draw would give. Most people pick birthday numbers, so a high line shares a prize less often - it does not win more often (F-19)."
       >
         <BarChart
-          caption={`Draws by their count of main numbers at ${high.highFrom} or above.`}
+          caption={`Draws by their count of main numbers at ${high.highFrom} or above, over ${over}.`}
           bars={Object.entries(high.byCount).map(([k, v]) => ({
             key: k,
             label: `${k} of six`,
-            value: v.percentage,
+            value: share(ranged.highNumbers, k),
             reference: v.fair_percentage,
           }))}
           referenceLabel="a fair draw"
@@ -267,6 +325,7 @@ export function StatisticsTab() {
           bars={topPairs.map(([k, v]) => ({ key: k, label: k, value: v }))}
         />
       </Panel>
+      </div>
     </div>
   );
 }
