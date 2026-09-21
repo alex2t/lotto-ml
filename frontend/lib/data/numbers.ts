@@ -75,6 +75,12 @@ export function summary(n: number): NumberSummary {
   };
 }
 
+/** The trigger series the artifact records for a number. */
+export function series(n: number): Record<string, unknown> {
+  assertNumber(n);
+  return trigger(n).series;
+}
+
 export function allSummaries(): NumberSummary[] {
   return ALL_NUMBERS.map(summary);
 }

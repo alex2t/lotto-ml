@@ -54,15 +54,38 @@ def final_score(at):
     return int(next(m.value for m in at.metric if m.label == 'Final Score').split('/')[0])
 
 
-@pytest.mark.parametrize('line, band', [(TYPICAL_LINE, 'high'), (UNUSUAL_LINE, 'low')])
-def test_validator_verdict_describes_typicality_not_a_chance_of_winning(line, band):
-    at = render('prediction_validator', line)
-    score = final_score(at)
-    assert score >= 80 if band == 'high' else score < 60
-    text = page_text(at)
+@pytest.mark.parametrize('line', [TYPICAL_LINE, UNUSUAL_LINE])
+def test_validator_describes_typicality_not_a_chance_of_winning(line):
+    """Whatever the line, the page describes it and never advises on it."""
+    text = page_text(render('prediction_validator', line))
     assert_no_advice(text)
     assert EQUAL_CHANCE in text
-    assert 'typical of past draws' in text if band == 'high' else 'unusual next to past draws' in text
+    assert any(word in text for word in
+               ('typical of past draws', 'unusual next to past draws')), text[:200]
+
+
+def test_validator_separates_a_typical_line_from_an_extreme_one():
+    """
+    The score says how typical a line looks, so an ordinary line must come out above a line
+    of six consecutive low numbers, whose sum and spread are both unlike any typical draw.
+
+    This asserts the ordering rather than a fixed threshold. It used to require the run of
+    six to land under 60, which held only while the HMC check was broken: it looked a
+    six-ball pattern up in a seven-ball distribution, found nothing, and took 80 points off
+    EVERY line (F-59). With that fixed the run of six scores 70 - its odd/even split and
+    its hot/medium/cold shape really are ordinary - while the typical line scores 100, and
+    the two checks that should object to it, sum and spread, are the two that do.
+    """
+    typical = render('prediction_validator', TYPICAL_LINE)
+    extreme = render('prediction_validator', UNUSUAL_LINE)
+
+    assert final_score(typical) >= 80
+    assert final_score(extreme) < final_score(typical)
+
+    # The checks that object to a run of six low numbers are sum and spread.
+    statuses = [m.value for m in extreme.metric if m.label == 'Status']
+    assert statuses.count('❌') >= 2, statuses
+    assert any(m.label == 'Total Alerts' and int(m.value) > 0 for m in extreme.metric)
 
 
 def test_validator_grade_legend_gives_no_advice_to_play_or_regenerate():
@@ -179,3 +202,29 @@ def test_repeat_alert_says_a_repeat_is_as_likely_as_any_line():
     alerts = detect_anomalies(history[max(history)]['main_numbers'])[0]
     repeat = next(a for a in alerts if a['category'] == 'Pattern Repetition')
     assert 'as likely' in repeat['details']
+
+# --- F-59: a six-number line needs a six-ball distribution -------------------------------
+
+def test_hmc_check_compares_a_line_with_the_six_ball_distribution():
+    """
+    Every key in `hmc` sums to 7, so a six-ball pattern could never be found there and the
+    page told every line its pattern had never been observed, scoring it 20/100 (F-59).
+    """
+    from view.pages.prediction_validator import validate_hmc_pattern
+
+    odds = json.load(open('data/lotto_odds_results.json', encoding='utf-8'))
+    trigger = json.load(open('data/lotto_trigger_periods.json', encoding='utf-8'))
+
+    assert {sum(int(x) for x in k.split('-')) for k in odds['hmc_6']} == {6}
+    assert {sum(int(x) for x in k.split('-')) for k in odds['hmc']} == {7}
+
+    lines = [[5, 12, 23, 31, 38, 44], [1, 2, 3, 4, 5, 6], [2, 9, 17, 25, 33, 46]]
+    messages = []
+    for line in lines:
+        _, message, score = validate_hmc_pattern(line, trigger, odds)
+        messages.append(message)
+        assert 'never observed' not in message, message
+        assert score > 20.0, (line, score)
+
+    # And the check must actually distinguish lines, not hand out one answer.
+    assert len(set(messages)) > 1, messages

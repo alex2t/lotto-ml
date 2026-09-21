@@ -88,8 +88,10 @@ def validate_hmc_pattern(numbers: List[int], trigger_data: Dict, odds_data: Dict
 
     pattern = f"{hot_count}-{medium_count}-{cold_count}"
 
-    # Check against historical HMC data
-    hmc_data = odds_data.get('hmc', {})
+    # The line is six numbers, so compare it with the six-ball distribution. 'hmc' is over
+    # all seven balls - every key in it sums to 7 - so a six-ball pattern could never match
+    # and every line was told it had never been observed (F-59).
+    hmc_data = odds_data['hmc_6']
     pattern_info = hmc_data.get(pattern, {})
     percentage = pattern_info.get('percentage', 0)
 

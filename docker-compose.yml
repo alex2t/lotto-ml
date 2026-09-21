@@ -59,14 +59,14 @@ services:
       - "3000:3000"
     volumes:
       - ./data:/app/data:ro
-    # The admin account and session secret come from the .env beside this file, passed with
-    # env_file rather than `environment:` interpolation: a bcrypt hash always contains `$$`,
-    # and compose expands `$$name` inside an interpolated value, so the hash arrived mangled
-    # and every login failed (F-58). env_file values are passed through literally.
-    # The file is optional - unset, the public site still works and only the login route
-    # fails, and one account's failure must never take the site down.
+    # The admin account comes from secrets.env, not .env: compose reads .env for its own
+    # variable substitution, and a bcrypt hash is full of `$$` signs that it would try to
+    # expand there - the hash arrived mangled and every login failed (F-58). `format: raw`
+    # passes the file through literally, and `required: false` keeps the public site
+    # starting without an admin account, because one account's failure must never take the
+    # site down.
     env_file:
-      - path: .env
+      - path: secrets.env
         required: false
         format: raw
     environment:

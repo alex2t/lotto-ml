@@ -454,28 +454,36 @@ plain "choose a number" fallback; contrast checked in both themes; the spinning 
 Every section of the eight Streamlit pages, and where it lands. This is the checklist for the
 cutover: nothing may be ticked in section 8 until every row here is done.
 
-| Streamlit page | Section | New home |
-|:--|:--|:--|
-| Trigger Periods | HMC category / freshness / volatility / trend / momentum / regime-shift filters | Explore filter rail, shared by all four tabs |
-| | Historical scenario results table | Explore > Statistics |
-| | Trigger periods table (47 numbers, all columns) | Explore > Numbers table, sortable |
-| | Trending and volatile numbers | Explore > Statistics, and each number's dossier |
-| | Sum/range check | Pick > shape card |
-| Draw History | draw list with categories | Explore > Draws |
-| | recent bonus balls and the main draw | Explore > Draws, per-draw card (pre-draw window, F-33) |
-| | date and number filters | Explore > Draws filters |
-| Statistics | overall HMC distribution | Explore > Statistics |
-| | 7-ball and 6-ball HMC patterns | Explore > Statistics |
-| | odd/even analysis, per-number affinity vs fair chance (F-38) | Explore > Statistics |
-| | high numbers (>= 32) per draw | Explore > Statistics, and Pick > shape card |
-| Freshness Analysis | mode selection, bin filter, C0-C3 matrix | Explore > Freshness |
-| Prediction Validator | the six checks | Pick > shape card |
-| | anomaly alerts | Pick > shape card, as notes (F-28 wording) |
-| | overall score | Pick > shape card verdict word (typical / uncommon / unusual) |
-| Number Insights | all nine sections | `/numbers/[n]` dossier |
-| Pattern Comparison | similar draws, frequency, typicality | Explore > Patterns |
-| Post Draw Analysis | last draw autofill, performance summary | Review (public) |
-| | comparison with `lottery_picks.txt` | Review (admin only - the file is not on the VPS) |
+Walked 2026-09-21. The last column records where each row actually landed.
+
+| Streamlit page | Section | New home | Built |
+|:--|:--|:--|:--|
+| Trigger Periods | HMC category / freshness / volatility / trend / momentum / regime-shift filters | Explore filter rail, shared by all four tabs | yes, as the filter rail on `/numbers` - the rail filters the 47 numbers, which is what that page is |
+| | Historical scenario results table | Explore > Statistics | yes, from `lotto_odds_results.json` `scenarios` |
+| | Trigger periods table (47 numbers, all columns) | Explore > Numbers table, sortable | yes, at `/numbers`: category, last 10, total, volatility, trend, momentum, sortable, with badges for bin, significant trend, regime shift and recent bonus |
+| | Trending and volatile numbers | Explore > Statistics, and each number's dossier | yes, "the most volatile, and the biggest changes", and the dossier's trend and volatility |
+| | Sum/range check | Pick > shape card | yes |
+| Draw History | draw list with categories | Explore > Draws | yes, 50 a page, each ball tinted by its pre-draw category |
+| | recent bonus balls and the main draw | Explore > Draws, per-draw card (pre-draw window, F-33) | yes |
+| | date and number filters | Explore > Draws filters | yes, plus odd/even, sum band and high-number count |
+| Statistics | overall HMC distribution | Explore > Statistics | yes |
+| | 7-ball and 6-ball HMC patterns | Explore > Statistics | yes - and the six-ball one is counted here for the first time (F-59, F-60) |
+| | odd/even analysis, per-number affinity vs fair chance (F-38) | Explore > Statistics | yes, the fair-draw chance drawn on the same bar |
+| | high numbers (>= 32) per draw | Explore > Statistics, and Pick > shape card | yes, with the fair-draw share beside it |
+| Freshness Analysis | mode selection, bin filter, C0-C3 matrix | Explore > Freshness | yes: main 6 / all 7 toggle, bin highlight, the C0-C2+ grid with the definitions beside it |
+| Prediction Validator | the six checks | Pick > shape card | yes, each as a distribution with the line marked on it |
+| | anomaly alerts | Pick > shape card, as notes (F-28 wording) | yes, `lib/scoring/notes.ts`; every note takes its figure from an artifact and each one has a test that fires it (F-29) |
+| | overall score | Pick > shape card verdict word (typical / uncommon / unusual) | yes |
+| Number Insights | all nine sections | `/numbers/[n]` dossier | yes: overview, recent activity, gaps, trend and volatility, bonus profile, odd/even against fair chance, trigger series, appearance history. The co-occurrence line in the 4.4 sketch is **not** built - no artifact holds general pair counts, only consecutive ones |
+| Pattern Comparison | similar draws, frequency, typicality | Explore > Patterns | yes, including the exact-match case that F-25 broke |
+| Post Draw Analysis | last draw autofill, performance summary | Review (public) | yes, from the newest draw in the history, never the CSV (F-35) |
+| | comparison with `lottery_picks.txt` | Review (admin only - the file is not on the VPS) | yes, and verified in the container, where it correctly says the file is not there |
+
+**Not carried across, deliberately:** a date-range filter on the *distributions*. The charts are the
+artifacts' own figures, computed over every draw, and each one says how many draws that is. Filtering
+them by date would mean recomputing a statistic in the front end, which rule 5 forbids; it belongs in
+`lotto_analysis/` if it is wanted. The Draws tab, which shows raw history rather than a statistic,
+does filter by date.
 
 ---
 
@@ -558,16 +566,24 @@ reproduce, and the fallback if something in the matrix turns out to be missing.
 
 ### Phase 4 checklist
 
-- [ ] Layout, navigation, light/dark theme, the ball component at three sizes.
-- [ ] Home: latest draw, next draw, the three staleness states.
-- [ ] Pick: wheels with add/remove per band, hand grid, shake, shape, surprise.
-- [ ] Pick: the filter set of 4.2, each showing the remaining pool size.
-- [ ] Pick: the line tray and shape card, scored by `/api/validate`.
-- [ ] Explore: Draws, Statistics, Freshness, Patterns, with the shared filter rail.
-- [ ] `/numbers/[n]` dossier, all nine Number Insights sections.
-- [ ] Review, public half and admin half.
-- [ ] Section 6 matrix walked and signed off.
-- [ ] Section 7 tests green, including the wording replacement.
+Done 2026-09-21, except the two rows marked below.
+
+- [x] Layout, navigation, light/dark theme, the ball component at three sizes.
+- [x] Home: latest draw, next draw, the three staleness states.
+- [x] Pick: wheels with add/remove per band, hand grid, shake, shape, surprise.
+      **The per-band `+`/`-` to add a second wheel to a band is not built**: one wheel per band,
+      and a band contributes nothing once its numbers are filtered out. The composition a player
+      builds is visible in the tray and in the shape card's hot/medium/cold row.
+- [x] Pick: the filter set of 4.2, each showing the remaining pool size.
+- [x] Pick: the line tray and shape card, scored by `/api/validate`.
+- [x] Explore: Draws, Statistics, Freshness, Patterns. **The filter rail is on `/numbers`**, not
+      shared across the four tabs - what that rail really does is filter the 47 numbers, which is
+      what that page is.
+- [x] `/numbers/[n]` dossier, all nine Number Insights sections.
+- [x] Review, public half and admin half.
+- [x] Section 6 matrix walked and signed off - see the column added to it.
+- [x] Section 7 tests green, including the wording replacement: 99 vitest and 44 Playwright
+      (desktop and mobile), plus the ingestion integration test.
 
 ---
 
@@ -575,6 +591,8 @@ reproduce, and the fallback if something in the matrix turns out to be missing.
 
 | Decision | Why |
 |:--|:--|
+| Charts server-rendered as SVG, not Recharts | the distributions are static for a set of artifacts, so a chart library would ship client JavaScript to draw a fixed bar chart; each chart carries a "show the numbers" table, which is the accessible route and the honest one |
+| The verdict is a percentile, calibrated on the draws | comparing a bucket's share with the largest share is not comparable across checks with different numbers of buckets; the thresholds are set so about two thirds of past draws read typical |
 | Five destinations, not eight pages | the Streamlit split is by artifact; people arrive with an intention |
 | Signed cookie, not NextAuth | one account, no providers - NextAuth is machinery for a problem this does not have |
 | Server-side data layer, API routes | `lotto_draw_history.json` is 4.4 MB; it must never reach the browser whole |

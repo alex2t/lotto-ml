@@ -284,15 +284,29 @@ cutover of section 8 - Streamlit on 8501, Next.js on 3000.
       site serves the new draw with no restart.
 
 ### Phase 4: Frontend UI Migration & Component Build
-- [ ] Build shared navigation and responsive layout with light/dark theme support.
-- [ ] Migrate statistical pages:
-  - **Triggers & History**: Table view with hot/medium/cold badges and date filters.
-  - **Statistics**: Chart visualizers for odd/even ratios, sums, and numbers $\ge 32$.
-  - **Freshness**: Visual matrix of bins 0–3.
-- [ ] Build the **Interactive Prediction Validator**:
-  - Dynamic number selector (1–47 grid + spinning wheel/tumbler).
-  - Real-time scoring against historical distributions.
-- [ ] Build dossiers for individual numbers (`/insights`) and patterns (`/patterns`).
+Built from [`nextStep/web.md`](nextStep/web.md) sections 4-7; its section 6 matrix is walked and
+signed off there. Eight Streamlit pages became five destinations.
+- [x] Build shared navigation and responsive layout with light/dark theme support.
+      (One hot/medium/cold colour scale as CSS custom properties, the theme stored per viewer and
+      applied before first paint; the ball component at three sizes, carrying its category letter
+      so colour is never the only cue.)
+- [x] Migrate statistical pages:
+  - **Triggers & History**: `/numbers` is the 47-number table with the Trigger Periods filter rail
+    (category, freshness bin, volatility, momentum, significant trend, regime shift); Explore >
+    Draws is the history, 50 a page, with date, number, odd/even, sum and high-number filters.
+  - **Statistics**: odd/even, sums, spreads, six- and seven-ball HMC patterns, consecutive pairs,
+    the historical scenario table, and numbers at 32 or above against a fair draw's share. Every
+    chart has a "show the numbers" table behind it.
+  - **Freshness**: the C0-C2+ grid with a main-6 / all-7 toggle and bin highlighting.
+- [x] Build the **Interactive Prediction Validator**: `/pick`, with five ways to choose - wheels per
+      hot/medium/cold band, the 1-47 grid, shake the bag, follow a shape, surprise me - filters that
+      show the remaining pool size, and a tray whose shape card scores the line through
+      `/api/validate`, the same module the page uses.
+- [x] Build dossiers for individual numbers (`/numbers/[n]`) and patterns (Explore > Patterns,
+      including the exact-match case F-25 broke).
+- [x] The wording guard that replaces `tests/test_site_wording.py`: a source lint over every file in
+      `frontend/` and a Playwright pass over every rendered page, both against the same `ADVICE`
+      list. **`tests/test_site_wording.py` itself stays until `view/` is deleted.**
 
 ### Phase 5: VPS Deployment & Production Hardening
 - [ ] Deploy Docker Compose stack on VPS. The containers run as UID:GID 1000:1000 by default and

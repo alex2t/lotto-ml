@@ -100,6 +100,14 @@ EXPECTED_ARTIFACTS = [
 ]
 
 
+# st_mtime and time.time() are doubles built from the same clock but rounded differently: a
+# file written immediately after run_started can come back about 2.4e-7 seconds before it
+# (measured: 534 of 6000 writes on Windows). A run's own artifacts are written seconds or
+# minutes later and one left from an earlier run is hours old, so a second of slack tells
+# those two apart without ever calling a fresh file stale. See F-61.
+MTIME_TOLERANCE_SECONDS = 1.0
+
+
 def verify_artifacts(expected_files, run_started):
     """Exit non-zero unless every expected artifact was written by this run."""
     bad_files = []
@@ -109,7 +117,7 @@ def verify_artifacts(expected_files, run_started):
         path = Path(file_path)
         if not path.exists():
             bad_files.append(f"  {file_path} - MISSING!")
-        elif path.stat().st_mtime < run_started:
+        elif path.stat().st_mtime < run_started - MTIME_TOLERANCE_SECONDS:
             bad_files.append(f"  {file_path} - STALE, left from an earlier run!")
         else:
             generated_files.append(f"  ✓ {file_path} ({path.stat().st_size:,} bytes)")
@@ -173,7 +181,8 @@ def main():
     print("=" * 70)
     
     (categorization_history, final_frequency, hmc_counts, 
-     final_categories, draw_history_log, recent_bonus_hits) = process_hmc_analysis(all_draws)
+     hmc_counts_6, final_categories, draw_history_log,
+     recent_bonus_hits) = process_hmc_analysis(all_draws)
     total_hmc_draws = len(categorization_history)
     
     # ===== PATTERN ANALYSIS =====
@@ -305,6 +314,7 @@ def main():
     print("=" * 70)
     
     hmc_analysis = generate_hmc_analysis(hmc_counts, total_hmc_draws)
+    hmc_analysis_6 = generate_hmc_analysis(hmc_counts_6, total_hmc_draws)
     draw_range_analysis = generate_draw_range_analysis(categorization_history, 
                                                        total_hmc_draws)
     
@@ -349,6 +359,8 @@ def main():
         final_main["scenarios"].append({"window_size": w, "results": results})
 
     final_main["hmc"] = hmc_analysis
+    # Over the main 6, for anything comparing a six-number line (F-59).
+    final_main["hmc_6"] = hmc_analysis_6
     final_main["draw_range"] = draw_range_analysis
     final_main["patterns"] = consecutive_patterns
     final_main["recent_bonus_analysis"] = recent_bonus_analysis

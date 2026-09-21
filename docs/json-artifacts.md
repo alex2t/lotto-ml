@@ -12,7 +12,7 @@ Inventory verified on 2026-09-17 against the files on disk.
 |:--|--:|:--|
 | `lotto_draw_history.json` | 4.4 MB | one key per draw date from draw 100 (`2021-12-15` ...) |
 | `lotto_trigger_periods.json` | 58 KB | 47 keys, one per number |
-| `lotto_odds_results.json` | 32 KB | `requested_draws`, `pattern_analysis_draws`, `hmc_analysis_draws`, `hmc_training_draws`, +9 |
+| `lotto_odds_results.json` | 34 KB | `requested_draws`, `pattern_analysis_draws`, `hmc_analysis_draws`, `hmc_training_draws`, `hmc`, `hmc_6`, +8 |
 | `lotto_advanced_patterns.json` | 45 KB | `metadata`, `summary_statistics`, `per_number_features` |
 | `lotto_bonus_analysis.json` | 37 KB | `bonus_validation`, `bonus_category_preference`, `recent_bonus_exclusion`, +4 |
 | `lotto_bonus_to_main_patterns.json` | 28 KB | `metadata`, `per_number_transition_profile`, `category_transition_weights`, +4 |
