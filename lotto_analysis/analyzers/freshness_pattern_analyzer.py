@@ -387,7 +387,7 @@ def main():
     freshness_file = 'data/lotto_7_number_freshness_results.json'
 
     if not Path(freshness_file).exists():
-        print(f"❌ ERROR: {freshness_file} not found")
+        print(f"ERROR: {freshness_file} not found")
         print(f"   REQUIRED ACTION: Run 'python drawpick.py' first")
         sys.exit(1)
 
@@ -395,7 +395,7 @@ def main():
         with open(freshness_file, 'r') as f:
             freshness_data = json.load(f)
     except json.JSONDecodeError as e:
-        print(f"❌ ERROR: Invalid JSON in {freshness_file}: {e}")
+        print(f"ERROR: Invalid JSON in {freshness_file}: {e}")
         sys.exit(1)
 
     print("Analyzing freshness patterns with statistical rigor...")
@@ -403,7 +403,7 @@ def main():
 
     # Display results
     print()
-    print("  ✓ Freshness pattern validation complete:")
+    print("  Freshness pattern validation complete:")
 
     pattern_test = results.get('pattern_distribution_test', {})
     print(f"    - Patterns analyzed: {pattern_test.get('num_patterns', 0)}")
@@ -429,7 +429,7 @@ def main():
     with open(output_file, 'w') as f:
         json.dump(round_floats(results), f, indent=2)
 
-    print(f"\n✓ Analysis saved to {output_file}")
+    print(f"\nAnalysis saved to {output_file}")
     print()
     print("=" * 70)
     print("Analysis complete!")

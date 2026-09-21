@@ -269,12 +269,12 @@ def calculate_comprehensive_metrics(
     metrics['threshold_report_rows'] = len(report_idx)
 
     print(f"\n{'='*70}")
-    print(f"  📊 MODEL EVALUATION: {model_name}")
+    print(f"  MODEL EVALUATION: {model_name}")
     print(f"{'='*70}")
-    print(f"  ⚙️  Optimal Threshold: {optimal_threshold:.4f} "
+    print(f"  Optimal Threshold: {optimal_threshold:.4f} "
           f"(maximizes F1 on {len(tune_idx)} tuning rows)")
-    print(f"  ⚙️  Default Threshold: 0.5")
-    print(f"  ⚙️  Operating-point metrics reported on {len(report_idx)} held-out rows")
+    print(f"  Default Threshold: 0.5")
+    print(f"  Operating-point metrics reported on {len(report_idx)} held-out rows")
 
     # ========================================
     # 3. BASIC ACCURACY METRICS - WITH BOTH THRESHOLDS
@@ -304,14 +304,14 @@ def calculate_comprehensive_metrics(
     metrics['val_accuracy_optimal'] = val_accuracy_optimal
     metrics['optimal_threshold'] = optimal_threshold
 
-    print(f"\n  📊 Accuracy Comparison:")
+    print(f"\n  Accuracy Comparison:")
     print(f"     {'Metric':<20} {'Default (0.5)':<15} {'Optimal':<15} {'Improvement':<15}")
     print(f"     {'-'*65}")
     print(f"     {'Train Accuracy':<20} {train_accuracy_default:<15.4f} {train_accuracy_optimal:<15.4f} {train_accuracy_optimal-train_accuracy_default:+.4f}")
     print(f"     {'Val Accuracy':<20} {val_accuracy_default:<15.4f} {val_accuracy_optimal:<15.4f} {val_accuracy_optimal-val_accuracy_default:+.4f}")
 
     # ========================================
-    # 3. AUC-ROC METRICS ⭐
+    # 3. AUC-ROC METRICS
     # ========================================
     # Calculate ROC curve
     fpr_train, tpr_train, thresholds_train = roc_curve(y_train, train_proba)
@@ -328,19 +328,19 @@ def calculate_comprehensive_metrics(
     # all-negative rate and the difference is always exactly zero.
     metrics['overfitting_gap_auc'] = auc_train - auc_val
 
-    print(f"\n  🎯 AUC-ROC Scores:")
+    print(f"\n  AUC-ROC Scores:")
     print(f"     Train AUC: {auc_train:.4f}")
     print(f"     Val AUC:   {auc_val:.4f}")
 
     # Interpret AUC
     if auc_val < 0.6:
-        print(f"     ⚠️  Poor discrimination (barely better than random)")
+        print(f"     Poor discrimination (barely better than random)")
     elif auc_val < 0.7:
-        print(f"     ⚡ Acceptable discrimination")
+        print(f"     Acceptable discrimination")
     elif auc_val < 0.8:
-        print(f"     ✅ Good discrimination")
+        print(f"     Good discrimination")
     else:
-        print(f"     🌟 Excellent discrimination")
+        print(f"     Excellent discrimination")
 
     # Plot ROC curve
     if save_plots:
@@ -358,7 +358,7 @@ def calculate_comprehensive_metrics(
         plt.tight_layout()
         plt.savefig(f"{output_dir}/{model_name}_roc_curve.png", dpi=150)
         plt.close()
-        print(f"     💾 Saved ROC curve to {output_dir}/{model_name}_roc_curve.png")
+        print(f"     Saved ROC curve to {output_dir}/{model_name}_roc_curve.png")
 
     # ========================================
     # 4. PRECISION-RECALL METRICS - WITH BOTH THRESHOLDS
@@ -393,36 +393,36 @@ def calculate_comprehensive_metrics(
     metrics['recall_optimal'] = recall_val_optimal
     metrics['f1_score_optimal'] = f1_val_optimal
 
-    print(f"\n  📈 Precision-Recall-F1 Comparison:")
+    print(f"\n  Precision-Recall-F1 Comparison:")
     print(f"     {'Metric':<20} {'Default (0.5)':<15} {'Optimal':<15} {'Improvement':<15}")
     print(f"     {'-'*65}")
     print(f"     {'Precision':<20} {precision_val_default:<15.4f} {precision_val_optimal:<15.4f} {precision_val_optimal-precision_val_default:+.4f}")
     print(f"     {'Recall':<20} {recall_val_default:<15.4f} {recall_val_optimal:<15.4f} {recall_val_optimal-recall_val_default:+.4f}")
     print(f"     {'F1-Score':<20} {f1_val_default:<15.4f} {f1_val_optimal:<15.4f} {f1_val_optimal-f1_val_default:+.4f}")
 
-    print(f"\n  🎯 PR-AUC (Precision-Recall AUC) - Better for Imbalanced Data:")
+    print(f"\n  PR-AUC (Precision-Recall AUC) - Better for Imbalanced Data:")
     print(f"     PR-AUC: {avg_precision_val:<15.4f} (threshold-independent)")
 
     # Interpret PR-AUC
     baseline_ratio = sum(y_val) / len(y_val)
     print(f"     Baseline (random): {baseline_ratio:.4f}")
     if avg_precision_val > baseline_ratio * 1.5:
-        print(f"     ✅ Good: {(avg_precision_val/baseline_ratio):.2f}x better than random")
+        print(f"     Good: {(avg_precision_val/baseline_ratio):.2f}x better than random")
     elif avg_precision_val > baseline_ratio * 1.2:
-        print(f"     ⚡ Acceptable: {(avg_precision_val/baseline_ratio):.2f}x better than random")
+        print(f"     Acceptable: {(avg_precision_val/baseline_ratio):.2f}x better than random")
     else:
-        print(f"     ⚠️  Weak: Only {(avg_precision_val/baseline_ratio):.2f}x better than random")
+        print(f"     Weak: Only {(avg_precision_val/baseline_ratio):.2f}x better than random")
 
-    print(f"\n  💡 Interpretation:")
+    print(f"\n  Interpretation:")
     print(f"     Precision: When model predicts WIN, how often is it correct?")
     print(f"     Recall:    Of all actual WINS, how many did model catch?")
     print(f"     F1-Score:  Harmonic mean of precision & recall")
     print(f"     PR-AUC:    Overall precision-recall trade-off (better than ROC-AUC for imbalanced data)")
 
     # ========================================
-    # 4.5. TOP-K ACCURACY (LOTTERY-SPECIFIC) ⭐
+    # 4.5. TOP-K ACCURACY (LOTTERY-SPECIFIC)
     # ========================================
-    print(f"\n  🎰 Top-K Accuracy (per draw, averaged over the validation period):")
+    print(f"\n  Top-K Accuracy (per draw, averaged over the validation period):")
     topk_metrics = calculate_topk_accuracy(
         y_val, val_proba, k_values=[7, 10, 15, 20], groups=topk_groups
     )
@@ -441,7 +441,7 @@ def calculate_comprehensive_metrics(
               f"{topk_metrics[f'top{k}_expected']:<12.3f} "
               f"{topk_metrics[f'top{k}_lift']:<8.3f}")
 
-    print(f"\n  💡 Top-K Interpretation:")
+    print(f"\n  Top-K Interpretation:")
     print(f"     HitRate:   Share of draws with at least 1 winner in the top K")
     print(f"     AvgCaught: Mean winners caught in top K, per draw")
     print(f"     Expected:  Hypergeometric expectation if picks were random")
@@ -465,7 +465,7 @@ def calculate_comprehensive_metrics(
         plt.tight_layout()
         plt.savefig(f"{output_dir}/{model_name}_pr_curve.png", dpi=150)
         plt.close()
-        print(f"     💾 Saved PR curve to {output_dir}/{model_name}_pr_curve.png")
+        print(f"     Saved PR curve to {output_dir}/{model_name}_pr_curve.png")
 
     # ========================================
     # 5. CONFUSION MATRIX - WITH BOTH THRESHOLDS
@@ -494,7 +494,7 @@ def calculate_comprehensive_metrics(
         'true_positives': int(tp_optimal)
     }
 
-    print(f"\n  🔢 Confusion Matrix Comparison:")
+    print(f"\n  Confusion Matrix Comparison:")
     print(f"\n     Default Threshold (0.5):")
     print(f"     ┌────────────────────┬──────────┬──────────┐")
     print(f"     │                    │ Pred=0   │ Pred=1   │")
@@ -534,15 +534,15 @@ def calculate_comprehensive_metrics(
     calibration_error = np.mean(np.abs(prob_true_val - prob_pred_val))
     metrics['calibration_error'] = calibration_error
 
-    print(f"\n  🎯 Calibration Analysis:")
+    print(f"\n  Calibration Analysis:")
     print(f"     Mean Calibration Error: {calibration_error:.4f}")
 
     if calibration_error > 0.1:
-        print(f"     ⚠️  High calibration error - probabilities unreliable")
+        print(f"     High calibration error - probabilities unreliable")
     elif calibration_error > 0.05:
-        print(f"     ⚡ Moderate calibration - acceptable")
+        print(f"     Moderate calibration - acceptable")
     else:
-        print(f"     ✅ Good calibration")
+        print(f"     Good calibration")
 
     if save_plots:
         plt.figure(figsize=(10, 6))
@@ -558,30 +558,30 @@ def calculate_comprehensive_metrics(
         plt.tight_layout()
         plt.savefig(f"{output_dir}/{model_name}_calibration.png", dpi=150)
         plt.close()
-        print(f"     💾 Saved calibration curve to {output_dir}/{model_name}_calibration.png")
+        print(f"     Saved calibration curve to {output_dir}/{model_name}_calibration.png")
 
     # ========================================
     # 7. DETAILED CLASSIFICATION REPORT (OPTIMAL THRESHOLD)
     # ========================================
-    print(f"\n  📋 Detailed Classification Report (Using Optimal Threshold {optimal_threshold:.4f}):")
+    print(f"\n  Detailed Classification Report (Using Optimal Threshold {optimal_threshold:.4f}):")
     report = classification_report(y_report, val_pred_optimal, target_names=['No Win', 'Win'], digits=4)
     print("     " + "\n     ".join(report.split('\n')))
 
     # ========================================
     # 8. KEY TAKEAWAYS
     # ========================================
-    print(f"\n  🎯 KEY TAKEAWAYS:")
+    print(f"\n  KEY TAKEAWAYS:")
     if f1_val_optimal > f1_val_default:
         improvement = ((f1_val_optimal - f1_val_default) / (f1_val_default + 1e-10)) * 100
-        print(f"     ✅ Optimal threshold improves F1-score by {improvement:.1f}%")
-        print(f"     ✅ Use threshold={optimal_threshold:.4f} for predictions")
+        print(f"     Optimal threshold improves F1-score by {improvement:.1f}%")
+        print(f"     Use threshold={optimal_threshold:.4f} for predictions")
     else:
-        print(f"     ℹ️  Default threshold (0.5) is already near-optimal")
+        print(f"     ℹ Default threshold (0.5) is already near-optimal")
 
     if tp_optimal > 0:
-        print(f"     ✅ Model successfully predicts {tp_optimal} winning numbers")
+        print(f"     Model successfully predicts {tp_optimal} winning numbers")
     else:
-        print(f"     ⚠️  Model predicts 0 winning numbers - needs improvement")
+        print(f"     Model predicts 0 winning numbers - needs improvement")
 
     print(f"{'='*70}\n")
 
@@ -638,11 +638,11 @@ def compare_models(
 
     # Print comparison table
     print("\n" + "="*100)
-    print("  🏆 MODEL COMPARISON SUMMARY")
+    print("  MODEL COMPARISON SUMMARY")
     print("="*100)
     print(comparison_df.to_string(index=False))
     print("="*100)
-    print(f"\n💾 Saved comparison to {output_dir}/model_comparison.csv\n")
+    print(f"\nSaved comparison to {output_dir}/model_comparison.csv\n")
 
     return comparison_df
 
@@ -706,4 +706,4 @@ def plot_model_comparison(
     plt.savefig(f"{output_dir}/model_comparison_chart.png", dpi=150, bbox_inches='tight')
     plt.close()
 
-    print(f"💾 Saved comparison chart to {output_dir}/model_comparison_chart.png")
+    print(f"Saved comparison chart to {output_dir}/model_comparison_chart.png")

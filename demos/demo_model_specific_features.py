@@ -59,26 +59,26 @@ def analyze_model_config(model_config, model_num):
     # Strategy summary
     print(f"\nStrategy:")
     if model_num == 1:
-        print("  ✅ Focus on MOMENTUM and RECENCY")
-        print("  ✅ Rolling statistics (10, 20 draw windows)")
-        print("  ✅ Aggressive feature selection (importance > 0.01)")
-        print("  🎯 Goal: Catch hot/trending numbers")
+        print("  Focus on MOMENTUM and RECENCY")
+        print("  Rolling statistics (10, 20 draw windows)")
+        print("  Aggressive feature selection (importance > 0.01)")
+        print("  Goal: Catch hot/trending numbers")
     elif model_num == 2:
-        print("  ✅ Focus on STABILITY for main 6 jackpot")
-        print("  ❌ NO BONUS FEATURES (not relevant for main 6!)")
-        print("  ✅ Long-term patterns and stability features")
-        print("  ✅ NO feature selection (use explicit list)")
-        print("  🎯 Goal: Optimize for 6-ball jackpot prize")
+        print("  Focus on STABILITY for main 6 jackpot")
+        print("  NO BONUS FEATURES (not relevant for main 6!)")
+        print("  Long-term patterns and stability features")
+        print("  NO feature selection (use explicit list)")
+        print("  Goal: Optimize for 6-ball jackpot prize")
     elif model_num == 3:
-        print("  ✅ Use ALL FEATURES (maximum complexity)")
-        print("  ✅ Let XGBoost find interactions")
-        print("  ✅ NO feature selection (keep everything)")
-        print("  🎯 Goal: Detect complex multi-feature patterns")
+        print("  Use ALL FEATURES (maximum complexity)")
+        print("  Let XGBoost find interactions")
+        print("  NO feature selection (keep everything)")
+        print("  Goal: Detect complex multi-feature patterns")
     elif model_num == 4:
-        print("  ✅ Only TOP-PERFORMING features")
-        print("  ✅ High-precision, reliable indicators only")
-        print("  ✅ VERY aggressive feature selection (importance > 0.02)")
-        print("  🎯 Goal: Generate 20-number pool with 6+ winners")
+        print("  Only TOP-PERFORMING features")
+        print("  High-precision, reliable indicators only")
+        print("  VERY aggressive feature selection (importance > 0.02)")
+        print("  Goal: Generate 20-number pool with 6+ winners")
 
 def compare_models():
     """Compare all model configurations."""
@@ -110,11 +110,11 @@ def compare_models():
     print("\n" + "="*80)
     print("MOST IMPORTANT CHANGE: Model 2")
     print("="*80)
-    print("❌ BEFORE: Model 2 included 'was_recent_bonus' and bonus transition features")
-    print("✅ AFTER:  Model 2 EXCLUDES all bonus features")
-    print("💡 WHY:    Model 2 predicts MAIN 6 ONLY (jackpot prize)")
+    print("BEFORE: Model 2 included 'was_recent_bonus' and bonus transition features")
+    print("AFTER:  Model 2 EXCLUDES all bonus features")
+    print("WHY:    Model 2 predicts MAIN 6 ONLY (jackpot prize)")
     print("           Bonus features are irrelevant and add noise!")
-    print("🎯 IMPACT: Expected +10-15% improvement for main 6 ball prediction")
+    print("IMPACT: Expected +10-15% improvement for main 6 ball prediction")
 
 def main():
     """Run comparison analysis."""

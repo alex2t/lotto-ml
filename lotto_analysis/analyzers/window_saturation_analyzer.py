@@ -39,11 +39,11 @@ except ImportError:
         import numpy as np
         HAS_SCIPY = True
         HAS_OPTIMIZE = False
-        print("⚠️  scipy.optimize not available - using manual penalty calculation")
+        print("scipy.optimize not available - using manual penalty calculation")
     except ImportError:
         HAS_SCIPY = False
         HAS_OPTIMIZE = False
-        print("⚠️  scipy not available - using basic statistical calculations")
+        print("scipy not available - using basic statistical calculations")
 
 
 def calculate_category_saturation_rates(stats_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -333,7 +333,7 @@ def load_historical_draws(draw_history_file: str) -> List[Dict[str, Any]]:
 
         return draws
     except FileNotFoundError:
-        print(f"⚠️  Warning: {draw_history_file} not found - skipping optimization")
+        print(f"Warning: {draw_history_file} not found - skipping optimization")
         return []
 
 
@@ -400,10 +400,10 @@ def optimize_penalty_weights(
         Optimized penalty configuration
     """
     if not HAS_OPTIMIZE or len(draw_history) < 100:
-        print("    ⚠️  Insufficient data or scipy.optimize unavailable - using manual penalties")
+        print("    Insufficient data or scipy.optimize unavailable - using manual penalties")
         return None
 
-    print("\n🎯 SCIPY OPTIMIZATION: Finding Optimal Penalty Weights...")
+    print("\nSCIPY OPTIMIZATION: Finding Optimal Penalty Weights...")
     print(f"    Using {len(draw_history)} historical draws for validation")
 
     # Define objective function
@@ -489,8 +489,8 @@ def optimize_penalty_weights(
 
     if result.success:
         optimized_weights = result.x
-        print(f"    ✓ Optimization converged")
-        print(f"    ✓ Objective value: {result.fun:.4f}")
+        print(f"    Optimization converged")
+        print(f"    Objective value: {result.fun:.4f}")
 
         # Format results
         optimized_penalties = {
@@ -525,7 +525,7 @@ def optimize_penalty_weights(
 
         return optimized_penalties
     else:
-        print(f"    ⚠️  Optimization failed: {result.message}")
+        print(f"    Optimization failed: {result.message}")
         return None
 
 
@@ -543,17 +543,17 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
     print("=" * 70)
 
     # Load data
-    print("\n📊 Loading Statistical Data...")
+    print("\nLoading Statistical Data...")
     with open(stats_file, 'r') as f:
         stats_data = json.load(f)
-    print(f"  ✓ Loaded {stats_file}")
+    print(f"  Loaded {stats_file}")
 
     with open(odds_file, 'r') as f:
         odds_data = json.load(f)
-    print(f"  ✓ Loaded {odds_file}")
+    print(f"  Loaded {odds_file}")
 
     # Calculate saturation rates from REAL data
-    print("\n📈 Calculating Actual Saturation Rates...")
+    print("\nCalculating Actual Saturation Rates...")
     saturation_rates = calculate_category_saturation_rates(stats_data)
 
     print("\n  Saturation Rates by Category:")
@@ -564,7 +564,7 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
                   f"(expected freq: {data['expected_frequency']:.2f})")
 
     # Statistical validation
-    print("\n🔬 Statistical Validation...")
+    print("\nStatistical Validation...")
     validation = validate_category_differences(saturation_rates)
     print(f"  Test: {validation['test']}")
     print(f"  F-statistic: {validation.get('f_statistic', 'N/A')}")
@@ -573,7 +573,7 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
     print(f"  {validation.get('interpretation', validation.get('error', ''))}")
 
     # Calculate dynamic penalties
-    print("\n⚙️  Calculating Data-Driven Penalties...")
+    print("\nCalculating Data-Driven Penalties...")
     penalties = calculate_dynamic_penalties(saturation_rates, odds_data)
 
     print("\n  Category Penalty Multipliers (Manual - from REAL data):")
@@ -590,7 +590,7 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
         if draw_history:
             optimized_penalties = optimize_penalty_weights(draw_history, saturation_rates, stats_data)
     elif HAS_OPTIMIZE:
-        print("\n⚠️  No draw history file provided - skipping penalty optimization")
+        print("\nNo draw history file provided - skipping penalty optimization")
         print("   To enable optimization, pass draw_history_file parameter")
 
     print("\n  Window Weights (from odds analysis):")
@@ -600,7 +600,7 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
     print("\n  Dynamic Window Mapping (scenario → data):")
     print(f"  Available data windows: {penalties['available_data_windows']}")
     for scenario_window, mapping_info in penalties['window_mapping'].items():
-        match_indicator = "✓" if mapping_info['exact_match'] else "→"
+        match_indicator = "" if mapping_info['exact_match'] else "→"
         print(f"    Scenario window {scenario_window} {match_indicator} {mapping_info['data_window']} "
               f"(size {mapping_info['data_window_size']})")
 
@@ -633,18 +633,18 @@ def generate_window_saturation_data(stats_file: str, odds_file: str, output_file
     }
 
     # Save
-    print(f"\n💾 Saving to {output_file}...")
+    print(f"\nSaving to {output_file}...")
     with open(output_file, 'w') as f:
         json.dump(round_floats(output_data), f, indent=4)
 
-    print(f"  ✓ Saved {output_file}")
+    print(f"  Saved {output_file}")
     print("\n" + "=" * 70)
-    print("✅ DATA-DRIVEN ANALYSIS COMPLETE")
+    print("DATA-DRIVEN ANALYSIS COMPLETE")
     print("=" * 70)
     print(f"\nAll penalty values calculated from REAL historical data.")
     print(f"Statistical significance: {validation['significant']}")
     if optimized_penalties:
-        print(f"SCIPY OPTIMIZATION: ✓ Enabled")
+        print(f"SCIPY OPTIMIZATION: Enabled")
         print(f"  Optimized penalties available in output")
         print(f"  Objective value: {optimized_penalties['objective_value']:.4f}")
         print(f"  Recommended: Use 'penalty_configuration_optimized'")

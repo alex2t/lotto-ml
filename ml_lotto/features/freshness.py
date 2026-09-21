@@ -53,9 +53,9 @@ def calculate_freshness_category_features(
         )
         if all_validated:
             use_validated = True
-            print(f"\n✓ Using SCIPY-VALIDATED freshness weights (chi-square tested)")
+            print(f"\nUsing SCIPY-VALIDATED freshness weights (chi-square tested)")
         else:
-            print(f"\n⚠️  Scipy validation not significant - using standard weights")
+            print(f"\nScipy validation not significant - using standard weights")
     number_categories = {}
     category_counts = Counter()
     
@@ -78,7 +78,7 @@ def calculate_freshness_category_features(
 
     # Determine which weights to use
     if use_validated and validated_weights:
-        print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
+        print(f"\nFreshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
         print(f"  SOURCE: Scipy-validated chi-square tested weights")
 
         # Extract validated weights
@@ -91,7 +91,7 @@ def calculate_freshness_category_features(
 
             weight_dist[i] = validated_weights.get(key, {}).get('normalized_weight', 0.0)
     else:
-        print(f"\n✓ Freshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
+        print(f"\nFreshness Pattern Analysis (W-1 key: {recent_key}, C_max: {c_max_threshold}):")
         print(f"  SOURCE: Standard frequency-based weights")
         weight_dist = top_pattern_dist
 

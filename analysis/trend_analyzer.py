@@ -87,7 +87,7 @@ def calculate_historical_hmc_baseline(draws: List[Dict]) -> Dict[str, float]:
         'cold': np.mean(all_cold)
     }
     
-    print(f"\n✓ Historical HMC Baseline (from {len(draws)} draws):")
+    print(f"\nHistorical HMC Baseline (from {len(draws)} draws):")
     print(f"  Hot:    {baseline['hot']:.2f} avg")
     print(f"  Medium: {baseline['medium']:.2f} avg")
     print(f"  Cold:   {baseline['cold']:.2f} avg")
@@ -455,7 +455,7 @@ def main():
     # Load data
     print("\nLoading draw history...")
     draws = load_draw_history(DRAW_HISTORY_JSON)
-    print(f"✓ Loaded {len(draws)} draws")
+    print(f"Loaded {len(draws)} draws")
     
     # Calculate HMC baseline
     baseline = calculate_historical_hmc_baseline(draws)
@@ -588,7 +588,7 @@ def main():
             try:
                 filename = f'{base_path}trend_analysis_hmc_imbalance_{window}draws.csv'
                 analyses['hmc_imbalance'][window].to_csv(filename, index=False)
-                print(f"✓ Saved: {filename}")
+                print(f"Saved: {filename}")
                 break
             except:
                 continue
@@ -600,13 +600,13 @@ def main():
         for path in ['../data/analysis/feature_recommendations.csv', 'data/analysis/feature_recommendations.csv']:
             try:
                 rec_df.to_csv(path, index=False)
-                print(f"✓ Saved: {path}")
+                print(f"Saved: {path}")
                 break
             except:
                 continue
     
     print("\n" + "=" * 80)
-    print("✓ Analysis Complete!")
+    print("Analysis Complete!")
     print("=" * 80)
 
 

@@ -301,14 +301,14 @@ MODEL_2_CONFIG = {
         # CONSTRAINTS
 
         # EXPLICITLY EXCLUDE BONUS FEATURES
-        # ❌ NO 'was_recent_bonus' - not relevant for main 6 jackpot
-        # ❌ NO 'bonus_to_main_*' - not relevant for main 6 jackpot
+        # NO 'was_recent_bonus' - not relevant for main 6 jackpot
+        # NO 'bonus_to_main_*' - not relevant for main 6 jackpot
     ],
     # Total: ~20+ features focused on STABILITY for main 6 balls
 
     # FEATURE SELECTION: Use explicit list (no auto-selection)
     'feature_selection': {
-        'enable': False,  # ⭐ Use explicit feature list as-is
+        'enable': False,  # Use explicit feature list as-is
         # Let model handle all stability signals
     },
 
@@ -390,7 +390,7 @@ MODEL_3_CONFIG = {
 
     # FEATURE SELECTION: DISABLED - keep everything for complexity
     'feature_selection': {
-        'enable': False,  # ⭐ Use ALL features - complexity needs interactions
+        'enable': False,  # Use ALL features - complexity needs interactions
     },
 
     # Capacity is constrained on purpose, as for Model 2 (C-15b). Depth 3 with
@@ -448,7 +448,7 @@ MODEL_4_CONFIG = {
     'feature_selection': {
         'enable': True,
         'correlation_threshold': 0.90,   # Aggressive duplicate removal
-        'importance_threshold': 0.02     # ⭐ VERY aggressive (only features >2% importance)
+        'importance_threshold': 0.02     # VERY aggressive (only features >2% importance)
     },
 
     'algorithm_params': {

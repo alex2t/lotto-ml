@@ -51,7 +51,7 @@ class InteractionFeatureCalculator:
                 data = json.load(f)
             return data
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(f"⚠️  Warning: Could not load {json_path}: {e}")
+            print(f"Warning: Could not load {json_path}: {e}")
             print("   Interaction features will use safe defaults")
             return {
                 'pairwise_interactions': [],

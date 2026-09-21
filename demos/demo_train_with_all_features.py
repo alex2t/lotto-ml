@@ -99,7 +99,7 @@ def test_rolling_features_extraction():
     for key in expected_keys:
         assert key in rolling_features[1], f"Missing rolling feature: {key}"
 
-    print("\n✅ Rolling features extracted successfully!")
+    print("\nRolling features extracted successfully!")
     return rolling_features
 
 
@@ -156,7 +156,7 @@ def test_feature_extraction():
     assert len(rolling_feature_names) > 0, "Should include rolling features"
 
     print(f"  Rolling features included: {rolling_feature_names}")
-    print("\n✅ Feature extraction completed successfully!")
+    print("\nFeature extraction completed successfully!")
 
     return features_dict, all_feature_names
 
@@ -202,7 +202,7 @@ def test_training_dataset_creation():
     print(f"    Hits: {hit_count} ({hit_count/total_count*100:.2f}%)")
     print(f"    Non-hits: {total_count - hit_count} ({(total_count-hit_count)/total_count*100:.2f}%)")
 
-    print("\n✅ Training dataset created successfully!")
+    print("\nTraining dataset created successfully!")
     return train_df
 
 
@@ -289,11 +289,11 @@ def test_model_training_with_all_features():
             print(f"    Precision: {metrics.get('precision', 'N/A'):.4f}")
             print(f"    Recall: {metrics.get('recall', 'N/A'):.4f}")
 
-        print("\n✅ Model training with all features successful!")
+        print("\nModel training with all features successful!")
         return pipeline, metrics, tuning_results
 
     except Exception as e:
-        print(f"\n⚠️  Training failed (expected in test environment): {e}")
+        print(f"\nTraining failed (expected in test environment): {e}")
         print("  Note: This may fail due to missing dependencies or insufficient data")
         return None, None, None
 
@@ -345,11 +345,11 @@ def test_model_comparison():
         assert len(comparison_df) == 2, "Should have 2 models in comparison"
         assert 'Val Accuracy' in comparison_df.columns or 'val_accuracy' in comparison_df.columns.str.lower()
 
-        print("\n✅ Model comparison successful!")
+        print("\nModel comparison successful!")
         return comparison_df
 
     except Exception as e:
-        print(f"\n⚠️  Model comparison failed: {e}")
+        print(f"\nModel comparison failed: {e}")
         return None
 
 
@@ -362,16 +362,16 @@ def test_full_pipeline_integration():
     print("\n  Simulating full training pipeline...")
 
     # Step 1: Data loading (mocked)
-    print("\n  Step 1: Loading data... ✓")
+    print("\n  Step 1: Loading data...")
     all_draws = create_mock_draw_history(n_draws=200)
 
     # Step 2: Feature extraction (mocked)
-    print("  Step 2: Extracting features... ✓")
+    print("  Step 2: Extracting features...")
     features_dict = {num: {f'feature_{i}': np.random.rand() for i in range(15)} for num in range(1, 48)}
     all_feature_names = [f'feature_{i}' for i in range(15)]
 
     # Step 3: Dataset creation
-    print("  Step 3: Building datasets... ✓")
+    print("  Step 3: Building datasets...")
     train_end_idx, val_start_idx = calculate_train_val_split(len(all_draws))
 
     train_df = build_training_dataset(
@@ -388,9 +388,9 @@ def test_full_pipeline_integration():
     print(f"    Validation samples: {len(val_df)}")
 
     # Step 4: Model training (simulated - would require actual implementation)
-    print("  Step 4: Training models... (simulated) ✓")
+    print("  Step 4: Training models... (simulated)")
 
-    print("\n✅ Full pipeline integration test completed!")
+    print("\nFull pipeline integration test completed!")
 
 
 def main():
@@ -409,19 +409,19 @@ def main():
         test_full_pipeline_integration()
 
         print("\n" + "="*80)
-        print("  ✅ ALL TESTS PASSED!")
+        print("  ALL TESTS PASSED!")
         print("="*80)
-        print("\n💡 Note: Some tests may show warnings in test environments.")
+        print("\nNote: Some tests may show warnings in test environments.")
         print("   This is expected and does not indicate failure.")
         return 0
 
     except AssertionError as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\nTEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         return 1
     except Exception as e:
-        print(f"\n❌ UNEXPECTED ERROR: {e}")
+        print(f"\nUNEXPECTED ERROR: {e}")
         import traceback
         traceback.print_exc()
         return 1

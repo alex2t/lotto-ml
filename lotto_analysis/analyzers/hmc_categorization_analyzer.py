@@ -472,7 +472,7 @@ def main():
     hmc_file = 'data/lotto_trigger_periods.json'
 
     if not Path(hmc_file).exists():
-        print(f"❌ ERROR: {hmc_file} not found")
+        print(f"ERROR: {hmc_file} not found")
         print(f"   REQUIRED ACTION: Run 'python drawpick.py' first")
         sys.exit(1)
 
@@ -480,7 +480,7 @@ def main():
         with open(hmc_file, 'r') as f:
             hmc_data = json.load(f)
     except json.JSONDecodeError as e:
-        print(f"❌ ERROR: Invalid JSON in {hmc_file}: {e}")
+        print(f"ERROR: Invalid JSON in {hmc_file}: {e}")
         sys.exit(1)
 
     print("Analyzing HMC categorization with statistical rigor...")
@@ -488,7 +488,7 @@ def main():
 
     # Display results
     print()
-    print("  ✓ HMC categorization validation complete:")
+    print("  HMC categorization validation complete:")
 
     anova = results.get('anova_test', {})
     print(f"    - ANOVA F-statistic: {anova.get('f_statistic', 0):.4f}")
@@ -515,7 +515,7 @@ def main():
     with open(output_file, 'w') as f:
         json.dump(round_floats(results), f, indent=2)
 
-    print(f"\n✓ Analysis saved to {output_file}")
+    print(f"\nAnalysis saved to {output_file}")
     print()
     print("=" * 70)
     print("Analysis complete!")

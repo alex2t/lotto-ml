@@ -47,7 +47,7 @@ def calculate_days_since_bonus(all_draws: List[Dict[str, Any]], reference_date: 
             days_since = (reference_date - last_seen_date[num]).days
             days_since_bonus[num] = max(0, days_since)
     
-    print(f"✓ Custom feature 'days_since_bonus' calculated.")
+    print(f"Custom feature 'days_since_bonus' calculated.")
     return days_since_bonus
 
 
@@ -71,7 +71,7 @@ def load_recency_zones(json_path: Optional[str] = None) -> Optional[Dict[str, An
             with open(json_path, 'r') as f:
                 return json.load(f)
     except Exception as e:
-        print(f"⚠️  Warning: Could not load recency zones from {json_path}: {e}")
+        print(f"Warning: Could not load recency zones from {json_path}: {e}")
 
     return None
 

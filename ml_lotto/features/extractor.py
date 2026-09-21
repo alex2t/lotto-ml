@@ -91,9 +91,9 @@ def extract_features_from_hmc_json(
     # Load recency zones for data-driven recency scoring
     recency_zones_json = load_recency_zones()
     if recency_zones_json:
-        print("  ✓ Loaded recency zones (data-driven)")
+        print("  Loaded recency zones (data-driven)")
     else:
-        print("  ⚠️  Using fallback recency zones (hard-coded)")
+        print("  Using fallback recency zones (hard-coded)")
 
     print("  Calculating Priority 2 features...")
     has_consecutive_partner_data = calculate_has_consecutive_partner(
@@ -109,50 +109,50 @@ def extract_features_from_hmc_json(
                 validated_scores=consecutive_pairs_validated
             )
         except ValueError as e:
-            print(f"\n⚠️  Feature extraction stopped due to missing data.")
+            print(f"\nFeature extraction stopped due to missing data.")
             raise
     else:
-        print(f"\n❌ CRITICAL ERROR: Consecutive patterns data not provided.")
+        print(f"\nCRITICAL ERROR: Consecutive patterns data not provided.")
         raise ValueError("Missing consecutive_patterns data - cannot extract features")
 
     # NOTE: Removed duplicate calculated features - using JSON versions instead
-    print("  ✓ Skipped duplicate calculations (using JSON-loaded versions)")
+    print("  Skipped duplicate calculations (using JSON-loaded versions)")
     
     print("  Loading NEW JSON features...")
     
     if bonus_hit_contribution_data is None:
         bonus_hit_contribution_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
-        print(f"  ⚠️  Using default bonus_hit_contribution values")
+        print(f"  Using default bonus_hit_contribution values")
     else:
-        print(f"  ✓ Loaded bonus_hit_contribution data")
+        print(f"  Loaded bonus_hit_contribution data")
     
     if freshness_weight_data is None:
         freshness_weight_data = {0: 0.33, 1: 0.33, 2: 0.34}
-        print(f"  ⚠️  Using default freshness_weight values")
+        print(f"  Using default freshness_weight values")
     else:
-        print(f"  ✓ Loaded freshness_weight data")
+        print(f"  Loaded freshness_weight data")
     
     if pair_frequency_data is None:
         pair_frequency_data = {num: 0.5 for num in range(1, MAX_NUMBER + 1)}
-        print(f"  ⚠️  Using default pair_frequency values")
+        print(f"  Using default pair_frequency values")
     else:
-        print(f"  ✓ Loaded pair_frequency data")
+        print(f"  Loaded pair_frequency data")
     
     # Load advanced pattern features (v3.13)
     if advanced_pattern_features is None:
         advanced_pattern_features = {}
-        print(f"  ⚠️  No advanced pattern features provided")
+        print(f"  No advanced pattern features provided")
     else:
-        print(f"  ✓ Loaded advanced pattern features (volatility, trend)")
+        print(f"  Loaded advanced pattern features (volatility, trend)")
 
     # Load rolling statistics features (v3.14)
     if rolling_stats_features is None:
         rolling_stats_features = {}
-        print(f"  ⚠️  No rolling statistics features provided")
+        print(f"  No rolling statistics features provided")
     else:
-        print(f"  ✓ Loaded rolling statistics features ({len(rolling_stats_features)} numbers)")
+        print(f"  Loaded rolling statistics features ({len(rolling_stats_features)} numbers)")
 
-    print(f"\n✓ Extracting features from HMC data:")
+    print(f"\nExtracting features from HMC data:")
     base_features = ['total_count', 'days_since_last', 'recency_zone_score',
                      'days_since_bonus',
                      'win_bias_ratio', 'was_recent_bonus', 'has_consecutive_partner',

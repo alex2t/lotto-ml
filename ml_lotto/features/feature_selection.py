@@ -37,7 +37,7 @@ def remove_highly_correlated_features(
         removed_features_dict maps removed feature -> kept feature
     """
     if verbose:
-        print(f"\n  🔍 Analyzing feature correlations (threshold={threshold})...")
+        print(f"\n  Analyzing feature correlations (threshold={threshold})...")
 
     # Calculate correlation matrix
     corr_matrix = X.corr().abs()
@@ -64,14 +64,14 @@ def remove_highly_correlated_features(
             features_to_remove.add(feat2)
             removed_dict[feat2] = feat1
             if verbose:
-                print(f"     ❌ Removing '{feat2}' (corr={corr_value:.3f} with '{feat1}')")
+                print(f"     Removing '{feat2}' (corr={corr_value:.3f} with '{feat1}')")
 
     # Keep features that weren't marked for removal
     remaining_features = [f for f in feature_names if f not in features_to_remove]
 
     if verbose:
-        print(f"  ✓ Removed {len(features_to_remove)} highly correlated features")
-        print(f"  ✓ Remaining features: {len(remaining_features)}")
+        print(f"  Removed {len(features_to_remove)} highly correlated features")
+        print(f"  Remaining features: {len(remaining_features)}")
 
     return remaining_features, removed_dict
 
@@ -101,7 +101,7 @@ def remove_low_importance_features(
         Tuple of (remaining_features, importance_dict)
     """
     if verbose:
-        print(f"\n  🔍 Analyzing feature importance (threshold={threshold})...")
+        print(f"\n  Analyzing feature importance (threshold={threshold})...")
 
     # Quick importance estimation with Random Forest
     rf = RandomForestClassifier(
@@ -129,7 +129,7 @@ def remove_low_importance_features(
     if verbose and len(low_importance_features) > 0:
         print(f"\n     Features with importance < {threshold}:")
         for feat in low_importance_features[:10]:
-            print(f"       ❌ {feat:35s} : {importance_dict[feat]:.4f}")
+            print(f"       {feat:35s} : {importance_dict[feat]:.4f}")
         if len(low_importance_features) > 10:
             print(f"       ... and {len(low_importance_features) - 10} more")
 
@@ -137,8 +137,8 @@ def remove_low_importance_features(
     remaining_features = [f for f in feature_names if importance_dict[f] >= threshold]
 
     if verbose:
-        print(f"  ✓ Removed {len(low_importance_features)} low-importance features")
-        print(f"  ✓ Remaining features: {len(remaining_features)}")
+        print(f"  Removed {len(low_importance_features)} low-importance features")
+        print(f"  Remaining features: {len(remaining_features)}")
 
     return remaining_features, importance_dict
 
@@ -208,7 +208,7 @@ def select_features(
     selection_info['final_count'] = len(selected_features)
 
     if verbose:
-        print(f"\n  📊 Feature Selection Summary:")
+        print(f"\n  Feature Selection Summary:")
         print(f"     Original features: {selection_info['original_count']}")
         if enable_correlation_filter:
             print(f"     Removed (correlation): {len(selection_info['correlation_removed'])}")

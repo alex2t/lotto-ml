@@ -216,7 +216,7 @@ def tune_hyperparameters(
         Tuple of (best_pipeline, tuning_results)
     """
     print(f"\n{'='*80}")
-    print(f"  🔧 HYPERPARAMETER TUNING: {model_name}")
+    print(f"  HYPERPARAMETER TUNING: {model_name}")
     print(f"{'='*80}")
     print(f"  Search Type: {search_type.upper()}")
     print(f"  CV Strategy: TimeSeriesSplit (n_splits={cv_splits})")
@@ -258,7 +258,7 @@ def tune_hyperparameters(
         raise ValueError(f"Unknown search_type: {search_type}. Use 'grid' or 'random'")
 
     # Fit the search
-    print(f"\n  🔄 Starting hyperparameter search...")
+    print(f"\n  Starting hyperparameter search...")
     search.fit(X_train, y_train)
 
     elapsed_time = time.time() - start_time
@@ -268,22 +268,22 @@ def tune_hyperparameters(
     best_params = search.best_params_
     best_score = search.best_score_
 
-    print(f"\n  ✅ Tuning Complete! (elapsed: {elapsed_time:.1f}s)")
-    print(f"\n  🏆 Best Parameters:")
+    print(f"\n  Tuning Complete! (elapsed: {elapsed_time:.1f}s)")
+    print(f"\n  Best Parameters:")
     for param, value in best_params.items():
         print(f"     {param}: {value}")
 
-    print(f"\n  📊 Best CV Score ({scoring}): {best_score:.4f}")
+    print(f"\n  Best CV Score ({scoring}): {best_score:.4f}")
 
     # Analyze results
     results_df = pd.DataFrame(search.cv_results_)
 
     # Check if all scores are zero or very low
     if best_score < 0.001:
-        print(f"\n  ⚠️  WARNING: Best score is {best_score:.6f} - Model may be predicting all negatives!")
+        print(f"\n  WARNING: Best score is {best_score:.6f} - Model may be predicting all negatives!")
         print(f"     This is common with highly imbalanced data (lottery predictions).")
         print(f"")
-        print(f"     💡 RECOMMENDATIONS:")
+        print(f"     RECOMMENDATIONS:")
         print(f"     1. Use 'roc_auc' scoring: Better for imbalanced data, doesn't require positive predictions")
         print(f"        Example: tuning_scoring='roc_auc'")
         print(f"     2. Use 'average_precision' scoring: Works well with rare positive class")
@@ -295,12 +295,12 @@ def tune_hyperparameters(
         # Show train scores to check for fitting issues
         if 'mean_train_score' in results_df.columns:
             best_train = results_df.loc[search.best_index_, 'mean_train_score']
-            print(f"     📊 Training score: {best_train:.4f}")
+            print(f"     Training score: {best_train:.4f}")
             if best_train < 0.001:
-                print(f"        ⚠️  Training score also ~0 - Model isn't learning from data!")
+                print(f"        Training score also ~0 - Model isn't learning from data!")
                 print(f"        Check: feature quality, target distribution, model capacity")
             else:
-                print(f"        ✓ Model is learning (train > 0), but not generalizing to validation")
+                print(f"        Model is learning (train > 0), but not generalizing to validation")
                 print(f"        This suggests severe overfitting or data distribution issues")
 
     # Get top 5 configurations by actual score (not rank)
@@ -312,7 +312,7 @@ def tune_hyperparameters(
         ['rank_test_score', 'mean_test_score', 'std_test_score', 'params']
     ]
 
-    print(f"\n  📋 Top 5 Configurations:")
+    print(f"\n  Top 5 Configurations:")
     print(f"     {'Rank':<6} {'Mean Score':<12} {'Std':<10} {'Parameters'}")
     print(f"     {'-'*70}")
     for _, row in top_configs.iterrows():
@@ -325,7 +325,7 @@ def tune_hyperparameters(
     # If all scores are the same, show score distribution
     unique_scores = results_df['mean_test_score'].nunique()
     if unique_scores <= 3:
-        print(f"\n  ℹ️  Only {unique_scores} unique score(s) found across {len(results_df)} configurations")
+        print(f"\n  ℹ Only {unique_scores} unique score(s) found across {len(results_df)} configurations")
         score_dist = results_df['mean_test_score'].value_counts().head(5)
         print(f"     Score distribution:")
         for score, count in score_dist.items():
@@ -498,7 +498,7 @@ def save_tuning_results(
     with open(filename, 'w') as f:
         json.dump(json_results, f, indent=2)
 
-    print(f"💾 Saved tuning results to {filename}")
+    print(f"Saved tuning results to {filename}")
 
 
 def compare_tuning_results(
@@ -539,11 +539,11 @@ def compare_tuning_results(
 
     # Print comparison
     print("\n" + "="*100)
-    print("  🏆 HYPERPARAMETER TUNING COMPARISON")
+    print("  HYPERPARAMETER TUNING COMPARISON")
     print("="*100)
     print(comparison_df.to_string(index=False))
     print("="*100)
-    print(f"\n💾 Saved comparison to {output_dir}/tuning_comparison.csv\n")
+    print(f"\nSaved comparison to {output_dir}/tuning_comparison.csv\n")
 
     return comparison_df
 
@@ -611,7 +611,7 @@ def get_param_importance(tuning_results: Dict[str, Any], top_n: int = 5) -> pd.D
     importance_df = pd.DataFrame(importance_data)
     importance_df = importance_df.sort_values('Score Range', ascending=False).head(top_n)
 
-    print(f"\n  📊 Top {top_n} Most Important Parameters:")
+    print(f"\n  Top {top_n} Most Important Parameters:")
     print(f"     {'Parameter':<40} {'Score Range':<15} {'Best Value'}")
     print(f"     {'-'*70}")
     for _, row in importance_df.iterrows():

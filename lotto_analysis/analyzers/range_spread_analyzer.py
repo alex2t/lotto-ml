@@ -429,7 +429,7 @@ def analyze_range_spread(
         fdr_applied = True
     else:
         if not STATSMODELS_AVAILABLE:
-            print("  ⚠️  Skipping FDR correction (statsmodels not installed)")
+            print("  Skipping FDR correction (statsmodels not installed)")
         fdr_applied = False
 
     # Extract validated scores
@@ -478,7 +478,7 @@ def main():
     draw_history_file = 'data/lotto_draw_history.json'
 
     if not Path(draw_history_file).exists():
-        print(f"❌ ERROR: {draw_history_file} not found")
+        print(f"ERROR: {draw_history_file} not found")
         print(f"   REQUIRED ACTION: Run 'python drawpick.py' first")
         sys.exit(1)
 
@@ -505,7 +505,7 @@ def main():
         draw_list.sort(key=lambda x: x['date'])
 
     except json.JSONDecodeError as e:
-        print(f"❌ ERROR: Invalid JSON in {draw_history_file}: {e}")
+        print(f"ERROR: Invalid JSON in {draw_history_file}: {e}")
         sys.exit(1)
 
     print(f"Loaded {len(draw_list)} draws")
@@ -514,7 +514,7 @@ def main():
 
     # Display results
     print()
-    print("  ✓ Range spread validation complete:")
+    print("  Range spread validation complete:")
 
     overall = results.get('overall_distribution', {})
     print(f"    - Mean range: {overall.get('mean', 0):.1f}")
@@ -541,7 +541,7 @@ def main():
     with open(output_file, 'w') as f:
         json.dump(round_floats(results), f, indent=2)
 
-    print(f"\n✓ Analysis saved to {output_file}")
+    print(f"\nAnalysis saved to {output_file}")
     print()
     print("=" * 70)
     print("Analysis complete!")

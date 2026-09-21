@@ -384,7 +384,7 @@ def main():
     draw_history_file = 'data/lotto_draw_history.json'
 
     if not Path(draw_history_file).exists():
-        print(f"❌ ERROR: {draw_history_file} not found")
+        print(f"ERROR: {draw_history_file} not found")
         print(f"   REQUIRED ACTION: Run 'python drawpick.py' first")
         sys.exit(1)
 
@@ -410,7 +410,7 @@ def main():
         draw_list.sort(key=lambda x: x['date'])
 
     except json.JSONDecodeError as e:
-        print(f"❌ ERROR: Invalid JSON in {draw_history_file}: {e}")
+        print(f"ERROR: Invalid JSON in {draw_history_file}: {e}")
         sys.exit(1)
 
     print(f"Loaded {len(draw_list)} draws")
@@ -419,7 +419,7 @@ def main():
 
     # Display results
     print()
-    print("  ✓ Consecutive pair validation complete:")
+    print("  Consecutive pair validation complete:")
 
     chi2 = results.get('overall_chi_square_test', {})
     print(f"    - Unique pairs analyzed: {chi2.get('num_pairs', 0)}")
@@ -442,7 +442,7 @@ def main():
     with open(output_file, 'w') as f:
         json.dump(round_floats(results), f, indent=2)
 
-    print(f"\n✓ Analysis saved to {output_file}")
+    print(f"\nAnalysis saved to {output_file}")
     print()
     print("=" * 70)
     print("Analysis complete!")

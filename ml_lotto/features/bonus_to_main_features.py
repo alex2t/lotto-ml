@@ -52,9 +52,9 @@ def extract_bonus_to_main_features_dict(
 
     # Use LIVE bonus window if provided, otherwise fall back to JSON
     if current_bonus_window is not None:
-        print("  ✓ Using LIVE bonus window (dynamically calculated from recent draws)")
+        print("  Using LIVE bonus window (dynamically calculated from recent draws)")
     else:
-        print("  ⚠️  Using stale JSON bonus window (consider passing live window)")
+        print("  Using stale JSON bonus window (consider passing live window)")
         current_bonus_window = bonus_to_main_data.get('current_bonus_window', {}).get('last_10_bonus_numbers', [])
 
     # Build lookup for current bonus window
@@ -224,7 +224,7 @@ def create_unified_bonus_to_main_features(
                 )
                 features.update(interaction_feat)
             except Exception as e:
-                print(f"  ⚠️  Warning: Could not add interaction features: {e}")
+                print(f"  Warning: Could not add interaction features: {e}")
                 print(f"     Continuing with base features only")
 
         unified_features[num] = features
@@ -235,7 +235,7 @@ def create_unified_bonus_to_main_features(
     main_count = 10  # additional main features (days_since_last + rolling + gaps + volatility + category/freshness)
     interaction_count = sum(1 for k in sample_features.keys() if 'interaction' in k or 'triple_' in k)
 
-    print(f"\n✓ Created unified bonus-to-main features for 47 numbers")
+    print(f"\nCreated unified bonus-to-main features for 47 numbers")
     print(f"  Bonus-to-main specific features: {base_count}")
     print(f"  Main features: {main_count}")
     print(f"  Interaction features: {interaction_count}")
@@ -292,7 +292,7 @@ def get_unified_bonus_to_main_feature_names(include_interactions: bool = True) -
             interaction_features = get_interaction_feature_names(include_triples=True)
             all_features.extend(interaction_features)
         except Exception as e:
-            print(f"  ⚠️  Warning: Could not get interaction feature names: {e}")
+            print(f"  Warning: Could not get interaction feature names: {e}")
 
     return all_features
 

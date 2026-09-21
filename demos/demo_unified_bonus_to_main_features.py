@@ -89,8 +89,8 @@ def test_unified_bonus_to_main_features():
     )
     sample_base = base_features[1]
     assert 'window_saturation_penalty' not in sample_base, "window_saturation_penalty was copied through"
-    print(f"    ✓ window_saturation_penalty not carried through")
-    print(f"    ✓ Base features count: {len(sample_base)} (expected 11)")
+    print(f"    window_saturation_penalty not carried through")
+    print(f"    Base features count: {len(sample_base)} (expected 11)")
 
     # Test 2: Unified features WITHOUT interactions
     print("\n  Test 2: Unified features WITHOUT interactions")
@@ -114,7 +114,7 @@ def test_unified_bonus_to_main_features():
     ]
     for feat in base_feature_names:
         assert feat in sample_features_no_interact, f"Missing base feature: {feat}"
-    print(f"    ✓ All 11 base features present")
+    print(f"    All 11 base features present")
 
     # Verify main features
     main_feature_names = [
@@ -124,7 +124,7 @@ def test_unified_bonus_to_main_features():
     ]
     for feat in main_feature_names:
         assert feat in sample_features_no_interact, f"Missing main feature: {feat}"
-    print(f"    ✓ All 10 main features present (including CRITICAL days_since_last)")
+    print(f"    All 10 main features present (including CRITICAL days_since_last)")
 
     # Test 3: Unified features WITH interactions
     print("\n  Test 3: Unified features WITH interactions")
@@ -148,12 +148,12 @@ def test_unified_bonus_to_main_features():
         print(f"    Interaction features found: {interaction_count}")
 
         if interaction_count > 0:
-            print(f"    ✓ Interaction features successfully added")
+            print(f"    Interaction features successfully added")
         else:
-            print(f"    ⚠️  No interaction features found (may need lotto_feature_interactions.json)")
+            print(f"    No interaction features found (may need lotto_feature_interactions.json)")
 
     except Exception as e:
-        print(f"    ⚠️  Interaction test failed: {e}")
+        print(f"    Interaction test failed: {e}")
         print(f"       This is OK if lotto_feature_interactions.json doesn't exist")
 
     # Test 4: get_unified_bonus_to_main_feature_names
@@ -161,10 +161,10 @@ def test_unified_bonus_to_main_features():
     feature_names = get_unified_bonus_to_main_feature_names(include_interactions=False)
     print(f"    Feature names (no interactions): {len(feature_names)}")
     assert len(feature_names) == 21, f"Expected 21 features, got {len(feature_names)}"
-    print(f"    ✓ Correct number of feature names")
+    print(f"    Correct number of feature names")
 
     print("\n" + "="*80)
-    print("✅ ALL TESTS PASSED!")
+    print("ALL TESTS PASSED!")
     print("="*80)
     print("\nSummary:")
     print("  - window_saturation_penalty stays out (F-21, F-24)")
@@ -172,7 +172,7 @@ def test_unified_bonus_to_main_features():
     print("  - Feature counts are correct (11 base + 10 main + interactions)")
     print("  - All expected feature names are present")
     print("  - days_since_last (CRITICAL) is now included")
-    print("\n💡 Next: Run quickpick.py to verify integration with bonus_to_main_trainer.py")
+    print("\nNext: Run quickpick.py to verify integration with bonus_to_main_trainer.py")
 
     return 0
 
@@ -181,12 +181,12 @@ if __name__ == '__main__':
     try:
         sys.exit(test_unified_bonus_to_main_features())
     except AssertionError as e:
-        print(f"\n❌ TEST FAILED: {e}")
+        print(f"\nTEST FAILED: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
     except Exception as e:
-        print(f"\n❌ UNEXPECTED ERROR: {e}")
+        print(f"\nUNEXPECTED ERROR: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

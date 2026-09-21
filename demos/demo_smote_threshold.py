@@ -44,10 +44,10 @@ try:
     unique, counts = np.unique(y_resampled, return_counts=True)
     print(f"   After SMOTE: Class 0: {counts[0]}, Class 1: {counts[1]}")
     print(f"   Imbalance ratio: {counts[0]/counts[1]:.2f}:1")
-    print("   ✅ SMOTE working correctly!")
+    print("   SMOTE working correctly!")
 
 except Exception as e:
-    print(f"   ❌ SMOTE test failed: {e}")
+    print(f"   SMOTE test failed: {e}")
     exit(1)
 
 # Test 2: Threshold Optimization
@@ -84,10 +84,10 @@ try:
     print(f"   Default threshold (0.5): F1 = {f1_default:.4f}")
     print(f"   Optimal threshold ({optimal_threshold:.4f}): F1 = {f1_optimal:.4f}")
     print(f"   Improvement: {((f1_optimal - f1_default) / (f1_default + 1e-10)) * 100:.1f}%")
-    print("   ✅ Threshold optimization working correctly!")
+    print("   Threshold optimization working correctly!")
 
 except Exception as e:
-    print(f"   ❌ Threshold optimization test failed: {e}")
+    print(f"   Threshold optimization test failed: {e}")
     exit(1)
 
 # Test 3: Import Updated Modules
@@ -95,15 +95,15 @@ print("\n3. Testing updated module imports...")
 try:
     from ml_lotto.models.trainer import train_model, train_all_models
     from ml_lotto.models.model_metrics import calculate_comprehensive_metrics
-    print("   ✅ All modules imported successfully!")
-    print("   ✅ SMOTE parameter available in train_model signature")
+    print("   All modules imported successfully!")
+    print("   SMOTE parameter available in train_model signature")
 
 except Exception as e:
-    print(f"   ❌ Module import test failed: {e}")
+    print(f"   Module import test failed: {e}")
     exit(1)
 
 print("\n" + "="*70)
-print("✅ ALL TESTS PASSED!")
+print("ALL TESTS PASSED!")
 print("="*70)
 print("\nSummary:")
 print("  1. SMOTE is installed and working")

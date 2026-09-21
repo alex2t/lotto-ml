@@ -159,6 +159,6 @@ def write_json_file(filepath: str, data: Dict, description: str = ""):
     """Write data to JSON file with optional description."""
     with open(filepath, "w") as f:
         json.dump(round_floats(data), f, indent=4)
-    print(f"✅ Wrote: {filepath}")
+    print(f"Wrote: {filepath}")
     if description:
         print(f"   - {description}")

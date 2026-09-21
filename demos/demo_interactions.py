@@ -16,21 +16,21 @@ try:
         calculate_all_interaction_features,
         get_interaction_feature_names
     )
-    print("✓ Successfully imported interactions module")
+    print("Successfully imported interactions module")
 except Exception as e:
-    print(f"✗ Failed to import: {e}")
+    print(f"Failed to import: {e}")
     exit(1)
 
 # Test 2: Initialize the calculator
 print("\nTest 2: Initializing InteractionFeatureCalculator...")
 try:
     calculator = InteractionFeatureCalculator()
-    print(f"✓ Calculator initialized")
+    print(f"Calculator initialized")
     print(f"  - Pairwise interactions loaded: {len(calculator.pairwise_interactions)}")
     print(f"  - Triple interactions loaded: {len(calculator.triple_interactions)}")
     print(f"  - Feature split thresholds extracted: {len(calculator.feature_thresholds)}")
 except Exception as e:
-    print(f"✗ Failed to initialize: {e}")
+    print(f"Failed to initialize: {e}")
     exit(1)
 
 # Test 3: Get interaction feature names
@@ -38,7 +38,7 @@ print("\nTest 3: Getting interaction feature names...")
 try:
     pairwise_names = get_interaction_feature_names(include_triples=False)
     all_names = get_interaction_feature_names(include_triples=True)
-    print(f"✓ Got feature names")
+    print(f"Got feature names")
     print(f"  - Pairwise features: {len(pairwise_names)}")
     print(f"  - All features (pairwise + triple): {len(all_names)}")
 
@@ -47,7 +47,7 @@ try:
         for name in pairwise_names[:3]:
             print(f"    - {name}")
 except Exception as e:
-    print(f"✗ Failed to get feature names: {e}")
+    print(f"Failed to get feature names: {e}")
     exit(1)
 
 # Test 4: Calculate interaction features for a sample number
@@ -65,7 +65,7 @@ try:
     }
 
     interactions = calculate_all_interaction_features(sample_features, include_triples=True)
-    print(f"✓ Calculated {len(interactions)} interaction features")
+    print(f"Calculated {len(interactions)} interaction features")
 
     # Show some results
     if interactions:
@@ -73,7 +73,7 @@ try:
         for name, value in list(interactions.items())[:5]:
             print(f"    - {name}: {value}")
 except Exception as e:
-    print(f"✗ Failed to calculate features: {e}")
+    print(f"Failed to calculate features: {e}")
     import traceback
     traceback.print_exc()
     exit(1)
@@ -95,12 +95,12 @@ try:
     triples = expand_feature_selection('TRIPLE_INTERACTIONS', all_features)
     all_int = expand_feature_selection('ALL_INTERACTIONS', all_features)
 
-    print(f"✓ Extractor keywords working")
+    print(f"Extractor keywords working")
     print(f"  - PAIRWISE_INTERACTIONS expands to: {len(pairwise)} features")
     print(f"  - TRIPLE_INTERACTIONS expands to: {len(triples)} features")
     print(f"  - ALL_INTERACTIONS expands to: {len(all_int)} features")
 except Exception as e:
-    print(f"✗ Failed extractor integration test: {e}")
+    print(f"Failed extractor integration test: {e}")
     import traceback
     traceback.print_exc()
     exit(1)
@@ -111,9 +111,9 @@ try:
     from ml_lotto.config import MODEL_1_CONFIG
 
     if 'PAIRWISE_INTERACTIONS' in MODEL_1_CONFIG['features']:
-        print("✓ MODEL_1_CONFIG includes PAIRWISE_INTERACTIONS")
+        print("MODEL_1_CONFIG includes PAIRWISE_INTERACTIONS")
     else:
-        print("✗ MODEL_1_CONFIG does not include PAIRWISE_INTERACTIONS")
+        print("MODEL_1_CONFIG does not include PAIRWISE_INTERACTIONS")
         print(f"  Current features: {MODEL_1_CONFIG['features']}")
         exit(1)
 
@@ -123,20 +123,20 @@ try:
     print(f"  Model 1 generic_count: {MODEL_1_CONFIG['generic_count']}")
 
 except Exception as e:
-    print(f"✗ Failed config verification: {e}")
+    print(f"Failed config verification: {e}")
     exit(1)
 
 # All tests passed
 print("\n" + "=" * 70)
-print("✅ ALL TESTS PASSED!")
+print("ALL TESTS PASSED!")
 print("=" * 70)
 print("\nSummary:")
-print("  ✓ Interactions module imports correctly")
-print("  ✓ Calculator loads data from JSON dynamically")
-print("  ✓ Feature names are extracted correctly")
-print("  ✓ Interaction features calculate correctly")
-print("  ✓ Extractor keywords work as expected")
-print("  ✓ MODEL_1_CONFIG is properly configured")
+print("  Interactions module imports correctly")
+print("  Calculator loads data from JSON dynamically")
+print("  Feature names are extracted correctly")
+print("  Interaction features calculate correctly")
+print("  Extractor keywords work as expected")
+print("  MODEL_1_CONFIG is properly configured")
 print("\nImplementation is ready to use!")
 print("Next steps:")
 print("  1. Run 'python drawpick.py' to regenerate interaction data")

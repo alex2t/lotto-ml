@@ -112,7 +112,7 @@ def generate_bonus_to_main_predictions(
                 if category in category_counts:
                     category_counts[category] += 1
 
-    print(f"\n✓ Selected {len(selected)} numbers from recent bonus window:")
+    print(f"\nSelected {len(selected)} numbers from recent bonus window:")
     for i, num in enumerate(selected):
         pred = next(p for p in predictions if p['number'] == num)
         print(f"  Pick {i+1}: Number {num:2d} - "

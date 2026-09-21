@@ -410,7 +410,7 @@ def save_outputs(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
         try:
             with open(path, 'w') as f:
                 json.dump(output_data, f, indent=2)
-            print(f"✓ Full analysis saved to {path}")
+            print(f"Full analysis saved to {path}")
             break
         except:
             continue
@@ -425,7 +425,7 @@ def save_outputs(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
                     f.write(f"{num},{stats['mean']},{stats['median']},{stats['std']},"
                            f"{stats['cv']},{stats['min']},{stats['max']},{stats['p90']},"
                            f"{stats['consistency_score']},{stats['total_gaps']}\n")
-            print(f"✓ Gap summary saved to {path}")
+            print(f"Gap summary saved to {path}")
             break
         except:
             continue
@@ -438,7 +438,7 @@ def save_outputs(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
                 for rank, item in enumerate(due_rankings[:47], 1):
                     f.write(f"{rank},{item['number']},{item['current_gap']},{item['mean_gap']},"
                            f"{item['z_score']},{item['due_probability']},{item['overdue_by']}\n")
-            print(f"✓ Due numbers saved to {path}")
+            print(f"Due numbers saved to {path}")
             break
         except:
             continue
@@ -492,7 +492,7 @@ def print_results(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
     print("-" * 80)
 
     for rank, item in enumerate(due_rankings[:20], 1):
-        status = "⚠️ VERY OVERDUE" if item['z_score'] > 2 else "⚡ OVERDUE" if item['z_score'] > 1 else "Due"
+        status = "VERY OVERDUE" if item['z_score'] > 2 else "OVERDUE" if item['z_score'] > 1 else "Due"
         print(f"{rank:<6} #{item['number']:<7} {item['current_gap']:<10} {item['mean_gap']:<10.2f} "
               f"{item['z_score']:<10.2f} {item['due_probability']:<10.4f} {status:<15}")
 
@@ -508,9 +508,9 @@ def print_results(gap_stats: Dict, due_scores: Dict, predictive_power: Dict,
     print(f"  Interpretation: {pp['interpretation']}")
 
     if pp['predictive_lift'] > 1.1:
-        print(f"  ✓ Long gaps DO predict higher probability of appearance")
+        print(f"  Long gaps DO predict higher probability of appearance")
     else:
-        print(f"  ✗ Long gaps do NOT significantly predict appearance")
+        print(f"  Long gaps do NOT significantly predict appearance")
 
     print("\n" + "-" * 80)
     print("GAP PATTERNS BY HMC CATEGORY")
@@ -545,35 +545,35 @@ def main():
     """Main execution function."""
     print("Loading draw history...")
     full_history, sorted_draws = load_draw_history()
-    print(f"✓ Loaded {len(sorted_draws)} draws")
+    print(f"Loaded {len(sorted_draws)} draws")
 
     print("\n1. Calculating gaps for each number...")
     gaps = calculate_gaps_per_number(sorted_draws)
-    print(f"✓ Calculated gaps for {len(gaps)} numbers")
+    print(f"Calculated gaps for {len(gaps)} numbers")
 
     print("\n2. Computing gap statistics...")
     gap_stats = calculate_gap_statistics(gaps)
-    print(f"✓ Computed statistics for {len(gap_stats)} numbers")
+    print(f"Computed statistics for {len(gap_stats)} numbers")
 
     print("\n3. Analyzing current gaps...")
     current_gaps = calculate_current_gaps(sorted_draws)
-    print(f"✓ Calculated current gaps for 47 numbers")
+    print(f"Calculated current gaps for 47 numbers")
 
     print("\n4. Computing due scores...")
     due_scores = calculate_due_scores(gap_stats, current_gaps)
-    print(f"✓ Computed due scores for {len(due_scores)} numbers")
+    print(f"Computed due scores for {len(due_scores)} numbers")
 
     print("\n5. Testing predictive power of gap length...")
     predictive_power = analyze_gap_predictive_power(gaps, sorted_draws)
-    print(f"✓ Analyzed {predictive_power['long_gap_appearances'] + predictive_power['normal_gap_appearances']} gap instances")
+    print(f"Analyzed {predictive_power['long_gap_appearances'] + predictive_power['normal_gap_appearances']} gap instances")
 
     print("\n6. Analyzing category-specific gap patterns...")
     category_stats = analyze_category_gaps(sorted_draws)
-    print(f"✓ Analyzed gaps for {len(category_stats)} categories")
+    print(f"Analyzed gaps for {len(category_stats)} categories")
 
     print("\n7. Generating due rankings...")
     due_rankings = generate_due_rankings(due_scores)
-    print(f"✓ Generated rankings for 47 numbers")
+    print(f"Generated rankings for 47 numbers")
 
     print("\n8. Saving outputs...")
     save_outputs(gap_stats, due_scores, predictive_power, category_stats,

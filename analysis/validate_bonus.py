@@ -89,14 +89,14 @@ def validate_bonus_feature():
             print(f"   - Expected if random (no feature): {len(recent_bonus_nums)/47*100:.1f}%")
             
             if total_bonus_picks/total_picks > len(recent_bonus_nums)/47 * 1.5:
-                print(f"   ✓ FEATURE IS WORKING! Models favor recent bonus numbers.")
+                print(f"   FEATURE IS WORKING! Models favor recent bonus numbers.")
             else:
-                print(f"   ⚠️  WARNING: Feature might not be working as expected.")
+                print(f"   WARNING: Feature might not be working as expected.")
         else:
-            print("   ⚠️  Could not find predictions in lottery_picks.txt")
+            print("   Could not find predictions in lottery_picks.txt")
             
     except FileNotFoundError:
-        print("   ⚠️  lottery_picks.txt not found. Run quickpick.py first.")
+        print("   lottery_picks.txt not found. Run quickpick.py first.")
     
     # Historical validation
     print(f"\n4. HISTORICAL VALIDATION (Check if bonus → winner pattern exists)")
@@ -139,9 +139,9 @@ def validate_bonus_feature():
             print(f"   Lift: {lift:.2f}x")
             
             if lift > 1.2:
-                print(f"   ✓ CONFIRMED: Pattern exists in your data!")
+                print(f"   CONFIRMED: Pattern exists in your data!")
             else:
-                print(f"   ⚠️  Pattern weaker than expected from trend analyzer")
+                print(f"   Pattern weaker than expected from trend analyzer")
     
     print("\n" + "=" * 80)
     print("VALIDATION COMPLETE")

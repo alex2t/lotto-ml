@@ -386,7 +386,7 @@ def save_outputs(stability_scores: Dict, correlation_stability: Dict,
         try:
             with open(path, 'w') as f:
                 json.dump(output_data, f, indent=2)
-            print(f"✓ Full analysis saved to {path}")
+            print(f"Full analysis saved to {path}")
             break
         except:
             continue
@@ -417,7 +417,7 @@ def save_outputs(stability_scores: Dict, correlation_stability: Dict,
                            f"{item['mean_win_rate']:.4f},{item['cv']:.3f},"
                            f"{item['trend']},{item['corr_stability']:.3f},{item['category']}\n")
 
-            print(f"✓ Feature rankings saved to {path}")
+            print(f"Feature rankings saved to {path}")
             break
         except:
             continue
@@ -431,7 +431,7 @@ def save_outputs(stability_scores: Dict, correlation_stability: Dict,
                     'detailed_recommendations': core_feature_set,
                     'usage_notes': 'Use these stable features for robust ML models that generalize well over time'
                 }, f, indent=2)
-            print(f"✓ Core feature set saved to {path}")
+            print(f"Core feature set saved to {path}")
             break
         except:
             continue
@@ -533,30 +533,30 @@ def main():
     """Main execution function."""
     print("Loading draw history...")
     full_history, sorted_draws = load_draw_history()
-    print(f"✓ Loaded {len(sorted_draws)} draws")
+    print(f"Loaded {len(sorted_draws)} draws")
 
     print("\n1. Analyzing feature win rates over rolling windows...")
     feature_win_rates = analyze_feature_win_rates_over_time(sorted_draws, window_size=50)
     total_windows = len(next(iter(feature_win_rates.values())))
-    print(f"✓ Analyzed {len(feature_win_rates)} features across {total_windows} time windows")
+    print(f"Analyzed {len(feature_win_rates)} features across {total_windows} time windows")
 
     print("\n2. Calculating feature stability scores...")
     stability_scores = calculate_feature_stability(feature_win_rates)
-    print(f"✓ Calculated stability metrics for {len(stability_scores)} features")
+    print(f"Calculated stability metrics for {len(stability_scores)} features")
 
     print("\n3. Analyzing feature correlation stability...")
     correlation_stability = analyze_feature_correlations_over_time(sorted_draws, window_size=100)
-    print(f"✓ Analyzed correlation stability for {len(correlation_stability)} features")
+    print(f"Analyzed correlation stability for {len(correlation_stability)} features")
 
     print("\n4. Identifying stable vs noisy features...")
     stable_features, noisy_features = identify_noisy_features(stability_scores, threshold=0.5)
-    print(f"✓ Identified {len(stable_features)} stable and {len(noisy_features)} noisy features")
+    print(f"Identified {len(stable_features)} stable and {len(noisy_features)} noisy features")
 
     print("\n5. Recommending core feature set...")
     core_feature_set = recommend_core_feature_set(
         stability_scores, correlation_stability, min_features=3, max_features=8
     )
-    print(f"✓ Recommended {len(core_feature_set)} core features for robust models")
+    print(f"Recommended {len(core_feature_set)} core features for robust models")
 
     print("\n6. Saving outputs...")
     save_outputs(stability_scores, correlation_stability, stable_features,

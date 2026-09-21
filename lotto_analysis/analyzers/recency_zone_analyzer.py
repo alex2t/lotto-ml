@@ -33,7 +33,7 @@ try:
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
-    print("⚠️  scipy not available - using basic statistical calculations")
+    print("scipy not available - using basic statistical calculations")
 
 
 def analyze_recency_zones(draw_history: Dict[str, Any]) -> Dict[str, Any]:
@@ -103,7 +103,7 @@ def analyze_recency_zones(draw_history: Dict[str, Any]) -> Dict[str, Any]:
         total_wins = category_totals[category]
 
         if total_wins == 0:
-            print(f"⚠️  Warning: No wins found for category '{category}'")
+            print(f"Warning: No wins found for category '{category}'")
             continue
 
         # Find max win rate for normalization
@@ -326,13 +326,13 @@ def generate_recency_zones_data(draw_history_file: str, output_file: str):
     print("=" * 70)
 
     # Load draw history
-    print("\n📊 Loading Draw History...")
+    print("\nLoading Draw History...")
     with open(draw_history_file, 'r') as f:
         draw_history = json.load(f)
-    print(f"  ✓ Loaded {len(draw_history)} draws from {draw_history_file}")
+    print(f"  Loaded {len(draw_history)} draws from {draw_history_file}")
 
     # Analyze recency zones
-    print("\n📈 Analyzing Recency Zones from Real Data...")
+    print("\nAnalyzing Recency Zones from Real Data...")
     recency_zones = analyze_recency_zones(draw_history)
 
     print("\n  Combined (Category-Agnostic) Zones:")
@@ -347,7 +347,7 @@ def generate_recency_zones_data(draw_history_file: str, output_file: str):
                 print(f"      {bin_name} days: {data['win_percentage']}% → score {data['score']:.4f}")
 
     # Statistical validation
-    print("\n🔬 Statistical Validation...")
+    print("\nStatistical Validation...")
     validation = validate_statistical_significance(draw_history, recency_zones)
     print(f"  Test: {validation['test']}")
     if 'h_statistic' in validation:
@@ -362,13 +362,13 @@ def generate_recency_zones_data(draw_history_file: str, output_file: str):
             print(f"    {cat.upper()}: mean={stats['mean']}d, median={stats['median']}d, std={stats['std']}d (n={stats['n']})")
 
     # Compare with hard-coded values
-    print("\n🔍 Comparing with Hard-Coded Values...")
+    print("\nComparing with Hard-Coded Values...")
     comparison = compare_with_hardcoded_values(recency_zones)
 
     print("\n  Bin         | Calculated | Hard-Coded | Difference | Status")
     print("  " + "-" * 65)
     for bin_name, comp in comparison.items():
-        status_symbol = "✓" if comp['alignment'] == 'good' else "⚠"
+        status_symbol = "" if comp['alignment'] == 'good' else ""
         print(f"  {bin_name:11} | {comp['calculated_score']:10.4f} | {comp['hardcoded_score']:10.2f} | "
               f"{comp['difference']:+10.4f} | {status_symbol} {comp['alignment']}")
 
@@ -398,13 +398,13 @@ def generate_recency_zones_data(draw_history_file: str, output_file: str):
     }
 
     # Save
-    print(f"\n💾 Saving to {output_file}...")
+    print(f"\nSaving to {output_file}...")
     with open(output_file, 'w') as f:
         json.dump(round_floats(output_data), f, indent=2)
 
-    print(f"  ✓ Saved {output_file}")
+    print(f"  Saved {output_file}")
     print("\n" + "=" * 70)
-    print("✅ DATA-DRIVEN ANALYSIS COMPLETE")
+    print("DATA-DRIVEN ANALYSIS COMPLETE")
     print("=" * 70)
     print(f"\nAll recency zone scores calculated from {recency_zones['totals']['combined']} winning numbers.")
     print(f"Statistical significance: {validation['significant']}")
