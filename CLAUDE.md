@@ -113,7 +113,7 @@ will read stale data and train/serve parity will silently break.
 
 `tests/` holds only real tests: twenty-six files, 277 tests, ~60s. The Next.js site has its own
 suites in `frontend/` - `npm --prefix frontend test` (159 vitest) and `npm --prefix frontend run
-test:e2e` (64 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
+test:e2e` (66 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
