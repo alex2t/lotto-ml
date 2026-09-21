@@ -1,7 +1,19 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Dices, Download, Grid3x3, Hand, Minus, Plus, Shapes, Sparkles, X } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Dices,
+  Download,
+  Grid3x3,
+  Hand,
+  Minus,
+  Plus,
+  Shapes,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { Ball } from '@/components/ui/Ball';
 import { ShapeCard } from './ShapeCard';
 import { Wheel } from './Wheel';
@@ -278,6 +290,7 @@ export function Picker({
                     <Wheel
                       key={`${band}-${i}`}
                       band={band}
+                      instance={i}
                       numbers={bandNumbers(band)}
                       onPick={add}
                       disabled={line.length >= LINE_SIZE}
@@ -719,6 +732,20 @@ function Tray({
   const categoryOf = (n: number) =>
     pool.numbers.find((p) => p.number === n)?.category;
 
+  // A sheet, with two positions rather than free dragging: on a phone the shape card is
+  // most of a screen, so it stays closed until there is something to show and can be put
+  // away again. The handle is a button, so it works by keyboard and is announced.
+  const [open, setOpen] = useState(false);
+  const complete = line.length === LINE_SIZE;
+
+  // Opening itself the moment the line is complete is the point of the sheet: the card is
+  // what someone came for. Closing it again is theirs to decide.
+  const [lastComplete, setLastComplete] = useState(false);
+  if (complete !== lastComplete) {
+    setLastComplete(complete);
+    if (complete) setOpen(true);
+  }
+
   async function savePng() {
     if (!shape) return;
     const blob = await drawLineImage({
@@ -731,8 +758,29 @@ function Tray({
   }
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-3">
+    <div className="fixed inset-x-0 bottom-0 z-20 rounded-t-2xl border-t border-border bg-background/95 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur">
+      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 pb-3 pt-1">
+        {/* The grab handle. It is a button because it does something. */}
+        <button
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+          aria-expanded={open}
+          aria-controls="line-sheet"
+          disabled={!shape}
+          className="mx-auto flex w-full max-w-24 flex-col items-center gap-1 py-1 disabled:opacity-40"
+        >
+          <span className="h-1 w-10 rounded-full bg-border" aria-hidden />
+          <span className="sr-only">
+            {open ? 'Collapse the line details' : 'Expand the line details'}
+          </span>
+          {shape &&
+            (open ? (
+              <ChevronDown className="h-3 w-3 text-muted" aria-hidden />
+            ) : (
+              <ChevronUp className="h-3 w-3 text-muted" aria-hidden />
+            ))}
+        </button>
+
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-xs uppercase tracking-widest text-muted">Your line</span>
           <div className="flex flex-wrap items-center gap-2">
@@ -780,7 +828,11 @@ function Tray({
         </div>
 
         {shape && (
-          <div className="max-h-[50vh] overflow-y-auto">
+          <div
+            id="line-sheet"
+            hidden={!open}
+            className="max-h-[60vh] overflow-y-auto sm:max-h-[50vh]"
+          >
             <ShapeCard shape={shape} />
           </div>
         )}

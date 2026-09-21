@@ -524,7 +524,7 @@ in any artifact and the site computes nothing.
 
 - [x] The section 6 completeness matrix walked and signed off, with a column recording where each
       row landed.
-- [x] Section 7 green: 118 vitest, 56 Playwright on desktop and mobile, and 7.2's ingestion
+- [x] Section 7 green: 159 vitest, 64 Playwright on desktop and mobile, and 7.2's ingestion
       integration test. The itemised status, including four rows that are not done, is at the end
       of section 7.
 
@@ -568,8 +568,9 @@ plain "choose a number" fallback; contrast checked in both themes; the spinning 
 
 ### Section 5 checklist
 
-Built 2026-09-21. Four rows are not: three are accessibility or shape details that were
-specified here and skipped, and one is a deliberate difference from what 5.2 describes.
+Built 2026-09-21, all of it. The four rows that were outstanding on the first pass - the
+reduced-motion cross-fade, the bottom sheet, the wheel's plain fallback and the contrast
+check - were closed the same day.
 
 **5.1 Visual language**
 
@@ -584,10 +585,10 @@ specified here and skipped, and one is a deliberate difference from what 5.2 des
 
 - [x] Three animated moments and no more: the wheel spin, the bag shake and the ball stagger.
 - [x] Animation never delays information - the numbers are in the DOM as soon as they are chosen.
-- [ ] **`prefers-reduced-motion` replaces the three with a cross-fade.** It removes them instead:
-      `globals.css` reduces every animation and transition to 0.01ms, so a reduced-motion viewer
-      gets the result instantly with no fade. That is the safe direction to differ in, but it is
-      not what this section says.
+- [x] `prefers-reduced-motion` replaces the three with a cross-fade rather than removing them:
+      `.ball-enter` becomes a 160ms opacity fade with its stagger delay cleared, so the six arrive
+      together and nothing moves, and the bag does not shake. Everything else still drops to
+      0.01ms.
 
 **5.3 Mobile**
 
@@ -595,9 +596,11 @@ specified here and skipped, and one is a deliberate difference from what 5.2 des
 - [x] The 1-47 grid is six columns with 44px targets.
 - [x] Every page is exercised at phone width - Playwright runs the whole suite twice, desktop and
       a Pixel 7.
-- [ ] **The line tray is a bottom sheet.** It is a bar fixed to the bottom that grows to hold the
-      shape card. It works on a phone, and `scroll-padding-bottom` keeps it from covering what a
-      link scrolls to, but it does not drag or snap the way a sheet does.
+- [x] The line tray is a bottom sheet: a rounded panel with a grab handle and two positions,
+      which opens itself when the sixth number lands - the shape card is what someone came for -
+      and can be put away again. The handle is a button, so it works by keyboard and carries
+      `aria-expanded`. It snaps rather than drags; on a phone the card is most of a screen, and
+      two positions is what that needs.
 - [x] Charts stay readable rather than shrinking: each is a list of labelled rows, so it reflows at
       390px instead of needing a horizontal scroll, and the wide tables scroll horizontally.
 
@@ -609,11 +612,12 @@ specified here and skipped, and one is a deliberate difference from what 5.2 des
 - [x] The wheel is `aria-live="polite"`, so the result is announced.
 - [x] Every chart has its numbers behind a "show the numbers" toggle, which is both the accessible
       route and the honest one.
-- [ ] **The wheels have a plain "choose a number" fallback.** They do not. Someone who cannot or
-      does not want to use a wheel has "Pick by hand", which is the full 1-47 grid, but that is a
-      different method rather than a fallback on the wheel itself.
-- [ ] **Contrast checked in both themes.** The palette was chosen to be legible in both and has not
-      been measured against a contrast ratio. Until it is, this is an assumption, not a check.
+- [x] Every wheel has a plain "choose a number" fallback beneath it - the same pool as a labelled
+      list. A wheel is a nice thing to press and a poor thing to depend on.
+- [x] Contrast measured, not assumed: `test/contrast.test.ts` computes the WCAG 2.1 ratio for
+      every pair the site paints, in both themes, and fails below AA. Every pair clears it - body
+      text 17.9:1 light and 16.6:1 dark, secondary text 6.2:1 and 7.4:1, and the ball tints
+      4.3:1 to 8.1:1 against their own fill, where 3:1 is the bar for text that size.
 
 ---
 
@@ -710,9 +714,8 @@ single documented exception of the admin download route.
 
 ### Section 7 checklist
 
-Green 2026-09-21: 277 pytest across 26 files, 118 vitest, 56 Playwright on desktop and mobile.
-Four rows are not done, and three of them are gaps in what this section asked for rather than
-choices.
+Green 2026-09-21, all of it. The four rows that were outstanding on the first pass - 7.2's two
+fixture tests, shake the bag, and logging out - were closed the same day.
 
 **7.1 Unit - the data layer**
 
@@ -729,12 +732,13 @@ choices.
 
 **7.2 Freshness - the test the whole ingestion chain hangs on**
 
-- [ ] **Fixture test: the newest draw is today, so the homepage shows it with no banner.** The
-      three states are covered at the data layer, in `schedule.test.ts`; the homepage has not been
-      rendered against a fixture set built to produce each one.
-- [ ] **Fixture test: the newest draw is four days old with an expected draw in between, so the
-      waiting banner appears and names the draw being shown.** Same gap - the banner component has
-      no test of its own.
+- [x] Fixture test: the newest draw is today, so the state is current and the banner renders
+      nothing at all.
+- [x] Fixture test: a draw has passed and is not in, so the waiting banner appears and names the
+      draw being shown - and once the grace period passes it turns stale and says how many are
+      missing. `test/staleness.test.ts` builds the histories, because both cases are defined
+      relative to today; it asserts the state and the banner's own words, which is what the
+      homepage is made of.
 - [x] **The integration test, the real chain**: a row appended to a copy of `data/irish500.csv`,
       `drawpick.py` run against that copy, and the site serving the new draw **without a restart**,
       which is what the mtime cache exists for. `npm run test:integration`; the real CSV is never
@@ -743,17 +747,18 @@ choices.
 **7.3 End to end**
 
 - [x] Playwright against a real build of the site, reading the real artifacts.
-- [ ] **A line picked by each of the five methods.** Four are covered - surprise me, the wheels,
-      the hand grid and a shape built from a sum band. **Shake the bag has no test**, which is the
-      method most likely to break quietly now that it fills the tray one number at a time.
+- [x] A line picked by each of the five methods, shake the bag included - the one most likely to
+      break quietly now that it fills the tray one number at a time. The wheel's plain fallback
+      and the sheet opening and closing are covered too.
 - [x] Filters shrink the pool and say so, and an emptied wheel says so rather than spinning
       nothing.
 - [x] A number dossier opened from two routes - the numbers table and the picker's peek card.
 - [x] The draw list paginates.
 - [x] Log in and download the zip. The e2e checks the status, the type and that a body comes back;
       that the zip holds the artifacts is asserted in `routes.test.ts`, which opens it.
-- [x] Logged out, `/api/download/data` returns 401. **There is no test of logging out** - the
-      route exists and clears the cookie, but nothing drives it.
+- [x] Logged out, `/api/download/data` returns 401 - and logging out is driven end to end: sign
+      in, post to the logout route, and check both that the cookie is cleared and that what it
+      cleared no longer opens the download.
 
 **7.4 The wording test must survive the migration**
 
@@ -799,7 +804,7 @@ been deployed.
 
 **3. Section 7's tests all pass**
 
-- [x] 277 pytest across 26 files, 118 vitest, 56 Playwright on desktop and mobile.
+- [x] 277 pytest across 26 files, 159 vitest, 64 Playwright on desktop and mobile.
 - [x] The 7.2 freshness integration test: a row appended to a copy of the CSV, `drawpick.py` run
       against it, and the site serving the new draw with no restart.
 - [x] The 7.4 wording guard, both halves: the source lint over `frontend/` and the Playwright pass

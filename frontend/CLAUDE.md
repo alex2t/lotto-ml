@@ -86,6 +86,12 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
   than protecting by default, so an admin failure can never take the site down.
 - **A check that cannot fire is not a safeguard** (F-29). Every note in `lib/scoring/notes.ts` has
   a line in `test/scoring.test.ts` that fires it.
+- **Contrast is measured, not chosen.** `test/contrast.test.ts` computes the WCAG ratio for every
+  pair the site paints, in both themes, and fails below AA. A new colour token goes in the pair
+  list, or it is not checked.
+- **Motion is reduced to a cross-fade, not to nothing.** `prefers-reduced-motion` turns the three
+  animated moments into a 160ms opacity fade with the stagger delay cleared - a number still
+  arrives rather than blinking into place (web.md 5.2).
 - **Fixtures are generated, not hand-edited.** `python frontend/test/make-fixtures.py` from the
   project root after an artifact's shape changes.
 - No emoji, matching the root `CLAUDE.md`.
