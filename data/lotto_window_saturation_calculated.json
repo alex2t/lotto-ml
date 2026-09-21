@@ -2,7 +2,7 @@
     "description": "Data-driven window saturation penalty configuration",
     "version": "2.0",
     "scipy_optimized": true,
-    "generated_date": "2026-09-20 09:46:28",
+    "generated_date": "2026-09-21 08:18:49",
     "data_source": {
         "statistics": "data/lotto_statistics_analysis.json",
         "odds": "data/lotto_odds_results.json",
@@ -17,13 +17,13 @@
                 "threshold": 2
             },
             "hot": {
-                "high_saturation_probability": 28.9029535865,
-                "expected_frequency": 1.24613220816,
+                "high_saturation_probability": 28.8920056101,
+                "expected_frequency": 1.24544179523,
                 "threshold": 2
             },
             "medium": {
                 "high_saturation_probability": 0.0,
-                "expected_frequency": 0.257452574526,
+                "expected_frequency": 0.256756756757,
                 "threshold": 2
             }
         },
@@ -34,13 +34,13 @@
                 "threshold": 2
             },
             "hot": {
-                "high_saturation_probability": 36.9901547117,
-                "expected_frequency": 1.37834036568,
+                "high_saturation_probability": 36.9565217392,
+                "expected_frequency": 1.37868162693,
                 "threshold": 2
             },
             "medium": {
-                "high_saturation_probability": 2.9810298103,
-                "expected_frequency": 0.527100271003,
+                "high_saturation_probability": 2.97297297297,
+                "expected_frequency": 0.525675675676,
                 "threshold": 2
             }
         },
@@ -51,13 +51,13 @@
                 "threshold": 3
             },
             "hot": {
-                "high_saturation_probability": 25.0351617441,
-                "expected_frequency": 1.88537271449,
+                "high_saturation_probability": 25.0350631136,
+                "expected_frequency": 1.8842917251,
                 "threshold": 3
             },
             "medium": {
-                "high_saturation_probability": 6.36856368564,
-                "expected_frequency": 1.28726287263,
+                "high_saturation_probability": 6.35135135136,
+                "expected_frequency": 1.28648648649,
                 "threshold": 3
             }
         },
@@ -68,25 +68,25 @@
                 "threshold": 8
             },
             "hot": {
-                "high_saturation_probability": 1.68776371308,
-                "expected_frequency": 3.80098452883,
+                "high_saturation_probability": 1.68302945301,
+                "expected_frequency": 3.79943899018,
                 "threshold": 8
             },
             "medium": {
-                "high_saturation_probability": 0.542005420055,
-                "expected_frequency": 3.08536585366,
+                "high_saturation_probability": 0.54054054054,
+                "expected_frequency": 3.08648648649,
                 "threshold": 8
             }
         }
     },
     "statistical_validation": {
         "test": "One-way ANOVA",
-        "f_statistic": 8.14947931635,
-        "p_value": 0.00955277151551,
+        "f_statistic": 8.15372454161,
+        "p_value": 0.00953835802107,
         "significant": true,
         "interpretation": "Category saturation rates are significantly different",
-        "hot_mean": 23.1540084388,
-        "medium_mean": 2.472899729,
+        "hot_mean": 23.141654979,
+        "medium_mean": 2.46621621622,
         "cold_mean": 0.0
     },
     "penalty_configuration_manual": {
@@ -95,7 +95,7 @@
                 "description": "Recent count >= target (already saturated)",
                 "base_multiplier": 1.0,
                 "category_adjustments": {
-                    "hot": 3.11392405064,
+                    "hot": 3.11360448808,
                     "medium": 1.0,
                     "cold": 0.5
                 }
@@ -104,7 +104,7 @@
                 "description": "Recent count = target - 1 (approaching saturation)",
                 "base_multiplier": 0.6,
                 "category_adjustments": {
-                    "hot": 3.11392405064,
+                    "hot": 3.11360448808,
                     "medium": 1.0,
                     "cold": 0.5
                 }
@@ -113,7 +113,7 @@
                 "description": "Recent count = target - 2 (near saturation)",
                 "base_multiplier": 0.3,
                 "category_adjustments": {
-                    "hot": 3.11392405064,
+                    "hot": 3.11360448808,
                     "medium": 1.0,
                     "cold": 0.5
                 }
@@ -159,24 +159,24 @@
     },
     "penalty_configuration_optimized": {
         "optimization_successful": true,
-        "objective_value": 0.00593890413414,
+        "objective_value": 0.0067474786303,
         "optimization_method": "differential_evolution",
         "validation_draws": 50,
         "penalty_weights": {
             "at_or_exceeding": {
-                "hot": 0.361809276638,
+                "hot": 0.806261027798,
                 "medium": 0.1,
-                "cold": 0.594015283152
+                "cold": 1.40416982001
             },
             "one_away": {
-                "hot": 0.671399977492,
-                "medium": 0.109578362322,
-                "cold": 0.293575606967
+                "hot": 0.870334799165,
+                "medium": 0.155912806541,
+                "cold": 0.775533009752
             },
             "two_away": {
-                "hot": 1.31813028559,
+                "hot": 1.51453822288,
                 "medium": 0.1,
-                "cold": 1.26788479599
+                "cold": 0.619978055602
             }
         }
     },

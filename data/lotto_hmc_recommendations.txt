@@ -2,31 +2,30 @@
 HMC CONFIGURATION RECOMMENDATIONS
 ====================================================================================================
 
-Generated for Draw #598
-Based on analysis of 497 historical draws
+Generated for Draw #599
+Based on analysis of 498 historical draws
 All parameters learned from data using scipy-validated statistical methods
 
 ====================================================================================================
 CURRENT DRAW ENVIRONMENT
 ====================================================================================================
 
-Trend Status: BALANCED
-Description: Recent draws show balanced distribution
+Trend Status: HOT SURGE
+Description: Recent draws favor hot numbers (avg > 3.5)
 
 Recent 10 Draws Average:
-  - Hot Numbers:    3.30
-  - Medium Numbers: 2.20
-  - Cold Numbers:   1.50
+  - Hot Numbers:    3.60
+  - Medium Numbers: 2.10
+  - Cold Numbers:   1.30
 
 Dominant Patterns in Last 10 Draws:
+  - 4-3-0: appeared 3 times
   - 4-0-3: appeared 2 times
-  - 4-3-0: appeared 2 times
-  - 1-4-2: appeared 1 times
+  - 2-4-1: appeared 1 times
 
 Recent Draw History:
 Draw     Date         HMC Pattern 
 ----------------------------------------
-#588     2026-08-22   1-4-2       
 #589     2026-08-26   4-0-3       
 #590     2026-08-29   2-4-1       
 #591     2026-09-02   3-3-1       
@@ -36,17 +35,18 @@ Draw     Date         HMC Pattern
 #595     2026-09-12   2-2-3       
 #596     2026-09-14   4-1-2       
 #597     2026-09-16   4-3-0       
+#598     2026-09-19   4-3-0       
 
 ====================================================================================================
 LEARNED PARAMETERS (Data-Driven, NO Hard-Coded Values)
 ====================================================================================================
 
 Feature Weights (from Logistic Regression on Historical Success):
-  - combined_probability     : 0.5804 (58.0%)
-  - recency_at_draw          : 0.2658 (26.6%)
-  - hot_count                : 0.0769 (7.7%)
-  - medium_count             : 0.0579 (5.8%)
-  - cold_count               : 0.0190 (1.9%)
+  - combined_probability     : 0.5800 (58.0%)
+  - recency_at_draw          : 0.2664 (26.6%)
+  - hot_count                : 0.0768 (7.7%)
+  - medium_count             : 0.0573 (5.7%)
+  - cold_count               : 0.0195 (2.0%)
 
 Optimal Hot Counts by Scenario (from Historical Backtest):
   - After Hot Surge: 4 hot numbers
@@ -55,7 +55,7 @@ Optimal Hot Counts by Scenario (from Historical Backtest):
     During balanced periods, 4 hot numbers maximize success
 
 Recency Thresholds (from Percentile Analysis of Successful Patterns):
-  - HOT:    ≤ 2 draws ago (Success rate: 18.2%)
+  - HOT:    ≤ 2 draws ago (Success rate: 18.1%)
   - MEDIUM: 2 to 7 draws ago (Success rate: 14.3%)
   - COLD:   ≥ 7 draws ago (Success rate: 7.1%)
 
@@ -64,27 +64,27 @@ TOP RECOMMENDATIONS (Ranked by Data-Driven Score)
 ====================================================================================================
 
 ----------------------------------------------------------------------------------------------------
-RANK #1 - Total Score: 1829.93
+RANK #1 - Total Score: 1825.29
 ----------------------------------------------------------------------------------------------------
 
 Model                Pattern      Hot   Med   Cold  Probability  Recency             
 ----------------------------------------------------------------------------------------------------
-Model 1 (Momentum)   3H-1M-2C     3     1     2     31.12      % 1 draws ago         
-Model 2 (Jackpot)    4H-1M-1C     4     1     1     29.72      % 1 draws ago         
-Model 3 (Complexity) 3H-2M-1C     3     2     1     25.90      % 6 draws ago         
+Model 1 (Momentum)   3H-1M-2C     3     1     2     31.06      % 2 draws ago         
+Model 2 (Jackpot)    4H-1M-1C     4     1     1     29.66      % 2 draws ago         
+Model 3 (Complexity) 3H-2M-1C     3     2     1     25.85      % 7 draws ago         
 
 Ensemble Metrics:
-  - Total Coverage:    86.74%
+  - Total Coverage:    86.57%
   - Diversity Score:   0.04
   - Unique Patterns:   3/3
 
 Why This Configuration:
-  1. Model 1 (Momentum): 3H-1M-2C - 31.12% probability, last seen 1 draws ago
-  2. Model 2 (Jackpot): 4H-1M-1C - 29.72% probability, last seen 1 draws ago
-  3. Model 3 (Complexity): 3H-2M-1C - 25.90% probability, last seen 6 draws ago
-  4. Ensemble coverage: 86.74%
+  1. Model 1 (Momentum): 3H-1M-2C - 31.06% probability, last seen 2 draws ago
+  2. Model 2 (Jackpot): 4H-1M-1C - 29.66% probability, last seen 2 draws ago
+  3. Model 3 (Complexity): 3H-2M-1C - 25.85% probability, last seen 7 draws ago
+  4. Ensemble coverage: 86.57%
   5. Diversity score: 0.04
-  6. Aligns with current balanced trend
+  6. Aligns with current hot_surge trend
 
 To Apply This Configuration:
   Update lines 212-214: hot_count=3, medium_count=1, cold_count=2
@@ -92,27 +92,27 @@ To Apply This Configuration:
   Update lines 357-359: hot_count=3, medium_count=2, cold_count=1
 
 ----------------------------------------------------------------------------------------------------
-RANK #2 - Total Score: 1829.93
+RANK #2 - Total Score: 1825.29
 ----------------------------------------------------------------------------------------------------
 
 Model                Pattern      Hot   Med   Cold  Probability  Recency             
 ----------------------------------------------------------------------------------------------------
-Model 1 (Momentum)   3H-2M-1C     3     2     1     25.90      % 6 draws ago         
-Model 2 (Jackpot)    4H-1M-1C     4     1     1     29.72      % 1 draws ago         
-Model 3 (Complexity) 3H-1M-2C     3     1     2     31.12      % 1 draws ago         
+Model 1 (Momentum)   3H-2M-1C     3     2     1     25.85      % 7 draws ago         
+Model 2 (Jackpot)    4H-1M-1C     4     1     1     29.66      % 2 draws ago         
+Model 3 (Complexity) 3H-1M-2C     3     1     2     31.06      % 2 draws ago         
 
 Ensemble Metrics:
-  - Total Coverage:    86.74%
+  - Total Coverage:    86.57%
   - Diversity Score:   0.04
   - Unique Patterns:   3/3
 
 Why This Configuration:
-  1. Model 1 (Momentum): 3H-2M-1C - 25.90% probability, last seen 6 draws ago
-  2. Model 2 (Jackpot): 4H-1M-1C - 29.72% probability, last seen 1 draws ago
-  3. Model 3 (Complexity): 3H-1M-2C - 31.12% probability, last seen 1 draws ago
-  4. Ensemble coverage: 86.74%
+  1. Model 1 (Momentum): 3H-2M-1C - 25.85% probability, last seen 7 draws ago
+  2. Model 2 (Jackpot): 4H-1M-1C - 29.66% probability, last seen 2 draws ago
+  3. Model 3 (Complexity): 3H-1M-2C - 31.06% probability, last seen 2 draws ago
+  4. Ensemble coverage: 86.57%
   5. Diversity score: 0.04
-  6. Aligns with current balanced trend
+  6. Aligns with current hot_surge trend
 
 To Apply This Configuration:
   Update lines 212-214: hot_count=3, medium_count=2, cold_count=1
@@ -120,27 +120,27 @@ To Apply This Configuration:
   Update lines 357-359: hot_count=3, medium_count=1, cold_count=2
 
 ----------------------------------------------------------------------------------------------------
-RANK #3 - Total Score: 1829.92
+RANK #3 - Total Score: 1825.26
 ----------------------------------------------------------------------------------------------------
 
 Model                Pattern      Hot   Med   Cold  Probability  Recency             
 ----------------------------------------------------------------------------------------------------
-Model 1 (Momentum)   4H-1M-1C     4     1     1     29.72      % 1 draws ago         
-Model 2 (Jackpot)    3H-1M-2C     3     1     2     31.12      % 1 draws ago         
-Model 3 (Complexity) 3H-2M-1C     3     2     1     25.90      % 6 draws ago         
+Model 1 (Momentum)   4H-1M-1C     4     1     1     29.66      % 2 draws ago         
+Model 2 (Jackpot)    3H-1M-2C     3     1     2     31.06      % 2 draws ago         
+Model 3 (Complexity) 3H-2M-1C     3     2     1     25.85      % 7 draws ago         
 
 Ensemble Metrics:
-  - Total Coverage:    86.74%
+  - Total Coverage:    86.57%
   - Diversity Score:   0.04
   - Unique Patterns:   3/3
 
 Why This Configuration:
-  1. Model 1 (Momentum): 4H-1M-1C - 29.72% probability, last seen 1 draws ago
-  2. Model 2 (Jackpot): 3H-1M-2C - 31.12% probability, last seen 1 draws ago
-  3. Model 3 (Complexity): 3H-2M-1C - 25.90% probability, last seen 6 draws ago
-  4. Ensemble coverage: 86.74%
+  1. Model 1 (Momentum): 4H-1M-1C - 29.66% probability, last seen 2 draws ago
+  2. Model 2 (Jackpot): 3H-1M-2C - 31.06% probability, last seen 2 draws ago
+  3. Model 3 (Complexity): 3H-2M-1C - 25.85% probability, last seen 7 draws ago
+  4. Ensemble coverage: 86.57%
   5. Diversity score: 0.04
-  6. Aligns with current balanced trend
+  6. Aligns with current hot_surge trend
 
 To Apply This Configuration:
   Update lines 212-214: hot_count=4, medium_count=1, cold_count=1
@@ -148,27 +148,27 @@ To Apply This Configuration:
   Update lines 357-359: hot_count=3, medium_count=2, cold_count=1
 
 ----------------------------------------------------------------------------------------------------
-RANK #4 - Total Score: 1829.92
+RANK #4 - Total Score: 1825.26
 ----------------------------------------------------------------------------------------------------
 
 Model                Pattern      Hot   Med   Cold  Probability  Recency             
 ----------------------------------------------------------------------------------------------------
-Model 1 (Momentum)   4H-1M-1C     4     1     1     29.72      % 1 draws ago         
-Model 2 (Jackpot)    3H-2M-1C     3     2     1     25.90      % 6 draws ago         
-Model 3 (Complexity) 3H-1M-2C     3     1     2     31.12      % 1 draws ago         
+Model 1 (Momentum)   4H-1M-1C     4     1     1     29.66      % 2 draws ago         
+Model 2 (Jackpot)    3H-2M-1C     3     2     1     25.85      % 7 draws ago         
+Model 3 (Complexity) 3H-1M-2C     3     1     2     31.06      % 2 draws ago         
 
 Ensemble Metrics:
-  - Total Coverage:    86.74%
+  - Total Coverage:    86.57%
   - Diversity Score:   0.04
   - Unique Patterns:   3/3
 
 Why This Configuration:
-  1. Model 1 (Momentum): 4H-1M-1C - 29.72% probability, last seen 1 draws ago
-  2. Model 2 (Jackpot): 3H-2M-1C - 25.90% probability, last seen 6 draws ago
-  3. Model 3 (Complexity): 3H-1M-2C - 31.12% probability, last seen 1 draws ago
-  4. Ensemble coverage: 86.74%
+  1. Model 1 (Momentum): 4H-1M-1C - 29.66% probability, last seen 2 draws ago
+  2. Model 2 (Jackpot): 3H-2M-1C - 25.85% probability, last seen 7 draws ago
+  3. Model 3 (Complexity): 3H-1M-2C - 31.06% probability, last seen 2 draws ago
+  4. Ensemble coverage: 86.57%
   5. Diversity score: 0.04
-  6. Aligns with current balanced trend
+  6. Aligns with current hot_surge trend
 
 To Apply This Configuration:
   Update lines 212-214: hot_count=4, medium_count=1, cold_count=1
@@ -176,27 +176,27 @@ To Apply This Configuration:
   Update lines 357-359: hot_count=3, medium_count=1, cold_count=2
 
 ----------------------------------------------------------------------------------------------------
-RANK #5 - Total Score: 1829.88
+RANK #5 - Total Score: 1825.24
 ----------------------------------------------------------------------------------------------------
 
 Model                Pattern      Hot   Med   Cold  Probability  Recency             
 ----------------------------------------------------------------------------------------------------
-Model 1 (Momentum)   3H-1M-2C     3     1     2     31.12      % 1 draws ago         
-Model 2 (Jackpot)    3H-2M-1C     3     2     1     25.90      % 6 draws ago         
-Model 3 (Complexity) 4H-1M-1C     4     1     1     29.72      % 1 draws ago         
+Model 1 (Momentum)   3H-1M-2C     3     1     2     31.06      % 2 draws ago         
+Model 2 (Jackpot)    3H-2M-1C     3     2     1     25.85      % 7 draws ago         
+Model 3 (Complexity) 4H-1M-1C     4     1     1     29.66      % 2 draws ago         
 
 Ensemble Metrics:
-  - Total Coverage:    86.74%
+  - Total Coverage:    86.57%
   - Diversity Score:   0.04
   - Unique Patterns:   3/3
 
 Why This Configuration:
-  1. Model 1 (Momentum): 3H-1M-2C - 31.12% probability, last seen 1 draws ago
-  2. Model 2 (Jackpot): 3H-2M-1C - 25.90% probability, last seen 6 draws ago
-  3. Model 3 (Complexity): 4H-1M-1C - 29.72% probability, last seen 1 draws ago
-  4. Ensemble coverage: 86.74%
+  1. Model 1 (Momentum): 3H-1M-2C - 31.06% probability, last seen 2 draws ago
+  2. Model 2 (Jackpot): 3H-2M-1C - 25.85% probability, last seen 7 draws ago
+  3. Model 3 (Complexity): 4H-1M-1C - 29.66% probability, last seen 2 draws ago
+  4. Ensemble coverage: 86.57%
   5. Diversity score: 0.04
-  6. Aligns with current balanced trend
+  6. Aligns with current hot_surge trend
 
 To Apply This Configuration:
   Update lines 212-214: hot_count=3, medium_count=1, cold_count=2
