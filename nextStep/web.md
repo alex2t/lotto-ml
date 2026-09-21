@@ -674,20 +674,70 @@ single documented exception of the admin download route.
 
 In order. Nothing is deleted early.
 
-1. Both sites run side by side locally - `streamlit-web` on 8501, `nextjs-web` on 3000.
-2. Walk section 6 row by row against the two sites. Every figure must match.
-3. Section 7's tests all pass, including the freshness integration test.
-4. Deploy `nextjs-web` to the VPS alongside Streamlit; verify the artifacts mount read-only, the
-   admin download works over HTTPS, and the homepage is correct after a real `drawpick.py` run.
-5. Point the domain at `nextjs-web`. Leave Streamlit running, unlinked, for one week - and through at
-   least three ingested draws.
-6. Then, in one commit: remove `streamlit-web` from `docker-compose.yml`, delete `app.py`,
-   `view/`, `Dockerfile.streamlit`, `requirements-web.txt`, and the old Streamlit-bound tests
-   (replaced in 7.4). Update `CLAUDE.md` (the `@view/pages/CLAUDE.md` import and the folder table),
-   `GEMINI.md`, `.gemini/GEMINI.md`, `README.md`, `plan.md`, `tests/CLAUDE.md` and
-   `.claude/skills/lotto-verify/verify.py`'s test list in the same commit.
-7. `docs/dashboard-manual.md` is rewritten for the new site, or deleted. A manual describing pages
-   that no longer exist is worse than none - it gets trusted.
+### Cutover checklist
+
+The first three steps are local and are done. Everything from step 4 needs the VPS, so it waits
+on `plan.md` Phase 5 - the stack is built and proved locally in [`vps.md`](vps.md), but it has not
+been deployed.
+
+**1. Both sites run side by side locally**
+
+- [x] `streamlit-web` on 8501 and `nextjs-web` on 3000, from the same `data/` mount. Verified
+      2026-09-21: both containers up together, both answering 200. `scripts/docker_start.*` start
+      the pair.
+
+**2. Walk section 6 row by row. Every figure must match.**
+
+- [x] The matrix is walked and signed off, with a column on every row recording where it landed
+      and what was built - section 6.
+- [ ] **The figures compared against the running Streamlit site, row by row.** The matrix records
+      where each statistic went, not that the two sites print the same number for it. Some of that
+      comparison is already automatic and stronger than a visual check:
+      `frontend/test/ranged.test.ts` recounts every countable distribution from the draw history
+      and asserts it equals the artifact, and the six-ball HMC counts the engine now writes matched
+      what the new site had been computing independently. What is left is the rest of the matrix,
+      read off both sites with the same input.
+- [ ] **Confirm nothing in the matrix turns out to be missing once the figures are compared** -
+      this is the step that would send work back into Phase 4.
+
+**3. Section 7's tests all pass**
+
+- [x] 277 pytest across 26 files, 118 vitest, 56 Playwright on desktop and mobile.
+- [x] The 7.2 freshness integration test: a row appended to a copy of the CSV, `drawpick.py` run
+      against it, and the site serving the new draw with no restart.
+- [x] The 7.4 wording guard, both halves: the source lint over `frontend/` and the Playwright pass
+      over every rendered page, against the same `ADVICE` list.
+
+**4. Deploy alongside Streamlit on the VPS**
+
+- [ ] **Deploy `nextjs-web` to the VPS alongside Streamlit.** See [`vps.md`](vps.md) section 3;
+      read 3.1 first, the uid on the bind mount is what stops the stack starting (F-45).
+- [ ] **Verify the artifacts mount read-only**, the admin download works over HTTPS, and the
+      homepage is correct after a real `drawpick.py` run on the server.
+
+**5. Point the domain, then wait**
+
+- [ ] **Point the domain at `nextjs-web`.**
+- [ ] **Leave Streamlit running, unlinked, for one week and at least three ingested draws.** This
+      is the step that cannot be hurried: three draws is what proves the ingestion chain, not one.
+
+**6. Delete Streamlit, in one commit**
+
+- [ ] Remove `streamlit-web` from `docker-compose.yml` and from `scripts/docker_start.*`.
+- [ ] Delete `app.py`, `view/`, `Dockerfile.streamlit`, `requirements-web.txt`.
+- [ ] Delete the Streamlit-bound tests, replaced in 7.4: `tests/test_site_wording.py`, and the
+      `AppTest` parts of `test_draw_history_numbers.py`, `test_anomaly_detector.py`,
+      `test_bonus_window.py`, `test_odd_even_affinity.py` and `test_bonus_transition_baseline.py`.
+      Six files import from `view/`; each needs its Streamlit half removed or rewritten against
+      `frontend/`, not simply deleted - most of them also guard analyzer behaviour.
+- [ ] Update in the same commit: `CLAUDE.md` (the `@view/pages/CLAUDE.md` import and the folder
+      table), `GEMINI.md`, `.gemini/GEMINI.md`, `README.md`, `plan.md`, `tests/CLAUDE.md` and
+      `.claude/skills/lotto-verify/verify.py`'s test list.
+
+**7. The manual**
+
+- [ ] `docs/dashboard-manual.md` rewritten for the new site, or deleted. A manual describing pages
+      that no longer exist is worse than none - it gets trusted.
 
 **Do not delete `view/` before step 6.** It is the reference for every statistic the new site must
 reproduce, and the fallback if something in the matrix turns out to be missing.
