@@ -285,7 +285,9 @@ cutover of section 8 - Streamlit on 8501, Next.js on 3000.
 
 ### Phase 4: Frontend UI Migration & Component Build
 Built from [`nextStep/web.md`](nextStep/web.md) sections 4-7; its section 6 matrix is walked and
-signed off there. Eight Streamlit pages became five destinations.
+signed off there. Eight Streamlit pages became five destinations. The rows below are the coarse
+deliverables and all are done; the **itemised checklist at the end of `web.md` section 4** is the
+one to read for what is not - eight specified pieces are unticked there, none of them blocking.
 - [x] Build shared navigation and responsive layout with light/dark theme support.
       (One hot/medium/cold colour scale as CSS custom properties, the theme stored per viewer and
       applied before first paint; the ball component at three sizes, carrying its category letter

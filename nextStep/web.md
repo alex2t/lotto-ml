@@ -411,6 +411,123 @@ it is not, otherwise. The public half never depends on it.
 
 ---
 
+### Phase 4 checklist
+
+Done 2026-09-21, apart from the unticked rows, which are not built. Nothing unticked blocks the
+cutover on its own; each is a piece of 4.2-4.4 that was specified and has not been done.
+
+**Layout and the look of it (section 5)**
+
+- [x] Shared navigation, responsive layout, light and dark with the theme stored per viewer.
+- [x] One hot/medium/cold colour scale as CSS custom properties, used by every ball, chart, grid
+      and badge.
+- [x] The ball at three sizes, carrying its category letter so colour is never the only cue (5.4).
+- [x] `prefers-reduced-motion` honoured, and no animation delays a number reaching the DOM (5.2).
+- [x] Designed at phone width first: the grid is six columns with 44px targets, the wheels stack,
+      the tray is fixed to the bottom, and charts scroll rather than shrink (5.3).
+- [ ] The three animated moments of 5.2. The ball stagger on Home and the wheel spin are built;
+      **shake the bag is not animated** - it fills the tray instantly.
+
+**4.1 Home**
+
+- [x] Latest draw as six balls plus the bonus, each tinted by its **pre-draw** category (F-27).
+- [x] The balls stagger in on load.
+- [x] Next draw date and time, derived from the history rather than hard-coded.
+- [x] The three staleness states - current, waiting, stale - with the banner naming the draw being
+      shown and, when more than one is missing, how many.
+- [x] The draw count and the date of the first draw on file.
+
+**4.2 Pick**
+
+- [x] The five methods: spin the wheels, pick by hand, shake the bag, follow a shape, surprise me.
+- [x] One wheel per hot/medium/cold band, spinning only what the filters leave in, and a band with
+      nothing left says so rather than spinning nothing.
+- [ ] **The per-band `+` and `-` to add or remove a wheel within a band.** One wheel per band
+      today; the composition a player is building shows in the tray and in the shape card's
+      hot/medium/cold row.
+- [x] The filters of 4.2: drawn more than N times in the last 5 / 6 / 10 / 25 draws, not drawn at
+      all in the last 5 / 10 / 25, freshness bin, was a bonus ball in the recent window, and the
+      high or low half. The honest window size is shown, never the artifact's key name.
+- [x] Every filter shows its cost immediately - "N numbers left in the wheels" - and each one is a
+      chip with an `x`, beside a reset.
+- [x] The 1-47 grid, tinted by category, with each number's recent count printed small.
+- [x] A peek card with last seen, the count over the last 25 draws and a link to the dossier.
+      **It opens on tap, not on long-press or hover**, which is the same information by a simpler
+      route on a phone.
+- [x] Shake the bag: six at once from whatever the filters leave in.
+- [x] Follow a shape: odd/even split and the count at 32 or above, each showing the share of past
+      draws with it, and a line built to match.
+- [ ] **The sum band and the spread as shape options.** Both are passed to the page and both are
+      shown on the shape card; neither is yet a control you can build a line from.
+- [x] Surprise me: a uniform six from all 47, labelled as being as good as any other method here.
+- [x] The line tray, fixed at the bottom, mixing methods into one line, with clear and fill.
+- [x] The shape card: the six checks of the Prediction Validator as comparisons, each a small
+      distribution with the line's own value marked on it.
+- [x] The verdict from the fixed vocabulary - typical / uncommon / unusual - with the equal-chance
+      sentence rendered beside it by the same component, always.
+- [x] The anomaly alerts as notes, each taking its figure from an artifact (F-28), each with a test
+      that fires it (F-29).
+- [x] `/api/validate` scores the line server-side from `lib/scoring/`, and `/pick` calls it, so the
+      page and the API cannot disagree.
+- [ ] **Save PNG.** The tray has no way to save or share a line as an image.
+
+**4.3 Explore**
+
+- [x] Draws: server-paginated 50 at a time, each row tinted by pre-draw category, with badges for
+      odd/even, sum, spread and the count at 32 or above.
+- [x] Draws: filters for date range, numbers contained, odd/even split, sum band and high-number
+      count.
+- [x] Draws: a draw opens as a card with its **pre-draw** bonus window, the 10 before it (F-33).
+- [x] Statistics: hot/medium/cold across the 47; the six-ball and seven-ball patterns; odd/even
+      with each number's own share beside a fair draw's (F-38); sums; spreads; consecutive pairs;
+      the historical scenario table; and the high-number breakdown against a fair draw (F-19).
+- [x] Statistics: every chart says how many draws it is computed over, and carries a "show the
+      numbers" table (5.4).
+- [ ] **Every chart filterable by date range.** The charts are the artifacts' own figures over the
+      whole history. Filtering them by date means recomputing a statistic in the front end, which
+      rule 5 forbids - it belongs in `lotto_analysis/`. The Draws tab, which shows raw history
+      rather than a statistic, does filter by date.
+- [x] Freshness: the C0-C2+ grid with the bin definitions beside it, a main-6 / all-7 toggle, and
+      bin highlighting.
+- [ ] **"Send these to the picker" from a freshness bin.** Selecting a bin highlights it; it does
+      not hand those numbers to `/pick`.
+- [x] Patterns: enter a line and see the past draws most like it, each with how many it shared,
+      how common that shape is, and the exact-match case working (F-25).
+- [x] The Trigger Periods filters - category, freshness, volatility, trend, momentum, regime shift
+      - as a filter rail, **on `/numbers`** rather than shared across the four Explore tabs: what
+      that rail does is filter the 47 numbers, which is what that page is.
+- [x] The trigger periods table, all 47 numbers, sortable on every column.
+
+**4.4 Number dossier**
+
+- [x] `/numbers/[n]` with the category, last seen, gaps, recent counts, trend and volatility,
+      bonus profile, odd/even against a fair draw's chance, trigger series and appearance history.
+- [x] It reads as a fact sheet, never a rating (F-30).
+- [ ] **"Often with" - the numbers a number is most often drawn with.** No artifact holds general
+      pair counts, only consecutive ones, so this needs a phase in `lotto_analysis/` first.
+- [ ] **"Add this number to my line" actually adding it.** The button links to `/pick` but does not
+      carry the number into the tray.
+
+**4.5 Review**
+
+- [x] Public: the last draw, its shape against the distributions, the categories in force
+      beforehand, and the pre-draw bonus window. Autofilled from the newest entry in the draw
+      history, never the CSV (F-35).
+- [x] Admin only: the comparison with `lottery_picks.txt`, which says plainly when the file is not
+      there - as it is not in the container, and will not be on the VPS.
+
+**Sections 6 and 7**
+
+- [x] The section 6 completeness matrix walked and signed off, with a column recording where each
+      row landed.
+- [x] Section 7 green: 100 vitest over the data layer and the scoring, 44 Playwright over the
+      rendered pages on desktop and mobile, and 7.2's ingestion integration test.
+- [x] Section 7.4's replacement for `tests/test_site_wording.py`: the source lint over `frontend/`
+      and the Playwright pass over every rendered page, both against the same `ADVICE` list.
+      `tests/test_site_wording.py` itself stays until `view/` is deleted.
+
+---
+
 ## 5. Look, feel, and the things that make it fun
 
 ### 5.1 Visual language
@@ -563,27 +680,6 @@ In order. Nothing is deleted early.
 
 **Do not delete `view/` before step 6.** It is the reference for every statistic the new site must
 reproduce, and the fallback if something in the matrix turns out to be missing.
-
-### Phase 4 checklist
-
-Done 2026-09-21, except the two rows marked below.
-
-- [x] Layout, navigation, light/dark theme, the ball component at three sizes.
-- [x] Home: latest draw, next draw, the three staleness states.
-- [x] Pick: wheels with add/remove per band, hand grid, shake, shape, surprise.
-      **The per-band `+`/`-` to add a second wheel to a band is not built**: one wheel per band,
-      and a band contributes nothing once its numbers are filtered out. The composition a player
-      builds is visible in the tray and in the shape card's hot/medium/cold row.
-- [x] Pick: the filter set of 4.2, each showing the remaining pool size.
-- [x] Pick: the line tray and shape card, scored by `/api/validate`.
-- [x] Explore: Draws, Statistics, Freshness, Patterns. **The filter rail is on `/numbers`**, not
-      shared across the four tabs - what that rail really does is filter the 47 numbers, which is
-      what that page is.
-- [x] `/numbers/[n]` dossier, all nine Number Insights sections.
-- [x] Review, public half and admin half.
-- [x] Section 6 matrix walked and signed off - see the column added to it.
-- [x] Section 7 tests green, including the wording replacement: 99 vitest and 44 Playwright
-      (desktop and mobile), plus the ingestion integration test.
 
 ---
 
