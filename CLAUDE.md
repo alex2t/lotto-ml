@@ -99,7 +99,7 @@ artifact, the code wins.
 ## Commands
 
 ```bash
-python drawpick.py      # Stage 1: analysis -> writes ~24 JSON files into data/
+python drawpick.py      # Stage 1: analysis -> writes ~25 JSON files into data/
 python quickpick.py     # Stage 2: trains models, writes lottery_picks.txt + model_metrics/
 streamlit run app.py    # The website (8 pages, view/pages/); Prediction Validator = build your own line
 npm --prefix frontend run dev   # The Next.js site that replaces it (Phases 3-4 built)
@@ -111,7 +111,7 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: twenty-four files, 251 tests, ~60s. The Next.js site has its own
+`tests/` holds only real tests: twenty-six files, 277 tests, ~60s. The Next.js site has its own
 suites in `frontend/` - `npm --prefix frontend test` (118 vitest) and `npm --prefix frontend run
 test:e2e` (56 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
@@ -227,6 +227,11 @@ file at all - it gets trusted over the source. Specifically:
 | anything under `frontend/` | `frontend/CLAUDE.md` |
 | a documented fact - metrics, features, models, artifacts | the matching file in `docs/`, verified against the code |
 | added a folder worth documenting | its own `CLAUDE.md`, an `@` import line **and** a row in the table above |
+
+`nextStep/vps.md` is the deployment runbook: the production overlay, the Caddy config, the two
+env files and the rebuild receiver. `rebuild_webhook.py` at the root is the only network-facing
+code here that writes anything - it runs `drawpick.py` for a signed request, never gets the Docker
+socket, and is not proxied to the internet.
 
 `GEMINI.md` and its copy `.gemini/GEMINI.md` restate these invariants and the roadmap for Gemini;
 update them in the same change as any `CLAUDE.md` fact they repeat. `/lotto-verify` ends with this

@@ -1,0 +1,88 @@
+# Production overlay for the VPS.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# What it changes from the base file:
+#   - Caddy is the only thing the internet can reach. nextjs-web stops publishing 3000 to
+#     the host, so the site cannot be reached around the proxy on http://<vps-ip>:3000.
+#   - The rebuild receiver runs, so n8n can ask for the artifacts to be rewritten after it
+#     commits a draw. It is on the internal network only - it is not proxied.
+#   - Everything restarts unless stopped, and the engine gets a healthcheck the proxy uses.
+#
+# Streamlit is deliberately absent: the base file still defines it for the side-by-side
+# period, but nothing public should point at it. See nextStep/web.md section 8.
+services:
+  nextjs-web:
+    # The proxy reaches it on the compose network; the host publishes nothing.
+    ports: !reset []
+    environment:
+      - DATA_DIR=/app/data
+      - NODE_ENV=production
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  reverse-proxy:
+    image: caddy:2-alpine
+    container_name: lotto-caddy
+    restart: unless-stopped
+    depends_on:
+      - nextjs-web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./reverse_proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Caddy keeps its certificates here. Losing this volume means re-issuing on the next
+      # start, and Let's Encrypt rate-limits that - do not prune it.
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN:?set DOMAIN in .env to the site hostname}
+      - ACME_EMAIL=${ACME_EMAIL:-}
+
+  rebuild-receiver:
+    # The same image as the engine: it has Python, the analysis code and write access to
+    # data/. Running drawpick.py in-process is what keeps the Docker socket unmounted.
+    image: lotto-data-engine:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.data_engine
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    container_name: lotto-rebuild
+    restart: unless-stopped
+    entrypoint: ["python", "rebuild_webhook.py"]
+    volumes:
+      - ./data:/app/data:rw
+    # REBUILD_SECRET comes from secrets.env, passed raw rather than interpolated - compose
+    # expands `$` inside a value it substitutes, which is what mangled the admin hash (F-58).
+    # If it is missing the receiver refuses to start rather than accepting anything.
+    env_file:
+      - path: secrets.env
+        required: false
+        format: raw
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REBUILD_PORT=8080
+    # No `ports`: n8n reaches it at http://lotto-rebuild:8080/rebuild over a shared network,
+    # or over the host's loopback if you publish it to 127.0.0.1 yourself. It is never
+    # proxied to the public internet - see nextStep/vps.md.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  caddy_data:
+  caddy_config:
