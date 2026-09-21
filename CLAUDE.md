@@ -228,6 +228,10 @@ file at all - it gets trusted over the source. Specifically:
 | a documented fact - metrics, features, models, artifacts | the matching file in `docs/`, verified against the code |
 | added a folder worth documenting | its own `CLAUDE.md`, an `@` import line **and** a row in the table above |
 
+`nextStep/lottodraw.md` is how a scraped draw reaches the site: n8n posts it to the rebuild
+receiver, which appends it to the CSV and regenerates the artifacts **only when the data
+changed**, so a retried webhook costs nothing. Designed, not yet built.
+
 `nextStep/vps.md` is the deployment runbook: the production overlay, the Caddy config, the two
 env files and the rebuild receiver. `rebuild_webhook.py` at the root is the only network-facing
 code here that writes anything - it runs `drawpick.py` for a signed request, never gets the Docker
