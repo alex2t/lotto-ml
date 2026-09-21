@@ -110,6 +110,16 @@ html {
   animation: bag-shake 220ms ease-in-out infinite;
 }
 
+/* What the three animated moments become when motion is not wanted. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -117,5 +127,21 @@ html {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /*
+   * The ball stagger and the wheel spin cross-fade instead of vanishing: a number still
+   * arrives rather than blinking into place, and nothing moves. The delay is cleared too,
+   * so the six fade together rather than in sequence - a cross-fade, not a slow stagger.
+   * `!important` is what beats the inline animation-delay the stagger sets.
+   */
+  .ball-enter {
+    animation: fade-in 160ms ease-out both !important;
+    animation-delay: 0ms !important;
+  }
+
+  /* The bag simply does not shake; the numbers it produces still fade in. */
+  .bag-shaking {
+    animation: none !important;
   }
 }

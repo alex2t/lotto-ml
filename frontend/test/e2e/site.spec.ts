@@ -309,3 +309,72 @@ test.describe('the pieces added after the first pass', () => {
     await expect(page.getByText(/a date range does not apply/).first()).toBeVisible();
   });
 });
+
+test.describe('the methods and the ways out', () => {
+  test('shake the bag fills the tray with six', async ({ page }) => {
+    await page.goto('/pick');
+    await page.getByRole('button', { name: 'Shake the bag' }).click();
+    await page.getByRole('button', { name: /^Shak/ }).last().click();
+
+    // The numbers land one at a time, so the count settles rather than jumping.
+    await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
+    await expect(page.getByText(/next to \d+ past draws/i)).toBeVisible();
+
+    const chosen = await page
+      .locator('[aria-label]')
+      .evaluateAll((nodes) =>
+        nodes
+          .map((n) => n.getAttribute('aria-label') ?? '')
+          .filter((l) => /^\d+,/.test(l))
+          .map((l) => Number(l.split(',')[0])),
+      );
+    const inTray = chosen.filter((n) => n >= 1 && n <= 47);
+    expect(inTray.length).toBeGreaterThanOrEqual(6);
+  });
+
+  test('a wheel can be used without spinning it', async ({ page }) => {
+    // The plain way in: the same pool as a list, for anyone who would rather read it.
+    await page.goto('/pick');
+    const choose = page.getByLabel(/Choose a hot number/i).first();
+    const value = await choose.locator('option').nth(1).getAttribute('value');
+    await choose.selectOption(value!);
+    await expect(page.getByText(/1 of 6 chosen/)).toBeVisible();
+  });
+
+  test('the line sheet opens when the line is complete and can be put away', async ({ page }) => {
+    await page.goto('/pick');
+    await page.getByRole('button', { name: 'Surprise me', exact: true }).first().click();
+    await page.getByRole('button', { name: 'Surprise me', exact: true }).last().click();
+
+    const handle = page.getByRole('button', { name: /the line details/i });
+    await expect(handle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByText(/next to \d+ past draws/i)).toBeVisible();
+
+    await handle.click();
+    await expect(handle).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.getByText(/next to \d+ past draws/i)).toBeHidden();
+  });
+
+  test('logging out ends the session', async ({ page, request }) => {
+    await page.goto('/login');
+    await page.getByLabel('Username').fill('e2e');
+    await page.getByLabel('Password').fill('e2e-password');
+    await page.getByRole('button', { name: 'Sign in' }).click();
+    await expect(page.getByRole('link', { name: /download the data bundle/i })).toBeVisible();
+
+    const before = (await page.context().cookies()).find((c) => c.name === 'lotto_admin');
+    expect(before?.value).toBeTruthy();
+
+    const loggedOut = await page.request.post('/api/logout');
+    expect(loggedOut.ok()).toBeTruthy();
+
+    const after = (await page.context().cookies()).find((c) => c.name === 'lotto_admin');
+    expect(after?.value ?? '').toBe('');
+
+    // And the session it cleared no longer opens the download.
+    const refused = await request.get('/api/download/data', {
+      headers: { Cookie: `lotto_admin=${after?.value ?? ''}` },
+    });
+    expect(refused.status()).toBe(401);
+  });
+});

@@ -14,16 +14,20 @@ export function Wheel({
   numbers,
   onPick,
   disabled,
+  instance = 0,
 }: {
   band: Category;
   numbers: number[];
   onPick: (n: number) => void;
   disabled: boolean;
+  /** Distinguishes several wheels on the same band, for the fallback's label. */
+  instance?: number;
 }) {
   const [spinning, setSpinning] = useState(false);
   const [landed, setLanded] = useState<number | null>(null);
 
   const empty = numbers.length === 0;
+  const chooseId = `choose-${band}-${instance}`;
 
   function spin() {
     if (empty || disabled) return;
@@ -63,6 +67,35 @@ export function Wheel({
       >
         {empty ? 'Empty' : 'Spin'}
       </button>
+
+      {/*
+        The plain way in (5.4). A wheel is a nice thing to press and a poor thing to depend
+        on: this is the same pool, as a list, for anyone who would rather read it than spin
+        it - which includes anyone using a screen reader or a keyboard.
+      */}
+      <label htmlFor={chooseId} className="sr-only">
+        Choose a {band} number
+      </label>
+      <select
+        id={chooseId}
+        value=""
+        disabled={empty || disabled}
+        onChange={(event) => {
+          const chosen = Number(event.target.value);
+          if (chosen) {
+            setLanded(chosen);
+            onPick(chosen);
+          }
+        }}
+        className="w-full rounded border border-border bg-background p-1 text-xs disabled:opacity-40"
+      >
+        <option value="">choose a number</option>
+        {numbers.map((n) => (
+          <option key={n} value={n}>
+            {n}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
