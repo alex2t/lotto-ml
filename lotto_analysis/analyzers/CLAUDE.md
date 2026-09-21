@@ -15,7 +15,7 @@ writes into either, you have changed the serving distribution and must change
 
 | Phase | Analyzer | Writes |
 |:--|:--|:--|
-| 1-2 | `hmc_analyzer.py` | feeds `lotto_trigger_periods.json`, `lotto_draw_history.json` (each entry carries `main_numbers` and `bonus_number` for the website - F-25) |
+| 1-2 | `hmc_analyzer.py` | feeds `lotto_trigger_periods.json`, `lotto_draw_history.json` (each entry carries `main_numbers` and `bonus_number` for the website - F-25), and both hot/medium/cold pattern counts for `lotto_odds_results.json` |
 | 3 | `pattern_analyzer.py` | feeds `lotto_odds_results.json` |
 | 4 | `consecutive_analyzer.py` | feeds pattern output |
 | 5 | `freshness_analyzer_7_numbers.py` | `lotto_7_number_freshness_results.json` |
@@ -36,6 +36,12 @@ Phase 11 lives in `analysis/`, not here. That is the only cross-folder step in t
 
 - `hmc_analyzer.py` counts `recent_*` and `freshness_bin` over the **main 6 balls**. `walk_forward.py`
   (`cum_main`) must match. Do not change one side.
+- **A hot/medium/cold pattern is counted twice, over different balls, and the two must not be
+  confused.** `lotto_odds_results.json` `hmc` is over all 7 balls, so every key in it sums to 7;
+  `hmc_6` is over the main 6 and every key sums to 6. Anything comparing a six-number line - the
+  Prediction Validator, the Next.js shape card - must read `hmc_6`. Reading `hmc` instead found
+  nothing, every time, and told every line its pattern had never been observed (F-59). Both are
+  counted in `hmc_analyzer.py`'s draw loop from the same pre-draw categories.
 - SCENARIOS window naming is off by one **by design**: window 5 produces key `last_4` -> feature
   `recent_4`. `recent_4` counts over 5 draws, `recent_9` over 10, `recent_24` over 25. The windows
   are defined in `../config/config.py`.

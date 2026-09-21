@@ -23,6 +23,7 @@ data/
 # Secrets - the admin hash and session secret reach the container at runtime, never the image
 .env
 .env.local
+secrets.env
 
 # Git & Agent Metadata
 .git/

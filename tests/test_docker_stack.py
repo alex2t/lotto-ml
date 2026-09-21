@@ -60,16 +60,18 @@ def test_admin_secrets_are_passed_without_interpolation():
     """
     A bcrypt hash always contains `$`, and compose expands `$name` inside an interpolated
     value, so `environment: ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}` delivered a mangled
-    hash and every login failed with 401 (F-58). env_file with `format: raw` is passed
-    through literally.
+    hash and every login failed with 401 (F-58). The file is `secrets.env`, not `.env`:
+    compose reads `.env` for its own substitution, where the same expansion applies.
     """
     compose = yaml.safe_load((REPO_ROOT / "docker-compose.yml").read_text())
     service = compose["services"]["nextjs-web"]
 
     env_files = service["env_file"]
     assert any(
-        entry["path"] == ".env" and entry.get("format") == "raw" for entry in env_files
+        entry["path"] == "secrets.env" and entry.get("format") == "raw"
+        for entry in env_files
     ), env_files
+    assert all(entry["path"] != ".env" for entry in env_files), env_files
     # The file is optional: the public site must start without an admin account.
     assert all(entry.get("required") is False for entry in env_files), env_files
 
@@ -77,14 +79,25 @@ def test_admin_secrets_are_passed_without_interpolation():
         assert "ADMIN_" not in entry and "SESSION_SECRET" not in entry, entry
 
 
-def test_the_env_file_is_not_committed_or_shipped():
-    """It holds the admin hash and the session secret."""
+def test_the_env_files_are_not_committed_or_shipped():
+    """secrets.env holds the admin hash and the session secret."""
     ignored = [line.strip() for line in (REPO_ROOT / ".gitignore").read_text().splitlines()]
-    assert ".env" in ignored
     docker_ignored = [
         line.strip() for line in (REPO_ROOT / ".dockerignore").read_text().splitlines()
     ]
-    assert ".env" in docker_ignored
+    for name in (".env", "secrets.env"):
+        assert name in ignored, name
+        assert name in docker_ignored, name
+
+
+def test_the_site_builds_without_the_artifacts():
+    """
+    data/ is a runtime mount, absent while the image builds, so no route may read an
+    artifact at build time - the root layout did, and Next's prerender of /_not-found
+    failed with ENOENT on lotto_draw_history.json.
+    """
+    layout = (REPO_ROOT / "frontend" / "app" / "layout.tsx").read_text(encoding="utf-8")
+    assert "lib/data" not in layout, "the root layout must not read an artifact"
 
 
 def test_data_is_not_sent_to_the_build_context():

@@ -1,37 +1,50 @@
 import Link from 'next/link';
-import { latest } from '@/lib/data/draws';
-import { freshness, nextDrawDate } from '@/lib/data/schedule';
+import { allDraws, latest } from '@/lib/data/draws';
+import { staleness } from '@/lib/data/staleness';
+import { DRAW_HOUR } from '@/lib/data/schedule';
+import { longDate } from '@/lib/format';
+import { DrawBalls } from '@/components/ui/DrawBalls';
+import { StalenessBanner } from '@/components/layout/StalenessBanner';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * A holding page for Phase 3: it proves the data layer reads the mounted artifacts.
- * The real home page is built in Phase 4 (nextStep/web.md section 4.1).
- */
 export default function Home() {
+  const draws = allDraws();
   const draw = latest();
-  const state = freshness();
+  const state = staleness();
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center gap-6 p-6">
-      <h1 className="text-3xl font-semibold">Irish Lotto</h1>
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm uppercase tracking-wide text-neutral-500">
-          Latest draw
-        </h2>
-        <p className="text-lg">
-          {draw.draw_date}: {draw.main_numbers.join(' ')} (bonus {draw.bonus_number})
-        </p>
-        <p className="text-sm text-neutral-500">
-          Next draw {nextDrawDate()} - data {state}
+    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10">
+      <StalenessBanner staleness={state} />
+
+      <section className="flex flex-col items-center gap-6 text-center">
+        <h1 className="text-sm uppercase tracking-widest text-muted">
+          Latest draw - {longDate(draw.draw_date)}
+        </h1>
+        <DrawBalls draw={draw} size="lg" stagger />
+        <p className="text-sm text-muted">
+          Next draw: {longDate(state.nextDraw)}, {DRAW_HOUR}:00
         </p>
       </section>
-      <p className="text-sm text-neutral-500">
-        Every line is equally likely to win.
+
+      <p className="text-center text-sm text-muted">
+        {draws.length} draws on file, back to {longDate(draws[0].draw_date)}.
       </p>
-      <Link className="text-sm underline text-neutral-500" href="/login">
-        Admin
-      </Link>
+
+      <section className="flex flex-wrap justify-center gap-3">
+        <Link
+          href="/pick"
+          className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
+        >
+          Build my line
+        </Link>
+        <Link
+          href="/explore"
+          className="rounded-full border border-border px-6 py-3 text-sm font-medium"
+        >
+          Explore the draws
+        </Link>
+      </section>
     </main>
   );
 }

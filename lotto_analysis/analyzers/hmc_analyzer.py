@@ -15,6 +15,10 @@ from .frequency_analyzer import (
 
 HISTORY_WINDOWS_DATA = [s["window"] for s in SCENARIOS]
 
+
+# A draw is 6 main balls plus a bonus; the main six are the first six.
+MAIN_BALLS = 6
+
 def get_days_difference(date_str_latest: str, date_str_oldest: str) -> int:
     """Calculate the number of days between two 'YYYY-MM-DD' date strings."""
     try:
@@ -110,6 +114,10 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
     # Phase 2: Rolling analysis and History Logging
     categorization_history = {}
     hmc_distribution_counts = defaultdict(int)
+    # The same shape over the main 6 only. A player's line is six numbers, so it can only be
+    # compared with a six-ball distribution - every key here sums to 6, every key in
+    # hmc_distribution_counts sums to 7 (F-59).
+    hmc_distribution_counts_6 = defaultdict(int)
     draw_history_log = {}
     
     # Tracking counts for 1, 2, or 3 hits in the Last 10 Bonus
@@ -173,6 +181,9 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         # Calculate Draw Metrics
         draw_range, rating_counts, hmc_dist = get_draw_metrics(winning_numbers, categories)
         hmc_distribution_counts[hmc_dist] += 1
+
+        _, _, hmc_dist_6 = get_draw_metrics(winning_numbers[:MAIN_BALLS], categories)
+        hmc_distribution_counts_6[hmc_dist_6] += 1
         
         categorization_history[draw_date] = {
             "draw_range": draw_range,
@@ -212,7 +223,7 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         
         # Count how many *main* winning numbers hit the recent bonus set
         current_draw_bonus_hits = 0
-        main_winning_numbers = winning_numbers[:6]
+        main_winning_numbers = winning_numbers[:MAIN_BALLS]
         
         for number in main_winning_numbers:
             if number in recent_bonus_set:
@@ -382,4 +393,5 @@ def process_hmc_analysis(all_draws: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict,
         final_categories = get_hot_cold(frequency_count)
 
     return (categorization_history, frequency_count, dict(hmc_distribution_counts),
+            dict(hmc_distribution_counts_6),
             final_categories, draw_history_log, dict(recent_bonus_hit_counts))

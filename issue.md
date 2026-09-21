@@ -35,6 +35,71 @@ order, so ties resolve the same way on every run. It is not reused.
 
 Kept for the record; each is complete and covered by tests.
 
+- **2026-09-21 - F-59 and F-60, the six-ball hot/medium/cold distribution.**
+  `validate_hmc_pattern` counted the player's **six** numbers into a pattern like `3-0-3` and looked
+  it up in `lotto_odds_results.json` `hmc`, which is over **seven** balls: every key in it sums to 7.
+  A six-ball key sums to 6, so the lookup never matched, `.get('percentage', 0)` supplied the
+  default and the "never observed" branch ran for **every possible line**, taking 80 of 100 points
+  off each one. Measured before the fix: `3-0-3`, `4-0-2`, `6-0-0` and `2-3-1` all reported
+  `Very rare pattern (never observed)`, score 20/100.
+
+  **Fixed upstream, which closed F-60 with it.** `hmc_analyzer.py` already had each draw's pre-draw
+  categories in its loop, so it now counts the main-six pattern beside the seven-ball one and
+  `drawpick.py` writes it as `lotto_odds_results.json` `hmc_6`. The Prediction Validator reads
+  `odds_data['hmc_6']` - no default - and `frontend/lib/data/hmc.ts` reads the same block instead of
+  aggregating the distribution itself, which is what F-60 was about.
+
+  **Measured after.** The four lines above now report 4.81%, 5.61%, 0.80% and 5.61% and score 100,
+  100, 60, 100 - the check distinguishes lines instead of answering the same thing every time. The
+  artifact's counts match what the front end had been computing independently from the draw history
+  (`4-1-1` 13.03%, `2-2-2` 11.82%, `3-1-2` 11.42%): two implementations agreeing.
+
+  **One test changed, deliberately.**
+  `test_validator_verdict_describes_typicality_not_a_chance_of_winning` required the line
+  `1, 2, 3, 4, 5, 6` to score under 60. That threshold only held while every line was losing 80
+  points, so it was calibrated on the defect. It is now
+  `test_validator_separates_a_typical_line_from_an_extreme_one`, asserting the ordering and the
+  failing checks rather than a number: the typical line scores 100, the run of six scores 70, and
+  the two checks that object to it are sum and spread. The wording assertions - no advice, the
+  equal-chance sentence, the verdict vocabulary - are unchanged and still run on both lines.
+  `tests/test_site_wording.py` also gained
+  `test_hmc_check_compares_a_line_with_the_six_ball_distribution`, which asserts the two key sets
+  sum to 6 and 7 and that no line is told "never observed".
+
+- **2026-09-21 - F-61, the engine could call its own output stale.**
+  `test_verify_artifacts_accepts_files_written_by_this_run` failed twice in full-suite runs on a
+  loaded machine and passed on its own, which looked like flakiness. It was not.
+
+  **Root cause, measured.** `verify_artifacts` rejected an artifact whose `st_mtime < run_started`.
+  Both are doubles built from the same clock but rounded differently, so a file written immediately
+  after `run_started` can report an mtime **2.384185791015625e-07 seconds earlier** - exactly
+  2^-22, a double-rounding artefact. Over 6000 write-and-compare cycles this happened 534 times
+  (~9%); over 300 cycles on an idle machine it happened 0 times, which is why the first
+  investigation found nothing and nothing was changed on that guess.
+
+  In production the gap is seconds to minutes, so a real run was never affected; the exposure was
+  the boundary itself, where a file written in the same clock tick as the start of the run could be
+  reported STALE and exit the engine non-zero.
+
+  **Fixed** with `MTIME_TOLERANCE_SECONDS = 1.0` in `drawpick.py`: a file is stale only if its
+  mtime is more than a second before the run started. An artifact left from an earlier run is hours
+  old, so the check still does its job (F-43). Covered by
+  `test_verify_artifacts_accepts_a_file_written_in_the_same_clock_tick`, which asserts the exact
+  2.4e-7 case, and by the earlier-run test, now offset clear of the tolerance.
+
+- **2026-09-21 - F-62, the site could not be built without the artifacts.**
+  `frontend/app/layout.tsx` read the draw history to put "N draws on file, back to X" in the footer.
+  A root layout is used by every route including the error pages Next prerenders at build time, and
+  `data/` is a runtime mount that does not exist while the image builds, so
+  `docker compose build nextjs-web` failed: `Error occurred prerendering page "/_not-found"`,
+  `ENOENT: no such file or directory, stat '/data/lotto_draw_history.json'`. It passed locally only
+  because a developer's `../data` is there.
+
+  **Fixed** by making the layout read nothing: the footer carries the equal-chance sentence, which is
+  a constant, and the draw count moved to the home page, which has the history anyway. Covered by
+  `tests/test_docker_stack.py::test_the_site_builds_without_the_artifacts` and proved by building
+  with `DATA_DIR` pointed at a directory that does not exist.
+
 - **2026-09-21 - F-58, the admin login could not work in Docker.**
   `docker-compose.yml` passed the account through `environment: ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}`.
   A bcrypt hash is `$2b$12$<22-char salt><31-char hash>`, and compose expands `$name` inside an
@@ -49,10 +114,17 @@ Kept for the record; each is complete and covered by tests.
   with inline shell variables), and `.env` was in neither `.gitignore` nor `.dockerignore`, so the
   first `git add -A` would have committed the admin hash and the session secret.
 
-  **Fixed.** The service now takes the file with `env_file: [{path: .env, required: false, format: raw}]`
-  - `format: raw` disables interpolation, `required: false` keeps the public site starting without an
-  admin account, since one account's failure must never take the site down. `.env` is gitignored and
-  dockerignored, and `.env.example` in the repo root documents the two generator commands.
+  **Fixed.** The service takes the file with
+  `env_file: [{path: secrets.env, required: false, format: raw}]` - `format: raw` disables
+  interpolation, `required: false` keeps the public site starting without an admin account, since one
+  account's failure must never take the site down.
+
+  **The file is `secrets.env`, not `.env`** (refined the same day, while building Phase 4). Compose
+  also reads `.env` for its own variable substitution in the compose file, so a bcrypt hash sitting
+  there printed `WARNING: The "xoaC9..." variable is not set` on every `docker compose` command -
+  the same expansion, one layer up. `.env` now holds only `UID`/`GID`; `secrets.env` holds the
+  account. Both are gitignored and dockerignored, and `.env.example` and `secrets.env.example`
+  document each.
 
   **Verified** in the running container: the hash arrives byte-identical to the file, login returns a
   131-character session cookie, the download returns 200 with 30 entries, and a wrong password still
@@ -238,6 +310,10 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-59 | A six-ball hot/medium/cold pattern was looked up in a seven-ball distribution, so every line was told its pattern had never been observed | `lotto_analysis/analyzers/hmc_analyzer.py`, `drawpick.py`, `view/pages/prediction_validator.py` |
+| F-60 | The six-ball pattern distribution was aggregated in the front end instead of written by the engine | `frontend/lib/data/hmc.ts` |
+| F-61 | `verify_artifacts` could call the engine's own fresh artifact stale, over a 2.4e-7 second float rounding | `drawpick.py`, `tests/test_pipeline_completeness.py` |
+| F-62 | The root layout read an artifact, so the image build failed prerendering `/_not-found` with data/ absent | `frontend/app/layout.tsx`, `components/layout/Footer.tsx` |
 | F-58 | Compose interpolated the `$` in the bcrypt hash, so the admin login failed with 401 in every container | `docker-compose.yml`, `.gitignore`, `.dockerignore` |
 | F-57 | The Next.js image and its compose service existed only on paper - never built, never started | `Dockerfile.web`, `docker-compose.yml`, `docker-compose.dev.yml` |
 | F-56 | n8n.md 3.6 tested the scraped date for string equality with the CSV's top row, so a date that was older but already present was reported as new - a duplicate row inserted out of order | `nextStep/n8n.md` 3.6 |

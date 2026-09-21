@@ -4,7 +4,7 @@
 `pytest.ini` sets `testpaths = tests`. The feature-discovery scripts that used to sit here with a
 `test_` prefix are in `../demos/` since C-17b; do not move one back.
 
-## The twenty-three real tests (237 tests, ~38s)
+## The twenty-three real tests (241 tests, ~50s)
 
 ```bash
 python -m pytest -q          # all of them, via pytest.ini
@@ -39,24 +39,31 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 | `test_permutation_check.py` | the F-17 shuffle keeps each draw's hit count and moves only the labels |
 | `test_high_number_distribution.py` | the F-19 count of main numbers >= 32 per draw that the dashboard shows |
 | `test_draw_history_numbers.py` | the draw history carries each draw's `main_numbers` and `bonus_number`, and Pattern Comparison finds a past draw as its exact match (F-25); past draws are classified with their pre-draw hot/medium/cold, not today's (F-27); Post Draw Analysis autofills the newest draw from it, and no module in `view/` or `frontend/` reads `irish500.csv` (F-35), the admin download route excepted. Reads `data/*.json` |
-| `test_site_wording.py` | the website describes how typical a line looks, never how likely it is to win: Prediction Validator (F-26), Pattern Comparison, Trigger Periods' sum check and every anomaly alert (F-28), Number Insights' profile and Draw History (F-30) carry no play/avoid/strong/risky advice and say every line is equally likely. Renders pages with Streamlit `AppTest`; reads `data/*.json` |
+| `test_site_wording.py` | the website describes how typical a line looks, never how likely it is to win: Prediction Validator (F-26), Pattern Comparison, Trigger Periods' sum check and every anomaly alert (F-28), Number Insights' profile and Draw History (F-30) carry no play/avoid/strong/risky advice and say every line is equally likely; and the HMC check compares a six-number line with the six-ball distribution `hmc_6`, so no line is told its pattern was never observed (F-59). Renders pages with Streamlit `AppTest`; reads `data/*.json` |
 | `test_bonus_transition_baseline.py` | on simulated fair draws the bonus-to-main analyzer reports its random baseline as 1 - (41/47)^10 and a boost of ~1.0, not 3.5x; the validator counts any recent bonus ball, with no transition-rate filter (F-30); a transition rate divides only by bonus balls with 10 draws after them (F-32) |
 | `test_trend_significance.py` | the "significant trend" flag flags about 5% of numbers on simulated fair draws (was 61%), still flags a real change in frequency, and flags nothing without an older window (F-31) |
 | `test_anomaly_detector.py` | the sum alerts and Pattern Comparison's typical range use the mean and std in `lotto_sum_contribution_validated.json`, not hard-coded figures; every `_check_` in the anomaly detector can fire on the current data (F-29). Reads `data/*.json` |
 | `test_bonus_window.py` | bonus statistics use the 10 bonus balls before each draw, not a list ending with the draw's own bonus: on fair draws the repeat rate matches chance (was 1.0), the main-from-recent-bonus boost and recency penalty are ~1.0 (were 0.92 and 4.7); Draw History shows the pre-draw window (F-33); `bonus_window_positions()` counts a repeated bonus ball from its most recent appearance, over the last 10 draws only (F-36). Reads `data/*.json` |
 | `test_odd_even_affinity.py` | odd/even tests measure against a fair draw: on simulated fair draws about 5% of numbers have p < 0.05 (was 56%) and FDR validates almost none (was 254 of 470); the stated chance of an odd draw matches simulation; a real affinity is still flagged; the overall test expects 24/47 odd; the Statistics page shows each number's chance (F-38) |
-| `test_pipeline_completeness.py` | a phase failure in the data engine stops the run (F-43): the engine requirements list `scikit-learn`, the lazy import raises instead of returning an error stub, the Phase 16 handler re-raises, and `verify_artifacts` rejects an artifact left from an earlier run as well as a missing one; the artifacts are stored with LF endings and the engine dependencies are pinned with `==`, so a host/VPS alternation is not a whole-file diff (F-44); a missing draw CSV exits non-zero rather than printing an error and returning 0 (F-47) |
+| `test_pipeline_completeness.py` | a phase failure in the data engine stops the run (F-43): the engine requirements list `scikit-learn`, the lazy import raises instead of returning an error stub, the Phase 16 handler re-raises, and `verify_artifacts` rejects an artifact left from an earlier run as well as a missing one; the artifacts are stored with LF endings and the engine dependencies are pinned with `==`, so a host/VPS alternation is not a whole-file diff (F-44); a missing draw CSV exits non-zero rather than printing an error and returning 0 (F-47); and a file written in the same clock tick as the run's start is not called stale over a float rounding (F-61) |
 | `test_artifact_rounding.py` | every float in the 22 JSON artifacts carries at most 12 significant digits, so a host run and a container run are byte-identical (F-46); a tiny p-value survives the rounding and ints, bools and strings are untouched. Reads `data/*.json` |
-| `test_docker_stack.py` | the Docker stack orders its services and stays out of the repo (F-45): no `echo` redirect in either `.bat`, `streamlit-web` and `nextjs-web` both wait for `service_completed_successfully` and mount the artifacts read-only, all three images take the uid as a build arg and the web image runs as it, and `.dockerignore` excludes `data/` and the frontend's `node_modules`/`.next`; the admin hash and session secret reach `nextjs-web` through `env_file` with `format: raw`, never `environment:` interpolation, and `.env` is in both ignore files (F-58) |
+| `test_docker_stack.py` | the Docker stack orders its services and stays out of the repo (F-45): no `echo` redirect in either `.bat`, `streamlit-web` and `nextjs-web` both wait for `service_completed_successfully` and mount the artifacts read-only, all three images take the uid as a build arg and the web image runs as it, and `.dockerignore` excludes `data/` and the frontend's `node_modules`/`.next`; the admin hash and session secret reach `nextjs-web` through `env_file` with `format: raw` from `secrets.env`, never `.env` and never `environment:` interpolation (F-58); and the root layout reads no artifact, so the image builds without the data mount (F-62) |
 | `test_bonus_predictor.py` | bonus picks avoid recent bonus balls and span hot/medium/cold (F-20); a pool too small for the request raises (F-5), as does an empty bonus window (F-42) |
 
 ## The site's own tests are not here
 
-The Next.js site is tested with vitest inside `../frontend/test/`, against trimmed fixture
-artifacts - `npm --prefix frontend test`, and `npm --prefix frontend run test:integration` for the
-one that appends a row to a copy of the CSV, runs `drawpick.py` and asserts the new draw is served
-without a restart. `pytest` does not run them. What stays here is what guards the site from the
-Python side: the CSV scan in `test_draw_history_numbers.py` and the wording test.
+The Next.js site has its own suites in `../frontend/`, which `pytest` does not run:
+
+- `npm --prefix frontend test` - 99 vitest tests over the data layer, the scoring and the wording
+  source lint, against the trimmed fixtures in `frontend/test/fixtures/`;
+- `npm --prefix frontend run test:e2e` - 44 Playwright tests, desktop and mobile, over the rendered
+  pages, including the wording guard on a typical and an unusual line;
+- `npm --prefix frontend run test:integration` - the one that appends a row to a copy of the CSV,
+  runs `drawpick.py` and asserts the new draw is served without a restart.
+
+What stays here is what guards the site from the Python side: the CSV scan in
+`test_draw_history_numbers.py`, the Docker wiring in `test_docker_stack.py`, and
+`test_site_wording.py`, which still covers the Streamlit pages until `view/` is deleted.
 
 ## Not tests
 

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from drawpick import verify_artifacts
+from drawpick import MTIME_TOLERANCE_SECONDS, verify_artifacts
 from lotto_analysis.analyzers.hmc_success_analyzer import HMCSuccessAnalyzer
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -72,10 +72,23 @@ def test_verify_artifacts_rejects_a_file_left_from_an_earlier_run(tmp_path):
     """An existence check passes on any volume that has ever held a complete run."""
     stale = tmp_path / "stale.json"
     stale.write_text("{}")
-    run_started = stale.stat().st_mtime + 1
+    # Clear of MTIME_TOLERANCE_SECONDS, which exists so a file written in the same clock
+    # tick as run_started is not called stale over a 2.4e-7 second float rounding (F-61).
+    run_started = stale.stat().st_mtime + MTIME_TOLERANCE_SECONDS + 1
     with pytest.raises(SystemExit) as exit_info:
         verify_artifacts([str(stale)], run_started)
     assert exit_info.value.code == 1
+
+
+def test_verify_artifacts_accepts_a_file_written_in_the_same_clock_tick(tmp_path):
+    """
+    st_mtime and time.time() are doubles rounded differently, so a file written immediately
+    after run_started can report an mtime about 2.4e-7 seconds earlier (F-61). The engine
+    must not call its own fresh output stale.
+    """
+    artifact = tmp_path / "same-tick.json"
+    artifact.write_text("{}")
+    verify_artifacts([str(artifact)], artifact.stat().st_mtime + 2.4e-07)
 
 
 # --- F-44: the artifacts must not churn between the owner's PC and the VPS ---------------------

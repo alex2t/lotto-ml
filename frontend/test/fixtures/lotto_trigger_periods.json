@@ -43,9 +43,9 @@
         }
     },
     "2": {
-        "total_count": 75,
-        "last_seen": "2026/09/02",
-        "category": "medium",
+        "total_count": 76,
+        "last_seen": "2026/09/19",
+        "category": "hot",
         "recent": {
             "last_4": 0,
             "last_5": 0,
@@ -156,8 +156,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2026/09/07",
-                        "end_date": "2026/09/16",
+                        "start_date": "2026/09/09",
+                        "end_date": "2026/09/19",
                         "count": 11
                     }
                 ]
@@ -289,11 +289,11 @@
     "8": {
         "total_count": 69,
         "last_seen": "2026/09/05",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
-            "last_9": 2,
+            "last_5": 0,
+            "last_9": 1,
             "last_24": 2
         },
         "series": {
@@ -357,8 +357,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2026/09/07",
-                        "end_date": "2026/09/16",
+                        "start_date": "2026/09/09",
+                        "end_date": "2026/09/19",
                         "count": 14
                     }
                 ]
@@ -366,14 +366,14 @@
         }
     },
     "10": {
-        "total_count": 73,
-        "last_seen": "2026/08/22",
-        "category": "medium",
+        "total_count": 74,
+        "last_seen": "2026/09/19",
+        "category": "hot",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
+            "last_4": 1,
+            "last_5": 1,
             "last_9": 1,
-            "last_24": 4
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -409,14 +409,14 @@
         }
     },
     "11": {
-        "total_count": 79,
-        "last_seen": "2026/09/05",
+        "total_count": 80,
+        "last_seen": "2026/09/19",
         "category": "hot",
         "recent": {
-            "last_4": 0,
+            "last_4": 1,
             "last_5": 1,
-            "last_9": 1,
-            "last_24": 5
+            "last_9": 2,
+            "last_24": 6
         },
         "series": {
             "series": {
@@ -558,8 +558,8 @@
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2026/08/22",
-                        "end_date": "2026/09/16",
+                        "start_date": "2026/08/26",
+                        "end_date": "2026/09/19",
                         "count": 1
                     }
                 ],
@@ -585,8 +585,8 @@
         "last_seen": "2026/09/07",
         "category": "hot",
         "recent": {
-            "last_4": 1,
-            "last_5": 2,
+            "last_4": 0,
+            "last_5": 1,
             "last_9": 3,
             "last_24": 5
         },
@@ -651,8 +651,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2026/09/07",
-                        "end_date": "2026/09/16",
+                        "start_date": "2026/09/09",
+                        "end_date": "2026/09/19",
                         "count": 11
                     }
                 ]
@@ -780,8 +780,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2026/09/07",
-                        "end_date": "2026/09/16",
+                        "start_date": "2026/09/09",
+                        "end_date": "2026/09/19",
                         "count": 11
                     }
                 ]
@@ -789,14 +789,14 @@
         }
     },
     "20": {
-        "total_count": 81,
-        "last_seen": "2026/09/16",
+        "total_count": 82,
+        "last_seen": "2026/09/19",
         "category": "hot",
         "recent": {
             "last_4": 3,
-            "last_5": 3,
-            "last_9": 3,
-            "last_24": 3
+            "last_5": 4,
+            "last_9": 4,
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -809,16 +809,16 @@
                 ],
                 "10_consecutives_4_times": [
                     {
-                        "start_date": "2026/02/18",
-                        "end_date": "2026/03/21",
-                        "count": 2
+                        "start_date": "2026/08/26",
+                        "end_date": "2026/09/19",
+                        "count": 3
                     }
                 ],
                 "6_consecutives_3_times": [
                     {
-                        "start_date": "2026/09/05",
-                        "end_date": "2026/09/16",
-                        "count": 2
+                        "start_date": "2025/03/22",
+                        "end_date": "2025/04/09",
+                        "count": 1
                     }
                 ],
                 "5_consecutives_2_times": [
@@ -836,8 +836,8 @@
         "last_seen": "2026/09/07",
         "category": "hot",
         "recent": {
-            "last_4": 1,
-            "last_5": 2,
+            "last_4": 0,
+            "last_5": 1,
             "last_9": 3,
             "last_24": 4
         },
@@ -882,7 +882,7 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_24": 4
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -920,11 +920,11 @@
     "23": {
         "total_count": 55,
         "last_seen": "2026/08/22",
-        "category": "medium",
+        "category": "cold",
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 1,
+            "last_9": 0,
             "last_24": 4
         },
         "series": {
@@ -965,7 +965,7 @@
         "last_seen": "2026/09/07",
         "category": "hot",
         "recent": {
-            "last_4": 1,
+            "last_4": 0,
             "last_5": 1,
             "last_9": 2,
             "last_24": 5
@@ -1089,8 +1089,8 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 1,
-            "last_24": 5
+            "last_9": 0,
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -1126,14 +1126,14 @@
         }
     },
     "28": {
-        "total_count": 66,
-        "last_seen": "2026/09/07",
+        "total_count": 67,
+        "last_seen": "2026/09/19",
         "category": "hot",
         "recent": {
             "last_4": 1,
-            "last_5": 1,
-            "last_9": 1,
-            "last_24": 2
+            "last_5": 2,
+            "last_9": 2,
+            "last_24": 3
         },
         "series": {
             "series": {
@@ -1196,8 +1196,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2026/09/07",
-                        "end_date": "2026/09/16",
+                        "start_date": "2026/09/09",
+                        "end_date": "2026/09/19",
                         "count": 6
                     }
                 ]
@@ -1255,7 +1255,7 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 1,
-            "last_24": 5
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -1282,8 +1282,8 @@
                 ],
                 "5_consecutives_2_times": [
                     {
-                        "start_date": "2026/09/07",
-                        "end_date": "2026/09/16",
+                        "start_date": "2026/09/09",
+                        "end_date": "2026/09/19",
                         "count": 7
                     }
                 ]
@@ -1336,12 +1336,12 @@
     "33": {
         "total_count": 62,
         "last_seen": "2026/09/05",
-        "category": "hot",
+        "category": "medium",
         "recent": {
             "last_4": 0,
-            "last_5": 1,
+            "last_5": 0,
             "last_9": 2,
-            "last_24": 6
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -1374,7 +1374,7 @@
         "last_seen": "2026/09/09",
         "category": "hot",
         "recent": {
-            "last_4": 2,
+            "last_4": 1,
             "last_5": 2,
             "last_9": 2,
             "last_24": 2
@@ -1463,7 +1463,7 @@
             "last_4": 0,
             "last_5": 0,
             "last_9": 0,
-            "last_24": 2
+            "last_24": 1
         },
         "series": {
             "series": {
@@ -1542,7 +1542,7 @@
             "last_4": 1,
             "last_5": 1,
             "last_9": 3,
-            "last_24": 6
+            "last_24": 5
         },
         "series": {
             "series": {
@@ -1664,14 +1664,14 @@
         }
     },
     "41": {
-        "total_count": 79,
-        "last_seen": "2026/09/02",
-        "category": "medium",
+        "total_count": 80,
+        "last_seen": "2026/09/19",
+        "category": "hot",
         "recent": {
-            "last_4": 0,
-            "last_5": 0,
-            "last_9": 1,
-            "last_24": 3
+            "last_4": 1,
+            "last_5": 1,
+            "last_9": 2,
+            "last_24": 4
         },
         "series": {
             "series": {
@@ -1713,7 +1713,7 @@
         "recent": {
             "last_4": 1,
             "last_5": 1,
-            "last_9": 3,
+            "last_9": 2,
             "last_24": 6
         },
         "series": {
@@ -1756,7 +1756,7 @@
         "recent": {
             "last_4": 0,
             "last_5": 0,
-            "last_9": 1,
+            "last_9": 0,
             "last_24": 4
         },
         "series": {
@@ -1793,14 +1793,14 @@
         }
     },
     "44": {
-        "total_count": 70,
-        "last_seen": "2026/09/05",
+        "total_count": 71,
+        "last_seen": "2026/09/19",
         "category": "hot",
         "recent": {
-            "last_4": 0,
+            "last_4": 1,
             "last_5": 1,
-            "last_9": 1,
-            "last_24": 3
+            "last_9": 2,
+            "last_24": 4
         },
         "series": {
             "series": {

@@ -9,10 +9,10 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
 - **The website, for players.** `view/` (Streamlit, being replaced by `frontend/`) is for people who want to have fun picking their own line
   from a few facts about past draws - hot/medium/cold numbers, odd vs even, whether a ball was
   recently a bonus, how many numbers are 32 or above. It is a toy, not a tipster: every line is
-  equally likely to win, and the site says so. It is Streamlit today and is moving to **Next.js
-  (React)** in `frontend/` - the Phase 3 foundation (data layer, admin login, data download) is
-  built; Phase 4 is the UI, so picking a line can be made playful (spinning wheels and the like).
-  Both sites run side by side until the cutover. The build
+  equally likely to win, and the site says so. It is Streamlit in `view/` and **Next.js in
+  `frontend/`**, where Phases 3 and 4 are both built: five destinations, wheels and a 1-47 grid to
+  pick with, and a shape card that describes a line against past draws. Both run side by side -
+  Streamlit on 8501, Next.js on 3000 - until the cutover deletes `view/`. The build
   document is [`nextStep/web.md`](nextStep/web.md) - the five destinations, the picker, the
   completeness matrix that says every current statistic must survive the move, and the cutover
   order for deleting `view/`.
@@ -68,7 +68,7 @@ What each one covers:
 
 | Folder guide | Covers |
 |:--|:--|
-| `frontend/CLAUDE.md` | the Next.js site: the server-side data layer, the admin login, what a page may say |
+| `frontend/CLAUDE.md` | the Next.js site: the five destinations, the server-side data layer, the scoring, what a page may say |
 | `ml_lotto/features/CLAUDE.md` | the train/serve parity contract - the highest-risk file in the repo |
 | `tests/CLAUDE.md` | the twenty-three test files and what each one guards |
 | `lotto_analysis/analyzers/CLAUDE.md` | the 16 analysis phases and which JSON each writes |
@@ -102,7 +102,7 @@ artifact, the code wins.
 python drawpick.py      # Stage 1: analysis -> writes ~24 JSON files into data/
 python quickpick.py     # Stage 2: trains models, writes lottery_picks.txt + model_metrics/
 streamlit run app.py    # The website (8 pages, view/pages/); Prediction Validator = build your own line
-npm --prefix frontend run dev   # The Next.js site that replaces it (Phase 3 foundation built)
+npm --prefix frontend run dev   # The Next.js site that replaces it (Phases 3-4 built)
 ```
 
 `drawpick.py` must run before `quickpick.py` - the ML layer reads only the JSON artifacts, never the
@@ -111,7 +111,9 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: twenty-three files, 237 tests, ~38s. `pytest.ini` points pytest there, so
+`tests/` holds only real tests: twenty-three files, 241 tests, ~50s. The Next.js site has its own
+suites in `frontend/` - `npm --prefix frontend test` (99 vitest) and `npm --prefix frontend run
+test:e2e` (44 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
