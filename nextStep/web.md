@@ -417,18 +417,11 @@ Done 2026-09-21. The eight rows that were unticked on the first pass were comple
 two of them needed a phase in `lotto_analysis/` first, because the figures they show did not exist
 in any artifact and the site computes nothing.
 
-**Layout and the look of it (section 5)**
+**Layout and the look of it**
 
-- [x] Shared navigation, responsive layout, light and dark with the theme stored per viewer.
-- [x] One hot/medium/cold colour scale as CSS custom properties, used by every ball, chart, grid
-      and badge.
-- [x] The ball at three sizes, carrying its category letter so colour is never the only cue (5.4).
-- [x] `prefers-reduced-motion` honoured, and no animation delays a number reaching the DOM (5.2).
-- [x] Designed at phone width first: the grid is six columns with 44px targets, the wheels stack,
-      the tray is fixed to the bottom, and charts scroll rather than shrink (5.3).
-- [x] The three animated moments of 5.2: the ball stagger on Home, the wheel spin, and the bag
-      shake, whose numbers land one at a time. With `prefers-reduced-motion` the whole line is in
-      the DOM at once - the animation may never delay the information.
+- [x] Shared navigation, responsive layout, and the ball component at three sizes. The rest of the
+      look and feel has its own status at the end of section 5, which is where four unticked rows
+      live - it is not repeated here.
 
 **4.1 Home**
 
@@ -531,11 +524,9 @@ in any artifact and the site computes nothing.
 
 - [x] The section 6 completeness matrix walked and signed off, with a column recording where each
       row landed.
-- [x] Section 7 green: 118 vitest over the data layer and the scoring, 56 Playwright over the
-      rendered pages on desktop and mobile, and 7.2's ingestion integration test.
-- [x] Section 7.4's replacement for `tests/test_site_wording.py`: the source lint over `frontend/`
-      and the Playwright pass over every rendered page, both against the same `ADVICE` list.
-      `tests/test_site_wording.py` itself stays until `view/` is deleted.
+- [x] Section 7 green: 118 vitest, 56 Playwright on desktop and mobile, and 7.2's ingestion
+      integration test. The itemised status, including four rows that are not done, is at the end
+      of section 7.
 
 ---
 
@@ -574,6 +565,55 @@ ball carries its letter or a pattern); every control is keyboard reachable and t
 plain "choose a number" fallback; contrast checked in both themes; the spinning wheel is
 `aria-live="polite"` so a screen reader announces the result; every chart has a table behind a
 "show the numbers" toggle - which doubles as the honest way to expose the underlying data.
+
+### Section 5 checklist
+
+Built 2026-09-21. Four rows are not: three are accessibility or shape details that were
+specified here and skipped, and one is a deliberate difference from what 5.2 describes.
+
+**5.1 Visual language**
+
+- [x] One hot/medium/cold colour scale, used by every ball, chart, grid and badge, as CSS custom
+      properties on `:root` and redefined for dark.
+- [x] The ball is the motif, at three sizes - grid, draw row, hero.
+- [x] Light and dark, stored per viewer and applied before first paint so there is no flash of the
+      wrong theme. No chart hard-codes a colour; they all draw from the tokens.
+- [x] No emoji in anything new.
+
+**5.2 Motion**
+
+- [x] Three animated moments and no more: the wheel spin, the bag shake and the ball stagger.
+- [x] Animation never delays information - the numbers are in the DOM as soon as they are chosen.
+- [ ] **`prefers-reduced-motion` replaces the three with a cross-fade.** It removes them instead:
+      `globals.css` reduces every animation and transition to 0.01ms, so a reduced-motion viewer
+      gets the result instantly with no fade. That is the safe direction to differ in, but it is
+      not what this section says.
+
+**5.3 Mobile**
+
+- [x] Designed at phone width first; the wheels stack and stay thumb-reachable.
+- [x] The 1-47 grid is six columns with 44px targets.
+- [x] Every page is exercised at phone width - Playwright runs the whole suite twice, desktop and
+      a Pixel 7.
+- [ ] **The line tray is a bottom sheet.** It is a bar fixed to the bottom that grows to hold the
+      shape card. It works on a phone, and `scroll-padding-bottom` keeps it from covering what a
+      link scrolls to, but it does not drag or snap the way a sheet does.
+- [x] Charts stay readable rather than shrinking: each is a list of labelled rows, so it reflows at
+      390px instead of needing a horizontal scroll, and the wide tables scroll horizontally.
+
+**5.4 Accessibility**
+
+- [x] Category is never colour alone - every ball carries its H/M/C letter, and the screen-reader
+      label says the word.
+- [x] Every control is keyboard reachable: they are all native buttons, links, selects and inputs.
+- [x] The wheel is `aria-live="polite"`, so the result is announced.
+- [x] Every chart has its numbers behind a "show the numbers" toggle, which is both the accessible
+      route and the honest one.
+- [ ] **The wheels have a plain "choose a number" fallback.** They do not. Someone who cannot or
+      does not want to use a wheel has "Pick by hand", which is the full 1-47 grid, but that is a
+      different method rather than a fallback on the wheel itself.
+- [ ] **Contrast checked in both themes.** The palette was chosen to be legible in both and has not
+      been measured against a contrast ratio. Until it is, this is an assumption, not a check.
 
 ---
 
@@ -667,6 +707,63 @@ It cannot survive as it is. The replacement, before `view/` is deleted:
 The `ADVICE` list and the `equally likely to win` sentence move across verbatim. Similarly
 `test_draw_history_numbers.py`'s CSV scan (F-35) is re-pointed from `view/` to `frontend/`, with the
 single documented exception of the admin download route.
+
+### Section 7 checklist
+
+Green 2026-09-21: 277 pytest across 26 files, 118 vitest, 56 Playwright on desktop and mobile.
+Four rows are not done, and three of them are gaps in what this section asked for rather than
+choices.
+
+**7.1 Unit - the data layer**
+
+- [x] Vitest over `lib/data/` and `lib/scoring/`, against the trimmed fixtures in
+      `frontend/test/fixtures/`, rebuilt by `test/make-fixtures.py`.
+- [x] Every artifact reader parses its real shape and throws on a missing key rather than
+      defaulting.
+- [x] `latestDrawDate()` returns the newest entry, not the first.
+- [x] `nextDrawDate()` handles Mon/Wed/Sat and picks up a schedule change from the last six draws.
+- [x] The freshness states at their boundaries: current, waiting, stale.
+- [x] The scoring agrees with the artifacts - and `ranged.test.ts` goes further, recounting every
+      countable distribution from the draw history and asserting it equals what the engine wrote.
+      That is the test that found F-63.
+
+**7.2 Freshness - the test the whole ingestion chain hangs on**
+
+- [ ] **Fixture test: the newest draw is today, so the homepage shows it with no banner.** The
+      three states are covered at the data layer, in `schedule.test.ts`; the homepage has not been
+      rendered against a fixture set built to produce each one.
+- [ ] **Fixture test: the newest draw is four days old with an expected draw in between, so the
+      waiting banner appears and names the draw being shown.** Same gap - the banner component has
+      no test of its own.
+- [x] **The integration test, the real chain**: a row appended to a copy of `data/irish500.csv`,
+      `drawpick.py` run against that copy, and the site serving the new draw **without a restart**,
+      which is what the mtime cache exists for. `npm run test:integration`; the real CSV is never
+      touched.
+
+**7.3 End to end**
+
+- [x] Playwright against a real build of the site, reading the real artifacts.
+- [ ] **A line picked by each of the five methods.** Four are covered - surprise me, the wheels,
+      the hand grid and a shape built from a sum band. **Shake the bag has no test**, which is the
+      method most likely to break quietly now that it fills the tray one number at a time.
+- [x] Filters shrink the pool and say so, and an emptied wheel says so rather than spinning
+      nothing.
+- [x] A number dossier opened from two routes - the numbers table and the picker's peek card.
+- [x] The draw list paginates.
+- [x] Log in and download the zip. The e2e checks the status, the type and that a body comes back;
+      that the zip holds the artifacts is asserted in `routes.test.ts`, which opens it.
+- [x] Logged out, `/api/download/data` returns 401. **There is no test of logging out** - the
+      route exists and clears the cookie, but nothing drives it.
+
+**7.4 The wording test must survive the migration**
+
+- [x] The Playwright half: every page rendered with a typical line and an unusual one, the full
+      visible text taken, and none of the `ADVICE` phrases in it while the equal-chance sentence is.
+- [x] The source lint half, over every file in `frontend/`, so a banned word is caught before it
+      renders. It has already caught one - "strongest trend", now "biggest change".
+- [x] The `ADVICE` list and the equal-chance sentence moved across verbatim.
+- [x] `test_draw_history_numbers.py`'s CSV scan (F-35) re-pointed from `view/` to `frontend/`, with
+      the single documented exception of the admin download route.
 
 ---
 
