@@ -158,13 +158,20 @@ impossible, and both cost a few lines that look redundant until the day they fir
    date that **was** on the page and was thrown out by validation. Only "both pages parsed fine and
    neither lists today yet" waits and retries.
 
-3. **One source is not a failure, and not a row either.** When only one page lists the date the row
-   it gave is kept and returned as `one_source`, which retries alongside `not_published` - the usual
-   cause is the other site publishing later. If it still stands after the retries it is emailed with
-   the row printed as `candidateRow`, for the owner to check against the official result and paste by
-   hand. It never reaches the CSV automatically: `csvRow` stays `null` on that path, because a row no
-   second source confirmed is exactly what the cross-check exists to keep out, and a wrong date in
-   `irish500.csv` is silent and permanent.
+3. **One source carries the row, and says so.** When only one page lists the date, `one_source` goes
+   down the **same path as `ok`** - duplicate check, row, email, and in Phase 2B the commit. It is
+   built and proved by the same block 5, so the CSV contract and the round-trip apply to it
+   identically; the only difference is that nothing cross-checked it, which `status`, `verified: false`
+   and the subject line all state. **It does not retry.** From inside the node a site that publishes
+   late and a parser that has gone blind look the same, so three attempts would only delay the row in
+   the second case - and F-66 was the second case.
+
+   What this trades away: the cross-check is the only thing that catches a Plus row leaking through
+   one parser, so on this path a wrong date can reach `irish500.csv`, and from there every artifact.
+   The subject line is what stands in its place. **A `one_source` email is opened, not filed** - check
+   the row against the official result the same evening. Two of them in a row on the same site is a
+   broken parser, not a slow site: fix it rather than letting one-sided rows become the normal
+   evening.
 
 `status` is therefore `ok`, `not_published`, `one_source` or `failed` on every path, and the Switch
 node of 3.5 routes the four cases, with its fallback output covering a fifth that cannot currently
@@ -292,7 +299,7 @@ function result(status, extra) {
   return [{ json: Object.assign({
     status, targetKey: null, reason: '', notes, httpErrors: [],
     csvDate: null, csvRow: null, numbers: [], bonus: null, sources: [],
-    archive: null, lotteryIe: null, candidateRow: null,
+    archive: null, lotteryIe: null, verified: false,
   }, extra) }];
 }
 
@@ -350,21 +357,17 @@ try {
     }
     return result('not_published', { targetKey });
   }
-  // One source is usually the other one lagging, so it retries like not_published and
-  // carries the row it did parse, for the email. It is never appended: nothing checked it.
-  if (!a || !b) {
-    const one = a || b;
-    const [oy, omo, od] = targetKey.split('-').map(Number);
-    return result('one_source', { targetKey, archive: a, lotteryIe: b,
-      numbers: one.main, bonus: one.bonus,
-      sources: [a ? 'irish.national-lottery.com' : 'lottery.ie'],
-      candidateRow: [`${pad(od)} ${MON[omo - 1]} ${oy}`,
-                     ...one.main.map(pad), pad(one.bonus)].join(','),
-      reason: `only ${a ? 'the archive' : 'lottery.ie'} has ${targetKey}` });
-  }
+  // One page has it and the other does not. The row is real, so it goes down the same
+  // path as ok and is built and proved the same way - but nothing cross-checked it, so
+  // it leaves as one_source. The email subject is the only thing that says so.
+  const verified = Boolean(a && b);
+  const draw = a || b;
+  const sources = [a && 'irish.national-lottery.com', b && 'lottery.ie'].filter(Boolean);
 
-  // 4. Cross-check. scripts/scrape_lotto.py:185-208
-  if (a.main.join(',') !== b.main.join(',') || a.bonus !== b.bonus) {
+  // 4. Cross-check, when there are two rows to check. scripts/scrape_lotto.py:185-208
+  //    Two sources that disagree is the one case where nothing is usable: one of them is
+  //    a Plus row or a bad parse, and there is no way to tell which from here.
+  if (verified && (a.main.join(',') !== b.main.join(',') || a.bonus !== b.bonus)) {
     return result('failed', { targetKey, archive: a, lotteryIe: b,
       reason: `sources disagree - archive ${a.main.join(',')}+${a.bonus}, ` +
               `lottery.ie ${b.main.join(',')}+${b.bonus}` });
@@ -375,22 +378,23 @@ try {
   //    that would be written to the CSV parses back to the numbers checked above.
   const [y, mo, d] = targetKey.split('-').map(Number);
   const csvDate = `${pad(d)} ${MON[mo - 1]} ${y}`;
-  const csvRow = [csvDate, ...a.main.map(pad), pad(a.bonus)].join(',');
+  const csvRow = [csvDate, ...draw.main.map(pad), pad(draw.bonus)].join(',');
   if (!CSV_ROW_RE.test(csvRow)) {
     return result('failed', { targetKey,
       reason: `built row breaks the CSV contract: "${csvRow}"` });
   }
   const back = csvRow.split(',');
   if (back[0] !== csvDate ||
-      back.slice(1, 7).map(Number).join(',') !== a.main.join(',') ||
-      Number(back[7]) !== a.bonus) {
+      back.slice(1, 7).map(Number).join(',') !== draw.main.join(',') ||
+      Number(back[7]) !== draw.bonus) {
     return result('failed', { targetKey,
       reason: `row does not round-trip: "${csvRow}"` });
   }
 
-  return result('ok', { targetKey, csvDate, csvRow,
-    numbers: a.main, bonus: a.bonus,
-    sources: ['irish.national-lottery.com', 'lottery.ie'] });
+  return result(verified ? 'ok' : 'one_source', { targetKey, csvDate, csvRow,
+    numbers: draw.main, bonus: draw.bonus, archive: a, lotteryIe: b, sources, verified,
+    reason: verified ? ''
+      : `only ${a ? 'the archive' : 'lottery.ie'} has ${targetKey} - row not cross-checked` });
 
 } catch (err) {
   return result('failed', { targetKey,
@@ -416,7 +420,7 @@ values at once, and `OR` is true for both `ok` and `not_published`, which would 
 |:--|:--|:--|:--|
 | 1 | equals `ok` | `ok` | 3.6, the duplicate check |
 | 2 | equals `not_published` | `not published` | the attempt counter below, then Wait and retry |
-| 3 | equals `one_source` | `one source` | the same attempt counter - wire both into it |
+| 3 | equals `one_source` | `one source` | 3.6, the duplicate check - wire it into the same node as `ok` |
 | 4 | equals `failed` | `failed` | **Send failure email** (section 5) |
 
 **Set Options > Fallback Output > Extra Output, and wire it to Send failure email.** This is the
@@ -433,24 +437,20 @@ executions, so after three lifetime attempts the workflow would give up on every
 do it silently. Key the counter on the draw date; a new date then resets it with no maintenance:
 
 ```javascript
-// Code node "Count attempt", fed by both the not_published and one_source outputs.
+// Code node "Count attempt", between the not_published output and the Wait node.
 const store = $getWorkflowStaticData('global');
 const key = $json.targetKey;
 if (store.retryKey !== key) { store.retryKey = key; store.attempts = 0; }
 store.attempts += 1;
-// Keep each status's own reason; only say how many attempts it survived.
-const tally = ` (${store.attempts} attempts)`;
-const reason = $json.status === 'one_source'
-  ? `${$json.reason}${tally} - row not cross-checked, do not commit it unchecked`
-  : `no result published by 21:50${tally}`;
-return [{ json: { ...$json, attempt: store.attempts, reason } }];
+return [{ json: { ...$json, attempt: store.attempts,
+                  reason: `no result published by 21:50 (${store.attempts} attempts)` } }];
 ```
 
 Then an **IF "attempts left"**: `{{ $json.attempt }}` less than `3` -> **Wait** 15 minutes -> back to
 **Fetch archive**, the head of the chain, so both sources are re-fetched. Otherwise -> **Send
 failure email**. Three attempts at 21:05, 21:20 and 21:35 cover publication out to about 21:50.
-A `one_source` item takes the same three attempts, which is the whole point: the second site
-usually catches up inside them.
+Only `not_published` retries: a `one_source` item already has its row, and waiting for a second
+source that may be behind a changed page would only delay it.
 
 ### 3.6 HTTP Request - the current CSV
 
@@ -524,14 +524,22 @@ GitHub API, which is not cached.
 ### 3.7 Gmail - the result email
 
 - Resource: Message, Operation: Send, To: the owner's address.
-- Subject: `Irish Lotto Scrape: {{ $json.csvDate }}`
+- Subject: `Irish Lotto Scrape: {{ $json.csvDate }}{{ $json.verified ? '' : '  [ONE SOURCE - NOT CROSS-CHECKED]' }}`
+
+  **The subject is where the warning has to live**, because it is the only part read without opening
+  anything. On the `one_source` path it is the whole safeguard: the row has already been through the
+  duplicate check and, in Phase 2B, the commit.
+
 - Body (plain text):
 
 ```
 Draw:    {{ $json.csvDate }}
 Numbers: {{ $json.numbers.join('  ') }}
 Bonus:   {{ $json.bonus }}
-
+{{ $json.verified ? '' : '
+Only ' + $json.sources[0] + ' listed this draw. Nothing cross-checked
+these numbers - compare them with the official result today.
+' }}
 CSV line for data/irish500.csv (insert directly under the header):
 {{ $json.csvRow }}
 
@@ -541,7 +549,8 @@ Checks
   all seven in 1-47 ............... pass
   all seven distinct .............. pass
   main draw, not Plus 1 / Plus 2 .. pass
-  both sources agree .............. {{ $json.sources.join(' + ') }}
+  CSV contract and round-trip ..... pass
+  both sources agree .............. {{ $json.verified ? $json.sources.join(' + ') : 'NO - only ' + $json.sources[0] + ' had it' }}
 
 Notes from the parser (rows it rejected; usually the Plus games):
 {{ $json.notes.join('\n') }}
@@ -585,14 +594,11 @@ credential expiry, a node exception).
 - Body:
 
 ```
-The scrape for {{ $json.targetKey }} did not produce a row both sources confirm.
+The scrape for {{ $json.targetKey }} did not produce a usable row.
 
 Reason:
 {{ $json.reason }}
 
-Row from the one source that had it - NOT cross-checked, check it against the
-official result before pasting it under the header:
-{{ $json.candidateRow }}
 
 HTTP problems:
 {{ $json.httpErrors.join('\n') }}
@@ -611,7 +617,7 @@ What the reasons mean when one arrives:
 
 | Reason | What happened | What to do |
 |:--|:--|:--|
-| `only the archive has ...` / `only lottery.ie has ...` | after three attempts one site still does not list the date - it has not published, or its markup changed | the email carries that source's row as `candidateRow`. Check it against the official result and paste it in by hand if it matches; nothing is committed on one source. If it repeats on the same site every draw, that parser is broken, not the site - `Last draw, ...` vs `Draw, ...` was exactly this (F-66) |
+| `only the archive has ... - row not cross-checked` | one site did not list the date: it has not published, or its markup changed. This arrives on the **result** email with `[ONE SOURCE]` in the subject, not the failure email, and the row has been committed | check the numbers against the official result the same evening. If the same site is missing every draw, that parser is broken, not the site - `Last draw, ...` vs `Draw, ...` was exactly this (F-66) |
 | `sources disagree - ...` | the two sites gave different numbers | **do not commit anything**; check the official result by hand. This is the check that catches a Plus row leaking through one parser |
 | `... is outside 1-47` / `duplicate ball` | the parse picked up the wrong element | the page markup changed; compare with `tests/fixtures/*.html` |
 | `no result published by 21:50 (3 attempts)` | both pages parsed fine, neither listed the date | usually a delayed publication; check manually |
@@ -676,7 +682,8 @@ return [{ json: { skip: false, content: lines.join('\n'), sha: file.sha, row } }
 
 3. **GitHub node - edit the file.** Resource: File, Operation: Edit, same repository and path, branch
    `main`, content from the previous node, commit message
-   `Add draw {{ $json.row.split(',')[0] }} (n8n)`. Depending on the n8n version the node may take the
+   `Add draw {{ $json.row.split(',')[0] }} (n8n{{ $json.verified ? '' : ', one source' }})`, so a row
+   nothing cross-checked says so in `git log` as well as in the email. Depending on the n8n version the node may take the
    `sha` explicitly or fetch it itself - check the node's fields; if it is exposed, pass the `sha`
    from step 2, which is what makes the write fail safely if the file changed in between.
 
@@ -782,8 +789,9 @@ Do these in order. The backtest is the one that matters.
    ```
 
    Change `"status"` to `"failed"` with a `"reason"` to exercise the Switch's `failed` output, and to
-   `"not_published"` or `"one_source"` (with a `"candidateRow"`) to exercise the counter, the Wait and
-   the three-attempt cap. All three must end in an email. The first payload is the real output of the Code node run against
+   `"not_published"` to exercise the counter, the Wait and the three-attempt cap. Both must end in an
+   email. Pin a copy with `"status": "one_source"`, `"verified": false` and one entry in `"sources"`
+   to check that the duplicate check accepts it and the subject line carries the warning. The first payload is the real output of the Code node run against
    `tests/fixtures/`, so the shape matches `result()` exactly - a hand-written pin that omits a field
    tests the template as much as the route.
 
