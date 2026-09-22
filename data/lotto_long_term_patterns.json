@@ -6,201 +6,201 @@
             "pearson_correlation",
             "chi_square_test_of_independence"
         ],
-        "total_draws": 499,
+        "total_draws": 500,
         "significance_level": 0.05
     },
     "hmc_pattern_analysis": {
         "pattern_distribution": {
             "3-2-2": {
                 "count": 55,
-                "percentage": 11.0220440882,
-                "expected": 23.85,
-                "chi2_contribution": 40.6843815514,
+                "percentage": 11.0,
+                "expected": 23.9,
+                "chi2_contribution": 40.4690376569,
                 "hot_count": 3,
                 "medium_count": 2,
                 "cold_count": 2
             },
             "5-0-2": {
                 "count": 14,
-                "percentage": 2.80561122244,
-                "expected": 23.85,
-                "chi2_contribution": 4.0680293501,
+                "percentage": 2.8,
+                "expected": 23.9,
+                "chi2_contribution": 4.10083682008,
                 "hot_count": 5,
                 "medium_count": 0,
                 "cold_count": 2
             },
             "2-3-2": {
                 "count": 37,
-                "percentage": 7.41482965932,
-                "expected": 23.85,
-                "chi2_contribution": 7.25041928721,
+                "percentage": 7.4,
+                "expected": 23.9,
+                "chi2_contribution": 7.18033472803,
                 "hot_count": 2,
                 "medium_count": 3,
                 "cold_count": 2
             },
             "2-2-3": {
                 "count": 34,
-                "percentage": 6.81362725451,
-                "expected": 23.85,
-                "chi2_contribution": 4.31960167715,
+                "percentage": 6.8,
+                "expected": 23.9,
+                "chi2_contribution": 4.26820083682,
                 "hot_count": 2,
                 "medium_count": 2,
                 "cold_count": 3
             },
             "2-4-1": {
                 "count": 10,
-                "percentage": 2.00400801603,
-                "expected": 23.85,
-                "chi2_contribution": 8.0428721174,
+                "percentage": 2.0,
+                "expected": 23.9,
+                "chi2_contribution": 8.08410041841,
                 "hot_count": 2,
                 "medium_count": 4,
                 "cold_count": 1
             },
             "3-1-3": {
                 "count": 37,
-                "percentage": 7.41482965932,
-                "expected": 23.85,
-                "chi2_contribution": 7.25041928721,
+                "percentage": 7.4,
+                "expected": 23.9,
+                "chi2_contribution": 7.18033472803,
                 "hot_count": 3,
                 "medium_count": 1,
                 "cold_count": 3
             },
             "5-1-1": {
                 "count": 36,
-                "percentage": 7.21442885772,
-                "expected": 23.85,
-                "chi2_contribution": 6.18962264151,
+                "percentage": 7.2,
+                "expected": 23.9,
+                "chi2_contribution": 6.12594142259,
                 "hot_count": 5,
                 "medium_count": 1,
                 "cold_count": 1
             },
             "3-3-1": {
                 "count": 25,
-                "percentage": 5.01002004008,
-                "expected": 23.85,
-                "chi2_contribution": 0.0554507337526,
+                "percentage": 5.0,
+                "expected": 23.9,
+                "chi2_contribution": 0.0506276150628,
                 "hot_count": 3,
                 "medium_count": 3,
                 "cold_count": 1
             },
             "4-1-2": {
                 "count": 63,
-                "percentage": 12.625250501,
-                "expected": 23.85,
-                "chi2_contribution": 64.2650943396,
+                "percentage": 12.6,
+                "expected": 23.9,
+                "chi2_contribution": 63.9669456067,
                 "hot_count": 4,
                 "medium_count": 1,
                 "cold_count": 2
             },
             "4-2-1": {
                 "count": 49,
-                "percentage": 9.81963927856,
-                "expected": 23.85,
-                "chi2_contribution": 26.5208595388,
+                "percentage": 9.8,
+                "expected": 23.9,
+                "chi2_contribution": 26.360251046,
                 "hot_count": 4,
                 "medium_count": 2,
                 "cold_count": 1
             },
             "6-1-0": {
                 "count": 10,
-                "percentage": 2.00400801603,
-                "expected": 23.85,
-                "chi2_contribution": 8.0428721174,
+                "percentage": 2.0,
+                "expected": 23.9,
+                "chi2_contribution": 8.08410041841,
                 "hot_count": 6,
                 "medium_count": 1,
                 "cold_count": 0
             },
             "1-2-4": {
                 "count": 8,
-                "percentage": 1.60320641283,
-                "expected": 23.85,
-                "chi2_contribution": 10.5334381551,
+                "percentage": 1.6,
+                "expected": 23.9,
+                "chi2_contribution": 10.5778242678,
                 "hot_count": 1,
                 "medium_count": 2,
                 "cold_count": 4
             },
             "6-0-1": {
-                "count": 9,
-                "percentage": 1.80360721443,
-                "expected": 23.85,
-                "chi2_contribution": 9.24622641509,
+                "count": 10,
+                "percentage": 2.0,
+                "expected": 23.9,
+                "chi2_contribution": 8.08410041841,
                 "hot_count": 6,
                 "medium_count": 0,
                 "cold_count": 1
             },
             "3-0-4": {
                 "count": 15,
-                "percentage": 3.00601202405,
-                "expected": 23.85,
-                "chi2_contribution": 3.28396226415,
+                "percentage": 3.0,
+                "expected": 23.9,
+                "chi2_contribution": 3.31422594142,
                 "hot_count": 3,
                 "medium_count": 0,
                 "cold_count": 4
             },
             "2-1-4": {
                 "count": 17,
-                "percentage": 3.40681362725,
-                "expected": 23.85,
-                "chi2_contribution": 1.96740041929,
+                "percentage": 3.4,
+                "expected": 23.9,
+                "chi2_contribution": 1.99205020921,
                 "hot_count": 2,
                 "medium_count": 1,
                 "cold_count": 4
             },
             "5-2-0": {
                 "count": 14,
-                "percentage": 2.80561122244,
-                "expected": 23.85,
-                "chi2_contribution": 4.0680293501,
+                "percentage": 2.8,
+                "expected": 23.9,
+                "chi2_contribution": 4.10083682008,
                 "hot_count": 5,
                 "medium_count": 2,
                 "cold_count": 0
             },
             "1-3-3": {
                 "count": 8,
-                "percentage": 1.60320641283,
-                "expected": 23.85,
-                "chi2_contribution": 10.5334381551,
+                "percentage": 1.6,
+                "expected": 23.9,
+                "chi2_contribution": 10.5778242678,
                 "hot_count": 1,
                 "medium_count": 3,
                 "cold_count": 3
             },
             "4-3-0": {
                 "count": 14,
-                "percentage": 2.80561122244,
-                "expected": 23.85,
-                "chi2_contribution": 4.0680293501,
+                "percentage": 2.8,
+                "expected": 23.9,
+                "chi2_contribution": 4.10083682008,
                 "hot_count": 4,
                 "medium_count": 3,
                 "cold_count": 0
             },
             "1-4-2": {
                 "count": 6,
-                "percentage": 1.20240480962,
-                "expected": 23.85,
-                "chi2_contribution": 13.3594339623,
+                "percentage": 1.2,
+                "expected": 23.9,
+                "chi2_contribution": 13.4062761506,
                 "hot_count": 1,
                 "medium_count": 4,
                 "cold_count": 2
             },
             "4-0-3": {
                 "count": 16,
-                "percentage": 3.20641282565,
-                "expected": 23.85,
-                "chi2_contribution": 2.58375262055,
+                "percentage": 3.2,
+                "expected": 23.9,
+                "chi2_contribution": 2.61129707113,
                 "hot_count": 4,
                 "medium_count": 0,
                 "cold_count": 3
             }
         },
-        "overall_chi2": 236.333333333,
-        "p_value": 1.78888510958e-39,
+        "overall_chi2": 234.635983264,
+        "p_value": 3.93358137337e-39,
         "significant": true,
-        "total_draws_analyzed": 499,
+        "total_draws_analyzed": 500,
         "num_patterns": 20,
         "category_weights": {
-            "hot": 0.483977238694,
-            "medium": 0.239293201557,
-            "cold": 0.276729559748
+            "hot": 0.484757919904,
+            "medium": 0.238792588165,
+            "cold": 0.276449491931
         }
     },
     "recency_correlation_analysis": {
@@ -208,13 +208,13 @@
             "hot": {
                 "recency_ranges": {
                     "0-7 days": {
-                        "wins": 837,
-                        "win_rate": 837.0,
+                        "wins": 839,
+                        "win_rate": 839.0,
                         "midpoint_days": 3.5
                     },
                     "8-14 days": {
-                        "wins": 588,
-                        "win_rate": 588.0,
+                        "wins": 591,
+                        "win_rate": 591.0,
                         "midpoint_days": 11.0
                     },
                     "15-21 days": {
@@ -223,8 +223,8 @@
                         "midpoint_days": 18.0
                     }
                 },
-                "correlation": -0.969103596721,
-                "p_value": 0.158662264969,
+                "correlation": -0.9685874374,
+                "p_value": 0.159989052831,
                 "significant": false,
                 "num_data_points": 3
             },
@@ -254,8 +254,8 @@
                         "midpoint_days": 38.0
                     },
                     "46-60 days": {
-                        "wins": 176,
-                        "win_rate": 176.0,
+                        "wins": 177,
+                        "win_rate": 177.0,
                         "midpoint_days": 53.0
                     },
                     "61-90 days": {
@@ -274,8 +274,8 @@
                         "midpoint_days": 151.0
                     }
                 },
-                "correlation": -0.838808112816,
-                "p_value": 0.07578075326,
+                "correlation": -0.839731484521,
+                "p_value": 0.0751415220541,
                 "significant": false,
                 "num_data_points": 5
             }
@@ -331,7 +331,7 @@
     "category_performance_by_recency": {
         "0-7 days": {
             "counts": {
-                "hot": 837,
+                "hot": 839,
                 "medium": 0,
                 "cold": 0
             },
@@ -340,14 +340,14 @@
                 "medium": 0.0,
                 "cold": 0.0
             },
-            "chi2": 1674.0,
+            "chi2": 1678.0,
             "p_value": 0.0,
             "significant": true,
-            "total": 837
+            "total": 839
         },
         "8-14 days": {
             "counts": {
-                "hot": 588,
+                "hot": 591,
                 "medium": 0,
                 "cold": 0
             },
@@ -356,10 +356,10 @@
                 "medium": 0.0,
                 "cold": 0.0
             },
-            "chi2": 1176.0,
-            "p_value": 4.31364738162e-256,
+            "chi2": 1182.0,
+            "p_value": 2.14763857104e-257,
             "significant": true,
-            "total": 588
+            "total": 591
         },
         "15-21 days": {
             "counts": {
@@ -413,17 +413,17 @@
             "counts": {
                 "hot": 0,
                 "medium": 0,
-                "cold": 176
+                "cold": 177
             },
             "percentages": {
                 "hot": 0.0,
                 "medium": 0.0,
                 "cold": 100.0
             },
-            "chi2": 352.0,
-            "p_value": 3.66582041118e-77,
+            "chi2": 354.0,
+            "p_value": 1.3485799643e-77,
             "significant": true,
-            "total": 176
+            "total": 177
         },
         "61-90 days": {
             "counts": {

@@ -8,10 +8,10 @@
     "classifier__estimator__reg_lambda": 20,
     "classifier__estimator__scale_pos_weight": 1
   },
-  "best_score": 0.502411946285522,
+  "best_score": 0.502333745262811,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 13.014429330825806,
+  "elapsed_time": 5.076903581619263,
   "total_fits": 16
 }

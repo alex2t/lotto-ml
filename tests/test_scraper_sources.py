@@ -70,6 +70,23 @@ def test_lottery_ie_takes_the_main_draw_not_plus_1():
     assert draws[0]['bonus'] == bonus
 
 
+def test_lottery_ie_parses_the_newest_draw_headed_last_draw():
+    """lottery.ie heads the most recent draw 'Last draw, ...' - the one we scrape for.
+
+    Matching only 'Draw, ' left the target date present on the page but invisible to
+    the parser, so the cross-check never saw it (F-66).
+    """
+    latest = LOTTERY_IE.replace('aria-label="Draw, Monday, September 14th, 2026"',
+                                'aria-label="Last draw, Monday, September 14th, 2026"', 1)
+    draws = parse_lottery_ie(latest)
+
+    assert len(draws) == 1
+    date_str, main, bonus = LOTTERY_IE_DRAW
+    assert draws[0]['date_str'] == date_str
+    assert sorted(draws[0]['main']) == main
+    assert draws[0]['bonus'] == bonus
+
+
 def test_lottery_ie_skips_a_section_whose_games_are_reordered():
     """If a Plus marker precedes the first block, the main draw is no longer first."""
     reordered = LOTTERY_IE.replace('<h2 aria-label="Draw, Monday, September 14th, 2026"',
