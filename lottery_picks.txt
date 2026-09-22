@@ -1,5 +1,5 @@
 ======================================================================
-LOTTERY PICKS - GENERATED 2026-09-21 12:54:29
+LOTTERY PICKS - GENERATED 2026-09-22 05:31:08
 ======================================================================
 INTERACTION FEATURES EDITION V3.16
 Model 1: 6 main (ML-optimized with interactions) + 1 bonus
@@ -9,58 +9,58 @@ Model 4: Candidate pool generator (configurable pool size)
 ======================================================================
 
 Line 1: Momentum Specialist [4H-1M-1C+0G | C0=3, C1=2, C_GE_2=1]
-Main Numbers (6): [2, 5, 20, 21, 34, 38]
+Main Numbers (6): [2, 5, 15, 20, 37, 38]
 Bonus Ball: 45
-Complete: [2, 5, 20, 21, 34, 38] + BONUS 45
+Complete: [2, 5, 15, 20, 37, 38] + BONUS 45
 Description: Focus on recency and momentum - predicts hot/trending numbers across all 7 positions
 
 Top 10 Most Important Features:
-   1. recent_4                            :   0.1012
-   2. days_since_last                     :   0.0756
-   3. appearance_volatility               :   0.0395
-   4. recency_zone_score                  :   0.0340
-   5. recent_24_x_bonus_hit_contribution_interaction :   0.0297
-   6. rolling_trend_10                    :   0.0254
-   7. rolling_trend_20                    :   0.0166
-   8. total_count                         :   0.0119
-   9. rolling_rate_20                     :   0.0104
-  10. max_gap_ratio                       :   0.0052
+   1. recent_4                            :   0.1060
+   2. days_since_last                     :   0.0799
+   3. appearance_volatility               :   0.0423
+   4. recency_zone_score                  :   0.0345
+   5. recent_24_x_bonus_hit_contribution_interaction :   0.0282
+   6. rolling_trend_10                    :   0.0277
+   7. rolling_trend_20                    :   0.0170
+   8. total_count                         :   0.0117
+   9. max_gap_ratio                       :   0.0080
+  10. rolling_rate_20                     :   0.0072
 
 Line 2: Jackpot Optimizer - 6-Ball Main Prize Specialist [3H-1M-2C+0G | C0=3, C1=2, C_GE_2=1]
-Main Numbers (6): [4, 9, 15, 31, 39, 40]
+Main Numbers (6): [4, 8, 9, 31, 39, 40]
 Bonus Ball: None (jackpot optimizer - main 6 only)
-Complete: [4, 9, 15, 31, 39, 40] (6 main only)
+Complete: [4, 8, 9, 31, 39, 40] (6 main only)
 Description: Trained ONLY on main 6 balls (excludes bonus) - focuses on stability and long-term patterns
 
 Top 10 Most Important Features:
-   1. max_gap_ratio                       :   0.1122
-   2. gap_consistency_score               :   0.1093
-   3. appearance_volatility               :   0.1092
-   4. gap_variance                        :   0.1053
-   5. recent_vs_baseline                  :   0.0912
-   6. appearance_trend                    :   0.0894
-   7. total_count                         :   0.0841
-   8. rolling_rate_50                     :   0.0788
-   9. days_since_last                     :   0.0633
-  10. rolling_trend_50                    :   0.0420
+   1. gap_variance                        :   0.1274
+   2. max_gap_ratio                       :   0.1217
+   3. recent_vs_baseline                  :   0.1030
+   4. appearance_volatility               :   0.0985
+   5. gap_consistency_score               :   0.0900
+   6. total_count                         :   0.0814
+   7. rolling_rate_50                     :   0.0686
+   8. appearance_trend                    :   0.0672
+   9. rolling_trend_50                    :   0.0474
+  10. days_since_last                     :   0.0444
 
 Line 3: Complexity Explorer [2H-2M-2C+0G | C0=4, C1=2, C_GE_2=0]
-Main Numbers (6): [8, 12, 42, 44, 45, 47]
+Main Numbers (6): [3, 21, 23, 32, 42, 47]
 Bonus Ball: 37
-Complete: [8, 12, 42, 44, 45, 47] + BONUS 37
+Complete: [3, 21, 23, 32, 42, 47] + BONUS 37
 Description: XGBoost with ALL features - finds complex interaction patterns across all signals
 
 Top 10 Most Important Features:
-   1. rolling_rate_20                     :   0.0796
-   2. gap_variance                        :   0.0665
-   3. appearance_volatility               :   0.0664
-   4. gap_cv                              :   0.0654
-   5. gap_consistency_score               :   0.0639
-   6. freshness_category_interaction      :   0.0570
-   7. rolling_trend_50                    :   0.0570
-   8. days_since_bonus                    :   0.0505
-   9. freshness_timing                    :   0.0464
-  10. was_recent_bonus                    :   0.0458
+   1. appearance_volatility               :   0.0798
+   2. gap_cv                              :   0.0795
+   3. freshness_timing                    :   0.0748
+   4. appearance_trend                    :   0.0664
+   5. rolling_trend_50                    :   0.0646
+   6. days_since_bonus                    :   0.0632
+   7. rolling_rate_50                     :   0.0592
+   8. gap_consistency_score               :   0.0587
+   9. max_gap_ratio                       :   0.0584
+  10. days_since_last                     :   0.0570
 
 ======================================================================
 MODEL 4: CANDIDATE POOL ANALYSIS
@@ -69,37 +69,37 @@ Pool Configuration: 10H+5M+5C=20
 Total Candidates: 20
 Quality Score: 92/100
 
-Full Pool (ranked by probability): [20, 15, 5, 1, 12, 19, 22, 26, 31, 40, 27, 30, 37, 43, 45, 46, 4, 13, 16, 47]
+Full Pool (ranked by probability): [9, 5, 12, 19, 45, 20, 38, 40, 8, 11, 39, 47, 43, 42, 7, 17, 27, 31, 44, 46]
 
 Wheel (top 8 of pool, every 3-subset covered):
-  Wheel Line 1: [1, 5, 12, 19, 22, 26]
-  Wheel Line 2: [12, 15, 19, 20, 22, 26]
-  Wheel Line 3: [1, 5, 15, 20, 22, 26]
-  Wheel Line 4: [1, 5, 12, 15, 19, 20]
+  Wheel Line 1: [12, 19, 20, 38, 40, 45]
+  Wheel Line 2: [5, 9, 20, 38, 40, 45]
+  Wheel Line 3: [5, 9, 12, 19, 38, 40]
+  Wheel Line 4: [5, 9, 12, 19, 20, 45]
   Guarantee: 3+ winners in the top 8 -> some line matches 3+ (about 5.3% of draws).
   Not an edge: expected value is unchanged; lines are not filtered.
 
 HMC Category Breakdown:
-  #20  [hot   ]  prob=0.2230
-  #15  [medium]  prob=0.1699
-  # 5  [cold  ]  prob=0.1598
-  # 1  [hot   ]  prob=0.1592
-  #12  [cold  ]  prob=0.1592
-  #19  [hot   ]  prob=0.1592
-  #22  [hot   ]  prob=0.1592
-  #26  [hot   ]  prob=0.1592
-  #31  [hot   ]  prob=0.1592
-  #40  [cold  ]  prob=0.1592
-  #27  [hot   ]  prob=0.1585
-  #30  [cold  ]  prob=0.1585
-  #37  [medium]  prob=0.1585
-  #43  [medium]  prob=0.1585
-  #45  [cold  ]  prob=0.1585
-  #46  [medium]  prob=0.1585
-  # 4  [hot   ]  prob=0.1557
-  #13  [hot   ]  prob=0.1557
-  #16  [hot   ]  prob=0.1557
-  #47  [medium]  prob=0.1537
+  # 9  [hot   ]  prob=0.1809
+  # 5  [cold  ]  prob=0.1608
+  #12  [cold  ]  prob=0.1603
+  #19  [hot   ]  prob=0.1603
+  #45  [cold  ]  prob=0.1603
+  #20  [hot   ]  prob=0.1548
+  #38  [hot   ]  prob=0.1540
+  #40  [cold  ]  prob=0.1540
+  # 8  [medium]  prob=0.1535
+  #11  [hot   ]  prob=0.1535
+  #39  [cold  ]  prob=0.1535
+  #47  [medium]  prob=0.1513
+  #43  [medium]  prob=0.1510
+  #42  [hot   ]  prob=0.1489
+  # 7  [hot   ]  prob=0.1482
+  #17  [medium]  prob=0.1482
+  #27  [hot   ]  prob=0.1482
+  #31  [hot   ]  prob=0.1482
+  #44  [hot   ]  prob=0.1482
+  #46  [medium]  prob=0.1395
 
 Freshness Distribution:
   C0: 11 numbers ( 55.0%)
@@ -119,10 +119,10 @@ BONUS BALL PREDICTIONS (Top 6)
 ======================================================================
 BONUS-TO-MAIN PREDICTIONS (Top 6)
 ======================================================================
-#1. Number 31:   6.8% probability [hot   ] (1 draws since bonus)
-#2. Number  4:   6.8% probability [hot   ] (2 draws since bonus)
-#3. Number 14:   6.8% probability [hot   ] (6 draws since bonus)
-#4. Number 18:   6.8% probability [hot   ] (7 draws since bonus)
-#5. Number  2:   5.6% probability [hot   ] (0 draws since bonus)
-#6. Number 27:   5.6% probability [hot   ] (3 draws since bonus)
+#1. Number 31:   6.3% probability [hot   ] (2 draws since bonus)
+#2. Number  4:   6.3% probability [hot   ] (3 draws since bonus)
+#3. Number 14:   6.3% probability [hot   ] (7 draws since bonus)
+#4. Number 18:   6.3% probability [medium] (8 draws since bonus)
+#5. Number  2:   5.0% probability [hot   ] (1 draws since bonus)
+#6. Number 27:   5.0% probability [hot   ] (4 draws since bonus)
 

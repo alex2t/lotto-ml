@@ -5,8 +5,8 @@
       "type": "pairwise_interaction",
       "formula": "(1 if recent_4 >= 1 else 0) * (1 if freshness_bin >= 1 else 0)",
       "description": "Binary interaction: both recent_4 and freshness_bin are high",
-      "expected_win_rate_when_true": 0.8576,
-      "interaction_strength": 1.001,
+      "expected_win_rate_when_true": 0.8573,
+      "interaction_strength": 1.0004,
       "interaction_type": "synergistic"
     }
   ],

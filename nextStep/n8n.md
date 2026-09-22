@@ -158,9 +158,17 @@ impossible, and both cost a few lines that look redundant until the day they fir
    date that **was** on the page and was thrown out by validation. Only "both pages parsed fine and
    neither lists today yet" waits and retries.
 
-`status` is therefore `ok`, `not_published` or `failed` on every path, and the Switch node of 3.5
-routes the three cases to three destinations, with its fallback output covering a fourth that cannot
-currently occur.
+3. **One source is not a failure, and not a row either.** When only one page lists the date the row
+   it gave is kept and returned as `one_source`, which retries alongside `not_published` - the usual
+   cause is the other site publishing later. If it still stands after the retries it is emailed with
+   the row printed as `candidateRow`, for the owner to check against the official result and paste by
+   hand. It never reaches the CSV automatically: `csvRow` stays `null` on that path, because a row no
+   second source confirmed is exactly what the cross-check exists to keep out, and a wrong date in
+   `irish500.csv` is silent and permanent.
+
+`status` is therefore `ok`, `not_published`, `one_source` or `failed` on every path, and the Switch
+node of 3.5 routes the four cases, with its fallback output covering a fifth that cannot currently
+occur.
 
 The three defences against Lotto Plus 1 and Plus 2, all from `scripts/scrape_lotto.py`:
 
@@ -241,7 +249,9 @@ function parseArchive(html) {
 // lottery.ie history page. scripts/scrape_lotto.py:129-168
 function parseLotteryIe(html) {
   const draws = {};
-  const heads = [...html.matchAll(/<h2 aria-label="Draw, ([^"]+)"/g)];
+  // The newest draw is headed "Last draw, ..."; every older one "Draw, ...". Matching
+  // only "Draw, " skipped the one draw the workflow is for, every run (F-66).
+  const heads = [...html.matchAll(/<h2 aria-label="(?:Last draw|Draw), ([^"]+)"/g)];
   for (let i = 0; i < heads.length; i++) {
     const section = html.slice(heads[i].index,
                                i + 1 < heads.length ? heads[i + 1].index : html.length);
@@ -282,13 +292,18 @@ function result(status, extra) {
   return [{ json: Object.assign({
     status, targetKey: null, reason: '', notes, httpErrors: [],
     csvDate: null, csvRow: null, numbers: [], bonus: null, sources: [],
-    archive: null, lotteryIe: null,
+    archive: null, lotteryIe: null, candidateRow: null,
   }, extra) }];
 }
 
+// Set to 'yyyy-MM-dd' to test the node against a draw that has already happened, then
+// put it back to null. Both pages must still list that date - lottery.ie's history page
+// holds only about the last five draws, so an override older than that is pointless.
+const TARGET_OVERRIDE = null;
+
 let targetKey = null;
 try {
-  targetKey = $now.setZone('Europe/Dublin').toFormat('yyyy-MM-dd');
+  targetKey = TARGET_OVERRIDE || $now.setZone('Europe/Dublin').toFormat('yyyy-MM-dd');
 
   // 1. Did we actually get two pages? A fetch failure is never "not published".
   const httpErrors = [];
@@ -335,8 +350,16 @@ try {
     }
     return result('not_published', { targetKey });
   }
+  // One source is usually the other one lagging, so it retries like not_published and
+  // carries the row it did parse, for the email. It is never appended: nothing checked it.
   if (!a || !b) {
-    return result('failed', { targetKey, archive: a, lotteryIe: b,
+    const one = a || b;
+    const [oy, omo, od] = targetKey.split('-').map(Number);
+    return result('one_source', { targetKey, archive: a, lotteryIe: b,
+      numbers: one.main, bonus: one.bonus,
+      sources: [a ? 'irish.national-lottery.com' : 'lottery.ie'],
+      candidateRow: [`${pad(od)} ${MON[omo - 1]} ${oy}`,
+                     ...one.main.map(pad), pad(one.bonus)].join(','),
       reason: `only ${a ? 'the archive' : 'lottery.ie'} has ${targetKey}` });
   }
 
@@ -387,13 +410,14 @@ into one IF whatever combinator is chosen - `AND` is never true, because `status
 values at once, and `OR` is true for both `ok` and `not_published`, which would send a
 `not_published` item down the `ok` branch and email a result built from `null` fields.
 
-**Switch**, Mode **Rules**, three rules on `{{ $json.status }}`, each with *Rename Output* on:
+**Switch**, Mode **Rules**, four rules on `{{ $json.status }}`, each with *Rename Output* on:
 
 | # | Condition | Output name | Goes to |
 |:--|:--|:--|:--|
 | 1 | equals `ok` | `ok` | 3.6, the duplicate check |
 | 2 | equals `not_published` | `not published` | the attempt counter below, then Wait and retry |
-| 3 | equals `failed` | `failed` | **Send failure email** (section 5) |
+| 3 | equals `one_source` | `one source` | the same attempt counter - wire both into it |
+| 4 | equals `failed` | `failed` | **Send failure email** (section 5) |
 
 **Set Options > Fallback Output > Extra Output, and wire it to Send failure email.** This is the
 one setting on this node that can reintroduce a silent failure: the default is *None*, which
@@ -409,18 +433,24 @@ executions, so after three lifetime attempts the workflow would give up on every
 do it silently. Key the counter on the draw date; a new date then resets it with no maintenance:
 
 ```javascript
-// Code node "Count attempt", between the not_published IF and the Wait node.
+// Code node "Count attempt", fed by both the not_published and one_source outputs.
 const store = $getWorkflowStaticData('global');
 const key = $json.targetKey;
 if (store.retryKey !== key) { store.retryKey = key; store.attempts = 0; }
 store.attempts += 1;
-return [{ json: { ...$json, attempt: store.attempts,
-                  reason: `no result published by 21:50 (${store.attempts} attempts)` } }];
+// Keep each status's own reason; only say how many attempts it survived.
+const tally = ` (${store.attempts} attempts)`;
+const reason = $json.status === 'one_source'
+  ? `${$json.reason}${tally} - row not cross-checked, do not commit it unchecked`
+  : `no result published by 21:50${tally}`;
+return [{ json: { ...$json, attempt: store.attempts, reason } }];
 ```
 
 Then an **IF "attempts left"**: `{{ $json.attempt }}` less than `3` -> **Wait** 15 minutes -> back to
 **Fetch archive**, the head of the chain, so both sources are re-fetched. Otherwise -> **Send
 failure email**. Three attempts at 21:05, 21:20 and 21:35 cover publication out to about 21:50.
+A `one_source` item takes the same three attempts, which is the whole point: the second site
+usually catches up inside them.
 
 ### 3.6 HTTP Request - the current CSV
 
@@ -555,10 +585,14 @@ credential expiry, a node exception).
 - Body:
 
 ```
-The scrape for {{ $json.targetKey }} did not produce a usable row.
+The scrape for {{ $json.targetKey }} did not produce a row both sources confirm.
 
 Reason:
 {{ $json.reason }}
+
+Row from the one source that had it - NOT cross-checked, check it against the
+official result before pasting it under the header:
+{{ $json.candidateRow }}
 
 HTTP problems:
 {{ $json.httpErrors.join('\n') }}
@@ -577,7 +611,7 @@ What the reasons mean when one arrives:
 
 | Reason | What happened | What to do |
 |:--|:--|:--|
-| `only the archive has ...` / `only lottery.ie has ...` | one site has not published yet, or its markup changed | re-run manually in an hour; if it repeats, the parser for the silent source needs fixing |
+| `only the archive has ...` / `only lottery.ie has ...` | after three attempts one site still does not list the date - it has not published, or its markup changed | the email carries that source's row as `candidateRow`. Check it against the official result and paste it in by hand if it matches; nothing is committed on one source. If it repeats on the same site every draw, that parser is broken, not the site - `Last draw, ...` vs `Draw, ...` was exactly this (F-66) |
 | `sources disagree - ...` | the two sites gave different numbers | **do not commit anything**; check the official result by hand. This is the check that catches a Plus row leaking through one parser |
 | `... is outside 1-47` / `duplicate ball` | the parse picked up the wrong element | the page markup changed; compare with `tests/fixtures/*.html` |
 | `no result published by 21:50 (3 attempts)` | both pages parsed fine, neither listed the date | usually a delayed publication; check manually |
@@ -692,7 +726,10 @@ Do these in order. The backtest is the one that matters.
 
 1. **Manual run.** Disable the Schedule Trigger, use "Execute Workflow", and read the Code node's
    output panel. On a non-draw day it should return `not_published` - which is itself a useful check
-   that the date logic uses Irish time. Note what follows from that once the retry is wired: the run
+   that the date logic uses Irish time. To exercise the real pages instead of a pinned item, set
+   `TARGET_OVERRIDE` in the Code node to a date inside lottery.ie's history window (about the last
+   five draws) and put it back to `null` afterwards - a left-behind override would scrape the same
+   old draw every evening. Note what follows from that once the retry is wired: the run
    waits 15 minutes three times and emails a failure at about 21:50. While building, pin the Code
    node's output (step 4) or disconnect the Wait node, or every manual run costs 45 minutes and ends
    in an email you already expected.
@@ -745,8 +782,8 @@ Do these in order. The backtest is the one that matters.
    ```
 
    Change `"status"` to `"failed"` with a `"reason"` to exercise the Switch's `failed` output, and to
-   `"not_published"` to exercise the counter, the Wait and the three-attempt cap. Both must end in an
-   email. The first payload is the real output of the Code node run against
+   `"not_published"` or `"one_source"` (with a `"candidateRow"`) to exercise the counter, the Wait and
+   the three-attempt cap. All three must end in an email. The first payload is the real output of the Code node run against
    `tests/fixtures/`, so the shape matches `result()` exactly - a hand-written pin that omits a field
    tests the template as much as the route.
 

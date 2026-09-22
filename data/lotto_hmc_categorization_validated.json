@@ -12,35 +12,35 @@
     },
     "anova_test": {
         "significant": true,
-        "f_statistic": 62.9910904048,
-        "p_value": 1.22203643203e-13,
-        "eta_squared": 0.741149338181,
+        "f_statistic": 65.8734504796,
+        "p_value": 5.86718820193e-14,
+        "eta_squared": 0.749639966566,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
-                "count": 30,
-                "mean_days_since": 5.3,
-                "std_dev": 4.18659601668,
+                "count": 29,
+                "mean_days_since": 4.72413793103,
+                "std_dev": 4.02577899936,
                 "median": 5.0,
                 "min": 0.0,
                 "max": 12.0
             },
             "medium": {
-                "count": 6,
-                "mean_days_since": 17.3333333333,
-                "std_dev": 3.14112506384,
-                "median": 17.0,
+                "count": 8,
+                "mean_days_since": 18.0,
+                "std_dev": 3.6253078687,
+                "median": 17.5,
                 "min": 14.0,
-                "max": 21.0
+                "max": 23.0
             },
             "cold": {
-                "count": 11,
-                "mean_days_since": 58.3636363636,
-                "std_dev": 27.1413806844,
-                "median": 56.0,
-                "min": 28.0,
-                "max": 126.0
+                "count": 10,
+                "mean_days_since": 61.0,
+                "std_dev": 28.522895287,
+                "median": 59.5,
+                "min": 30.0,
+                "max": 128.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -49,39 +49,39 @@
         "bonferroni_corrected_alpha": 0.0166666666667,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": -6.64409822968,
-                "p_value": 1.27076917008e-07,
+                "t_statistic": -8.41832837532,
+                "p_value": 6.25354565501e-10,
                 "significant": true,
-                "mean_difference": -12.0333333333
+                "mean_difference": -13.275862069
             },
             "hot_vs_cold": {
-                "t_statistic": -10.5943260236,
-                "p_value": 4.86461289263e-13,
+                "t_statistic": -10.5856459835,
+                "p_value": 9.50666639348e-13,
                 "significant": true,
-                "mean_difference": -53.0636363636
+                "mean_difference": -56.275862069
             },
             "medium_vs_cold": {
-                "t_statistic": -3.63593867577,
-                "p_value": 0.00243914310043,
+                "t_statistic": -4.21124876867,
+                "p_value": 0.000662724976668,
                 "significant": true,
-                "mean_difference": -41.0303030303
+                "mean_difference": -43.0
             }
         },
         "all_significant": true
     },
     "category_distribution": {
         "significant": true,
-        "chi2_stat": 20.4680851064,
-        "p_value": 3.59262420496e-05,
+        "chi2_stat": 17.1489361702,
+        "p_value": 0.000188866888421,
         "category_counts": {
-            "hot": 30,
-            "medium": 6,
-            "cold": 11
+            "hot": 29,
+            "medium": 8,
+            "cold": 10
         },
         "category_percentages": {
-            "hot": 63.829787234,
-            "medium": 12.7659574468,
-            "cold": 23.4042553191
+            "hot": 61.7021276596,
+            "medium": 17.0212765957,
+            "cold": 21.2765957447
         },
         "interpretation": "Category sizes are imbalanced (some over/under-represented)"
     },
@@ -91,7 +91,7 @@
         "categories_distinct": true,
         "suggested_thresholds": {
             "hot_medium_cutoff": 5.0,
-            "medium_cold_cutoff": 14.0
+            "medium_cold_cutoff": 15.3364
         },
         "current_ranges": {
             "hot": {
@@ -100,11 +100,11 @@
             },
             "medium": {
                 "min": 14.0,
-                "max": 21.0
+                "max": 23.0
             },
             "cold": {
-                "min": 28.0,
-                "max": 126.0
+                "min": 30.0,
+                "max": 128.0
             }
         }
     },

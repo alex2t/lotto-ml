@@ -136,7 +136,8 @@ def parse_lottery_ie(html: str) -> List[Dict]:
     order has changed, and the section is skipped rather than guessed at.
     """
     draws = []
-    headers = list(re.finditer(r'<h2 aria-label="Draw, ([^"]+)"', html))
+    # The newest draw is headed 'Last draw, ...', every older one 'Draw, ...'.
+    headers = list(re.finditer(r'<h2 aria-label="(?:Last draw|Draw), ([^"]+)"', html))
 
     for i, header in enumerate(headers):
         end = headers[i + 1].start() if i + 1 < len(headers) else len(html)

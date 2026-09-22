@@ -2,14 +2,14 @@
   "model_name": "Conservative Pool Generator",
   "best_params": {
     "classifier__estimator__depth": 4,
-    "classifier__estimator__iterations": 100,
+    "classifier__estimator__iterations": 50,
     "classifier__estimator__learning_rate": 0.01,
-    "classifier__estimator__scale_pos_weight": 3
+    "classifier__estimator__scale_pos_weight": 5
   },
-  "best_score": 0.5161307992747254,
+  "best_score": 0.5180472895040369,
   "search_type": "grid",
   "scoring": "roc_auc",
   "cv_splits": 3,
-  "elapsed_time": 37.21149659156799,
+  "elapsed_time": 18.68335771560669,
   "total_fits": 24
 }

@@ -1,12 +1,12 @@
 {
     "metadata": {
         "analysis_type": "number_pair_cooccurrence",
-        "total_draws": 499,
+        "total_draws": 500,
         "counted_over": "the 6 main numbers, the bonus excluded",
-        "expected_count_per_pair_in_a_fair_draw": 6.9241,
+        "expected_count_per_pair_in_a_fair_draw": 6.938,
         "note": "Raw counts. Every pair is equally likely in a fair draw, so a high count is sampling noise, not an affinity."
     },
-    "expected_count_per_pair": 6.9241,
+    "expected_count_per_pair": 6.938,
     "per_number": {
         "1": {
             "appearances": 61,
@@ -527,7 +527,7 @@
             ]
         },
         "15": {
-            "appearances": 46,
+            "appearances": 47,
             "top_partners": [
                 {
                     "number": 42,
@@ -542,11 +542,11 @@
                     "count": 9
                 },
                 {
-                    "number": 25,
-                    "count": 8
+                    "number": 38,
+                    "count": 9
                 },
                 {
-                    "number": 38,
+                    "number": 25,
                     "count": 8
                 },
                 {
@@ -860,22 +860,26 @@
             ]
         },
         "24": {
-            "appearances": 73,
+            "appearances": 74,
             "top_partners": [
                 {
                     "number": 29,
-                    "count": 14
+                    "count": 15
+                },
+                {
+                    "number": 38,
+                    "count": 13
                 },
                 {
                     "number": 12,
                     "count": 12
                 },
                 {
-                    "number": 37,
+                    "number": 30,
                     "count": 12
                 },
                 {
-                    "number": 38,
+                    "number": 37,
                     "count": 12
                 },
                 {
@@ -888,10 +892,6 @@
                 },
                 {
                     "number": 21,
-                    "count": 11
-                },
-                {
-                    "number": 30,
                     "count": 11
                 }
             ]
@@ -1045,11 +1045,11 @@
             ]
         },
         "29": {
-            "appearances": 70,
+            "appearances": 71,
             "top_partners": [
                 {
                     "number": 24,
-                    "count": 14
+                    "count": 15
                 },
                 {
                     "number": 28,
@@ -1060,15 +1060,15 @@
                     "count": 12
                 },
                 {
+                    "number": 38,
+                    "count": 12
+                },
+                {
                     "number": 2,
                     "count": 11
                 },
                 {
                     "number": 18,
-                    "count": 11
-                },
-                {
-                    "number": 38,
                     "count": 11
                 },
                 {
@@ -1082,8 +1082,12 @@
             ]
         },
         "30": {
-            "appearances": 66,
+            "appearances": 67,
             "top_partners": [
+                {
+                    "number": 24,
+                    "count": 12
+                },
                 {
                     "number": 26,
                     "count": 12
@@ -1093,15 +1097,11 @@
                     "count": 12
                 },
                 {
-                    "number": 24,
-                    "count": 11
+                    "number": 38,
+                    "count": 12
                 },
                 {
                     "number": 35,
-                    "count": 11
-                },
-                {
-                    "number": 38,
                     "count": 11
                 },
                 {
@@ -1119,7 +1119,7 @@
             ]
         },
         "31": {
-            "appearances": 57,
+            "appearances": 58,
             "top_partners": [
                 {
                     "number": 20,
@@ -1138,19 +1138,19 @@
                     "count": 9
                 },
                 {
+                    "number": 24,
+                    "count": 9
+                },
+                {
+                    "number": 30,
+                    "count": 9
+                },
+                {
                     "number": 1,
                     "count": 8
                 },
                 {
                     "number": 17,
-                    "count": 8
-                },
-                {
-                    "number": 19,
-                    "count": 8
-                },
-                {
-                    "number": 24,
                     "count": 8
                 }
             ]
@@ -1378,7 +1378,7 @@
             ]
         },
         "38": {
-            "appearances": 71,
+            "appearances": 72,
             "top_partners": [
                 {
                     "number": 2,
@@ -1389,24 +1389,24 @@
                     "count": 13
                 },
                 {
+                    "number": 24,
+                    "count": 13
+                },
+                {
                     "number": 27,
                     "count": 13
                 },
                 {
-                    "number": 24,
+                    "number": 29,
+                    "count": 12
+                },
+                {
+                    "number": 30,
                     "count": 12
                 },
                 {
                     "number": 36,
                     "count": 12
-                },
-                {
-                    "number": 29,
-                    "count": 11
-                },
-                {
-                    "number": 30,
-                    "count": 11
                 },
                 {
                     "number": 35,
@@ -1978,21 +1978,21 @@
         "15-21": 6,
         "15-22": 7,
         "15-23": 4,
-        "15-24": 5,
+        "15-24": 6,
         "15-25": 8,
         "15-26": 4,
         "15-27": 9,
         "15-28": 5,
-        "15-29": 5,
-        "15-30": 1,
-        "15-31": 5,
+        "15-29": 6,
+        "15-30": 2,
+        "15-31": 6,
         "15-32": 5,
         "15-33": 3,
         "15-34": 6,
         "15-35": 6,
         "15-36": 2,
         "15-37": 4,
-        "15-38": 8,
+        "15-38": 9,
         "15-39": 3,
         "15-40": 4,
         "15-41": 5,
@@ -2271,16 +2271,16 @@
         "24-26": 6,
         "24-27": 9,
         "24-28": 7,
-        "24-29": 14,
-        "24-30": 11,
-        "24-31": 8,
+        "24-29": 15,
+        "24-30": 12,
+        "24-31": 9,
         "24-32": 7,
         "24-33": 7,
         "24-34": 6,
         "24-35": 10,
         "24-36": 8,
         "24-37": 12,
-        "24-38": 12,
+        "24-38": 13,
         "24-39": 7,
         "24-40": 11,
         "24-41": 7,
@@ -2372,15 +2372,15 @@
         "28-45": 11,
         "28-46": 6,
         "28-47": 3,
-        "29-30": 5,
-        "29-31": 7,
+        "29-30": 6,
+        "29-31": 8,
         "29-32": 9,
         "29-33": 2,
         "29-34": 4,
         "29-35": 5,
         "29-36": 9,
         "29-37": 8,
-        "29-38": 11,
+        "29-38": 12,
         "29-39": 8,
         "29-40": 7,
         "29-41": 9,
@@ -2434,14 +2434,14 @@
         "3-7": 9,
         "3-8": 6,
         "3-9": 9,
-        "30-31": 8,
+        "30-31": 9,
         "30-32": 9,
         "30-33": 5,
         "30-34": 6,
         "30-35": 11,
         "30-36": 12,
         "30-37": 8,
-        "30-38": 11,
+        "30-38": 12,
         "30-39": 7,
         "30-40": 11,
         "30-41": 8,
@@ -2457,7 +2457,7 @@
         "31-35": 6,
         "31-36": 2,
         "31-37": 7,
-        "31-38": 7,
+        "31-38": 8,
         "31-39": 8,
         "31-40": 7,
         "31-41": 6,
