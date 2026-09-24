@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
+import { ChatLauncher } from '@/components/chat/ChatLauncher';
 
 const LINKS = [
   { href: '/pick', label: 'Pick' },
@@ -16,7 +17,8 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
-      <nav className="mx-auto flex max-w-5xl items-center gap-2 px-4 py-3">
+      {/* Tighter on a phone, so the four links and two buttons fit a 412px screen. */}
+      <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-3 sm:gap-2">
         <Link href="/" className="mr-auto text-sm font-semibold tracking-wide">
           IRISH LOTTO
         </Link>
@@ -29,7 +31,7 @@ export function Nav() {
                 <Link
                   href={link.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`rounded-full px-3 py-1.5 ${
+                  className={`rounded-full px-2 py-1.5 sm:px-3 ${
                     active
                       ? 'bg-accent text-accent-foreground'
                       : 'text-muted hover:text-foreground'
@@ -41,6 +43,7 @@ export function Nav() {
             );
           })}
         </ul>
+        <ChatLauncher />
         <ThemeToggle />
       </nav>
     </header>

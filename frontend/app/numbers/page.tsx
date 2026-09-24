@@ -4,11 +4,11 @@ import { Badge } from '@/components/ui/Badge';
 import {
   applyRail,
   numberRows,
+  railFromParams,
   sortRows,
   type RailFilters,
   type SortKey,
 } from '@/lib/data/table';
-import type { Category } from '@/lib/data/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,15 +35,7 @@ function one(value: string | string[] | undefined): string | undefined {
 export default async function NumbersPage({ searchParams }: PageProps<'/numbers'>) {
   const params = await searchParams;
 
-  const filters: RailFilters = {
-    category: one(params.category) as Category | undefined,
-    bin: one(params.bin) ? Number(one(params.bin)) : undefined,
-    trending: one(params.trending) === '1',
-    regimeShift: one(params.regime) === '1',
-    minVolatility: one(params.volatility) ? Number(one(params.volatility)) : undefined,
-    minMomentum: one(params.momentum) ? Number(one(params.momentum)) : undefined,
-    recentBonus: one(params.bonus) === '1',
-  };
+  const filters: RailFilters = railFromParams((key) => one(params[key]));
 
   const sort = (one(params.sort) ?? 'number') as SortKey;
   const descending = one(params.dir) !== 'asc';

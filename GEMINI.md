@@ -154,6 +154,7 @@ The roadmap is maintained **exclusively in [`plan.md`](plan.md)** to prevent doc
 - Phase 2: n8n scraping on Mon/Wed/Sat at 21:05, built in the existing n8n instance - Phase 2A sends test emails, Phase 2B commits new draws to `data/irish500.csv` (inserted after the header; the file is newest-first) and posts the draw to the VPS rebuild receiver, which appends it to the VPS's own CSV and rebuilds only when the data changed, so a retried webhook costs nothing. The node-by-node design is `nextStep/n8n.md`; the receiver is `nextStep/lottodraw.md`.
 - Phase 3 (done 2026-09-21): the Next.js foundation in `frontend/` - Next.js 16, TypeScript, Tailwind 4; `lib/data/` reading the mounted artifacts with an mtime cache; a signed-cookie admin login; and `/api/download/data` streaming the bundle. The `nextjs-web` image is built and runs beside Streamlit, non-root, with the artifacts mounted read-only.
 - Phase 4 (done 2026-09-21): the UI - the five destinations, `lib/scoring/` describing a line in the fixed vocabulary typical / uncommon / unusual with the equal-chance sentence rendered beside it, and the wording guard that replaces `tests/test_site_wording.py` (a source lint plus a Playwright pass). The section 6 completeness matrix is walked and signed off.
+- Phase 4 addition (done 2026-09-24, F-68): the chat panel in `nextStep/chat.md` - `frontend/lib/chat/` answers a question from prepared answers, then from the artifacts through `lib/data/`, then from a cache keyed on the artifacts' mtime, and only then from `openai/gpt-oss-120b` on Cerebras through OpenRouter, behind a daily token budget, a per-client rate limit and a runtime scan against the one `ADVICE` list in `frontend/lib/advice.json`. It does not stream, so the scan sees the whole answer. The key is `OPENROUTER_API_KEY` in `secrets.env`; without it only the model layer is off.
 - Phase 4: migrating the 8 Streamlit pages to Next.js, including the interactive Prediction Validator.
 - Phases 3-4 are designed node by node in `nextStep/web.md`: five destinations (Home, Pick, Explore, Numbers, Review), the completeness matrix that keeps every current statistic, the wording test that must replace `tests/test_site_wording.py`, and the cutover order for deleting `view/`.
 - Phase 5: VPS deployment with Docker Compose and Caddy/Nginx SSL.
@@ -187,7 +188,7 @@ npm --prefix frontend run dev
 npm --prefix frontend test
 npm --prefix frontend run test:e2e
 
-# Execute all 23 test files (277 tests, ~60s) - pytest.ini limits pytest to tests/
+# Execute all 26 test files (295 tests, ~60s) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite
@@ -215,7 +216,7 @@ python .claude/skills/lotto-verify/verify.py
 | **`ml_lotto/models/`** | `trainer.py`, `pipelines.py`, `hyperparameter_tuning.py` | Model architectures, training loops, calibration, and constrained parameter spaces. |
 | **`ml_lotto/prediction/`** | `ilp_selection.py`, `filters.py`, `wheel.py`, `predictor.py` | MILP ticket selection, constraint verification, candidate pooling, and wheeling designs. |
 | **`view/pages/`** | `app.py`, `view/pages/*.py` | 8-page Streamlit web dashboard. Strictly read-only; displays facts for user enjoyment. |
-| **`frontend/`** | `lib/data/`, `lib/scoring/`, `app/`, `proxy.ts` | The Next.js site, Phases 3-4 built. Reads `data/*.json` server-side, computes nothing, never sends the 4.4 MB draw history to the browser, and describes a line rather than advising on it. |
+| **`frontend/`** | `lib/data/`, `lib/scoring/`, `lib/chat/`, `app/`, `proxy.ts` | The Next.js site, Phases 3-4 built, with the chat panel. Reads `data/*.json` server-side, computes nothing, never sends the 4.4 MB draw history to the browser, and describes a line rather than advising on it. |
 | **`scripts/`** | `scrape_lotto.py`, `train_with_all_features.py` | Independent utilities; web scraper for new draw ingestion. |
 | **`analysis/`** | `bonus_analysis.py`, exploratory scripts | Phase 11 statistical analysis; exploratory data science scripts. |
 | **`tests/`** | 26 test files, nothing else (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |

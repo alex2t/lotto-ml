@@ -89,6 +89,19 @@ export function numberRows(): NumberRow[] {
   });
 }
 
+/** The rail's filters from the /numbers query string, so the page and the chat panel agree. */
+export function railFromParams(get: (key: string) => string | undefined): RailFilters {
+  return {
+    category: get('category') as Category | undefined,
+    bin: get('bin') ? Number(get('bin')) : undefined,
+    trending: get('trending') === '1',
+    regimeShift: get('regime') === '1',
+    minVolatility: get('volatility') ? Number(get('volatility')) : undefined,
+    minMomentum: get('momentum') ? Number(get('momentum')) : undefined,
+    recentBonus: get('bonus') === '1',
+  };
+}
+
 export function applyRail(rows: NumberRow[], filters: RailFilters): NumberRow[] {
   return rows.filter((row) => {
     if (filters.category && row.category !== filters.category) return false;

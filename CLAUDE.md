@@ -43,7 +43,9 @@ file:line evidence, and it will save you rediscovering them. [`plan.md`](plan.md
 the Next.js front end, the Docker stack on the VPS, n8n scraping of each draw (Phase A test emails,
 then Phase B commits to `data/irish500.csv` and a rebuild webhook), and the single-admin data
 download. `nextStep/` holds the build documents: [`n8n.md`](nextStep/n8n.md) for Phase 2
-ingestion, [`web.md`](nextStep/web.md) for the Phase 3-4 website.
+ingestion, [`web.md`](nextStep/web.md) for the Phase 3-4 website, [`chat.md`](nextStep/chat.md)
+for the chat panel beside the numbers (built 2026-09-24, F-68). [`recap.md`](nextStep/recap.md) is the running
+list of what is still outstanding across those documents.
 [`README.md`](README.md) holds the architecture overview.
 
 ## Folder guides
@@ -111,14 +113,14 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: twenty-six files, 293 tests, ~60s. The Next.js site has its own
-suites in `frontend/` - `npm --prefix frontend test` (159 vitest) and `npm --prefix frontend run
-test:e2e` (66 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
+`tests/` holds only real tests: twenty-six files, 295 tests, ~60s. The Next.js site has its own
+suites in `frontend/` - `npm --prefix frontend test` (290 vitest) and `npm --prefix frontend run
+test:e2e` (76 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
-python -m pytest -q                                                              # all 293
+python -m pytest -q                                                              # all 295
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
 python -m demos.demo_interactions                                                # a demo, from the root
 ```
@@ -130,6 +132,33 @@ python -m demos.demo_interactions                                               
 - Git cannot reach GitHub with its bundled CA bundle. Prefix remote operations with
   `git -c http.sslBackend=schannel` (push, fetch, ls-remote), or set it globally once.
 - `gh` is not installed, so PRs cannot be created from the CLI.
+- **Do not touch or alter the `secrets.env` file.** Do not read, edit, move a value into or out
+  of it, or regenerate anything in it. The owner maintains it by hand. If something seems to
+  belong in it, say so and let the owner decide. **The file cannot be committed or pushed to
+  GitHub** - it is in `.gitignore`; never `git add -f` it, and never remove that line.
+- **Two env files, two jobs.** Compose reads `.env` for its own `${VAR}` substitution into
+  `docker-compose.yml` (`UID`, `GID`). It does **not** put those values into a container. Secrets
+  that a container reads - `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`,
+  `REBUILD_SECRET`, `OPENROUTER_API_KEY` - live in `secrets.env`, passed with `env_file` and
+  `format: raw`, because Compose would expand the `$` signs in a bcrypt hash from `.env` (F-58).
+  `npm run dev` outside Docker reads neither; it reads `frontend/.env.local`.
+- **The owner views the site in Docker, at http://localhost:3000 - and that container serves a
+  built image, not the source.** `Dockerfile.web` copies `frontend/` and runs `npm run build`
+  inside the image; only `data/` is mounted. A change under `frontend/` is not on the owner's site
+  until the image is rebuilt: `docker compose up -d --build --no-deps nextjs-web`. Passing
+  `npm run dev`, `npm run build` or the e2e suite does not put it there. Before reporting a
+  frontend change done, rebuild that container and check the change on localhost:3000.
+
+### The chat model
+
+The chat panel (`nextStep/chat.md`, built in `frontend/lib/chat/`) answers most questions from
+prepared answers and the artifacts; only what those miss goes to one model:
+**`openai/gpt-oss-120b` on OpenRouter, pinned to the Cerebras provider** for speed - the panel
+does not stream, so generation time is the wait. The call is made server-side from the Next.js
+route with plain `fetch`, never from Python and never from the browser; the key is
+`OPENROUTER_API_KEY` in `secrets.env`. The `/cerebras` skill (`.claude/skills/cerebras/SKILL.md`)
+holds the request shape and the provider settings; use it for any change to that call. Without
+the key the model layer is off and the panel still answers its prepared and data questions.
 
 ## Context efficiency
 

@@ -41,6 +41,9 @@ export default defineConfig({
       DATA_DIR: process.env.DATA_DIR ?? path.resolve(__dirname, '..', 'data'),
       SESSION_SECRET: process.env.SESSION_SECRET ?? 'e2e-secret-e2e-secret-e2e-secret-abc',
       ADMIN_USERNAME: 'e2e',
+      // No model in e2e: the chat panel must answer from its free layers alone, with no
+      // request leaving the box (chat.md 9).
+      OPENROUTER_API_KEY: '',
       // bcrypt hash of "e2e-password", cost 10.
       ADMIN_PASSWORD_HASH:
         process.env.E2E_PASSWORD_HASH ??
