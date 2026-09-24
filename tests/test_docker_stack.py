@@ -107,6 +107,26 @@ def test_admin_secrets_are_passed_without_interpolation():
         assert "ADMIN_" not in entry and "SESSION_SECRET" not in entry, entry
 
 
+def test_the_openrouter_key_comes_from_secrets_env_not_interpolation():
+    """
+    The chat panel's key reaches nextjs-web the way the admin secrets do - through the raw
+    secrets.env - never `environment:` interpolation, in the base file or the VPS overlay,
+    and never as a NEXT_PUBLIC_ variable, which would ship it to the browser (chat.md 8).
+    """
+    for name in ("docker-compose.yml", "docker-compose.prod.yml"):
+        service = load_compose(name)["services"]["nextjs-web"]
+        for entry in service.get("environment", []):
+            assert "OPENROUTER" not in entry, (name, entry)
+
+    for example in ("secrets.env.example", "frontend/.env.example"):
+        lines = (REPO_ROOT / example).read_text().splitlines()
+        assert "OPENROUTER_API_KEY=" in lines, example
+
+    frontend = REPO_ROOT / "frontend"
+    for source in [*frontend.glob("app/**/*.ts*"), *frontend.glob("lib/**/*.ts*"), *frontend.glob("components/**/*.ts*")]:
+        assert "NEXT_PUBLIC_OPENROUTER" not in source.read_text(encoding="utf-8"), source
+
+
 def test_the_env_files_are_not_committed_or_shipped():
     """secrets.env holds the admin hash and the session secret."""
     ignored = [line.strip() for line in (REPO_ROOT / ".gitignore").read_text().splitlines()]

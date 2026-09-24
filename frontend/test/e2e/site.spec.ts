@@ -1,30 +1,14 @@
 import { expect, test } from '@playwright/test';
+import ADVICE from '../../lib/advice.json';
 
 /**
  * The site as someone actually meets it (web.md 7.3, 7.4).
  *
  * The wording assertions are the rendered half of the guard that replaces
  * tests/test_site_wording.py: the ADVICE list, verbatim, against the full visible text of
- * each page with a typical line and an unusual one.
+ * each page with a typical line and an unusual one. The list is lib/advice.json, shared with
+ * the source scan and the chat panel's guard.
  */
-const ADVICE = [
-  'play with confidence',
-  'recommended',
-  'regenerate',
-  'risk',
-  'improvement',
-  'statistically sound',
-  'excellent',
-  'poor',
-  'strong',
-  'weak',
-  'realistic',
-  'confidence',
-  'consider',
-  'success rate',
-  'astronomically',
-  'diversif',
-];
 
 const EQUAL_CHANCE = 'equally likely to win';
 

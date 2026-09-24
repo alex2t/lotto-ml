@@ -23,6 +23,7 @@ import type { Category } from '@/lib/data/types';
 import type { LineShape } from '@/lib/scoring/line';
 import { spreadBand, sumBand } from '@/lib/scoring/bands';
 import { drawLineImage, saveImage } from '@/lib/pick/line-image';
+import { setCurrentLine } from '@/lib/pick/current-line';
 import {
   NO_FILTERS,
   applyFilters,
@@ -90,6 +91,11 @@ export function Picker({
     initialBin === undefined ? NO_FILTERS : { ...NO_FILTERS, bins: [initialBin] },
   );
   const [line, setLine] = useState<number[]>(initialLine ?? []);
+  // The chat panel sends the tray's line with a question asked on this page.
+  useEffect(() => {
+    setCurrentLine(line);
+    return () => setCurrentLine([]);
+  }, [line]);
   const [scored, setScored] = useState<{ key: string; shape: LineShape } | null>(null);
   const [peek, setPeek] = useState<PoolNumber | null>(null);
   // One wheel per band by default; a band can be given more, or taken down to none, which

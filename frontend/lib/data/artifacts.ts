@@ -71,6 +71,15 @@ export function artifact<T>(name: ArtifactName): T {
   return readArtifact<T>(ARTIFACTS[name]);
 }
 
+/** The newest mtime across the artifacts: it changes whenever drawpick.py rewrites one. */
+export function artifactsVersion(): number {
+  return Math.max(
+    ...Object.values(ARTIFACTS).map(
+      (fileName) => fs.statSync(/*turbopackIgnore: true*/ path.join(dataDir(), fileName)).mtimeMs,
+    ),
+  );
+}
+
 /** Clears the mtime cache. Tests use it when swapping the fixture directory. */
 export function clearArtifactCache(): void {
   cache.clear();

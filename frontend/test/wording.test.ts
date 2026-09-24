@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import ADVICE from '@/lib/advice.json';
 import { EQUAL_CHANCE, describeLine } from '@/lib/scoring/line';
 import { useFixtures } from './setup-fixtures';
 
@@ -10,26 +11,10 @@ import { useFixtures } from './setup-fixtures';
  * This is the source half of the guard that replaces tests/test_site_wording.py (web.md
  * 7.4): the ADVICE list moves across verbatim and is checked against every source file, so
  * a banned word is caught before it can render. The rendered half is test/e2e/.
+ *
+ * The list is lib/advice.json, the one copy the chat panel's system prompt and its runtime
+ * guard read too (chat.md 6). It is JSON so it is not itself a scanned source.
  */
-const ADVICE = [
-  'play with confidence',
-  'recommended',
-  'regenerate',
-  'risk',
-  'improvement',
-  'statistically sound',
-  'excellent',
-  'poor',
-  'strong',
-  'weak',
-  'realistic',
-  'confidence',
-  'consider',
-  'success rate',
-  'astronomically',
-  'diversif',
-];
-
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SCANNED = ['app', 'components', 'lib'];
 
@@ -61,6 +46,12 @@ function sources(): string[] {
 describe('the site never advises', () => {
   it('has sources to scan', () => {
     expect(sources().length).toBeGreaterThan(15);
+  });
+
+  it('scans the chat panel s prepared answers and its system prompt', () => {
+    const scanned = sources().map((f) => path.relative(ROOT, f).replaceAll('\\', '/'));
+    expect(scanned).toContain('lib/chat/prepared.ts');
+    expect(scanned).toContain('lib/chat/prompt.ts');
   });
 
   it.each(ADVICE)('no source says %s', (phrase) => {

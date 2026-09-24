@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-21
+**Last updated:** 2026-09-24
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -23,17 +23,70 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 ## Priority summary
 
-No defect is open as of 2026-09-21. A new one takes the next free `F-n`, a row in this
-table in severity order, and a section with file:line evidence.
+A new defect takes the next free `F-n`, a row in this table in severity order, and a section
+with file:line evidence.
+
+| ID | Severity | Issue | Where |
+|:--|:--|:--|:--|
+| F-67 | Low | A parity test assumes every drawn ball moves `recent_4` or `days_since_last`; a bonus ball two days after its last appearance moves neither, so the suite fails on the current data | `tests/test_walk_forward_parity.py:135-138` |
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
 ---
 
+## 3. Low severity defects
+
+### F-67 - a parity test's assertion cannot hold for a bonus ball
+
+Found 2026-09-24, in passing, while running the full suite for the chat panel (F-68). It fails
+identically on `main` at `5f46fac`, so it predates that work.
+
+`test_serving_row_changes_when_a_draw_is_added` (`tests/test_walk_forward_parity.py:119`) builds
+the serving row before and after the latest draw, then asserts at lines 135-138 that **each of
+the seven** drawn numbers changed `recent_4` or `days_since_last`. It fails with
+`drawn number 11 did not move`.
+
+The engine is right; the assertion is wrong for a bonus ball:
+
+- 11 was a main number on 2026-09-19 and the **bonus** on 2026-09-21 (the newest draw).
+- `recent_4` is counted over the main six (`walk_forward.py:365`, `cum_main`; the convention in
+  `ml_lotto/features/CLAUDE.md`), so a bonus appearance does not raise it, and the window's
+  slide dropped no appearance of 11.
+- `days_since_last` counts to the next draw date (`walk_forward.py:349`, C-6b): before, 19 Sep
+  to 21 Sep = 2; after, 21 Sep to 23 Sep = 2. Equal, correctly.
+
+The test is right in spirit - a new draw must move the features of every ball it drew - but it
+checks two features that do not have to move. `total_count` is counted over all seven
+(`walk_forward.py:348`) and must rise by exactly one for every drawn ball, bonus included; the
+same check on the main six can keep `recent_4`. The fix is to assert that, rather than the
+either/or. Not changed here: it is outside the chat panel's scope, and a test is changed only
+after saying why (`tests/CLAUDE.md`).
+
+---
+
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-24 - F-68, the chat panel (`nextStep/chat.md`).** A panel on every page answers
+  questions about what the site shows, through four layers: 57 hand-written answers
+  (`frontend/lib/chat/prepared.ts`), twelve data intents reading `lib/data/` (`intents.ts`), a
+  response cache keyed on the artifacts' mtime (`cache.ts`), and last, `openai/gpt-oss-120b` on
+  Cerebras through OpenRouter (`openrouter.ts`), handed the page's fact sheet (`context.ts`) and
+  never asked to compute. All four spending limits of chat.md 5 are in `budget.ts` and the route;
+  every model answer passes the `ADVICE` scan (`guard.ts`) before it is shown, which is why it
+  does not stream. The `ADVICE` list moved into one file, `frontend/lib/advice.json`, read by the
+  source scan, the rendered scan, the system prompt and the guard. Without `OPENROUTER_API_KEY`
+  the model layer is off and nothing else changes.
+
+  Covered by `frontend/test/chat-layers.test.ts` (every prepared entry answers its own question,
+  route weighting, each intent against its reader), `frontend/test/chat-model.test.ts` (each
+  limit fired once, the guard once per banned word, cache and mtime invalidation, the key-less
+  path, no network), `frontend/test/e2e/chat.spec.ts` (desktop and mobile), and
+  `tests/test_docker_stack.py::test_the_openrouter_key_comes_from_secrets_env_not_interpolation`.
+  The e2e run caught that the nav's new button pushed a 412px phone's page to 443px; the nav is
+  tighter below the `sm` breakpoint.
 
 - **2026-09-21 - F-63, a six-number line was scored against a seven-ball spread.**
   `lotto_odds_results.json` `draw_range` bins `max(numbers) - min(numbers)` over **all seven**

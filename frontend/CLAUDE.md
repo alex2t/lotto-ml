@@ -41,7 +41,11 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 | `lib/data/picks.ts` | `lottery_picks.txt`, which is absent on the VPS by design |
 | `lib/scoring/` | `line.ts` describes a line, `notes.ts` states facts about it, `bands.ts` mirrors the analyzer's bins |
 | `lib/pick/filters.ts` | what the wheels contain |
-| `app/api/` | `draws`, `numbers`, `distributions`, `schedule`, `validate` (public); `login`, `logout`, `download/data` (admin) |
+| `lib/pick/current-line.ts` | the tray's line, published by `Picker` for the chat panel to send |
+| `lib/chat/` | the chat panel (`../nextStep/chat.md`): `prepared.ts` layer 0, `intents.ts` layer 1, `cache.ts` layer 2, `openrouter.ts` + `prompt.ts` layer 3; `context.ts` the page fact sheet, `guard.ts` the runtime `ADVICE` scan, `budget.ts` the limits, `answer.ts` the four layers in order |
+| `lib/advice.json` | the banned-word list - the one copy the source scan, the rendered scan, the chat prompt and the chat guard all read |
+| `components/chat/` | `ChatLauncher` in the nav, `ChatPanel` the native `<dialog>` sheet |
+| `app/api/` | `draws`, `numbers`, `distributions`, `schedule`, `validate`, `chat` (public); `login`, `logout`, `download/data` (admin) |
 | `proxy.ts` | guards `/api/download/*`; everything a player does is public |
 | `test/fixtures/` | trimmed artifacts, rebuilt by `test/make-fixtures.py` |
 
@@ -62,7 +66,8 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
   **typical / uncommon / unusual** and the equal-chance sentence is rendered with it by
   `ShapeCard`, so the wording lives in one component. `test/wording.test.ts` scans every source
   file for the banned list and `test/e2e/site.spec.ts` scans every rendered page. The list is
-  `../tests/test_site_wording.py` `ADVICE`, verbatim. It bans ordinary words too - "strongest
+  `lib/advice.json` - `../tests/test_site_wording.py` `ADVICE`, verbatim - and it is JSON so
+  that it is not itself a scanned source; anything that needs the words reads that file. It bans ordinary words too - "strongest
   trend" failed both guards and became "biggest change".
 - **A band boundary belongs to the analyzer, not here.** `lib/scoring/bands.ts` mirrors
   `lotto_analysis/config/config.py` and `utils/output_generator.py`, including that the spread bins
@@ -89,8 +94,17 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 - **Contrast is measured, not chosen.** `test/contrast.test.ts` computes the WCAG ratio for every
   pair the site paints, in both themes, and fails below AA. A new colour token goes in the pair
   list, or it is not checked.
-- **Motion is reduced to a cross-fade, not to nothing.** `prefers-reduced-motion` turns the three
-  animated moments into a 160ms opacity fade with the stagger delay cleared - a number still
+- **The chat panel never states a figure it computed, and never streams.** Every number in an
+  answer comes from a `lib/data/` reader, either stated by `intents.ts` or handed to the model in
+  the fact sheet; the model is told not to do arithmetic. A model answer is scanned whole by
+  `guard.ts` before it is shown - streaming would put a banned word on screen before the scan.
+  Only what the prepared answers, the data answers and the cache miss reaches the model, behind
+  the daily token budget and the per-client rate limit in `budget.ts`, and without
+  `OPENROUTER_API_KEY` that layer is simply off. `/api/chat` is public and stays out of
+  `proxy.ts`. A new prepared answer needs a question that matches it on its own page -
+  `test/chat-layers.test.ts` asks every one.
+- **Motion is reduced to a cross-fade, not to nothing.** `prefers-reduced-motion` turns the four
+  animated moments (the three of web.md 5.2 and the chat sheet's slide) into a 160ms opacity fade with the stagger delay cleared - a number still
   arrives rather than blinking into place (web.md 5.2).
 - **Fixtures are generated, not hand-edited.** `python frontend/test/make-fixtures.py` from the
   project root after an artifact's shape changes.
@@ -98,6 +112,9 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 
 ## After changing anything here
 
-`npm test`, `npm run build`, `npm run test:e2e`. After a change to `lib/data/` or the artifacts it
+`npm test`, `npm run build`, `npm run test:e2e`. Then **rebuild the Docker image the owner
+actually looks at** - `docker compose up -d --build --no-deps nextjs-web` from the repo root - and
+check the change on http://localhost:3000. That container runs code built into its image, so
+without the rebuild it keeps serving the old site however many local checks passed. After a change to `lib/data/` or the artifacts it
 reads, also `npm run test:integration` - it is what proves an ingested draw reaches the page without
 a restart.
