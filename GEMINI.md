@@ -157,7 +157,7 @@ The roadmap is maintained **exclusively in [`plan.md`](plan.md)** to prevent doc
 - Phase 4 addition (done 2026-09-24, F-68): the chat panel in `nextStep/chat.md` - `frontend/lib/chat/` answers a question from prepared answers, then from the artifacts through `lib/data/`, then from a cache keyed on the artifacts' mtime, and only then from `openai/gpt-oss-120b` on Cerebras through OpenRouter, behind a daily token budget, a per-client rate limit and a runtime scan against the one `ADVICE` list in `frontend/lib/advice.json`. It does not stream, so the scan sees the whole answer. The key is `OPENROUTER_API_KEY` in `secrets.env`; without it only the model layer is off.
 - Phase 4: migrating the 8 Streamlit pages to Next.js, including the interactive Prediction Validator.
 - Phases 3-4 are designed node by node in `nextStep/web.md`: five destinations (Home, Pick, Explore, Numbers, Review), the completeness matrix that keeps every current statistic, the wording test that must replace `tests/test_site_wording.py`, and the cutover order for deleting `view/`.
-- Phase 5: VPS deployment with Docker Compose and Caddy/Nginx SSL.
+- Phase 5: VPS deployment with Docker Compose. The owner's VPS is at Hostinger and already runs n8n behind Traefik, so `docker-compose.hostinger.yml` puts Caddy behind that Traefik; the code is cloned from GitHub and built on the VPS, with no registry (`nextStep/vps.md` 2.1).
 
 Separation of concerns: the VPS runs only `drawpick.py` and the public site; `quickpick.py` (model training) runs on the owner's PC. Keep `lotto_analysis/` light and free of any dependency on `ml_lotto/`.
 
@@ -188,7 +188,7 @@ npm --prefix frontend run dev
 npm --prefix frontend test
 npm --prefix frontend run test:e2e
 
-# Execute all 26 test files (299 tests, ~60s) - pytest.ini limits pytest to tests/
+# Execute all 26 test files (302 tests, ~60s) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite

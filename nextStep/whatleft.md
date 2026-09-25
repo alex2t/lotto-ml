@@ -19,7 +19,7 @@ Since 2026-09-24, on `main`:
 - the whole site dark by default in the Observatory palette (navy and gold), balls as solid
   fills with dark numbers, and the footer motto on every page but home.
 
-**Tests:** 299 pytest (298 pass - F-67), 374 vitest, 102 Playwright, all passing on
+**Tests:** 302 pytest (301 pass - F-67), 374 vitest, 102 Playwright, all passing on
 2026-09-25 apart from F-67.
 
 **Open defects** (details in `issue.md`):
@@ -213,7 +213,7 @@ draw, and the "One draw is not in yet" banner goes once the newest scheduled dra
    |
   n8n.md section 7: Phase 2B nodes, then section 8's backtest against the CSV
    |
-  web.md steps 4-5: deploy to the VPS (vps.md), point the domain, one week and three draws
+  web.md steps 4-5: deploy to the Hostinger VPS behind its Traefik (vps.md 2.1), point the domain, one week and three draws
    |
   web.md step 6: delete Streamlit and rewrite the six tests that import view/
    |

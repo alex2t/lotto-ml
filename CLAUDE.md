@@ -114,14 +114,14 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: twenty-six files, 299 tests, ~60s. The Next.js site has its own
+`tests/` holds only real tests: twenty-six files, 302 tests, ~60s. The Next.js site has its own
 suites in `frontend/` - `npm --prefix frontend test` (374 vitest) and `npm --prefix frontend run
 test:e2e` (102 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
-python -m pytest -q                                                              # all 299
+python -m pytest -q                                                              # all 302
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
 python -m demos.demo_interactions                                                # a demo, from the root
 ```
@@ -266,7 +266,11 @@ receiver, which appends it to the CSV and regenerates the artifacts **only when 
 changed**, so a retried webhook costs nothing. Designed, not yet built.
 
 `nextStep/vps.md` is the deployment runbook: the production overlay, the Caddy config, the two
-env files and the rebuild receiver. `rebuild_webhook.py` at the root is the only network-facing
+env files and the rebuild receiver. **The owner's VPS is at Hostinger and already runs n8n
+behind Traefik on 80/443**, so it deploys with a third overlay, `docker-compose.hostinger.yml`,
+that puts Caddy behind that Traefik (vps.md 2.1). The code reaches the VPS by `git clone`/`pull`
+from GitHub and is built there - there is no image registry. On the VPS, `data/` is discarded
+before a pull (F-74) and Streamlit stays on loopback (F-75). `rebuild_webhook.py` at the root is the only network-facing
 code here that writes anything - it runs `drawpick.py` for a signed request, never gets the Docker
 socket, and is not proxied to the internet.
 

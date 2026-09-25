@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-25
+**Last updated:** 2026-09-26
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -109,6 +109,29 @@ timeout.
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-26 - F-75, Streamlit was public on the VPS, around the proxy.** The base
+  `docker-compose.yml` publishes `streamlit-web` on `8501:8501` for the PC, and
+  `docker-compose.prod.yml` never mentioned the service, so `docker compose up -d` on the VPS
+  published it on `0.0.0.0:8501` - plain HTTP with none of Caddy's headers, reachable at
+  `http://<vps-ip>:8501` while `vps.md` said nothing public pointed at it. Shown with
+  `docker compose config`, which listed `streamlit-web ('0.0.0.0', '8501')` for both the
+  two-file and the Hostinger deploy. Docker publishes ports through its own iptables rules, so a
+  host firewall such as ufw does not close it. **Fixed**: the production overlay overrides the
+  port to `127.0.0.1:8501:8501`; for the side-by-side week it is reached with
+  `ssh -L 8501:127.0.0.1:8501 <vps>`. The PC's base file is unchanged (still `0.0.0.0:8501`).
+  `tests/test_docker_stack.py::test_streamlit_is_not_public_on_the_vps` failed before and passes
+  now; `vps.md` 3.4 adds the external `curl` on 8501 that must fail.
+
+- **2026-09-26 - F-74, `vps.md`'s update procedure could not run after the first draw.** It
+  said `git pull` then rebuild. On the VPS the receiver appends each draw to
+  `data/irish500.csv` and the engine rewrites `data/*.json`, all tracked in git, so from the
+  first rebuild the clone has local changes to files the next pull also changes, and git
+  refuses the pull ("Your local changes to the following files would be overwritten"). Not
+  reproduced on the server - it follows from git's rule and from which files the receiver
+  writes. **Fixed** in `vps.md` section 5: `git checkout -- data/` before `git pull`, with why it
+  loses nothing (n8n commits each draw to GitHub before it posts it, and the engine regenerates
+  the artifacts from the pulled CSV on the next start), and never committing from the VPS.
 
 - **2026-09-25 - F-72, the rebuild receiver took a known date as proof it had the draw.**
   `handle_draw()` decided a post was already in the file with `draw["date"] != newest` and
@@ -461,6 +484,8 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-75 | Streamlit was published on the VPS at `0.0.0.0:8501`, plain HTTP around the proxy | `docker-compose.prod.yml`, `tests/test_docker_stack.py`, `nextStep/vps.md` 3.4 |
+| F-74 | `vps.md` updated the server with a bare `git pull`, which git refuses once the receiver has written `data/` | `nextStep/vps.md` section 5 |
 | F-73 | `secrets.env.example` had no `REBUILD_SECRET` line, so a `secrets.env` made from it gave a receiver that exited at start | `secrets.env.example`, `tests/test_docker_stack.py` |
 | F-72 | The rebuild receiver matched a posted draw by date alone, answering `200 already had it` to a known date with other numbers | `rebuild_webhook.py`, `tests/test_rebuild_webhook.py` |
 | F-70 | The Statistics tab captioned the scenario table "came up again in the next draw"; it counts N-draw windows in which some number came up T times | `frontend/lib/guide/statistics.ts`, `frontend/lib/data/statistics.ts`, `frontend/test/statistics.test.ts` |
