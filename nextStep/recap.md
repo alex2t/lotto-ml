@@ -1,5 +1,8 @@
 # What is left across the build documents
 
+> **Superseded on 2026-09-25 by [`whatleft.md`](whatleft.md)**, which also holds the test of
+> the n8n POST. This file is kept as the record of 2026-09-24.
+
 A single list of everything still outstanding in [`lottodraw.md`](lottodraw.md),
 [`n8n.md`](n8n.md), [`web.md`](web.md) and [`chat.md`](chat.md), separated into **code in
 this repository** and **work that happens somewhere else** - in the n8n editor, on the VPS,

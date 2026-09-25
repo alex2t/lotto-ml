@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-24
+**Last updated:** 2026-09-25
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -28,16 +28,51 @@ with file:line evidence.
 
 | ID | Severity | Issue | Where |
 |:--|:--|:--|:--|
+| F-72 | Medium | The rebuild receiver matches a posted draw to the CSV by date alone: a post for a date already in the file, with different numbers, is answered `200 already had it` and the mismatch is never reported | `rebuild_webhook.py:208` |
 | F-69 | Low | The freshness bin test compares drawn balls with a uniform 1/3 per bin, though most numbers sit in C0 at any moment, so it reports "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py:149-150` |
 | F-67 | Low | A parity test assumes every drawn ball moves `recent_4` or `days_since_last`; a bonus ball two days after its last appearance moves neither, so the suite fails on the current data | `tests/test_walk_forward_parity.py:135-138` |
 | F-71 | Low | The first e2e tests of a full run time out against a freshly started server - the navigation test, and the two chat tests on desktop | `frontend/test/e2e/site.spec.ts:78`, `frontend/test/e2e/chat.spec.ts:17,33` |
+| F-73 | Low | `secrets.env.example` does not list `REBUILD_SECRET`, which the rebuild receiver refuses to start without | `secrets.env.example`, `rebuild_webhook.py:63-70` |
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
 ---
 
+## 2. Medium severity defects
+
+### F-72 - the receiver takes a known date as proof it has the draw
+
+Found 2026-09-25, while writing the owner's test of the n8n POST (`nextStep/whatleft.md`).
+
+`handle_draw()` decides whether a posted draw is new with `appended = draw["date"] != newest`
+(`rebuild_webhook.py:208`). It never compares the posted numbers with the row already in the
+CSV for that date. Shown on a copy of `data/`: posting 2026-09-21 with `15,24,29,30,31,38` bonus
+11 (the real row) and with `15,24,29,30,3,38` bonus 11 both answer
+
+    200 {"state": "already had it", "appended": false, ...}
+
+and the CSV keeps its row. That the file is not overwritten is right; that the caller is told
+all is well is not. n8n's Phase 2B treats `already had it` as success (`n8n.md` section 7), so a
+parse that read a draw wrongly - or a second source that disagrees with the first - on a date
+the file already holds would pass without a failure email.
+
+The fix: when the date is already in the file, compare the numbers and answer a conflict (409,
+`state: "conflict"`, both rows in the body) if they differ; n8n routes anything but the three
+success states into its failure email already. `tests/test_rebuild_webhook.py` needs a case
+that posts a known date with different numbers.
+
 ## 3. Low severity defects
+
+### F-73 - the example secrets file has no line for the rebuild secret
+
+Found 2026-09-25, same session. The rebuild receiver reads `REBUILD_SECRET` from `secrets.env`
+(`docker-compose.prod.yml` `rebuild-receiver.env_file`) and refuses to start below 16
+characters (`rebuild_webhook.py:63-70`). `secrets.env.example` lists `ADMIN_USERNAME`,
+`ADMIN_PASSWORD_HASH`, `SESSION_SECRET` and `OPENROUTER_API_KEY`, but not it; only
+`nextStep/vps.md` mentions it. A `secrets.env` made from the example gives a receiver that exits
+at start. The fix is one commented line with its generator command, and an assertion beside the
+`OPENROUTER_API_KEY` one in `tests/test_docker_stack.py`.
 
 ### F-69 - the freshness bin test measures against the wrong chance
 

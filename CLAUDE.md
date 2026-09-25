@@ -44,8 +44,9 @@ the Next.js front end, the Docker stack on the VPS, n8n scraping of each draw (P
 then Phase B commits to `data/irish500.csv` and a rebuild webhook), and the single-admin data
 download. `nextStep/` holds the build documents: [`n8n.md`](nextStep/n8n.md) for Phase 2
 ingestion, [`web.md`](nextStep/web.md) for the Phase 3-4 website, [`chat.md`](nextStep/chat.md)
-for the chat panel beside the numbers (built 2026-09-24, F-68). [`recap.md`](nextStep/recap.md) is the running
-list of what is still outstanding across those documents.
+for the chat panel beside the numbers (built 2026-09-24, F-68). [`whatleft.md`](nextStep/whatleft.md) is the running
+list of what is still outstanding across those documents, with the owner's test of the n8n POST
+(`scripts/post_draw.py`); `recap.md` is its 2026-09-24 predecessor.
 [`README.md`](README.md) holds the architecture overview.
 
 ## Folder guides
