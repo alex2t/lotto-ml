@@ -1,14 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { CATEGORY_INITIAL } from '@/components/ui/Ball';
+import { BALL_TONE, CATEGORY_INITIAL } from '@/components/ui/Ball';
 import type { PoolNumber } from '@/lib/data/pool';
-
-const TONE = {
-  hot: 'bg-hot-soft text-hot border-hot',
-  medium: 'bg-medium-soft text-medium border-medium',
-  cold: 'bg-cold-soft text-cold border-cold',
-} as const;
 
 /**
  * The 1-47 grid: six columns on a phone, 44px targets. Each cell carries its category
@@ -40,8 +34,8 @@ export function NumberGrid({
               aria-pressed={isSelected}
               aria-label={`${item.number}, ${item.category}, drawn ${item.recent[window]} times in the last ${window} draws`}
               className={`flex h-11 w-full flex-col items-center justify-center rounded-lg border text-sm font-semibold tabular-nums ${
-                TONE[item.category]
-              } ${isSelected ? 'ring-2 ring-offset-1 ring-accent' : ''} ${
+                BALL_TONE[item.category]
+              } ${isSelected ? 'ring-[3px] ring-foreground ring-offset-2 ring-offset-background' : ''} ${
                 isOut ? 'opacity-30' : ''
               }`}
             >

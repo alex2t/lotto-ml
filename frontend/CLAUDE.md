@@ -104,6 +104,21 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 - **Contrast is measured, not chosen.** `test/contrast.test.ts` computes the WCAG ratio for every
   pair the site paints, in both themes, and fails below AA. A new colour token goes in the pair
   list, or it is not checked.
+- **The site opens dark, in the Observatory palette** - the navy and gold of the home page's
+  picture. `layout.tsx` renders `data-theme="dark"` and `THEME_SCRIPT` keeps it unless the
+  visitor chose light. Cards step up from the page (`surface`, `surface-raised`, a visible
+  `border`) and the gold is `--gold` in both themes: the chat button, a statistic's headline chip
+  and chevron, the footer motto.
+- **A number is a solid fill with a dark ink, never a dark tint.** `BALL_TONE` in
+  `components/ui/Ball.tsx` is the one style for the ball, the 1-47 grid and the bag: `bg-hot
+  text-hot-ink` and so on. A 2026-09-24 dark pass used the soft tints for balls and the numbers
+  on Pick by hand could not be read; it was reverted. The soft tints stay for badges and slides.
+  A chosen grid cell is marked by an off-white ring, which shows on every fill.
+- **No `background-attachment: fixed` on the page.** It made Chrome repaint the whole
+  background on every scroll; with it, 4-5 mobile e2e tests timed out in each full run, and
+  without it the same suite passed 102/102.
+- **The footer motto is on every page but home** (`FooterMotto`, by pathname), because home
+  carries its own tagline.
 - **The home page has its own palette, in either theme.** It sits on a night-sky picture
   (`public/home/background-{1280,2400}.webp`, cropped from `../image/homepage.jpg`), so
   `.home-hero` in `globals.css` redefines every token its children read - navy, off-white, gold,

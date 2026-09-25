@@ -1,13 +1,8 @@
 'use client';
 
 import { ShoppingBag } from 'lucide-react';
+import { BALL_TONE } from '@/components/ui/Ball';
 import type { PoolNumber } from '@/lib/data/pool';
-
-const TONE = {
-  hot: 'bg-hot-soft text-hot border-hot',
-  medium: 'bg-medium-soft text-medium border-medium',
-  cold: 'bg-cold-soft text-cold border-cold',
-} as const;
 
 const STEPS = [
   ['Shape the bag', 'Take out any numbers you would rather not have - or skip this.'],
@@ -82,8 +77,8 @@ export function ShakeBag({
               key={n.number}
               aria-label={`${n.number}, ${n.category}${line.includes(n.number) ? ', in your line' : ''}`}
               className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-semibold tabular-nums transition-transform ${
-                TONE[n.category]
-              } ${line.includes(n.number) ? 'scale-110 ring-2 ring-accent ring-offset-1' : ''}`}
+                BALL_TONE[n.category]
+              } ${line.includes(n.number) ? 'scale-110 ring-2 ring-accent ring-offset-2 ring-offset-background' : ''}`}
             >
               <span aria-hidden>{String(n.number).padStart(2, '0')}</span>
             </li>

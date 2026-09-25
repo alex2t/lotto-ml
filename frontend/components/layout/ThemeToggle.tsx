@@ -14,12 +14,12 @@ function subscribe(onChange: () => void): () => void {
 }
 
 function current(): Theme {
-  return (document.documentElement.dataset.theme as Theme) ?? 'light';
+  return (document.documentElement.dataset.theme as Theme) ?? 'dark';
 }
 
-/** Light or dark, stored per viewer. Falls back to the OS setting on first visit. */
+/** Light or dark, stored per viewer. Dark - the Observatory palette - until someone chooses. */
 export function ThemeToggle() {
-  const theme = useSyncExternalStore(subscribe, current, () => 'light' as Theme);
+  const theme = useSyncExternalStore(subscribe, current, () => 'dark' as Theme);
 
   function toggle() {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -49,4 +49,4 @@ export function ThemeToggle() {
 }
 
 /** Applies the stored theme before first paint, so there is no flash of the wrong one. */
-export const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();`;
+export const THEME_SCRIPT = `(function(){try{document.documentElement.dataset.theme=localStorage.getItem('theme')==='light'?'light':'dark';}catch(e){document.documentElement.dataset.theme='dark';}})();`;

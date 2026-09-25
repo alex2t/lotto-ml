@@ -22,7 +22,7 @@ export function StatCard({
   return (
     <details
       id={entry.id}
-      className="stat-card group scroll-mt-4 rounded-xl border border-border bg-surface transition-colors hover:border-muted open:border-foreground open:bg-surface-raised open:shadow-sm"
+      className="stat-card group scroll-mt-4 rounded-xl border border-border bg-surface shadow-[0_8px_24px_rgb(0_0_0/0.18)] transition-colors hover:border-gold/60 open:border-gold/70 open:bg-surface-raised"
     >
       <summary className="flex cursor-pointer list-none flex-col gap-3 rounded-xl p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground sm:flex-row sm:items-center [&::-webkit-details-marker]:hidden">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -31,16 +31,15 @@ export function StatCard({
           <p className="text-xs text-muted">{scopeText}</p>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 sm:flex-col sm:items-end">
-          <span className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium tabular-nums">
+          <span className="rounded-full border border-gold/40 bg-gold/10 px-3 py-1 text-xs font-semibold tabular-nums text-gold">
             {headline}
           </span>
-          <span className="flex items-center gap-1 text-xs font-medium">
+          <span className="flex items-center gap-2 text-xs font-medium text-muted group-hover:text-foreground">
             <span className="group-open:hidden">View full breakdown</span>
             <span className="hidden group-open:inline">Hide breakdown</span>
-            <ChevronDown
-              aria-hidden
-              className="size-4 transition-transform duration-200 group-open:rotate-180"
-            />
+            <span className="grid size-7 place-items-center rounded-full bg-gold/15 text-gold" aria-hidden>
+              <ChevronDown className="size-4 transition-transform duration-200 group-open:rotate-180" />
+            </span>
           </span>
         </div>
       </summary>
