@@ -207,6 +207,16 @@ def test_only_the_proxy_reaches_the_internet():
     assert "80:80" in published and "443:443" in published
 
 
+def test_streamlit_is_not_public_on_the_vps():
+    """
+    The base file publishes Streamlit on 0.0.0.0:8501 for the PC. On the VPS that is plain
+    HTTP around the proxy, with none of its headers (F-75); the overlay keeps it on the
+    server's loopback, reachable for the side-by-side week through an SSH tunnel only.
+    """
+    streamlit = load_compose("docker-compose.prod.yml")["services"]["streamlit-web"]
+    assert streamlit["ports"] == ["127.0.0.1:8501:8501"]
+
+
 def test_the_rebuild_receiver_is_not_published_or_proxied():
     """
     It runs drawpick.py on request. n8n reaches it over the Docker network; nothing should
@@ -271,6 +281,42 @@ def test_the_proxy_sets_the_security_headers_and_keeps_its_certificates():
     proxy = overlay["services"]["reverse-proxy"]
     # Losing /data means re-issuing every certificate, and Let's Encrypt rate-limits that.
     assert any("caddy_data:/data" in str(v) for v in proxy["volumes"])
+
+
+# --- On a VPS whose ports 80/443 already belong to Traefik (Hostinger's n8n template) --------
+
+
+def test_behind_traefik_caddy_publishes_nothing_and_serves_plain_http():
+    """
+    Traefik holds 80 and 443 and issues the certificate, so Caddy must not try to bind them
+    or ask Let's Encrypt itself. It still sets the security headers and health-checks the site.
+    """
+    proxy = load_compose("docker-compose.hostinger.yml")["services"]["reverse-proxy"]
+    assert "ports" in proxy and not proxy["ports"]
+    assert "DOMAIN=:80" in proxy["environment"]
+
+    labels = proxy["labels"]
+    assert "traefik.enable=true" in labels
+    assert any("rule=Host(`${DOMAIN}`)" in label for label in labels)
+    assert any(label.endswith("loadbalancer.server.port=80") for label in labels)
+    assert any("tls.certresolver=" in label for label in labels)
+
+
+def test_behind_traefik_only_caddy_is_routed_and_the_receiver_is_not():
+    """
+    The receiver joins Traefik's network so n8n can reach it by name, and nothing else of
+    ours does. A Traefik that exposes containers by default would publish it, so it opts out.
+    """
+    overlay = load_compose("docker-compose.hostinger.yml")
+    services = overlay["services"]
+
+    receiver = services["rebuild-receiver"]
+    assert "traefik.enable=false" in receiver["labels"]
+    assert "ports" not in receiver
+    assert "edge" in receiver["networks"]
+
+    assert "edge" not in services.get("nextjs-web", {}).get("networks", [])
+    assert overlay["networks"]["edge"]["external"] is True
 
 
 def test_the_proxy_needs_no_plugin_build():

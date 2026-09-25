@@ -1,0 +1,46 @@
+# Third overlay, for a VPS whose ports 80 and 443 already belong to Traefik - Hostinger's
+# one-click n8n template runs n8n behind one. Apply it after the production overlay:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.hostinger.yml up -d
+#
+# What it changes:
+#   - Caddy stops publishing 80/443 and stops asking Let's Encrypt; Traefik does both. Caddy
+#     serves plain HTTP on the Docker network (DOMAIN=:80, as it is tested locally) and keeps
+#     the security headers and the health check, so the site behaves as in vps.md section 1.
+#   - Traefik routes the site's hostname to Caddy through the labels below.
+#   - The rebuild receiver joins Traefik's network so n8n reaches it at
+#     http://lotto-rebuild:8080/rebuild, and opts out of Traefik: it is never public.
+#
+# Read the three names from your own n8n container - nextStep/vps.md section 2.1 shows how -
+# and put them in .env beside DOMAIN:
+#   TRAEFIK_NETWORK       the Docker network n8n and Traefik share (required)
+#   TRAEFIK_ENTRYPOINT    Traefik's HTTPS entrypoint (n8n's own compose example: websecure)
+#   TRAEFIK_CERTRESOLVER  its certificate resolver (n8n's own compose example: mytlschallenge)
+services:
+  reverse-proxy:
+    ports: !reset []
+    environment:
+      - DOMAIN=:80
+    networks:
+      - default
+      - edge
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:?set TRAEFIK_NETWORK in .env}
+      - traefik.http.routers.lotto.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.lotto.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.lotto.tls=true
+      - traefik.http.routers.lotto.tls.certresolver=${TRAEFIK_CERTRESOLVER:-mytlschallenge}
+      - traefik.http.services.lotto.loadbalancer.server.port=80
+
+  rebuild-receiver:
+    networks:
+      - default
+      - edge
+    labels:
+      - traefik.enable=false
+
+networks:
+  edge:
+    external: true
+    name: ${TRAEFIK_NETWORK:?set TRAEFIK_NETWORK in .env}

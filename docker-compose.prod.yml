@@ -12,6 +12,13 @@
 # Streamlit is deliberately absent: the base file still defines it for the side-by-side
 # period, but nothing public should point at it. See nextStep/web.md section 8.
 services:
+  streamlit-web:
+    # The base file publishes 8501 on every interface for the PC. Here that would be plain
+    # HTTP around the proxy (F-75), so it stays on the server's loopback: during the
+    # side-by-side week it is reached with `ssh -L 8501:127.0.0.1:8501 <vps>`, never publicly.
+    ports: !override
+      - "127.0.0.1:8501:8501"
+
   nextjs-web:
     # The proxy reaches it on the compose network; the host publishes nothing.
     ports: !reset []
