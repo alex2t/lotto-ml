@@ -1,14 +1,28 @@
 'use client';
 
-import { ArrowUpDown, Flame, Leaf, Lightbulb, Snowflake, Star, X } from 'lucide-react';
+import { useId, useState } from 'react';
+import Link from 'next/link';
+import {
+  ArrowRight,
+  ArrowUpDown,
+  Flame,
+  Info,
+  Leaf,
+  Lightbulb,
+  Snowflake,
+  Star,
+  X,
+} from 'lucide-react';
 import { Ball } from '@/components/ui/Ball';
+import { Carousel, type CarouselSlide } from '@/components/ui/Carousel';
 import type { Pool } from '@/lib/data/pool';
 import type { BonusReturn } from '@/lib/data/distributions';
 import { NO_FILTERS, applyFilters, chips, clearFilter, type Filters } from '@/lib/pick/filters';
 
 /**
- * The filters as cards: each says in a sentence what it does, what to look for, and how
- * many numbers it takes out right now - a filter whose effect is invisible is just a switch.
+ * The filters as slides of a carousel: each says in a sentence what it does, how many
+ * numbers it takes out right now, what to look for (More info), and where on Explore the
+ * figures behind it are - a filter whose effect is invisible is just a switch.
  */
 
 const WINDOWS = [5, 10, 25];
@@ -61,47 +75,85 @@ function Pills<T>({
   );
 }
 
-function Card({
+function FilterSlide({
   icon: Icon,
   tone,
   title,
   what,
   hint,
+  explore,
   takesOut,
   children,
 }: {
   icon: typeof Flame;
-  tone: string;
+  tone: { backdrop: string; icon: string };
   title: string;
   what: string;
   hint: React.ReactNode;
+  explore: { href: string; label: string };
   takesOut: number;
   children: React.ReactNode;
 }) {
+  const [info, setInfo] = useState(false);
+  const hintId = useId();
+
   return (
-    <section className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-raised p-4 shadow-sm">
-      <header className="flex items-start gap-3">
-        <span className={`rounded-full border p-2 ${tone}`} aria-hidden>
-          <Icon className="h-4 w-4" />
-        </span>
-        <div className="mr-auto">
-          <h3 className="font-semibold">{title}</h3>
-          <p className="text-sm text-muted">{what}</p>
-        </div>
+    <article
+      className={`relative flex h-full min-h-72 flex-col gap-4 overflow-hidden bg-linear-to-br to-surface-raised p-5 sm:px-10 sm:py-8 ${tone.backdrop}`}
+    >
+      {/* The backdrop: the card's icon, large and faint, where a trailer would play. */}
+      <Icon
+        className={`pointer-events-none absolute -right-6 -bottom-8 h-56 w-56 opacity-15 ${tone.icon}`}
+        aria-hidden
+      />
+      <header className="relative flex flex-wrap items-center gap-3">
         <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${
+          className={`rounded-full border border-current bg-surface-raised p-2 ${tone.icon}`}
+          aria-hidden
+        >
+          <Icon className="h-5 w-5" />
+        </span>
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
             takesOut ? 'bg-accent text-accent-foreground' : 'bg-surface text-muted'
           }`}
         >
           {takesOut ? `takes out ${takesOut}` : 'off'}
         </span>
       </header>
-      {children}
-      <p className="flex gap-2 text-xs text-muted">
-        <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+      <div className="relative flex max-w-xl flex-col gap-1">
+        <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
+        <p className="text-sm">{what}</p>
+      </div>
+      <div className="relative flex flex-col gap-2">{children}</div>
+      <div className="relative mt-auto flex flex-wrap items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={() => setInfo((v) => !v)}
+          aria-expanded={info}
+          aria-controls={hintId}
+          className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+        >
+          <Info className="h-4 w-4" aria-hidden />
+          More info
+        </button>
+        <Link
+          href={explore.href}
+          className="flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-4 py-2 text-sm font-medium hover:border-foreground"
+        >
+          {explore.label}
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </Link>
+      </div>
+      <p
+        id={hintId}
+        hidden={!info}
+        className="relative max-w-xl gap-2 rounded-xl border border-border bg-surface-raised p-3 text-sm [&:not([hidden])]:flex"
+      >
+        <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
         <span>{hint}</span>
       </p>
-    </section>
+    </article>
   );
 }
 
@@ -131,30 +183,21 @@ export function BagFilters({
   const binName = (bin: number) => (bin === pool.maxBin ? `C${bin}+` : `C${bin}`);
   const binMeaning = (bin: number) =>
     bin === 0 ? 'not drawn' : bin === pool.maxBin ? `${timesLabel(bin)} or more` : timesLabel(bin);
+  const statistics = { href: '/explore?tab=statistics', label: 'See it on Explore' };
 
-  return (
-    <section className="flex flex-col gap-4" aria-labelledby="bag-filters-title">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
-          <h2 id="bag-filters-title" className="text-lg font-semibold">
-            {heading}
-          </h2>
-          <p className="text-sm text-muted">
-            Optional. Each card takes some numbers out, to suit your taste.
-          </p>
-        </div>
-        <p className="text-sm font-medium" aria-live="polite">
-          {remaining} {remainingLabel}
-        </p>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        <Card
+  const slides: CarouselSlide[] = [
+    {
+      id: 'busy',
+      label: 'Busy lately',
+      marked: takesOut('drawnMoreThan') > 0,
+      content: (
+        <FilterSlide
           icon={Flame}
-          tone="border-hot bg-hot-soft text-hot"
+          tone={{ backdrop: 'from-hot-soft', icon: 'text-hot' }}
           title="Busy lately"
           what="Take out the numbers that have been coming up a lot."
           hint="These numbers have been showing up. Keep them or leave them out - the next draw gives every ball the same chance."
+          explore={statistics}
           takesOut={takesOut('drawnMoreThan')}
         >
           <Pills
@@ -181,14 +224,21 @@ export function BagFilters({
               setFilters({ ...filters, drawnMoreThan: { ...filters.drawnMoreThan, draws } })
             }
           />
-        </Card>
-
-        <Card
+        </FilterSlide>
+      ),
+    },
+    {
+      id: 'quiet',
+      label: 'Quiet lately',
+      marked: takesOut('notDrawnIn') > 0,
+      content: (
+        <FilterSlide
           icon={Snowflake}
-          tone="border-cold bg-cold-soft text-cold"
+          tone={{ backdrop: 'from-cold-soft', icon: 'text-cold' }}
           title="Quiet lately"
           what="Take out the numbers that have not come up at all for a while."
           hint="The other side of the same taste. A long gap does not make a number any more likely - the balls have no memory."
+          explore={statistics}
           takesOut={takesOut('notDrawnIn')}
         >
           <Pills
@@ -200,14 +250,21 @@ export function BagFilters({
             value={filters.notDrawnIn}
             onChange={(notDrawnIn) => setFilters({ ...filters, notDrawnIn })}
           />
-        </Card>
-
-        <Card
+        </FilterSlide>
+      ),
+    },
+    {
+      id: 'freshness',
+      label: 'Freshness',
+      marked: takesOut('bins') > 0,
+      content: (
+        <FilterSlide
           icon={Leaf}
-          tone="border-medium bg-medium-soft text-medium"
+          tone={{ backdrop: 'from-medium-soft', icon: 'text-medium' }}
           title="Freshness"
           what={`Keep only the groups you tap, by how often each number came up in the last ${pool.freshnessDraws} draws.`}
           hint="Nothing tapped keeps every group. The Freshness tab on Explore shows which mixes past draws had."
+          explore={{ href: '/explore?tab=freshness', label: 'See it on Explore' }}
           takesOut={takesOut('bins')}
         >
           <div role="group" aria-label="Keep freshness groups" className="grid grid-cols-3 gap-2">
@@ -239,14 +296,21 @@ export function BagFilters({
               );
             })}
           </div>
-        </Card>
-
-        <Card
+        </FilterSlide>
+      ),
+    },
+    {
+      id: 'bonus',
+      label: 'Recent bonus balls',
+      marked: takesOut('dropRecentBonus') > 0,
+      content: (
+        <FilterSlide
           icon={Star}
-          tone="border-bonus bg-bonus-soft text-bonus"
+          tone={{ backdrop: 'from-bonus-soft', icon: 'text-bonus' }}
           title="Recent bonus balls"
           what={`Take out the bonus balls of the last ${pool.bonusWindow} draws.`}
           hint={`Some people think a bonus ball comes back soon. Over past draws, ${(100 * bonus.rate).toFixed(1)}% came back as a main number within ${bonus.window} draws - a fair draw gives ${(100 * bonus.fairRate).toFixed(1)}%.`}
+          explore={{ href: '/explore?tab=draws', label: 'See the draws on Explore' }}
           takesOut={takesOut('dropRecentBonus')}
         >
           <div className="flex flex-wrap items-center gap-3">
@@ -277,14 +341,21 @@ export function BagFilters({
               ))}
             </span>
           </div>
-        </Card>
-
-        <Card
+        </FilterSlide>
+      ),
+    },
+    {
+      id: 'half',
+      label: 'High or low',
+      marked: takesOut('half') > 0,
+      content: (
+        <FilterSlide
           icon={ArrowUpDown}
-          tone="border-border bg-surface text-foreground"
+          tone={{ backdrop: 'from-surface', icon: 'text-foreground' }}
           title="High or low"
           what={`Keep only the numbers below ${pool.highFrom}, or only ${pool.highFrom} and above.`}
           hint={`Numbers from ${pool.highFrom} up cannot be birthdays, so fewer people play them - a win is shared less often. The chance of winning is the same.`}
+          explore={statistics}
           takesOut={takesOut('half')}
         >
           <Pills
@@ -297,8 +368,32 @@ export function BagFilters({
             value={filters.half}
             onChange={(half) => setFilters({ ...filters, half })}
           />
-        </Card>
+        </FilterSlide>
+      ),
+    },
+  ];
+
+  // Arriving with a filter already on (Explore sends /pick?bin=) opens on that card.
+  const [start] = useState(() => Math.max(0, slides.findIndex((s) => s.marked)));
+
+  return (
+    <section className="flex flex-col gap-4" aria-labelledby="bag-filters-title">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h2 id="bag-filters-title" className="text-lg font-semibold">
+            {heading}
+          </h2>
+          <p className="text-sm text-muted">
+            Optional. Five cards, each taking some numbers out to suit your taste. Swipe,
+            use the arrows or tap a bar to move between them.
+          </p>
+        </div>
+        <p className="text-sm font-medium" aria-live="polite">
+          {remaining} {remainingLabel}
+        </p>
       </div>
+
+      <Carousel label="Filters" slides={slides} start={start} />
 
       {active.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">

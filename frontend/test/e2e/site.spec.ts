@@ -353,6 +353,8 @@ test.describe('the methods and the ways out', () => {
     await expect(bag.getByRole('listitem')).toHaveCount(47);
     await expect(page.getByText('47 balls in the bag')).toBeVisible();
 
+    // The cards are slides of a carousel; the one on screen is the one that can be used.
+    await page.getByRole('button', { name: /^Show card \d: High or low/ }).click();
     await page.getByRole('button', { name: '32 to 47' }).click();
     await expect(bag.getByRole('listitem')).toHaveCount(16);
     await expect(page.getByText('16 balls in the bag')).toBeVisible();
@@ -361,6 +363,103 @@ test.describe('the methods and the ways out', () => {
     await page.getByRole('button', { name: /^Shak/ }).last().click();
     await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
     await expect(bag.getByRole('listitem', { name: /in your line/ })).toHaveCount(6);
+  });
+
+  test('the filter cards are a carousel that wraps, and moves by key', async ({ page }) => {
+    await page.goto('/pick');
+    const carousel = page.getByRole('region', { name: 'Filters' });
+    // The indicator marks the card on screen at once; the card itself cross-fades in.
+    const shows = async (title: string) => {
+      await expect(carousel.locator('button[aria-current="true"]')).toHaveAccessibleName(
+        new RegExp(title),
+      );
+      await expect(carousel.getByRole('heading', { name: title })).toBeVisible();
+    };
+    await shows('Busy lately');
+
+    // Previous from the first card wraps to the last, next from the last wraps back.
+    await carousel.getByRole('button', { name: 'Previous card' }).click();
+    await shows('High or low');
+    await carousel.getByRole('button', { name: 'Next card' }).click();
+    await shows('Busy lately');
+
+    await carousel.focus();
+    await page.keyboard.press('ArrowRight');
+    await shows('Quiet lately');
+    await page.keyboard.press('ArrowLeft');
+    await shows('Busy lately');
+
+    await carousel.getByRole('button', { name: /^Show card \d: Freshness/ }).click();
+    await shows('Freshness');
+  });
+
+  test('the filter carousel moves on its own until someone is using it', async ({ page }) => {
+    // A fake clock, so five seconds are five seconds however busy the machine is.
+    await page.clock.install();
+    await page.goto('/pick');
+    await page.waitForLoadState('networkidle');
+    const carousel = page.getByRole('region', { name: 'Filters' });
+    const current = carousel.locator('button[aria-current="true"]');
+    await expect(current).toHaveAccessibleName(/Busy lately/);
+
+    await page.clock.runFor(5100);
+    await expect(current).toHaveAccessibleName(/Quiet lately/);
+
+    // Hovering holds the card in place; leaving lets it move on.
+    await carousel.getByRole('heading', { name: 'Quiet lately' }).hover();
+    await page.clock.runFor(12000);
+    await expect(current).toHaveAccessibleName(/Quiet lately/);
+    await page.mouse.move(0, 0);
+    await page.clock.runFor(5100);
+    await expect(current).toHaveAccessibleName(/Freshness/);
+
+    // Using a control on a card stops the carousel for good.
+    await carousel
+      .getByRole('group', { name: /Freshness$/ })
+      .getByRole('button', { name: 'More info' })
+      .click();
+    await page.mouse.move(0, 0);
+    await page.evaluate(() => (document.activeElement as HTMLElement).blur());
+    await page.clock.runFor(12000);
+    await expect(current).toHaveAccessibleName(/Freshness/);
+  });
+
+  test('a filter card explains itself and points at Explore by a relative link', async ({
+    page,
+  }) => {
+    await page.goto('/pick');
+    const carousel = page.getByRole('region', { name: 'Filters' });
+    const more = carousel.getByRole('button', { name: 'More info' });
+    await more.click();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+    await expect(carousel.getByText(/every ball the same chance/)).toBeVisible();
+
+    const explore = carousel.getByRole('link', { name: /on Explore/ });
+    await expect(explore).toHaveAttribute('href', /^\/explore\?tab=/);
+    await explore.click();
+    await expect(page).toHaveURL(/\/explore\?tab=statistics/);
+  });
+
+  test('a freshness bin sent from Explore opens the carousel on its card', async ({ page }) => {
+    await page.goto('/pick?bin=2');
+    const carousel = page.getByRole('region', { name: 'Filters' });
+    await expect(carousel.getByRole('heading', { level: 3 })).toHaveText('Freshness');
+  });
+
+  test('follow a shape explains the idea and links to Explore', async ({ page }) => {
+    await page.goto('/pick');
+    await page.getByRole('button', { name: 'Follow a shape' }).click();
+    await expect(page.getByRole('heading', { name: 'Follow a shape' })).toBeVisible();
+    await expect(page.getByText(/every line of six has the same chance/)).toBeVisible();
+    await expect(page.getByText(/Your shape: nothing chosen yet/)).toBeVisible();
+
+    await page.getByRole('button', { name: /^140-154/ }).click();
+    await expect(page.getByText(/Your shape: sum 140-154/)).toBeVisible();
+
+    const link = page.getByRole('link', { name: 'Odd/even, sums and spreads on Explore' });
+    await expect(link).toHaveAttribute('href', '/explore?tab=statistics');
+    await link.click();
+    await expect(page).toHaveURL(/\/explore\?tab=statistics/);
   });
 
   test('a wheel can be used without spinning it', async ({ page }) => {

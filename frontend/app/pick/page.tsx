@@ -8,7 +8,8 @@ import {
 } from '@/lib/data/distributions';
 import { spreadBandShares } from '@/lib/scoring/line';
 import { bandLabel } from '@/lib/scoring/bands';
-import { Picker, type ShapeOptions } from '@/components/pick/Picker';
+import { Picker } from '@/components/pick/Picker';
+import type { ShapeOptions } from '@/components/pick/ShapeBuilder';
 
 export const dynamic = 'force-dynamic';
 
