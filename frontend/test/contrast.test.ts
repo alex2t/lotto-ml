@@ -65,6 +65,14 @@ const PAIRS: Array<{ fg: string; bg: string; least: number; what: string }> = [
   // The Shake the bag panel is tinted with the bonus soft colour.
   { fg: 'foreground', bg: 'bonus-soft', least: BODY_TEXT, what: 'text on the bag panel' },
   { fg: 'muted', bg: 'bonus-soft', least: BODY_TEXT, what: 'secondary text on the bag panel' },
+  // The filter carousel's slides and the shape intro fade from a soft tint to a raised panel.
+  { fg: 'foreground', bg: 'hot-soft', least: BODY_TEXT, what: 'text on a hot slide' },
+  { fg: 'muted', bg: 'hot-soft', least: BODY_TEXT, what: 'secondary text on a hot slide' },
+  { fg: 'foreground', bg: 'medium-soft', least: BODY_TEXT, what: 'text on a medium slide' },
+  { fg: 'muted', bg: 'medium-soft', least: BODY_TEXT, what: 'secondary text on a medium slide' },
+  { fg: 'foreground', bg: 'cold-soft', least: BODY_TEXT, what: 'text on a cold slide' },
+  { fg: 'muted', bg: 'cold-soft', least: BODY_TEXT, what: 'secondary text on a cold slide' },
+  { fg: 'muted', bg: 'surface-raised', least: BODY_TEXT, what: 'secondary text on a raised panel' },
   // A ball: large digits on its own tint, and its border against the page.
   { fg: 'hot', bg: 'hot-soft', least: LARGE_TEXT, what: 'a hot ball' },
   { fg: 'medium', bg: 'medium-soft', least: LARGE_TEXT, what: 'a medium ball' },

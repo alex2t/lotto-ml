@@ -143,6 +143,20 @@ html {
   background: rgb(0 0 0 / 0.3);
 }
 
+/* The active carousel indicator fills while the card waits to move on. */
+@keyframes carousel-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.carousel-progress {
+  animation: carousel-fill linear both;
+}
+
 /* What the four animated moments become when motion is not wanted. */
 @keyframes fade-in {
   from {

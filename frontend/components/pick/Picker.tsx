@@ -17,13 +17,13 @@ import { Ball } from '@/components/ui/Ball';
 import { BagFilters } from './BagFilters';
 import { ShakeBag } from './ShakeBag';
 import { ShapeCard } from './ShapeCard';
+import { ShapeBuilder, type ShapeOptions } from './ShapeBuilder';
 import { Wheel } from './Wheel';
 import { NumberGrid, NumberPeek } from './NumberGrid';
 import type { BonusReturn } from '@/lib/data/distributions';
 import type { Pool, PoolNumber } from '@/lib/data/pool';
 import type { Category } from '@/lib/data/types';
 import type { LineShape } from '@/lib/scoring/line';
-import { spreadBand, sumBand } from '@/lib/scoring/bands';
 import { drawLineImage, saveImage } from '@/lib/pick/line-image';
 import { setCurrentLine, setCurrentMethod, type PickMethod } from '@/lib/pick/current-line';
 import { NO_FILTERS, applyFilters, sample, type Filters } from '@/lib/pick/filters';
@@ -45,19 +45,6 @@ const METHODS: Array<{ id: PickMethod; label: string; tagline: string; icon: typ
   { id: 'shape', label: 'Follow a shape', tagline: 'Start from a pattern', icon: Shapes },
   { id: 'surprise', label: 'Surprise me', tagline: 'Let chance choose', icon: Sparkles },
 ];
-
-export interface ShapeOption {
-  key: string;
-  label: string;
-  percentage: number;
-}
-
-export interface ShapeOptions {
-  oddEven: ShapeOption[];
-  sums: ShapeOption[];
-  spreads: ShapeOption[];
-  highCounts: ShapeOption[];
-}
 
 interface PickerProps {
   pool: Pool;
@@ -398,165 +385,6 @@ export function Picker({
         onFill={() => fillRest()}
       />
     </div>
-  );
-}
-
-function ShapeBuilder({
-  options,
-  pool,
-  available,
-  onLine,
-}: {
-  options: ShapeOptions;
-  pool: Pool;
-  available: PoolNumber[];
-  onLine: (line: number[], message?: string) => void;
-}) {
-  const [odd, setOdd] = useState<number | null>(null);
-  const [high, setHigh] = useState<number | null>(null);
-  const [sum, setSum] = useState<string | null>(null);
-  const [spread, setSpread] = useState<string | null>(null);
-
-  function build() {
-    const numbers = available.map((n) => n.number);
-    for (let attempt = 0; attempt < 20000; attempt += 1) {
-      const candidate = sample(numbers, LINE_SIZE);
-      if (candidate.length < LINE_SIZE) break;
-      const odds = candidate.filter((n) => n % 2 === 1).length;
-      const highs = candidate.filter((n) => n >= pool.highFrom).length;
-      if (odd !== null && odds !== odd) continue;
-      if (high !== null && highs !== high) continue;
-      if (sum !== null) {
-        const total = candidate.reduce((a, b) => a + b, 0);
-        if (sumBand(total).key !== sum) continue;
-      }
-      if (spread !== null) {
-        const range = Math.max(...candidate) - Math.min(...candidate);
-        if (spreadBand(range).key !== spread) continue;
-      }
-      onLine(candidate.sort((a, b) => a - b));
-      return;
-    }
-    onLine(
-      [],
-      'No line in the remaining pool has that shape - try dropping one of the choices or a filter.',
-    );
-  }
-
-  function reset() {
-    setOdd(null);
-    setHigh(null);
-    setSum(null);
-    setSpread(null);
-    onLine([]);
-  }
-
-  return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4">
-      <p className="text-sm text-muted">
-        Start from what past draws have looked like. Each option shows the share of draws
-        with that shape.
-      </p>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">Odd / even split</legend>
-        <div className="flex flex-wrap gap-2">
-          {options.oddEven.map((option) => {
-            const value = Number(option.key.split('_')[0]);
-            return (
-              <button
-                key={option.key}
-                type="button"
-                aria-pressed={odd === value}
-                onClick={() => setOdd(odd === value ? null : value)}
-                className={`rounded-full border px-3 py-1.5 text-sm ${
-                  odd === value ? 'border-accent bg-accent text-accent-foreground' : 'border-border'
-                }`}
-              >
-                {option.label} - {option.percentage.toFixed(1)}%
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">How many {pool.highFrom} and above</legend>
-        <div className="flex flex-wrap gap-2">
-          {options.highCounts.map((option) => {
-            const value = Number(option.key);
-            return (
-              <button
-                key={option.key}
-                type="button"
-                aria-pressed={high === value}
-                onClick={() => setHigh(high === value ? null : value)}
-                className={`rounded-full border px-3 py-1.5 text-sm ${
-                  high === value ? 'border-accent bg-accent text-accent-foreground' : 'border-border'
-                }`}
-              >
-                {option.label} - {option.percentage.toFixed(1)}%
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">Sum</legend>
-        <div className="flex flex-wrap gap-2">
-          {options.sums.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              aria-pressed={sum === option.key}
-              onClick={() => setSum(sum === option.key ? null : option.key)}
-              className={`rounded-full border px-3 py-1.5 text-sm ${
-                sum === option.key
-                  ? 'border-accent bg-accent text-accent-foreground'
-                  : 'border-border'
-              }`}
-            >
-              {option.label} - {option.percentage.toFixed(1)}%
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
-      <fieldset className="flex flex-col gap-2">
-        <legend className="text-sm font-medium">Spread, highest minus lowest</legend>
-        <div className="flex flex-wrap gap-2">
-          {options.spreads.map((option) => (
-            <button
-              key={option.key}
-              type="button"
-              aria-pressed={spread === option.key}
-              onClick={() => setSpread(spread === option.key ? null : option.key)}
-              className={`rounded-full border px-3 py-1.5 text-sm ${
-                spread === option.key
-                  ? 'border-accent bg-accent text-accent-foreground'
-                  : 'border-border'
-              }`}
-            >
-              {option.label} - {option.percentage.toFixed(1)}%
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
-      <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={build}
-          className="w-fit rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-foreground"
-        >
-          Fill a line with this shape
-        </button>
-        <button type="button" onClick={reset} className="text-sm underline">
-          Clear the shape
-        </button>
-      </div>
-    </section>
   );
 }
 

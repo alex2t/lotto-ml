@@ -42,7 +42,8 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 | `lib/scoring/` | `line.ts` describes a line, `notes.ts` states facts about it, `bands.ts` mirrors the analyzer's bins |
 | `lib/pick/filters.ts` | what the wheels contain |
 | `lib/pick/current-line.ts` | the tray's line and the way of picking on screen, published by `Picker` for the chat panel |
-| `components/pick/` | `Picker`; `ShakeBag` the bag and its three steps; `BagFilters` the filter cards, each saying what it does, what to look for and how many numbers it takes out |
+| `components/pick/` | `Picker`; `ShakeBag` the bag and its three steps; `BagFilters` the filter cards as slides of a carousel, each saying what it does, how many numbers it takes out, what to look for (More info) and where on Explore its figures are; `ShapeBuilder` Follow a shape - the idea in plain words, three steps, one card per part with each option's share of past draws |
+| `components/ui/Carousel.tsx` | the hero carousel: side arrows (bottom bar on a phone), indicator bars, arrow keys, swipe, wrapping at both ends; moves every 5 s until hovered, focused or a control on a slide is used |
 | `lib/chat/` | the chat panel (`../nextStep/chat.md`): `prepared.ts` layer 0 and the suggestions per page and per picking method, `figures.ts` today's figures for a prepared answer about a picker filter, `intents.ts` layer 1, `cache.ts` layer 2, `openrouter.ts` + `prompt.ts` layer 3; `context.ts` the page fact sheet, `guard.ts` the runtime `ADVICE` scan, `budget.ts` the limits, `answer.ts` the four layers in order |
 | `lib/advice.json` | the banned-word list - the one copy the source scan, the rendered scan, the chat prompt and the chat guard all read |
 | `components/chat/` | `ChatLauncher` in the nav, `ChatPanel` the native `<dialog>` sheet |
@@ -110,6 +111,12 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 - **Motion is reduced to a cross-fade, not to nothing.** `prefers-reduced-motion` turns the four
   animated moments (the three of web.md 5.2 and the chat sheet's slide) into a 160ms opacity fade with the stagger delay cleared - a number still
   arrives rather than blinking into place (web.md 5.2).
+- **A link inside the site is a path, never a URL.** `href="/explore?tab=statistics"`, not
+  `http://localhost:3000/...` - the same build serves localhost and the production domain.
+- **A carousel never moves a card someone is using.** `Carousel` stops for good once a control
+  on a slide is clicked, pauses while hovered or focused, and never autoplays under reduced
+  motion. Hidden slides are `inert` and `invisible`, so only the card on screen can be used -
+  an e2e test reaches a filter by its indicator (`Show card n: ...`) first.
 - **Fixtures are generated, not hand-edited.** `python frontend/test/make-fixtures.py` from the
   project root after an artifact's shape changes.
 - No emoji, matching the root `CLAUDE.md`.
