@@ -52,6 +52,9 @@ export async function reply(input: ChatInput, deps: ChatDeps): Promise<ChatReply
   const page = pageContext(input);
 
   const prepared = matchPrepared(input.question, page.route);
+  if (prepared?.figures) {
+    return { answer: `${prepared.answer} ${prepared.figures()}`, source: 'data', cached: false };
+  }
   if (prepared) return { answer: prepared.answer, source: 'prepared', cached: false };
 
   const data = matchIntent(input.question, page.focus);

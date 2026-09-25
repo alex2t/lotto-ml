@@ -24,7 +24,7 @@ import {
 import { clearChatCache } from '@/lib/chat/cache';
 import { pageContext } from '@/lib/chat/context';
 import { MODEL, PROVIDER } from '@/lib/chat/openrouter';
-import { SUGGESTED } from '@/lib/chat/prepared';
+import { LINE_QUESTION, METHOD_SUGGESTED, SUGGESTED } from '@/lib/chat/prepared';
 import { SYSTEM_PROMPT } from '@/lib/chat/prompt';
 import { GET, POST } from '@/app/api/chat/route';
 import { dossier } from '@/lib/data/dossier';
@@ -229,7 +229,7 @@ describe('the four limits of chat.md 5, each fired', () => {
     const { fetchFn } = fakeOpenRouter();
     for (let i = 0; i < PER_MINUTE; i++) await ask(`Burst ${'y'.repeat(i + 1)}`, fetchFn, {}, NOON + i);
     expect((await ask('Burst over', fetchFn, {}, NOON + 10)).answer).toBe(RATE_LIMITED);
-    expect((await ask('What is a freshness bin?', fetchFn, {}, NOON + 11)).source).toBe('prepared');
+    expect((await ask('What is volatility?', fetchFn, {}, NOON + 11)).source).toBe('prepared');
   });
 
   function post(body: string, headers: Record<string, string> = {}) {
@@ -260,7 +260,8 @@ describe('without a key', () => {
   it('answers from the prepared and data layers, and says the rest is unavailable', async () => {
     const noKey = (question: string) =>
       reply({ question, pathname: '/' }, { clientKey: 'a', fetchFn: fakeOpenRouter().fetchFn });
-    expect((await noKey('What is a freshness bin?')).source).toBe('prepared');
+    expect((await noKey('What is volatility?')).source).toBe('prepared');
+    expect((await noKey('What is freshness?')).source).toBe('data');
     expect((await noKey('When is the next draw?')).source).toBe('data');
     expect(await noKey(OPEN)).toEqual({ answer: NO_MODEL, source: 'unavailable', cached: false });
   });
@@ -280,6 +281,14 @@ describe('the route and the fact sheets', () => {
   it('GET returns the suggestions for the page', async () => {
     const response = await GET(new Request('http://localhost/api/chat?pathname=/numbers/7'));
     expect((await response.json()).suggestions).toEqual(SUGGESTED['/numbers']);
+  });
+
+  it('GET returns the picking method s questions on /pick, and ignores an unknown method', async () => {
+    const get = async (query: string) =>
+      (await (await GET(new Request(`http://localhost/api/chat?${query}`))).json()).suggestions;
+    expect(await get('pathname=/pick&method=shake')).toEqual(METHOD_SUGGESTED.shake);
+    expect((await get('pathname=/pick&method=shake&line=complete'))[0]).toBe(LINE_QUESTION);
+    expect(await get('pathname=/pick&method=constructor')).toEqual(SUGGESTED['/pick']);
   });
 
   it('refuses a line that is not six numbers from 1 to 47', async () => {

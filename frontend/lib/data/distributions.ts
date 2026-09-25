@@ -132,3 +132,25 @@ export function hmcCategoryDistribution(): Record<string, unknown> {
 export function consecutivePairs(): Record<string, unknown> {
   return artifact<Record<string, unknown>>('consecutivePairs');
 }
+
+export interface BonusReturn {
+  /** Share of bonus balls that came up as a main number within `window` draws. */
+  rate: number;
+  /** The same share in a fair draw. */
+  fairRate: number;
+  window: number;
+}
+
+/** How often a bonus ball came back as a main number, next to a fair draw (F-30). */
+export function bonusReturn(): BonusReturn {
+  const where = 'lotto_bonus_to_main_patterns.json';
+  const patterns = artifact<Stats>('bonusToMain');
+  const factors = requireKey<Stats>(patterns, 'transition_prediction_factors', where);
+  const timing = requireKey<Stats>(patterns, 'timing_decay_weights', where);
+  return {
+    rate: requireKey<number>(factors, 'base_rate', 'transition_prediction_factors'),
+    fairRate: requireKey<number>(factors, 'expected_random_rate', 'transition_prediction_factors'),
+    // One weight per draw of the window the analyzer counted over.
+    window: Object.keys(timing).length,
+  };
+}

@@ -1,12 +1,17 @@
 /**
- * Layer 0 of the chat panel: questions answered by hand, with no model and no data read
- * (chat.md 3).
+ * Layer 0 of the chat panel: questions answered by hand, with no model (chat.md 3).
  *
  * A hand-written answer about the site's own vocabulary is both free and better than a
  * generated one - it can say "20-25 means 20 to 24" and be right. Every answer here is
  * source, so test/wording.test.ts scans it like any page. A pattern is a set of words that
  * must all appear in the question; see match.ts.
+ *
+ * An entry about a picker filter also carries `figures`, which reads today's numbers from
+ * lib/data/ (figures.ts) and is appended to the hand-written explanation - the words are
+ * checked here, the figures come from the artifacts.
  */
+import type { PickMethod } from '@/lib/pick/current-line';
+import { bonusFigures, busyFigures, freshnessFigures, quietFigures } from './figures';
 
 /** The five destinations, as the panel groups them. */
 export type ChatRoute = '/' | '/pick' | '/explore' | '/numbers' | '/review';
@@ -17,6 +22,8 @@ export interface Prepared {
   question: string;
   patterns: string[];
   answer: string;
+  /** Today's figures, read from the artifacts and appended to the answer. */
+  figures?: () => string;
   /** The destinations this entry belongs to. Empty means it belongs everywhere. */
   routes: ChatRoute[];
 }
@@ -52,10 +59,11 @@ export const PREPARED: Prepared[] = [
   },
   {
     id: 'freshness-bin',
-    question: 'What is a freshness bin?',
-    patterns: ['freshness bin', 'freshness mean', 'bin mean', 'c0', 'c1', 'c2'],
+    question: 'What is freshness?',
+    patterns: ['freshness', 'what freshness', 'freshness bin', 'freshness mean', 'bin mean', 'c0', 'c1', 'c2'],
     answer:
-      'A number\'s freshness bin is how many times it came up in the last 5 draws, capped at two. C0 means it did not come up in those 5 draws, C1 once, and C2+ twice or more.',
+      'Freshness sorts the numbers by how often each came up lately. C0 means not at all, C1 once, and C2+ twice or more. It describes the recent past; it does not change any number\'s chance in the next draw.',
+    figures: freshnessFigures,
     routes: [],
   },
   {
@@ -323,7 +331,7 @@ export const PREPARED: Prepared[] = [
     question: 'How is the verdict worked out?',
     patterns: ['how verdict', 'verdict worked', 'verdict calculated', 'how typical worked', 'how score'],
     answer:
-      'For each of the four scored checks the site takes the share of past draws that looked no more common than your line, then averages them. An average of 0.45 or more reads typical, 0.25 or more uncommon, and below that unusual. The high-number and recent-bonus checks are shown but not scored.',
+      'Your line is set beside past draws four ways: odd and even, the sum, the spread, and the hot/medium/cold mix. If it looks like most past draws on those four, it reads typical; if it looks like only a few of them, uncommon or unusual. The count of numbers 32 and above and the recent bonus balls are shown for interest only. None of it changes the chance of winning, which is the same for every line.',
     routes: ['/pick'],
   },
   {
@@ -358,6 +366,81 @@ export const PREPARED: Prepared[] = [
     patterns: ['build line', 'how pick', 'wheel', 'wheels', 'shake', 'surprise me', 'use picker'],
     answer:
       'Five ways: spin the wheels, which add one number per band; pick by hand on the 1-47 grid; shake the bag for six at once; build from a shape such as a sum band; or let surprise me choose. Whatever you pick, the shape card describes it against past draws.',
+    routes: ['/pick'],
+  },
+  {
+    id: 'wheels',
+    question: 'How do the wheels work?',
+    patterns: ['how wheel', 'wheel work', 'more wheel', 'add wheel', 'fewer wheel', 'spin wheel'],
+    answer:
+      'There is a wheel for each group: hot, medium and cold. Spin one and it stops on a number from its group, which goes into your line. Use + and - to give a group more wheels or none - four hot wheels with one medium and one cold builds a line of 4 hot, 1 medium and 1 cold.',
+    routes: ['/pick'],
+  },
+  {
+    id: 'grid-colours',
+    question: 'What do the colours on the grid mean?',
+    patterns: ['colour', 'color', 'colours mean', 'grid mean', 'small number', 'faded'],
+    answer:
+      'Each number is tinted by its group and carries its initial: H for hot, M for medium, C for cold. The small figure beside the initial is how many times it came up in the last 10 draws. A faded number is one your filters have taken out; you can still tap it.',
+    routes: ['/pick'],
+  },
+  {
+    id: 'shake',
+    question: 'What does shaking the bag do?',
+    patterns: ['shake bag', 'shaking bag', 'what shake', 'what shaking'],
+    answer:
+      'It draws six numbers at random from whatever is left in the bag, just as the real draw does from 47. Shake the full bag, or take some numbers out first with the filters to suit your taste. Your line then shows how it compares with past draws.',
+    routes: ['/pick'],
+  },
+  {
+    id: 'bag-filters',
+    question: 'What do the filters on the bag do?',
+    patterns: ['filter', 'drop', 'why drop', 'drop number', 'take out', 'filter bag', 'bag filter'],
+    answer:
+      'Each filter takes some numbers out of the bag before you shake it, and the bag shows how many are left. They are there to shape the bag to your taste: numbers that came up a lot lately, numbers that have been quiet, freshness, recent bonus balls, or only high or only low numbers. Whatever is left, every line has the same chance.',
+    routes: ['/pick'],
+  },
+  {
+    id: 'drop-busy',
+    question: 'Why take out numbers drawn a lot lately?',
+    patterns: ['drawn lot', 'take out drawn lot', 'drop drawn', 'drawn more than', 'drop busy', 'busy number'],
+    answer:
+      'Some people like to leave out the numbers that have been coming up a lot, and others like to keep them in - it is a matter of taste. A number that came up often lately is exactly as likely in the next draw as any other.',
+    figures: busyFigures,
+    routes: ['/pick'],
+  },
+  {
+    id: 'drop-quiet',
+    question: 'Why take out numbers not drawn lately?',
+    patterns: ['not drawn', 'drop not drawn', 'not drawn lately', 'quiet number', 'not drawn at all'],
+    answer:
+      'It is the same taste the other way round: some people like a line of numbers that have been showing up. A number that has not come up for a while is exactly as likely as any other - the balls have no memory.',
+    figures: quietFigures,
+    routes: ['/pick'],
+  },
+  {
+    id: 'drop-bonus',
+    question: 'Why take out numbers that were a bonus ball?',
+    patterns: ['drop bonus', 'take out bonus', 'drop bonus ball', 'drop number bonus ball', 'were bonus', 'was bonus'],
+    answer:
+      'Some people believe a bonus ball comes back as a main number soon, so they keep recent ones in or take them out on purpose. It is a matter of taste - every line is equally likely to win.',
+    figures: bonusFigures,
+    routes: ['/pick'],
+  },
+  {
+    id: 'shape-method',
+    question: 'What does follow a shape do?',
+    patterns: ['follow shape', 'shape do', 'what shape', 'build shape'],
+    answer:
+      'You choose what the line should look like - how many odd numbers, how many 32 and above, the sum, the spread - and the picker finds six numbers that fit. Each option shows the share of past draws that had that shape, so you can see which shapes are common.',
+    routes: ['/pick'],
+  },
+  {
+    id: 'surprise',
+    question: 'What does surprise me do?',
+    patterns: ['what surprise me', 'surprise me do', 'random line', 'at random'],
+    answer:
+      'It picks six numbers from all 47 at random, ignoring every filter. A random line has exactly the same chance as one chosen with care: 1 in 10,737,573 for the jackpot.',
     routes: ['/pick'],
   },
   {
@@ -503,16 +586,16 @@ export const SUGGESTED: Record<ChatRoute, string[]> = {
   ],
   '/pick': [
     'How do I build a line?',
+    'What do hot, medium and cold mean?',
+    'What is freshness?',
     'What do typical, uncommon and unusual mean?',
-    'How is the verdict worked out?',
-    'Why does the site count numbers 32 and above?',
-    'What numbers should I play?',
+    'What are the odds of winning?',
   ],
   '/explore': [
     'What does this table show?',
     'Why does the spread band 20-25 stop at 24?',
     'What are the six-ball and seven-ball figures?',
-    'What is a freshness bin?',
+    'What is freshness?',
     'Which numbers are hot right now?',
   ],
   '/numbers': [
@@ -529,3 +612,55 @@ export const SUGGESTED: Record<ChatRoute, string[]> = {
     'When is the next draw?',
   ],
 };
+
+/**
+ * On /pick the questions follow the way of picking on screen: someone shaking the bag is
+ * looking at its filters, not at the wheels.
+ */
+export const METHOD_SUGGESTED: Record<PickMethod, string[]> = {
+  wheels: [
+    'How do the wheels work?',
+    'What do hot, medium and cold mean?',
+    'Which numbers are hot right now?',
+    'Is a cold number going to come up soon?',
+  ],
+  hand: [
+    'What do the colours on the grid mean?',
+    'Which numbers are cold right now?',
+    'Why does the site count numbers 32 and above?',
+    'How many times has 7 come up?',
+  ],
+  shake: [
+    'What does shaking the bag do?',
+    'What is freshness?',
+    'Why take out numbers drawn a lot lately?',
+    'Why take out numbers not drawn lately?',
+    'Why take out numbers that were a bonus ball?',
+  ],
+  shape: [
+    'What does follow a shape do?',
+    'What does the odd and even check mean?',
+    'Why does the spread band 20-25 stop at 24?',
+    'Why does the site count numbers 32 and above?',
+  ],
+  surprise: [
+    'What does surprise me do?',
+    'What are the odds of winning?',
+    'Is a cold number going to come up soon?',
+    'Can I save my line?',
+  ],
+};
+
+/** Asked of the tray's line once it is complete; answered from the data (intents.ts). */
+export const LINE_QUESTION = 'How does my line compare with past draws?';
+
+/** What the panel offers on opening: the page's questions, or the picking method's. */
+export function suggestionsFor(
+  route: ChatRoute,
+  method?: PickMethod,
+  lineComplete = false,
+): string[] {
+  if (route !== '/pick') return SUGGESTED[route];
+  const questions = method ? METHOD_SUGGESTED[method] : SUGGESTED['/pick'];
+  return lineComplete ? [LINE_QUESTION, ...questions] : questions;
+}

@@ -28,6 +28,7 @@ with file:line evidence.
 
 | ID | Severity | Issue | Where |
 |:--|:--|:--|:--|
+| F-69 | Low | The freshness bin test compares drawn balls with a uniform 1/3 per bin, though most numbers sit in C0 at any moment, so it reports "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py:149-150` |
 | F-67 | Low | A parity test assumes every drawn ball moves `recent_4` or `days_since_last`; a bonus ball two days after its last appearance moves neither, so the suite fails on the current data | `tests/test_walk_forward_parity.py:135-138` |
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
@@ -36,6 +37,25 @@ order, so ties resolve the same way on every run. It is not reused.
 ---
 
 ## 3. Low severity defects
+
+### F-69 - the freshness bin test measures against the wrong chance
+
+Found 2026-09-25, in passing, while choosing figures for the chat panel's freshness answer.
+
+`test_bin_distribution` (`lotto_analysis/analyzers/freshness_pattern_analyzer.py:149-150`) sets
+`expected = total_observed / len(bin_counts)` - a third of the drawn balls in each of C0, C1 and
+C2+ - and writes `lotto_freshness_patterns_validated.json` `bin_distribution_test` with
+`"Bin distribution is non-uniform (freshness bias detected)"`, chi2 735.5, p 1.9e-160. Observed:
+C0 50.8%, C1 35.6%, C2+ 13.6% of 3,500 balls.
+
+A fair draw is not uniform over the bins. A bin describes how many times a number came up in the
+last 5 draws, and at any moment most numbers are in C0 simply because 5 draws hold at most 35 of
+the 47. The test fails the same "random baseline counted the same way" rule that F-30 and F-38
+broke (`lotto_analysis/analyzers/CLAUDE.md`). Its `top_pattern_validation` compares the top
+pattern with 1/26 of draws, the same mistake. Nothing on the site or in the ML layer reads either
+block today: the chat panel quotes the pattern counts and the pool's bins, never these verdicts.
+The fix is a fair-draw expectation (simulated, as `tests/test_odd_even_affinity.py` does) and a
+test that on simulated fair draws flags about 5%.
 
 ### F-67 - a parity test's assertion cannot hold for a bonus ball
 

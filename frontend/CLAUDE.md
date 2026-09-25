@@ -41,8 +41,9 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 | `lib/data/picks.ts` | `lottery_picks.txt`, which is absent on the VPS by design |
 | `lib/scoring/` | `line.ts` describes a line, `notes.ts` states facts about it, `bands.ts` mirrors the analyzer's bins |
 | `lib/pick/filters.ts` | what the wheels contain |
-| `lib/pick/current-line.ts` | the tray's line, published by `Picker` for the chat panel to send |
-| `lib/chat/` | the chat panel (`../nextStep/chat.md`): `prepared.ts` layer 0, `intents.ts` layer 1, `cache.ts` layer 2, `openrouter.ts` + `prompt.ts` layer 3; `context.ts` the page fact sheet, `guard.ts` the runtime `ADVICE` scan, `budget.ts` the limits, `answer.ts` the four layers in order |
+| `lib/pick/current-line.ts` | the tray's line and the way of picking on screen, published by `Picker` for the chat panel |
+| `components/pick/` | `Picker`; `ShakeBag` the bag and its three steps; `BagFilters` the filter cards, each saying what it does, what to look for and how many numbers it takes out |
+| `lib/chat/` | the chat panel (`../nextStep/chat.md`): `prepared.ts` layer 0 and the suggestions per page and per picking method, `figures.ts` today's figures for a prepared answer about a picker filter, `intents.ts` layer 1, `cache.ts` layer 2, `openrouter.ts` + `prompt.ts` layer 3; `context.ts` the page fact sheet, `guard.ts` the runtime `ADVICE` scan, `budget.ts` the limits, `answer.ts` the four layers in order |
 | `lib/advice.json` | the banned-word list - the one copy the source scan, the rendered scan, the chat prompt and the chat guard all read |
 | `components/chat/` | `ChatLauncher` in the nav, `ChatPanel` the native `<dialog>` sheet |
 | `app/api/` | `draws`, `numbers`, `distributions`, `schedule`, `validate`, `chat` (public); `login`, `logout`, `download/data` (admin) |
@@ -102,7 +103,10 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
   the daily token budget and the per-client rate limit in `budget.ts`, and without
   `OPENROUTER_API_KEY` that layer is simply off. `/api/chat` is public and stays out of
   `proxy.ts`. A new prepared answer needs a question that matches it on its own page -
-  `test/chat-layers.test.ts` asks every one.
+  `test/chat-layers.test.ts` asks every one. **The suggested questions follow what is on
+  screen**: on `/pick` they are `METHOD_SUGGESTED[method]`, in plain words a player would use,
+  and none may need the model. A prepared answer about a picker filter carries `figures` from
+  `figures.ts`, so its explanation is hand-written and its numbers come from the readers.
 - **Motion is reduced to a cross-fade, not to nothing.** `prefers-reduced-motion` turns the four
   animated moments (the three of web.md 5.2 and the chat sheet's slide) into a 160ms opacity fade with the stagger delay cleared - a number still
   arrives rather than blinking into place (web.md 5.2).

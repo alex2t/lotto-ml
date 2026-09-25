@@ -1,10 +1,27 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { PREPARED, RATING_ID, SUGGESTED, type ChatRoute } from '@/lib/chat/prepared';
+import {
+  LINE_QUESTION,
+  METHOD_SUGGESTED,
+  PREPARED,
+  RATING_ID,
+  SUGGESTED,
+  suggestionsFor,
+  type ChatRoute,
+} from '@/lib/chat/prepared';
+import { bonusFigures, busyFigures, freshnessFigures, quietFigures } from '@/lib/chat/figures';
 import { matchPrepared, normalise, routeOf } from '@/lib/chat/match';
 import { matchIntent } from '@/lib/chat/intents';
 import { allDraws, latest } from '@/lib/data/draws';
 import { dossier } from '@/lib/data/dossier';
-import { highNumbers, oddEvenPatterns, sumDistributions, totalDraws } from '@/lib/data/distributions';
+import { pool } from '@/lib/data/pool';
+import {
+  bonusReturn,
+  freshnessPatterns,
+  highNumbers,
+  oddEvenPatterns,
+  sumDistributions,
+  totalDraws,
+} from '@/lib/data/distributions';
 import { byCategory, summary } from '@/lib/data/numbers';
 import { nextDrawDate } from '@/lib/data/schedule';
 import { describeLine } from '@/lib/scoring/line';
@@ -182,11 +199,97 @@ describe('layer 1 - the data answers', () => {
   });
 
   it('never answers a suggested question with the model', () => {
-    for (const [route, questions] of Object.entries(SUGGESTED)) {
-      for (const q of questions) {
-        const answered = matchPrepared(q, route as ChatRoute) ?? matchIntent(q);
-        expect(answered, `${route}: ${q}`).not.toBeNull();
-      }
+    const line = [5, 12, 23, 31, 38, 44];
+    const offered: Array<[ChatRoute, string]> = [
+      ...Object.entries(SUGGESTED).flatMap(([route, qs]) =>
+        qs.map((q): [ChatRoute, string] => [route as ChatRoute, q]),
+      ),
+      ...Object.values(METHOD_SUGGESTED).flatMap((qs) =>
+        [LINE_QUESTION, ...qs].map((q): [ChatRoute, string] => ['/pick', q]),
+      ),
+    ];
+    for (const [route, q] of offered) {
+      const answered = matchPrepared(q, route) ?? matchIntent(q, { line });
+      expect(answered, `${route}: ${q}`).not.toBeNull();
     }
+  });
+});
+
+describe('the picker s questions follow the way of picking', () => {
+  beforeEach(() => useFixtures());
+
+  it('offers each method its own questions, and the line question once the line is complete', () => {
+    expect(suggestionsFor('/pick', 'shake')).toEqual(METHOD_SUGGESTED.shake);
+    expect(suggestionsFor('/pick', 'wheels')).not.toEqual(METHOD_SUGGESTED.shake);
+    expect(suggestionsFor('/pick')).toEqual(SUGGESTED['/pick']);
+    expect(suggestionsFor('/pick', 'shake', true)[0]).toBe(LINE_QUESTION);
+    // Another page ignores a method it might be sent.
+    expect(suggestionsFor('/numbers', 'shake', true)).toEqual(SUGGESTED['/numbers']);
+  });
+
+  it('no longer offers the verdict arithmetic as a question on /pick', () => {
+    const all = [...SUGGESTED['/pick'], ...Object.values(METHOD_SUGGESTED).flat()];
+    expect(all).not.toContain('How is the verdict worked out?');
+  });
+
+  // The owner's own wording of the questions a player on Shake the bag asks.
+  it.each([
+    ['what is freshness', 'freshness-bin'],
+    ['What is freshness C0., C1, C2', 'freshness-bin'],
+    ['why would I want to drop numbers drawn more than 2 times?', 'drop-busy'],
+    ['Why take out numbers drawn a lot lately?', 'drop-busy'],
+    ['Why drop numbers not drawn at all in the last 10 draws?', 'drop-quiet'],
+    [
+      'What is the function drop number that were a bonus ball why would I want to use?',
+      'drop-bonus',
+    ],
+    ['How do the filters work?', 'bag-filters'],
+  ])('on /pick "%s" reaches %s', (question, id) => {
+    expect(matchPrepared(question, '/pick')?.id).toBe(id);
+  });
+
+  it('states the freshness bins as the pool holds them', () => {
+    const p = pool();
+    const text = freshnessFigures();
+    const busy = p.numbers.filter((n) => n.freshnessBin === p.maxBin).map((n) => n.number);
+    expect(text).toContain(`last ${p.freshnessDraws} draws`);
+    expect(text).toContain(`${p.numbers.filter((n) => n.freshnessBin === 0).length} are C0`);
+    expect(text).toContain(`${busy.length} are C${p.maxBin}+`);
+    const top = [...freshnessPatterns()].sort((a, b) => b.draws_matched - a.draws_matched)[0];
+    expect(text).toContain(`in ${top.percentage}% of draws`);
+  });
+
+  it('counts past draws by freshness over every draw on file', () => {
+    // The shares busyFigures and quietFigures state are counted from these patterns, so
+    // they must cover each draw exactly once.
+    const covered = freshnessPatterns().reduce((sum, p) => sum + p.draws_matched, 0);
+    expect(covered).toBe(totalDraws());
+    for (const p of freshnessPatterns()) expect(p.C0 + p.C1 + p.C_GE_2).toBe(6);
+  });
+
+  it('names the busy numbers and the share of draws that held one', () => {
+    const p = pool();
+    const busy = p.numbers.filter((n) => n.freshnessBin === p.maxBin).map((n) => n.number);
+    const withBusy = freshnessPatterns()
+      .filter((m) => m.C_GE_2 > 0)
+      .reduce((sum, m) => sum + m.draws_matched, 0);
+    const text = busyFigures();
+    if (busy.length) expect(text).toContain(busy.join(', '));
+    expect(text).toContain(`${Math.round((100 * withBusy) / totalDraws())}% of past draws`);
+  });
+
+  it('states the bonus return rate next to a fair draw, and the recent bonus balls', () => {
+    const b = bonusReturn();
+    const text = bonusFigures();
+    expect(b.window).toBe(10);
+    expect(text).toContain(`${(100 * b.rate).toFixed(1)}%`);
+    expect(text).toContain(`a fair draw gives ${(100 * b.fairRate).toFixed(1)}%`);
+    expect(text).toContain(pool().recentBonus.join(', '));
+  });
+
+  it('says how many numbers are quiet', () => {
+    const p = pool();
+    const quiet = p.numbers.filter((n) => n.freshnessBin === 0).length;
+    expect(quietFigures()).toContain(`Right now ${quiet} number`);
   });
 });

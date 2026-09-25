@@ -6,32 +6,27 @@ import {
   ChevronUp,
   Dices,
   Download,
-  Grid3x3,
   Hand,
   Minus,
   Plus,
   Shapes,
+  ShoppingBag,
   Sparkles,
-  X,
 } from 'lucide-react';
 import { Ball } from '@/components/ui/Ball';
+import { BagFilters } from './BagFilters';
+import { ShakeBag } from './ShakeBag';
 import { ShapeCard } from './ShapeCard';
 import { Wheel } from './Wheel';
 import { NumberGrid, NumberPeek } from './NumberGrid';
+import type { BonusReturn } from '@/lib/data/distributions';
 import type { Pool, PoolNumber } from '@/lib/data/pool';
 import type { Category } from '@/lib/data/types';
 import type { LineShape } from '@/lib/scoring/line';
 import { spreadBand, sumBand } from '@/lib/scoring/bands';
 import { drawLineImage, saveImage } from '@/lib/pick/line-image';
-import { setCurrentLine } from '@/lib/pick/current-line';
-import {
-  NO_FILTERS,
-  applyFilters,
-  chips,
-  clearFilter,
-  sample,
-  type Filters,
-} from '@/lib/pick/filters';
+import { setCurrentLine, setCurrentMethod, type PickMethod } from '@/lib/pick/current-line';
+import { NO_FILTERS, applyFilters, sample, type Filters } from '@/lib/pick/filters';
 
 const LINE_SIZE = 6;
 
@@ -43,14 +38,12 @@ const VERDICT_SENTENCE = {
 } as const;
 const BANDS: Category[] = ['hot', 'medium', 'cold'];
 
-type Method = 'wheels' | 'hand' | 'shake' | 'shape' | 'surprise';
-
-const METHODS: Array<{ id: Method; label: string; icon: typeof Dices }> = [
-  { id: 'wheels', label: 'Spin the wheels', icon: Dices },
-  { id: 'hand', label: 'Pick by hand', icon: Hand },
-  { id: 'shake', label: 'Shake the bag', icon: Grid3x3 },
-  { id: 'shape', label: 'Follow a shape', icon: Shapes },
-  { id: 'surprise', label: 'Surprise me', icon: Sparkles },
+const METHODS: Array<{ id: PickMethod; label: string; tagline: string; icon: typeof Dices }> = [
+  { id: 'wheels', label: 'Spin the wheels', tagline: 'One number per spin', icon: Dices },
+  { id: 'hand', label: 'Pick by hand', tagline: 'Tap your own six', icon: Hand },
+  { id: 'shake', label: 'Shake the bag', tagline: 'Six at once, at random', icon: ShoppingBag },
+  { id: 'shape', label: 'Follow a shape', tagline: 'Start from a pattern', icon: Shapes },
+  { id: 'surprise', label: 'Surprise me', tagline: 'Let chance choose', icon: Sparkles },
 ];
 
 export interface ShapeOption {
@@ -75,6 +68,8 @@ interface PickerProps {
   initialLine?: number[];
   /** A freshness bin to start filtered to, from /pick?bin= - Explore sends one this way. */
   initialBin?: number;
+  /** How often a bonus ball came back as a main number, for the bonus filter's card. */
+  bonus: BonusReturn;
 }
 
 export function Picker({
@@ -83,10 +78,16 @@ export function Picker({
   latestDraw,
   initialLine,
   initialBin,
+  bonus,
 }: PickerProps) {
-  const [method, setMethod] = useState<Method>(
+  const [method, setMethod] = useState<PickMethod>(
     initialLine?.length ? 'hand' : 'wheels',
   );
+  // The chat panel offers the questions for the way of picking on screen.
+  useEffect(() => {
+    setCurrentMethod(method);
+    return () => setCurrentMethod(undefined);
+  }, [method]);
   const [filters, setFilters] = useState<Filters>(
     initialBin === undefined ? NO_FILTERS : { ...NO_FILTERS, bins: [initialBin] },
   );
@@ -206,6 +207,26 @@ export function Picker({
     setLine(sample(pool.numbers.map((n) => n.number), LINE_SIZE));
   }
 
+  // Shake the bag is about what goes in the bag, so its cards sit right under it; the other
+  // ways of picking come first and are narrowed afterwards.
+  const filterCards = (
+    <BagFilters
+      pool={pool}
+      filters={filters}
+      setFilters={setFilters}
+      remaining={available.length}
+      heading={method === 'shake' ? 'Shape the bag' : 'Narrow the numbers'}
+      remainingLabel={
+        method === 'shake'
+          ? 'balls in the bag'
+          : method === 'wheels'
+            ? 'numbers left in the wheels'
+            : 'numbers left'
+      }
+      bonus={bonus}
+    />
+  );
+
   const bandNumbers = (band: Category) =>
     available.filter((n) => n.category === band && !line.includes(n.number)).map((n) => n.number);
 
@@ -213,37 +234,50 @@ export function Picker({
     <div className="flex flex-col gap-6 pb-40">
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">How do you want to pick?</h2>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {METHODS.map((m) => {
             const Icon = m.icon;
+            const on = method === m.id;
             return (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => setMethod(m.id)}
-                aria-pressed={method === m.id}
-                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
-                  method === m.id
-                    ? 'border-accent bg-accent text-accent-foreground'
-                    : 'border-border text-muted'
+                aria-pressed={on}
+                aria-describedby={`method-${m.id}`}
+                className={`flex flex-col items-start gap-2 rounded-2xl border p-3 text-left transition-all hover:-translate-y-0.5 ${
+                  on
+                    ? 'border-accent bg-accent text-accent-foreground shadow-md'
+                    : 'border-border bg-surface-raised hover:border-foreground'
                 }`}
               >
-                <Icon className="h-4 w-4" aria-hidden />
-                {m.label}
+                <Icon className="h-5 w-5" aria-hidden />
+                <span className="text-sm font-semibold">{m.label}</span>
+                {/* Hidden from the name, read as the description: the name stays the label. */}
+                <span
+                  id={`method-${m.id}`}
+                  aria-hidden
+                  className={`text-xs ${on ? '' : 'text-muted'}`}
+                >
+                  {m.tagline}
+                </span>
               </button>
             );
           })}
         </div>
       </section>
 
-      {method !== 'surprise' && (
-        <FilterPanel
-          pool={pool}
-          filters={filters}
-          setFilters={setFilters}
-          remaining={available.length}
+      {method === 'shake' && (
+        <ShakeBag
+          numbers={pool.numbers}
+          inBag={availableSet}
+          line={line}
+          shaking={shaking}
+          onShake={shakeTheBag}
         />
       )}
+
+      {method === 'shake' && filterCards}
 
       {note && (
         <p role="status" className="text-sm text-muted">
@@ -321,23 +355,6 @@ export function Picker({
         </section>
       )}
 
-      {method === 'shake' && (
-        <section className="flex flex-col items-start gap-3">
-          <p className="text-sm text-muted">
-            Six numbers at once, from the {available.length} your filters leave in.
-          </p>
-          <button
-            type="button"
-            onClick={shakeTheBag}
-            className={`rounded-full bg-accent px-5 py-3 text-sm font-medium text-accent-foreground ${
-              shaking ? 'bag-shaking' : ''
-            }`}
-          >
-            {shaking ? 'Shaking' : 'Shake'}
-          </button>
-        </section>
-      )}
-
       {method === 'shape' && (
         <ShapeBuilder
           options={shapeOptions}
@@ -366,6 +383,8 @@ export function Picker({
         </section>
       )}
 
+      {method !== 'shake' && method !== 'surprise' && filterCards}
+
       <Tray
         line={line}
         pool={pool}
@@ -379,182 +398,6 @@ export function Picker({
         onFill={() => fillRest()}
       />
     </div>
-  );
-}
-
-function FilterPanel({
-  pool,
-  filters,
-  setFilters,
-  remaining,
-}: {
-  pool: Pool;
-  filters: Filters;
-  setFilters: (f: Filters) => void;
-  remaining: number;
-}) {
-  const windows = [5, 6, 10, 25];
-  const active = chips(filters, pool.highFrom);
-
-  return (
-    <section className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-sm font-semibold">Filters on what the wheels contain</h2>
-        <p className="text-sm text-muted" aria-live="polite">
-          {remaining} numbers left in the wheels
-        </p>
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
-          Drop numbers drawn more than
-          <span className="flex items-center gap-2">
-            <input
-              type="number"
-              min={0}
-              max={6}
-              value={filters.drawnMoreThan?.times ?? ''}
-              placeholder="-"
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  drawnMoreThan: e.target.value
-                    ? {
-                        times: Number(e.target.value),
-                        draws: filters.drawnMoreThan?.draws ?? 10,
-                      }
-                    : null,
-                })
-              }
-              className="w-16 rounded border border-border bg-background p-1"
-            />
-            times in the last
-            <select
-              aria-label="window for the drawn-more-than filter"
-              value={filters.drawnMoreThan?.draws ?? 10}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  drawnMoreThan: {
-                    times: filters.drawnMoreThan?.times ?? 2,
-                    draws: Number(e.target.value),
-                  },
-                })
-              }
-              className="rounded border border-border bg-background p-1"
-            >
-              {windows.map((w) => (
-                <option key={w} value={w}>
-                  {w} draws
-                </option>
-              ))}
-            </select>
-          </span>
-        </label>
-
-        {/* A label that wraps a select takes the option text into its accessible name, so
-            the control sits beside its label rather than inside it. */}
-        <div className="flex flex-col gap-1 text-sm">
-          <label htmlFor="filter-not-drawn">Drop numbers not drawn at all in the last</label>
-          <select
-            id="filter-not-drawn"
-            value={filters.notDrawnIn ?? ''}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                notDrawnIn: e.target.value ? Number(e.target.value) : null,
-              })
-            }
-            className="w-40 rounded border border-border bg-background p-1"
-          >
-            <option value="">no limit</option>
-            {[5, 10, 25].map((w) => (
-              <option key={w} value={w}>
-                {w} draws
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <fieldset className="flex flex-col gap-1 text-sm">
-          <legend>Keep freshness bins</legend>
-          <span className="flex flex-wrap gap-2">
-            {Array.from({ length: pool.maxBin + 1 }, (_, bin) => (
-              <label key={bin} className="flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  checked={filters.bins.includes(bin)}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      bins: e.target.checked
-                        ? [...filters.bins, bin].sort()
-                        : filters.bins.filter((b) => b !== bin),
-                    })
-                  }
-                />
-                {bin === pool.maxBin ? `C${bin}+` : `C${bin}`}
-              </label>
-            ))}
-          </span>
-        </fieldset>
-
-        <div className="flex flex-col gap-2 text-sm">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={filters.dropRecentBonus}
-              onChange={(e) =>
-                setFilters({ ...filters, dropRecentBonus: e.target.checked })
-              }
-            />
-            Drop numbers that were a bonus ball in the last {pool.bonusWindow} draws
-          </label>
-          <div className="flex items-center gap-2">
-            <label htmlFor="filter-half">Half</label>
-            <select
-              id="filter-half"
-              value={filters.half ?? ''}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  half: (e.target.value || null) as Filters['half'],
-                })
-              }
-              className="rounded border border-border bg-background p-1"
-            >
-              <option value="">all numbers</option>
-              <option value="high">{pool.highFrom} and above</option>
-              <option value="low">below {pool.highFrom}</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {active.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          {active.map((chip) => (
-            <button
-              key={chip.id}
-              type="button"
-              onClick={() => setFilters(clearFilter(filters, chip.id))}
-              className="flex items-center gap-1 rounded-full border border-border px-3 py-1 text-xs"
-            >
-              {chip.label}
-              <X className="h-3 w-3" aria-hidden />
-              <span className="sr-only">Remove filter</span>
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => setFilters(NO_FILTERS)}
-            className="text-xs underline"
-          >
-            Reset filters
-          </button>
-        </div>
-      )}
-    </section>
   );
 }
 

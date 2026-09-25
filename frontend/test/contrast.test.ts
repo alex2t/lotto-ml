@@ -62,6 +62,9 @@ const PAIRS: Array<{ fg: string; bg: string; least: number; what: string }> = [
   { fg: 'muted', bg: 'background', least: BODY_TEXT, what: 'secondary text' },
   { fg: 'muted', bg: 'surface', least: BODY_TEXT, what: 'secondary text on a panel' },
   { fg: 'accent-foreground', bg: 'accent', least: BODY_TEXT, what: 'a primary button' },
+  // The Shake the bag panel is tinted with the bonus soft colour.
+  { fg: 'foreground', bg: 'bonus-soft', least: BODY_TEXT, what: 'text on the bag panel' },
+  { fg: 'muted', bg: 'bonus-soft', least: BODY_TEXT, what: 'secondary text on the bag panel' },
   // A ball: large digits on its own tint, and its border against the page.
   { fg: 'hot', bg: 'hot-soft', least: LARGE_TEXT, what: 'a hot ball' },
   { fg: 'medium', bg: 'medium-soft', least: LARGE_TEXT, what: 'a medium ball' },

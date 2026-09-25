@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Send, X } from 'lucide-react';
 import type { ChatReply, Source } from '@/lib/chat/answer';
-import { currentLine } from '@/lib/pick/current-line';
+import { currentLine, currentMethod } from '@/lib/pick/current-line';
 
 /**
  * The chat panel (chat.md 7): a right-hand sheet on a wide screen, a bottom sheet on a phone.
@@ -45,9 +45,15 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
     if (!open && d.open) d.close();
   }, [open]);
 
+  // The dialog is modal, so the picking method cannot change while it is open: reading it on
+  // opening is enough to offer the questions for what is on screen.
   useEffect(() => {
     if (!open) return;
-    fetch(`/api/chat?pathname=${encodeURIComponent(pathname)}`)
+    const query = new URLSearchParams({ pathname });
+    const method = currentMethod();
+    if (pathname === '/pick' && method) query.set('method', method);
+    if (pathname === '/pick' && currentLine().length === 6) query.set('line', 'complete');
+    fetch(`/api/chat?${query}`)
       .then((r) => r.json())
       .then((body: { suggestions: string[] }) => setSuggestions(body.suggestions));
   }, [open, pathname]);
@@ -78,6 +84,7 @@ export function ChatPanel({ open, onClose }: { open: boolean; onClose: () => voi
           pathname,
           search: window.location.search,
           line: pathname === '/pick' && line.length === 6 ? line : undefined,
+          method: pathname === '/pick' ? currentMethod() : undefined,
           history,
         }),
       });

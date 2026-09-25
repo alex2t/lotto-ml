@@ -36,8 +36,12 @@ export interface Pool {
   numbers: PoolNumber[];
   /** How many draws the bonus window covers. */
   bonusWindow: number;
+  /** The bonus balls in that window, oldest first. */
+  recentBonus: number[];
   /** The bin a number lands in when it is at or above the threshold. */
   maxBin: number;
+  /** How many draws a freshness bin counts over. */
+  freshnessDraws: number;
   highFrom: number;
 }
 
@@ -94,5 +98,13 @@ export function pool(): Pool {
     };
   });
 
-  return { numbers, bonusWindow: bonusWindow.length, maxBin, highFrom };
+  const freshnessDraws = RECENT_WINDOWS.find((w) => w.key === recentKey)!.draws;
+  return {
+    numbers,
+    bonusWindow: bonusWindow.length,
+    recentBonus: bonusWindow,
+    maxBin,
+    freshnessDraws,
+    highFrom,
+  };
 }
