@@ -127,6 +127,22 @@ def test_the_openrouter_key_comes_from_secrets_env_not_interpolation():
         assert "NEXT_PUBLIC_OPENROUTER" not in source.read_text(encoding="utf-8"), source
 
 
+def test_the_rebuild_secret_comes_from_secrets_env_and_the_example_lists_it():
+    """
+    The rebuild receiver refuses to start without REBUILD_SECRET. It arrives raw from
+    secrets.env like the other secrets, and the example file names it - a secrets.env made
+    from an example without the line gave a receiver that exited at start (F-73).
+    """
+    service = load_compose("docker-compose.prod.yml")["services"]["rebuild-receiver"]
+    sources = [entry["path"] for entry in service["env_file"] if entry.get("format") == "raw"]
+    assert sources == ["secrets.env"]
+    for entry in service.get("environment", []):
+        assert "REBUILD_SECRET" not in entry, entry
+
+    lines = (REPO_ROOT / "secrets.env.example").read_text().splitlines()
+    assert "REBUILD_SECRET=" in lines
+
+
 def test_the_env_files_are_not_committed_or_shipped():
     """secrets.env holds the admin hash and the session secret."""
     ignored = [line.strip() for line in (REPO_ROOT / ".gitignore").read_text().splitlines()]

@@ -28,51 +28,16 @@ with file:line evidence.
 
 | ID | Severity | Issue | Where |
 |:--|:--|:--|:--|
-| F-72 | Medium | The rebuild receiver matches a posted draw to the CSV by date alone: a post for a date already in the file, with different numbers, is answered `200 already had it` and the mismatch is never reported | `rebuild_webhook.py:208` |
 | F-69 | Low | The freshness bin test compares drawn balls with a uniform 1/3 per bin, though most numbers sit in C0 at any moment, so it reports "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py:149-150` |
 | F-67 | Low | A parity test assumes every drawn ball moves `recent_4` or `days_since_last`; a bonus ball two days after its last appearance moves neither, so the suite fails on the current data | `tests/test_walk_forward_parity.py:135-138` |
 | F-71 | Low | The first e2e tests of a full run time out against a freshly started server - the navigation test, and the two chat tests on desktop | `frontend/test/e2e/site.spec.ts:78`, `frontend/test/e2e/chat.spec.ts:17,33` |
-| F-73 | Low | `secrets.env.example` does not list `REBUILD_SECRET`, which the rebuild receiver refuses to start without | `secrets.env.example`, `rebuild_webhook.py:63-70` |
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
 
 ---
 
-## 2. Medium severity defects
-
-### F-72 - the receiver takes a known date as proof it has the draw
-
-Found 2026-09-25, while writing the owner's test of the n8n POST (`nextStep/whatleft.md`).
-
-`handle_draw()` decides whether a posted draw is new with `appended = draw["date"] != newest`
-(`rebuild_webhook.py:208`). It never compares the posted numbers with the row already in the
-CSV for that date. Shown on a copy of `data/`: posting 2026-09-21 with `15,24,29,30,31,38` bonus
-11 (the real row) and with `15,24,29,30,3,38` bonus 11 both answer
-
-    200 {"state": "already had it", "appended": false, ...}
-
-and the CSV keeps its row. That the file is not overwritten is right; that the caller is told
-all is well is not. n8n's Phase 2B treats `already had it` as success (`n8n.md` section 7), so a
-parse that read a draw wrongly - or a second source that disagrees with the first - on a date
-the file already holds would pass without a failure email.
-
-The fix: when the date is already in the file, compare the numbers and answer a conflict (409,
-`state: "conflict"`, both rows in the body) if they differ; n8n routes anything but the three
-success states into its failure email already. `tests/test_rebuild_webhook.py` needs a case
-that posts a known date with different numbers.
-
 ## 3. Low severity defects
-
-### F-73 - the example secrets file has no line for the rebuild secret
-
-Found 2026-09-25, same session. The rebuild receiver reads `REBUILD_SECRET` from `secrets.env`
-(`docker-compose.prod.yml` `rebuild-receiver.env_file`) and refuses to start below 16
-characters (`rebuild_webhook.py:63-70`). `secrets.env.example` lists `ADMIN_USERNAME`,
-`ADMIN_PASSWORD_HASH`, `SESSION_SECRET` and `OPENROUTER_API_KEY`, but not it; only
-`nextStep/vps.md` mentions it. A `secrets.env` made from the example gives a receiver that exits
-at start. The fix is one commented line with its generator command, and an assertion beside the
-`OPENROUTER_API_KEY` one in `tests/test_docker_stack.py`.
 
 ### F-69 - the freshness bin test measures against the wrong chance
 
@@ -144,6 +109,28 @@ timeout.
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-25 - F-72, the rebuild receiver took a known date as proof it had the draw.**
+  `handle_draw()` decided a post was already in the file with `draw["date"] != newest` and
+  never compared the numbers, so a post for 2026-09-21 with `15,24,29,30,3,38` (the row holds
+  31) was answered `200 already had it` - the same as the true draw - and n8n, which counts that
+  as success, would have sent no failure email for a misread draw. Shown on a copy of `data/`
+  before the fix. **Fixed** in `rebuild_webhook.py`: when the date is the newest row's,
+  `row_numbers()` reads that row and a difference in any main number or the bonus answers
+  `409 {"state": "conflict", "in_csv": ..., "posted": ...}`; nothing is written and nothing is
+  rebuilt, stale artifacts included, since which side is right is not known. The same draw in
+  another order is still `already had it`. `tests/test_rebuild_webhook.py`
+  `test_a_known_date_with_other_numbers_is_a_conflict_not_a_success` (a main number, the bonus)
+  failed before the fix with 200 and passes after; `test_a_known_draw_in_another_order_is_still_the_same_draw`
+  holds the other side. 35 receiver tests pass.
+
+- **2026-09-25 - F-73, the example secrets file had no line for the rebuild secret.** The
+  receiver reads `REBUILD_SECRET` raw from `secrets.env` and refuses to start below 16
+  characters, but `secrets.env.example` listed only the admin, session and OpenRouter values.
+  **Fixed**: the example now carries `REBUILD_SECRET=` with its generator command.
+  `tests/test_docker_stack.py::test_the_rebuild_secret_comes_from_secrets_env_and_the_example_lists_it`
+  failed on the missing line and passes now; it also holds that the secret reaches
+  `rebuild-receiver` only through the raw `env_file`, never `environment:`.
 
 - **2026-09-25 - F-70, the scenario table's caption described a statistic it does not count.**
   The Statistics tab captioned `lotto_odds_results.json` `scenarios` "How often a number that came
@@ -474,6 +461,8 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-73 | `secrets.env.example` had no `REBUILD_SECRET` line, so a `secrets.env` made from it gave a receiver that exited at start | `secrets.env.example`, `tests/test_docker_stack.py` |
+| F-72 | The rebuild receiver matched a posted draw by date alone, answering `200 already had it` to a known date with other numbers | `rebuild_webhook.py`, `tests/test_rebuild_webhook.py` |
 | F-70 | The Statistics tab captioned the scenario table "came up again in the next draw"; it counts N-draw windows in which some number came up T times | `frontend/lib/guide/statistics.ts`, `frontend/lib/data/statistics.ts`, `frontend/test/statistics.test.ts` |
 | F-66 | lottery.ie heads the most recent draw `aria-label="Last draw, ..."` and only the older ones `"Draw, ..."`, so both parsers skipped exactly the draw being scraped: the n8n workflow emailed `only the archive has 2026-09-21` while the row was on both pages, and the Python scraper never cross-checked the newest draw | `nextStep/n8n.md`, `scripts/scrape_lotto.py`, `tests/test_scraper_sources.py`. One source is now `one_source`, which takes the same path as `ok` - same row, same CSV contract check, same commit - and does not retry, since a late site and a blind parser are indistinguishable from inside the node. `verified: false`, the subject line and the commit message are what mark a row nothing cross-checked |
 | F-65 | The receiver decoded `drawpick.py`'s log with the locale codec, so the engine's emoji killed the reader thread on Windows and a rebuild that had succeeded was reported as a crash | `rebuild_webhook.py`, `tests/test_rebuild_webhook.py` |

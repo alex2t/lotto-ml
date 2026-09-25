@@ -140,13 +140,24 @@ def row_date(line: str):
         return None
 
 
-def newest_date(lines: list):
-    """The date of the first data row; the file is newest-first."""
+def newest_row(lines: list):
+    """The first data row; the file is newest-first."""
     for line in lines[1:]:
-        found = row_date(line)
-        if found:
-            return found
+        if row_date(line):
+            return line
     return None
+
+
+def newest_date(lines: list):
+    """The date of the first data row."""
+    row = newest_row(lines)
+    return row_date(row) if row else None
+
+
+def row_numbers(line: str) -> dict:
+    """The six main numbers of a CSV row, sorted, and its bonus - comparable with a draw."""
+    numbers = [int(value) for value in line.split(",")[1:]]
+    return {"main": sorted(numbers[:LINE_SIZE]), "bonus": numbers[LINE_SIZE]}
 
 
 def format_row(draw: dict) -> str:
@@ -196,7 +207,9 @@ def artifact_state(repo_root: str) -> tuple:
 def handle_draw(repo_root: str, body: bytes) -> tuple:
     """Append the draw if it is new, rebuild if the data changed or the artifacts are stale.
 
-    Returns (http status, response body). Raises Rejected for a draw we will not write.
+    A draw for the date already in the file with other numbers is a 409 conflict: nothing is
+    written or rebuilt. Returns (http status, response body). Raises Rejected for a draw we
+    will not write.
     """
     path = csv_path(repo_root)
     lines = csv_lines(path)
@@ -206,7 +219,21 @@ def handle_draw(repo_root: str, body: bytes) -> tuple:
     # A date older than the newest row is already rejected, so the only date that can
     # already be in the file is the newest one.
     appended = draw["date"] != newest
-    if appended:
+    if not appended:
+        # The same date is the same draw only if the numbers agree (F-72). If they do not,
+        # one side misread it: keep the row, rebuild nothing, and say so.
+        held = row_numbers(newest_row(lines))
+        posted = {"main": draw["main"], "bonus": draw["bonus"]}
+        if held != posted:
+            return 409, {
+                "state": "conflict",
+                "draw": draw["date"].isoformat(),
+                "appended": False,
+                "csv_rows": len(lines) - 1,
+                "in_csv": held,
+                "posted": posted,
+            }
+    else:
         append_draw(path, draw, lines)
 
     _, stale = artifact_state(repo_root)
