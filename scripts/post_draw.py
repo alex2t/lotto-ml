@@ -7,7 +7,7 @@ signature is the HMAC-SHA256 of those exact bytes with REBUILD_SECRET, sent in
 X-Lotto-Signature. Use it to test the receiver before n8n is wired to it:
 
     $env:REBUILD_SECRET = "<the value from secrets.env>"
-    python scripts/post_draw.py 2026-09-21 15 24 29 30 31 38 --bonus 11
+    python scripts/post_draw.py 2026-09-23 2 12 17 26 30 37 --bonus 10
 
 Standard library only, like the receiver.
 """
