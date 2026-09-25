@@ -36,6 +36,8 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 | `lib/data/numbers.ts`, `pool.ts`, `table.ts`, `dossier.ts` | the 47 numbers, joined across artifacts |
 | `lib/data/distributions.ts`, `hmc.ts` | the distributions a line is described against |
 | `lib/data/ranged.ts` | the countable distributions over a date range, counted from the draw history |
+| `lib/data/statistics.ts` | the Statistics tab's bars and the headline each collapsed card shows; the chat's `/explore` fact sheet is meant to read the same headlines |
+| `lib/guide/statistics.ts` | what each statistic measures, how to read it and what it shows - rendered by the tab's cards and shaped for the chat's prepared answers (`patterns`, `chatAnswer()`) |
 | `lib/pick/line-image.ts` | draws a finished line as a PNG, in the browser |
 | `lib/data/schedule.ts`, `staleness.ts` | the next draw, and the three freshness states |
 | `lib/data/picks.ts` | `lottery_picks.txt`, which is absent on the VPS by design |
@@ -84,6 +86,12 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
   outside Docker.
 - **No login for anything a player does.** `proxy.ts` lists the admin surface explicitly rather
   than protecting by default, so an admin failure can never take the site down.
+- **Text behind a collapsed card is still text the site says.** The Statistics tab is a list of
+  `<details>` cards (`StatCard`), closed by default, and Playwright's visible-text scan cannot see
+  inside a closed one - `site.spec.ts` opens all eleven before it checks the wording. A new
+  collapsible surface needs the same.
+- **A caption states what the analyzer counted, checked against the analyzer.** The scenario table
+  was captioned "came up again in the next draw" while it counts windows (F-67).
 - **A check that cannot fire is not a safeguard** (F-29). Every note in `lib/scoring/notes.ts` has
   a line in `test/scoring.test.ts` that fires it.
 - **Contrast is measured, not chosen.** `test/contrast.test.ts` computes the WCAG ratio for every
