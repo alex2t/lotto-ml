@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FooterMotto } from './FooterMotto';
 
 /**
  * The honest framing, on every page.
@@ -11,6 +12,7 @@ export function Footer() {
   return (
     <footer className="mt-auto border-t border-border">
       <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-6 text-sm text-muted">
+        <FooterMotto />
         <p>
           Every line is equally likely to win. This site shows what past draws looked
           like - nothing more.

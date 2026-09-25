@@ -91,6 +91,18 @@ test.describe('the pages a player meets', () => {
     });
   }
 
+  test('the site opens dark, with the motto on every page but home', async ({ page }) => {
+    const MOTTO = 'Welcome to the observatory of coincidences.';
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await expect(page.getByText(MOTTO)).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Chat/ })).toContainText('Chat');
+    for (const path of ['/pick', '/explore', '/numbers', '/numbers/7', '/review']) {
+      await page.goto(path);
+      await expect(page.getByRole('contentinfo').getByText(MOTTO)).toBeVisible();
+    }
+  });
+
   test('every destination is reachable from the navigation', async ({ page }) => {
     await page.goto('/');
     for (const name of ['Pick', 'Explore', 'Numbers', 'Review']) {

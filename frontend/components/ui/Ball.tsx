@@ -14,12 +14,16 @@ const SIZES: Record<BallSize, string> = {
   lg: 'h-16 w-16 text-2xl sm:h-20 sm:w-20 sm:text-3xl',
 };
 
-const TONE: Record<Category | 'bonus' | 'none', string> = {
-  hot: 'bg-hot-soft text-hot border-hot',
-  medium: 'bg-medium-soft text-medium border-medium',
-  cold: 'bg-cold-soft text-cold border-cold',
-  bonus: 'bg-bonus-soft text-bonus border-bonus',
-  none: 'bg-surface text-foreground border-border',
+/**
+ * A solid fill with the category's ink for the number - shared by the ball, the 1-47 grid and
+ * the bag, so every number on the site reads the same way.
+ */
+export const BALL_TONE: Record<Category | 'bonus' | 'none', string> = {
+  hot: 'bg-hot text-hot-ink border-hot',
+  medium: 'bg-medium text-medium-ink border-medium',
+  cold: 'bg-cold text-cold-ink border-cold',
+  bonus: 'bg-bonus text-bonus-ink border-bonus',
+  none: 'bg-surface-raised text-foreground border-border',
 };
 
 export const CATEGORY_INITIAL: Record<Category, string> = {
@@ -57,7 +61,7 @@ export function Ball({
 
   return (
     <span
-      className={`inline-flex flex-col items-center justify-center rounded-full border-2 font-semibold tabular-nums ${SIZES[size]} ${TONE[tone]} ${className}`}
+      className={`inline-flex flex-col items-center justify-center rounded-full border-2 font-bold tabular-nums ball-shade ${SIZES[size]} ${BALL_TONE[tone]} ${className}`}
       style={style}
       aria-label={label}
     >
