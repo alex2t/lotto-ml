@@ -149,9 +149,38 @@ test.describe('explore', () => {
 
   test('statistics shows the numbers behind a chart', async ({ page }) => {
     await page.goto('/explore?tab=statistics');
+    await page.getByText('View full breakdown').first().click();
     await page.getByText('Show the numbers').first().click();
     await expect(page.locator('table').first()).toBeVisible();
-    assertNoAdvice(await visibleText(page));
+  });
+
+  test('statistics starts as a list of collapsed cards that open on demand', async ({ page }) => {
+    await page.goto('/explore?tab=statistics');
+    const cards = page.locator('details.stat-card');
+    await expect(cards).toHaveCount(11);
+    await expect(page.locator('details.stat-card[open]')).toHaveCount(0);
+    await expect(page.getByText('How to read it', { exact: true }).first()).toBeHidden();
+
+    const sums = page.locator('details#sums');
+    const toggle = sums.locator('> summary');
+    await toggle.click();
+    await expect(sums).toHaveAttribute('open', '');
+    await expect(sums.getByText('How to read it', { exact: true })).toBeVisible();
+    await expect(sums.getByText('The sum of the six main numbers.')).toBeVisible();
+
+    await toggle.click();
+    await expect(sums).not.toHaveAttribute('open', '');
+  });
+
+  test('every statistics card, opened, says nothing that advises', async ({ page }) => {
+    await page.goto('/explore?tab=statistics');
+    for (const summary of await page.locator('details.stat-card > summary').all()) {
+      await summary.click();
+    }
+    await expect(page.locator('details.stat-card[open]')).toHaveCount(11);
+    const text = await visibleText(page);
+    expect(text).toContain(EQUAL_CHANCE);
+    assertNoAdvice(text);
   });
 
   test('freshness highlights a bin', async ({ page }) => {

@@ -157,7 +157,27 @@ html {
   animation: carousel-fill linear both;
 }
 
-/* What the four animated moments become when motion is not wanted. */
+/*
+ * A statistics card grows open rather than snapping. Browsers without ::details-content
+ * ignore this block and open the card at once, which loses nothing.
+ */
+.stat-card {
+  interpolate-size: allow-keywords;
+}
+
+.stat-card::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition:
+    block-size 260ms cubic-bezier(0.2, 0.8, 0.3, 1),
+    content-visibility 260ms allow-discrete;
+}
+
+.stat-card[open]::details-content {
+  block-size: auto;
+}
+
+/* What the five animated moments become when motion is not wanted. */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -190,6 +210,11 @@ html {
   /* The chat panel cross-fades into place rather than sliding. */
   .chat-sheet[open] {
     animation: fade-in 160ms ease-out both !important;
+  }
+
+  /* A statistics card opens at once instead of growing. */
+  .stat-card::details-content {
+    transition: none;
   }
 
   /* The bag simply does not shake; the numbers it produces still fade in. */
