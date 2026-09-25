@@ -33,9 +33,9 @@ Since 2026-09-24, on `main`:
 | F-73 | Low | `secrets.env.example` has no `REBUILD_SECRET` line |
 
 **The data is one draw behind.** The newest row in `data/irish500.csv` is Monday 21 Sep 2026
-(15, 24, 29, 30, 31, 38, bonus 11). Wednesday 23 Sep has been drawn and is not in it, which is
-why the home page shows "One draw is not in yet". Nothing brings it in by itself on the PC -
-see section 3.
+(15, 24, 29, 30, 31, 38, bonus 11). Wednesday 23 Sep (02, 12, 17, 26, 30, 37, bonus 10) has
+been drawn and is not in it, which is why the home page shows "One draw is not in yet".
+Nothing brings it in by itself on the PC - the Postman test in section 2 is what does.
 
 ---
 
@@ -53,7 +53,10 @@ can make the same request yourself.
 | On the VPS, from n8n | `POST http://lotto-rebuild:8080/rebuild` (Docker network only, never public) |
 | Health check | `GET /health` on the same host and port |
 
-### The request
+### The request - the 23 Sep 2026 draw
+
+Wednesday 23 Sep 2026: **02, 12, 17, 26, 30, 37, bonus 10**. It is not in `data/` yet (the
+newest row is 21 Sep), so this post exercises the whole chain: append, rebuild, serve.
 
 Headers:
 
@@ -62,26 +65,25 @@ Content-Type: application/json
 X-Lotto-Signature: <hex HMAC-SHA256 of the exact body, keyed with REBUILD_SECRET>
 ```
 
-Body - compact JSON, keys in this order, exactly these bytes are signed:
+Body:
 
 ```json
-{"date":"2026-09-21","main":[15,24,29,30,31,38],"bonus":11}
+{"date":"2026-09-23","main":[2,12,17,26,30,37],"bonus":10}
 ```
 
 - `date` is ISO `YYYY-MM-DD`, not in the future, and not older than the newest row in the CSV.
-- `main` is six distinct integers 1-47, in any order; `bonus` is one integer 1-47, not among them.
-- The 21 Sep draw's fifth number is **31**.
+- `main` is six distinct integers 1-47, in any order; `bonus` is one integer 1-47, not among
+  them. Write `2`, not `02` - a leading zero is not valid JSON. The CSV row is zero-padded by
+  the receiver.
+- The signature covers the exact bytes sent. Postman computes it for you with the script below.
 
-`scripts/post_draw.py` builds this body, signs it and prints the answer, exactly as the two
-n8n nodes will (`n8n.md` section 7 steps 4-5).
-
-### Running it on the PC
+### 1. Start the receiver on the PC
 
 The receiver is not part of the local stack; start it for the test. You need `REBUILD_SECRET`
 in `secrets.env` - at least 16 characters; F-73 is that the example file does not say so.
 Generate one with `python -c "import secrets; print(secrets.token_hex(32))"` and add it by hand.
 
-**Terminal 1** - the receiver, the same container the VPS runs, over your `data/`:
+In PowerShell, from the project folder - the same container the VPS runs, over your `data/`:
 
 ```powershell
 docker compose build data-engine
@@ -91,60 +93,84 @@ docker run --rm --name lotto-rebuild-test -p 127.0.0.1:8080:8080 `
   --entrypoint python lotto-data-engine:latest rebuild_webhook.py
 ```
 
-The `build` matters: the image on the PC was built on 21 Sep with the old receiver, which did
-not take the draw. It prints `rebuild receiver listening on 0.0.0.0:8080/rebuild`.
+The `build` keeps the image current: the one built on 21 Sep carried the old receiver, which did
+not take the draw. It was rebuilt on 2026-09-25, so the build is quick unless the code changed. It prints `rebuild receiver listening on 0.0.0.0:8080/rebuild`. Leave it running;
+Ctrl+C stops it when you are done.
 
-**Terminal 2** - the post:
+### 2. Set up Postman
 
-```powershell
-$env:REBUILD_SECRET = "<the same value as in secrets.env>"
-venv\Scripts\python.exe scripts\post_draw.py 2026-09-21 15 24 29 30 31 38 --bonus 11
-```
+Use the Postman desktop app - the web version cannot reach `127.0.0.1` without its agent.
 
-Stop the receiver with Ctrl+C in terminal 1.
+1. **Environment** - create one with a variable `REBUILD_SECRET`, type *secret*, value the same
+   as in `secrets.env`. Select it.
+2. **Request** - `POST http://127.0.0.1:8080/rebuild`.
+3. **Body** - *raw*, *JSON*, and paste the body above.
+4. **Scripts > Pre-request** - paste:
 
-### What to expect for 21 Sep
+   ```javascript
+   const body = pm.request.body.raw;
+   const secret = pm.environment.get("REBUILD_SECRET");
+   const signature = CryptoJS.HmacSHA256(body, secret).toString(CryptoJS.enc.Hex);
+   pm.request.headers.upsert({ key: "X-Lotto-Signature", value: signature });
+   ```
 
-21 Sep is already the newest row, so the receiver changes nothing and runs nothing:
+   It signs whatever is in the body at the moment you press Send, the way n8n's Code node will
+   (`n8n.md` section 7 step 4), so editing the body never leaves a stale signature.
+5. Optional: `GET http://127.0.0.1:8080/health` first - `{"state": "listening", ...}`.
 
-```
-200 {
-  "draw": "2026-09-21",
-  "appended": false,
-  "csv_rows": 600,
-  "state": "already had it",
-  "seconds": 0.0,
-  "artifacts": 25
+**Send.** The request waits while `drawpick.py` runs, about a minute; Postman's default
+timeout (none) is fine.
+
+(`scripts/post_draw.py 2026-09-23 2 12 17 26 30 37 --bonus 10` sends the same request from a
+terminal, if you ever want it without Postman.)
+
+### 3. What to expect
+
+**Status `200`**, with this body - `seconds` will differ:
+
+```json
+{
+  "draw": "2026-09-23",
+  "appended": true,
+  "csv_rows": 601,
+  "seconds": 60.0,
+  "artifacts": 25,
+  "state": "rebuilt"
 }
 ```
 
-This was checked on 2026-09-25 against a copy of `data/`, both with the receiver on the PC's
-Python and in the `lotto-data-engine` container. It proves the endpoint, the signing and the
-validation - not the append and the rebuild, because there is nothing to append.
+- `appended: true` - the draw was new and is now row 2 of `data/irish500.csv`:
+  `23 Sep 2026,02,12,17,26,30,37,10`
+- `csv_rows: 601` - one more than the 600 before.
+- `state: rebuilt` - `drawpick.py` ran and exited 0; `artifacts: 25` means every artifact it is
+  expected to write is there.
 
-The other answers you can provoke:
+This is what `rebuild_webhook.py` answers for a new draw (`handle_draw()`, lines 196-231) and
+what `tests/test_rebuild_webhook.py` asserts on a stubbed engine. It has not been run against
+your real `data/` - the first real append is this test.
+
+A `500` with `"state": "failed"` means `drawpick.py` failed; the body carries the tail of its
+log. The row stays in the CSV, so sending again once it is fixed repairs the artifacts
+(`rebuilt stale artifacts`).
+
+### 4. Then try these
 
 | Send | Answer |
 |:--|:--|
-| a wrong `REBUILD_SECRET` in terminal 2 | `401 {"error": "bad signature"}` |
-| `--bonus 15` (a main number) | `400 {"state": "rejected", "error": "bonus must not be one of the main numbers"}` |
-| `2026-09-19 ...` (older than the newest row) | `400 ... "date is older than the newest row (2026-09-21)"` |
-| `2026-09-21 15 24 29 30 3 38 --bonus 11` | `200 "already had it"` - **wrong**, this is F-72 |
-| a new draw, e.g. the real 23 Sep result | `200 {"appended": true, "state": "rebuilt", "seconds": ~60}` |
-| the same new draw again | `200 "already had it"` - a retry costs nothing |
-| nothing listening | the script prints `No receiver answered at ...` |
+| the same 23 Sep request again | `200 "already had it"`, `appended: false`, `seconds: 0` - a retried n8n run costs nothing |
+| 21 Sep (`15,24,29,30,31,38`, bonus 11) | `400 "date is older than the newest row (2026-09-23)"` |
+| 23 Sep with another number, e.g. `[2,12,17,26,30,36]` | `200 "already had it"` - **wrong**, this is F-72: it should be a conflict |
+| `"bonus": 12` (one of the main numbers) | `400 "bonus must not be one of the main numbers"` |
+| `"main": [2,12,17,26,30]` | `400 "main must be 6 numbers"` |
+| a date after today | `400 "date is in the future"` |
+| a different `REBUILD_SECRET` in the environment | `401 {"error": "bad signature"}` |
+| no `X-Lotto-Signature` header (script disabled) | `401 {"error": "bad signature"}` |
 
-### Testing the whole chain
+### 5. Afterwards
 
-To see a draw actually arrive, post the **real 23 Sep result** from lottery.ie (not invented
-numbers - the row goes into the history). The receiver then:
-
-1. writes `23 Sep 2026,...` as row 2 of `data/irish500.csv`, zero-padded, LF;
-2. runs `drawpick.py` inside the container - about a minute; the post waits for it;
-3. answers `"appended": true, "state": "rebuilt"` with `csv_rows` one higher (601).
-
-`data/irish500.csv` and `data/*.json` are tracked, so `git status` then shows them changed.
-Commit them as the new draw, or `git checkout -- data/` to undo the test.
+`data/irish500.csv` and `data/*.json` are tracked, so `git status` shows them changed. The 23
+Sep draw is real, so **commit them** as the new draw - or `git checkout -- data/` to undo the
+test and send it again later.
 
 ### Do I need to refresh the site?
 
@@ -179,7 +205,7 @@ draw, and the "One draw is not in yet" banner goes once the newest scheduled dra
    |
    +-- F-72: the receiver must refuse a known date with other numbers   (code, before n8n posts)
    +-- F-73: REBUILD_SECRET in secrets.env.example                       (one line)
-   +-- the 23 Sep draw into data/                                        (post it, or scrape + drawpick)
+   +-- the 23 Sep draw into data/                                        (your Postman test, section 2)
    +-- lottodraw.md: the two n8n nodes - sign, then POST                 (n8n.md section 7 steps 4-5)
    +-- web.md step 2: compare each statistic on both sites               (could send work back)
    +-- chat.md: a capped OpenRouter key in secrets.env                   (the panel runs without it)
