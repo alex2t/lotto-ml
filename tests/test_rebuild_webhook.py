@@ -373,6 +373,46 @@ def test_the_same_draw_twice_appends_once_and_rebuilds_once(receiver):
     assert len(calls) == 1, 'a retried webhook must cost nothing'
 
 
+@pytest.mark.parametrize('draw, why', [
+    ({**NEW_DRAW, 'main': [44, 10, 28, 11, 41, 3]}, 'a main number differs'),
+    ({**NEW_DRAW, 'bonus': 9}, 'the bonus differs'),
+])
+def test_a_known_date_with_other_numbers_is_a_conflict_not_a_success(receiver, draw, why):
+    """
+    F-72: the date alone once decided "already had it", so a misread draw on a date the file
+    held was answered as a success and n8n never sent its failure email. The row in the file
+    stays; the caller is told the two disagree, and nothing is rebuilt - not even stale
+    artifacts, since which row is right is not known.
+    """
+    url, calls, root = receiver
+    path = seed_csv(root, [NEW_DRAW_ROW] + EXISTING)
+    before = path.read_bytes()
+    body = body_for(draw)
+
+    status, payload = post(url, body, sign(body))
+
+    assert status == 409, why
+    assert payload['state'] == 'conflict'
+    assert payload['appended'] is False
+    assert payload['in_csv'] == {'main': [10, 11, 20, 28, 41, 44], 'bonus': 2}
+    assert payload['posted'] == {'main': sorted(draw['main']), 'bonus': draw['bonus']}
+    assert path.read_bytes() == before
+    assert calls == []
+
+
+def test_a_known_draw_in_another_order_is_still_the_same_draw(receiver):
+    url, calls, root = receiver
+    seed_csv(root, [NEW_DRAW_ROW] + EXISTING)
+    artifacts_fresh(root)
+    body = body_for({**NEW_DRAW, 'main': sorted(NEW_DRAW['main'], reverse=True)})
+
+    status, payload = post(url, body, sign(body))
+
+    assert status == 200
+    assert payload['state'] == 'already had it'
+    assert calls == []
+
+
 def test_a_retry_rebuilds_when_the_artifacts_are_older_than_the_csv(receiver):
     """
     The append succeeded and the engine then failed, so the row is in the file and the

@@ -183,7 +183,7 @@ docker network connect lotto-ml-system_default <n8n-container>
 ```
 
 The n8n nodes that build and sign it are in [`n8n.md`](n8n.md) section 7. The reply says what
-happened - `rebuilt`, `already had it`, `rebuilt stale artifacts`, `rejected` or `failed` -
+happened - `rebuilt`, `already had it`, `rebuilt stale artifacts`, `rejected`, `conflict` or `failed` -
 with `csv_rows` for the drift check against GitHub. The first three are success; anything
 else is a failure the workflow must email about, exactly like the parse failures in
 [`n8n.md`](n8n.md) section 5.

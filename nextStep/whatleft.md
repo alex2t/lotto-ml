@@ -19,18 +19,19 @@ Since 2026-09-24, on `main`:
 - the whole site dark by default in the Observatory palette (navy and gold), balls as solid
   fills with dark numbers, and the footer motto on every page but home.
 
-**Tests:** 295 pytest (294 pass - F-67), 374 vitest, 102 Playwright, all passing on
+**Tests:** 299 pytest (298 pass - F-67), 374 vitest, 102 Playwright, all passing on
 2026-09-25 apart from F-67.
 
 **Open defects** (details in `issue.md`):
 
 | ID | Severity | In short |
 |:--|:--|:--|
-| F-72 | Medium | the rebuild receiver says `already had it` for a known date even when the numbers differ |
 | F-67 | Low | a parity test's assertion cannot hold for a bonus ball; the engine is right |
 | F-69 | Low | the freshness bin test compares with a uniform 1/3, not a fair draw |
 | F-71 | Low | the first e2e tests of a full run can time out on a cold server |
-| F-73 | Low | `secrets.env.example` has no `REBUILD_SECRET` line |
+
+F-72 (the receiver matched a draw by date alone) and F-73 (no `REBUILD_SECRET` in the example
+secrets file) were fixed on 2026-09-25 and are in `issue.md`'s Appendix A.
 
 **The data is one draw behind.** The newest row in `data/irish500.csv` is Monday 21 Sep 2026
 (15, 24, 29, 30, 31, 38, bonus 11). Wednesday 23 Sep (02, 12, 17, 26, 30, 37, bonus 10) has
@@ -80,7 +81,7 @@ Body:
 ### 1. Start the receiver on the PC
 
 The receiver is not part of the local stack; start it for the test. You need `REBUILD_SECRET`
-in `secrets.env` - at least 16 characters; F-73 is that the example file does not say so.
+in `secrets.env` - at least 16 characters; `secrets.env.example` shows the line.
 Generate one with `python -c "import secrets; print(secrets.token_hex(32))"` and add it by hand.
 
 In PowerShell, from the project folder - the same container the VPS runs, over your `data/`:
@@ -159,7 +160,7 @@ log. The row stays in the CSV, so sending again once it is fixed repairs the art
 |:--|:--|
 | the same 23 Sep request again | `200 "already had it"`, `appended: false`, `seconds: 0` - a retried n8n run costs nothing |
 | 21 Sep (`15,24,29,30,31,38`, bonus 11) | `400 "date is older than the newest row (2026-09-23)"` |
-| 23 Sep with another number, e.g. `[2,12,17,26,30,36]` | `200 "already had it"` - **wrong**, this is F-72: it should be a conflict |
+| 23 Sep with another number, e.g. `[2,12,17,26,30,36]` | `409 {"state": "conflict", "in_csv": ..., "posted": ...}` - the row stays, nothing is rebuilt (F-72) |
 | `"bonus": 12` (one of the main numbers) | `400 "bonus must not be one of the main numbers"` |
 | `"main": [2,12,17,26,30]` | `400 "main must be 6 numbers"` |
 | a date after today | `400 "date is in the future"` |
@@ -203,8 +204,6 @@ draw, and the "One draw is not in yet" banner goes once the newest scheduled dra
 ```
   now
    |
-   +-- F-72: the receiver must refuse a known date with other numbers   (code, before n8n posts)
-   +-- F-73: REBUILD_SECRET in secrets.env.example                       (one line)
    +-- the 23 Sep draw into data/                                        (your Postman test, section 2)
    +-- lottodraw.md: the two n8n nodes - sign, then POST                 (n8n.md section 7 steps 4-5)
    +-- web.md step 2: compare each statistic on both sites               (could send work back)

@@ -142,8 +142,11 @@ In order, refusing at the first thing that is wrong.
 }
 ```
 
-`state` is one of `rebuilt`, `already had it`, `rebuilt stale artifacts`, `rejected` or
-`failed`. n8n treats anything but the first three as a failure to email about.
+`state` is one of `rebuilt`, `already had it`, `rebuilt stale artifacts`, `rejected`,
+`conflict` or `failed`. n8n treats anything but the first three as a failure to email about.
+`conflict` (409, F-72) is a date the file already holds with other numbers: the row stays,
+nothing is rebuilt, and the body carries both - `in_csv` and `posted` - so the email can say
+which number disagrees.
 
 ---
 

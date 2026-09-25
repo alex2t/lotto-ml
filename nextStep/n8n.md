@@ -720,7 +720,8 @@ return [{ json: { body, signature } }];
    The response carries `state` and `csv_rows`. `rebuilt`, `already had it` and
    `rebuilt stale artifacts` are all success - a retried execution is meant to be free. Anything
    else, or a `csv_rows` that does not match the row count just committed to GitHub, routes into
-   the same failure email as section 5.
+   the same failure email as section 5. That includes `conflict` (409): the receiver already
+   holds that date with other numbers, and the body's `in_csv` and `posted` say which (F-72).
 
 **`quickpick.py` never runs on the VPS** (`plan.md` 3.5). The models are the owner's, and the site
 does not read them; run it on the PC when you want new picks, then `/lotto-verify`.

@@ -188,7 +188,7 @@ npm --prefix frontend run dev
 npm --prefix frontend test
 npm --prefix frontend run test:e2e
 
-# Execute all 26 test files (295 tests, ~60s) - pytest.ini limits pytest to tests/
+# Execute all 26 test files (299 tests, ~60s) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite
