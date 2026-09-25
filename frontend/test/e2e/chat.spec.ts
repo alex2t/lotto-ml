@@ -49,6 +49,24 @@ test('says plainly when a question needs the model and there is none', async ({ 
   await expect(panel.getByText(/free-form answers are not switched on/)).toBeVisible();
 });
 
+test('offers the questions for the way of picking on screen', async ({ page }) => {
+  await page.goto('/pick');
+  await page.getByRole('button', { name: 'Shake the bag' }).click();
+  await page.getByRole('button', { name: 'Ask about this page' }).click();
+  const panel = page.getByRole('dialog');
+  await expect(panel.getByRole('button', { name: 'What does shaking the bag do?' })).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'How do the wheels work?' })).toHaveCount(0);
+
+  await panel.getByRole('button', { name: 'Why take out numbers that were a bonus ball?' }).click();
+  await expect(panel.getByText(/a fair draw gives \d+\.\d%/)).toBeVisible();
+  await expect(panel.getByText('From the data')).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Spin the wheels' }).click();
+  await page.getByRole('button', { name: 'Ask about this page' }).click();
+  await expect(panel.getByRole('button', { name: 'How do the wheels work?' })).toBeVisible();
+});
+
 test('fits the screen, and closes with Escape', async ({ page }) => {
   await page.goto('/pick');
   await page.getByRole('button', { name: 'Ask about this page' }).click();

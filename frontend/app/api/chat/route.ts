@@ -3,13 +3,14 @@
  * in proxy.ts's matcher; spending is held by the limits in lib/chat/budget.ts instead.
  *
  * POST { question, pathname, search?, line?, history? } -> { answer, source, cached }
- * GET  ?pathname=/explore                               -> { suggestions }
+ * GET  ?pathname=/pick&method=shake&line=complete       -> { suggestions }
  */
 import { NextResponse } from 'next/server';
 import { reply, type ChatInput } from '@/lib/chat/answer';
 import { MAX_BODY_BYTES, MAX_QUESTION_CHARS } from '@/lib/chat/budget';
 import { routeOf } from '@/lib/chat/match';
-import { SUGGESTED } from '@/lib/chat/prepared';
+import { METHOD_SUGGESTED, suggestionsFor } from '@/lib/chat/prepared';
+import type { PickMethod } from '@/lib/pick/current-line';
 import { InvalidLine } from '@/lib/scoring/line';
 
 export const runtime = 'nodejs';
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
         pathname: typeof body.pathname === 'string' ? body.pathname : '/',
         search: typeof body.search === 'string' ? body.search : undefined,
         line: body.line,
+        method: typeof body.method === 'string' ? body.method : undefined,
         history: Array.isArray(body.history) ? body.history : undefined,
       },
       { apiKey: process.env.OPENROUTER_API_KEY || undefined, clientKey },
@@ -70,6 +72,15 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const pathname = new URL(request.url).searchParams.get('pathname') ?? '/';
-  return NextResponse.json({ suggestions: SUGGESTED[routeOf(pathname)] });
+  const params = new URL(request.url).searchParams;
+  const method = params.get('method');
+  const known =
+    method && Object.hasOwn(METHOD_SUGGESTED, method) ? (method as PickMethod) : undefined;
+  return NextResponse.json({
+    suggestions: suggestionsFor(
+      routeOf(params.get('pathname') ?? '/'),
+      known,
+      params.get('line') === 'complete',
+    ),
+  });
 }

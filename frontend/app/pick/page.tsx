@@ -1,6 +1,11 @@
 import { pool } from '@/lib/data/pool';
 import { latestDrawDate } from '@/lib/data/schedule';
-import { highNumbers, oddEvenPatterns, sumDistributions } from '@/lib/data/distributions';
+import {
+  bonusReturn,
+  highNumbers,
+  oddEvenPatterns,
+  sumDistributions,
+} from '@/lib/data/distributions';
 import { spreadBandShares } from '@/lib/scoring/line';
 import { bandLabel } from '@/lib/scoring/bands';
 import { Picker, type ShapeOptions } from '@/components/pick/Picker';
@@ -74,6 +79,7 @@ export default async function PickPage({ searchParams }: PageProps<'/pick'>) {
         latestDraw={latestDrawDate()}
         initialLine={requestedLine(one(params.numbers))}
         initialBin={Number.isInteger(bin) && bin! >= 0 && bin! <= data.maxBin ? bin : undefined}
+        bonus={bonusReturn()}
       />
     </main>
   );

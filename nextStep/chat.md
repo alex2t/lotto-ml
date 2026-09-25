@@ -314,7 +314,9 @@ A right-hand sheet, opened by a button in `Nav`, full-width on a phone as a bott
 the pattern `components/pick/Picker.tsx`'s line tray already uses (web.md 5.3). It opens with
 four or five suggested questions for the current route, taken straight from the prepared
 catalogue, because a suggested question that is answered for free is the cheapest question
-there is and the best first impression.
+there is and the best first impression. On `/pick` they follow the way of picking on screen -
+Shake the bag asks about freshness and the filters, the wheels about hot and cold - and the
+filter answers append today's figures from the artifacts (`lib/chat/figures.ts`).
 
 Accessibility, per web.md 5.4: a real `<dialog>` or a focus-trapped panel, `aria-live="polite"`
 on the answer, keyboard reachable, and the reduced-motion cross-fade rather than a slide.

@@ -32,7 +32,17 @@ export interface PageInput {
   search?: string;
   /** The picker's tray, sent only when it holds a complete line. */
   line?: number[];
+  /** The picker's way of picking on screen. */
+  method?: string;
 }
+
+const METHOD_NAME: Record<string, string> = {
+  wheels: 'spinning the hot, medium and cold wheels',
+  hand: 'picking by hand on the 1-47 grid',
+  shake: 'shaking a bag of the numbers left after the filters',
+  shape: 'following a shape: odd/even, sum, spread, high numbers',
+  surprise: 'surprise me: six at random from all 47',
+};
 
 function facts(entries: Array<[string, string | number]>): string {
   return entries.map(([label, value]) => `- ${label}: ${value}`).join('\n');
@@ -49,10 +59,15 @@ function homeSheet(): string {
   ]);
 }
 
-function lineSheet(line: number[] | undefined): string {
-  if (!line) return facts([['line in the tray', 'none complete yet'], ['draws compared', totalDraws()]]);
+function lineSheet(line: number[] | undefined, method?: string): string {
+  const picking: Array<[string, string]> =
+    method && METHOD_NAME[method] ? [['picking by', METHOD_NAME[method]]] : [];
+  if (!line) {
+    return facts([...picking, ['line in the tray', 'none complete yet'], ['draws compared', totalDraws()]]);
+  }
   const shape = describeLine(line);
   return facts([
+    ...picking,
     ['line in the tray', shape.line.join(', ')],
     ['verdict', shape.verdict],
     ...shape.checks.map((c): [string, string] => [c.title, `${c.value} - ${c.comparison}`]),
@@ -131,7 +146,7 @@ export function pageContext(input: PageInput): PageContext {
 
   const sheet = {
     '/': homeSheet,
-    '/pick': () => lineSheet(line),
+    '/pick': () => lineSheet(line, input.method),
     '/explore': () => exploreSheet(params),
     '/numbers': () => (focusNumber ? dossierSheet(focusNumber) : numbersSheet(params)),
     '/review': reviewSheet,

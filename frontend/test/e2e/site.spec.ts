@@ -116,7 +116,7 @@ test.describe('picking a line', () => {
     await page.goto('/pick');
     const remaining = page.getByText(/numbers left in the wheels/);
     await expect(remaining).toContainText('47');
-    await page.getByLabel(/^Half$/).selectOption('high');
+    await page.getByRole('button', { name: '32 to 47' }).click();
     await expect(remaining).not.toContainText('47');
   });
 
@@ -124,7 +124,7 @@ test.describe('picking a line', () => {
     await page.goto('/pick');
     // Keeping only numbers at 32 and above empties at least one band in any real data set,
     // or leaves them all populated - either way no wheel may claim to spin an empty band.
-    await page.getByLabel(/^Half$/).selectOption('high');
+    await page.getByRole('button', { name: '32 to 47' }).click();
     const empty = page.getByRole('button', { name: 'Empty' });
     for (let i = 0; i < (await empty.count()); i += 1) {
       await expect(empty.nth(i)).toBeDisabled();
@@ -344,6 +344,23 @@ test.describe('the methods and the ways out', () => {
     await expect(page.getByText(/next to \d+ past draws/i)).toBeVisible();
 
     await assertAPlayableLine(page);
+  });
+
+  test('the bag shows what is in it, and a card takes numbers out', async ({ page }) => {
+    await page.goto('/pick');
+    await page.getByRole('button', { name: 'Shake the bag' }).click();
+    const bag = page.getByRole('list', { name: 'Numbers in the bag' });
+    await expect(bag.getByRole('listitem')).toHaveCount(47);
+    await expect(page.getByText('47 balls in the bag')).toBeVisible();
+
+    await page.getByRole('button', { name: '32 to 47' }).click();
+    await expect(bag.getByRole('listitem')).toHaveCount(16);
+    await expect(page.getByText('16 balls in the bag')).toBeVisible();
+    await expect(page.getByText('takes out 31')).toBeVisible();
+
+    await page.getByRole('button', { name: /^Shak/ }).last().click();
+    await expect(page.getByText(/6 of 6 chosen/)).toBeVisible();
+    await expect(bag.getByRole('listitem', { name: /in your line/ })).toHaveCount(6);
   });
 
   test('a wheel can be used without spinning it', async ({ page }) => {
