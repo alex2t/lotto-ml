@@ -104,6 +104,14 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
 - **Contrast is measured, not chosen.** `test/contrast.test.ts` computes the WCAG ratio for every
   pair the site paints, in both themes, and fails below AA. A new colour token goes in the pair
   list, or it is not checked.
+- **The home page has its own palette, in either theme.** It sits on a night-sky picture
+  (`public/home/background-{1280,2400}.webp`, cropped from `../image/homepage.jpg`), so
+  `.home-hero` in `globals.css` redefines every token its children read - navy, off-white, gold,
+  and the dark-theme ball colours - behind a navy overlay. `HOME_PAIRS` in the contrast test
+  measures them against `--navy`. The picture's slice moves with the width (the spiral on a
+  phone, the middle on a tablet, the whole on a desktop); `site.spec.ts` checks phone, tablet
+  and desktop for the picture, no sideways scroll and the gold call to action. The nav is sized
+  to fit a 390px phone - the home test at that width is what caught it overflowing.
 - **The chat panel never states a figure it computed, and never streams.** Every number in an
   answer comes from a `lib/data/` reader, either stated by `intents.ts` or handed to the model in
   the fact sheet; the model is told not to do arithmetic. A model answer is scanned whole by
