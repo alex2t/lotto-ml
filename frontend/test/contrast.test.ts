@@ -109,6 +109,49 @@ describe.each([
   });
 });
 
+/**
+ * The home page's own palette, over the navy overlay that covers its picture. Text is measured
+ * against --navy: the overlay darkens the picture most where the text sits.
+ */
+const HOME_PAIRS: Array<{ fg: string; bg: string; least: number; what: string }> = [
+  { fg: 'foreground', bg: 'navy', least: BODY_TEXT, what: 'home text' },
+  { fg: 'muted', bg: 'navy', least: BODY_TEXT, what: 'home secondary text' },
+  { fg: 'gold', bg: 'navy', least: BODY_TEXT, what: 'the latest draw heading' },
+  { fg: 'gold-foreground', bg: 'gold', least: BODY_TEXT, what: 'the Build my line button' },
+  { fg: 'gold-foreground', bg: 'gold-bright', least: BODY_TEXT, what: 'the button, hovered' },
+  { fg: 'gold', bg: 'navy', least: LARGE_TEXT, what: 'the button against the page' },
+  { fg: 'foreground', bg: 'banner-from', least: BODY_TEXT, what: 'banner text, left' },
+  { fg: 'foreground', bg: 'banner-to', least: BODY_TEXT, what: 'banner text, right' },
+  { fg: 'gold', bg: 'banner-from', least: LARGE_TEXT, what: 'the banner icon' },
+  { fg: 'hot', bg: 'hot-soft', least: LARGE_TEXT, what: 'a hot ball' },
+  { fg: 'medium', bg: 'medium-soft', least: LARGE_TEXT, what: 'a medium ball' },
+  { fg: 'cold', bg: 'cold-soft', least: LARGE_TEXT, what: 'a cold ball' },
+  { fg: 'bonus', bg: 'bonus-soft', least: LARGE_TEXT, what: 'a bonus ball' },
+  { fg: 'hot', bg: 'navy', least: LARGE_TEXT, what: 'a hot ball border' },
+  { fg: 'medium', bg: 'navy', least: LARGE_TEXT, what: 'a medium ball border' },
+  { fg: 'cold', bg: 'navy', least: LARGE_TEXT, what: 'a cold ball border' },
+  { fg: 'bonus', bg: 'navy', least: LARGE_TEXT, what: 'a bonus ball border' },
+];
+
+describe('the home page palette', () => {
+  const palette = tokens('.home-hero {');
+
+  it('declares every colour the pairs need', () => {
+    for (const { fg, bg } of HOME_PAIRS) {
+      expect(palette[fg], fg).toBeDefined();
+      expect(palette[bg], bg).toBeDefined();
+    }
+  });
+
+  it.each(HOME_PAIRS)('$what has enough contrast', ({ fg, bg, least }) => {
+    const measured = ratio(palette[fg], palette[bg]);
+    expect(
+      measured,
+      `${fg} on ${bg} is ${measured.toFixed(2)}:1, needs ${least}:1`,
+    ).toBeGreaterThanOrEqual(least);
+  });
+});
+
 describe('the measure itself', () => {
   it('agrees with the known extremes', () => {
     expect(ratio('#000000', '#ffffff')).toBeCloseTo(21, 1);

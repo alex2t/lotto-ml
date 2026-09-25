@@ -59,6 +59,38 @@ test.describe('the pages a player meets', () => {
     assertNoAdvice(text);
   });
 
+  for (const [label, width, height] of [
+    ['phone', 390, 844],
+    ['tablet', 820, 1180],
+    ['desktop', 1440, 900],
+  ] as const) {
+    test(`home sits on its picture at ${label} width`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      const picture = page.waitForResponse(
+        (r) => r.url().includes('/home/background-') && r.ok(),
+      );
+      await page.goto('/');
+      await picture;
+
+      const scroll = await page.evaluate(() => [
+        document.documentElement.scrollWidth,
+        document.documentElement.clientWidth,
+      ]);
+      expect(scroll[0], 'no sideways scroll').toBeLessThanOrEqual(scroll[1]);
+
+      const cta = page.getByRole('link', { name: 'Build my line' });
+      await expect(cta).toBeVisible();
+      await expect(cta).toHaveCSS('background-color', 'rgb(233, 196, 106)');
+      const box = await cta.boundingBox();
+      expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+
+      const banner = page.getByRole('main').getByRole('status');
+      if (await banner.count()) {
+        await expect(banner).toHaveCSS('background-image', /linear-gradient/);
+      }
+    });
+  }
+
   test('every destination is reachable from the navigation', async ({ page }) => {
     await page.goto('/');
     for (const name of ['Pick', 'Explore', 'Numbers', 'Review']) {

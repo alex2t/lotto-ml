@@ -30,7 +30,7 @@ with file:line evidence.
 |:--|:--|:--|:--|
 | F-69 | Low | The freshness bin test compares drawn balls with a uniform 1/3 per bin, though most numbers sit in C0 at any moment, so it reports "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py:149-150` |
 | F-67 | Low | A parity test assumes every drawn ball moves `recent_4` or `days_since_last`; a bonus ball two days after its last appearance moves neither, so the suite fails on the current data | `tests/test_walk_forward_parity.py:135-138` |
-| F-71 | Low | The e2e test "every destination is reachable from the navigation" times out in a full parallel run | `frontend/test/e2e/site.spec.ts:78` |
+| F-71 | Low | The first e2e tests of a full run time out against a freshly started server - the navigation test, and the two chat tests on desktop | `frontend/test/e2e/site.spec.ts:78`, `frontend/test/e2e/chat.spec.ts:17,33` |
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
@@ -94,6 +94,15 @@ navigated - both at the start of the run, when every worker hits a freshly start
 server at once. None of the five pages it visits was changed in that session. Not yet fixed:
 the cause (cold server, or the budget for a five-page test) is not proven, and raising the
 timeout without proving it would only hide the next slow page.
+
+**2026-09-25, later: the cold server is the cause.** In two full runs of the 100 tests, the
+first two tests of `chat.spec.ts` (`/numbers`, `/numbers/12`) failed on desktop - the launcher
+button not found, then a click timeout - and passed when rerun alone. They were not changed in
+that session. The same 100 tests, run against a server started by hand and warmed with one
+request to each destination (each under 0.2s), passed 100/100. So a fresh standalone server is
+slow to its first requests while two workers hit it at once. The fix is to warm the server
+before the tests start (a global setup that requests each destination once), not a longer
+timeout.
 
 ---
 

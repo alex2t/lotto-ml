@@ -17,8 +17,8 @@ export function Nav() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur">
-      {/* Tighter on a phone, so the four links and two buttons fit a 412px screen. */}
-      <nav className="mx-auto flex max-w-5xl items-center gap-1 px-4 py-3 sm:gap-2">
+      {/* Tighter on a phone, so the four links and two buttons fit a 390px screen. */}
+      <nav className="mx-auto flex max-w-5xl items-center gap-1 px-3 py-3 sm:gap-2 sm:px-4">
         <Link href="/" className="mr-auto text-sm font-semibold tracking-wide">
           IRISH LOTTO
         </Link>
@@ -31,7 +31,7 @@ export function Nav() {
                 <Link
                   href={link.href}
                   aria-current={active ? 'page' : undefined}
-                  className={`rounded-full px-2 py-1.5 sm:px-3 ${
+                  className={`rounded-full px-1.5 py-1.5 sm:px-3 ${
                     active
                       ? 'bg-accent text-accent-foreground'
                       : 'text-muted hover:text-foreground'
