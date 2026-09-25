@@ -23,8 +23,23 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 
 ## Priority summary
 
-No defect is open as of 2026-09-21. A new one takes the next free `F-n`, a row in this
-table in severity order, and a section with file:line evidence.
+A new defect takes the next free `F-n`, a row in this table in severity order, and a section
+with file:line evidence.
+
+| ID | Severity | Issue |
+|:--|:--|:--|
+| F-68 | Low | The e2e test "every destination is reachable from the navigation" times out in a full parallel run |
+
+### F-68 - the navigation e2e test times out under a full run
+
+`frontend/test/e2e/site.spec.ts:78` visits `/`, `/pick`, `/explore`, `/numbers` and `/review` in
+one test with Playwright's default 30s budget. Run alone it passes on desktop and mobile in about
+16s. In two full runs of the 70 tests on 2026-09-25 it failed on desktop once each - a
+`page.goto('/')` that never reached `load`, and a click on Explore from `/pick` that never
+navigated - both at the start of the run, when every worker hits a freshly started standalone
+server at once. None of the five pages it visits was changed in that session. Not yet fixed:
+the cause (cold server, or the budget for a five-page test) is not proven, and raising the
+timeout without proving it would only hide the next slow page.
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
@@ -34,6 +49,18 @@ order, so ties resolve the same way on every run. It is not reused.
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-25 - F-67, the scenario table's caption described a statistic it does not count.**
+  The Statistics tab captioned `lotto_odds_results.json` `scenarios` "How often a number that came
+  up N times in a window came up again in the next draw". `drawpick.py:350-362` writes something
+  else: for each scenario in `lotto_analysis/config/config.py` `SCENARIOS` (2 times in 5 draws, 3 in
+  6, 4 in 10, 8 in 25), the share of windows of consecutive draws, all seven balls counted, in
+  which some number came up exactly that many times, each number's windows kept from overlapping
+  (`pattern_analyzer.process_pattern_analysis`). Nothing in it looks at the next draw - the 64.5%
+  for "2 in 5" would be an absurd repeat rate for one draw. **Fixed** while rebuilding the tab as
+  collapsible cards: the card is "Repeats inside a window", its rows read "2 times in 5 draws", and
+  its explanation says what a window is. `frontend/test/statistics.test.ts` asserts the row label
+  and that its share equals `hit_count / total_windows`.
 
 - **2026-09-21 - F-63, a six-number line was scored against a seven-ball spread.**
   `lotto_odds_results.json` `draw_range` bins `max(numbers) - min(numbers)` over **all seven**
@@ -333,6 +360,7 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-67 | The Statistics tab captioned the scenario table "came up again in the next draw"; it counts N-draw windows in which some number came up T times | `frontend/lib/guide/statistics.ts`, `frontend/lib/data/statistics.ts`, `frontend/test/statistics.test.ts` |
 | F-66 | lottery.ie heads the most recent draw `aria-label="Last draw, ..."` and only the older ones `"Draw, ..."`, so both parsers skipped exactly the draw being scraped: the n8n workflow emailed `only the archive has 2026-09-21` while the row was on both pages, and the Python scraper never cross-checked the newest draw | `nextStep/n8n.md`, `scripts/scrape_lotto.py`, `tests/test_scraper_sources.py`. One source is now `one_source`, which takes the same path as `ok` - same row, same CSV contract check, same commit - and does not retry, since a late site and a blind parser are indistinguishable from inside the node. `verified: false`, the subject line and the commit message are what mark a row nothing cross-checked |
 | F-65 | The receiver decoded `drawpick.py`'s log with the locale codec, so the engine's emoji killed the reader thread on Windows and a rebuild that had succeeded was reported as a crash | `rebuild_webhook.py`, `tests/test_rebuild_webhook.py` |
 | F-64 | The rebuild receiver ran `drawpick.py` on whatever CSV was already on the VPS, and nothing put the new draw there - every webhook regenerated the same artifacts from unchanged input, and a retried n8n execution paid for a second pointless run | `rebuild_webhook.py`, `tests/test_rebuild_webhook.py`, `nextStep/lottodraw.md`, `nextStep/n8n.md`, `nextStep/vps.md` |

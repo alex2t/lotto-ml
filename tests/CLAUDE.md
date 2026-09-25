@@ -57,9 +57,9 @@ This is the same list `.claude/skills/lotto-verify/verify.py` runs. Keep the two
 
 The Next.js site has its own suites in `../frontend/`, which `pytest` does not run:
 
-- `npm --prefix frontend test` - 99 vitest tests over the data layer, the scoring and the wording
+- `npm --prefix frontend test` - 167 vitest tests over the data layer, the scoring and the wording
   source lint, against the trimmed fixtures in `frontend/test/fixtures/`;
-- `npm --prefix frontend run test:e2e` - 44 Playwright tests, desktop and mobile, over the rendered
+- `npm --prefix frontend run test:e2e` - 70 Playwright tests, desktop and mobile, over the rendered
   pages, including the wording guard on a typical and an unusual line;
 - `npm --prefix frontend run test:integration` - the one that appends a row to a copy of the CSV,
   runs `drawpick.py` and asserts the new draw is served without a restart.
