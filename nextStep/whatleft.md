@@ -19,19 +19,19 @@ Since 2026-09-24, on `main`:
 - the whole site dark by default in the Observatory palette (navy and gold), balls as solid
   fills with dark numbers, and the footer motto on every page but home.
 
-**Tests:** 302 pytest (301 pass - F-67), 374 vitest, 102 Playwright, all passing on
-2026-09-25 apart from F-67.
+**Tests:** 307 pytest, all passing on 2026-09-26; 374 vitest and 102 Playwright, all passing on
+2026-09-25.
 
 **Open defects** (details in `issue.md`):
 
 | ID | Severity | In short |
 |:--|:--|:--|
-| F-67 | Low | a parity test's assertion cannot hold for a bonus ball; the engine is right |
-| F-69 | Low | the freshness bin test compares with a uniform 1/3, not a fair draw |
 | F-71 | Low | the first e2e tests of a full run can time out on a cold server |
 
 F-72 (the receiver matched a draw by date alone) and F-73 (no `REBUILD_SECRET` in the example
-secrets file) were fixed on 2026-09-25 and are in `issue.md`'s Appendix A.
+secrets file) were fixed on 2026-09-25, F-67 (a parity test that could not hold for a bonus ball)
+and F-69 (the freshness tests measured against a uniform spread) on 2026-09-26; all are in
+`issue.md`'s Appendix A.
 
 **The data is one draw behind.** The newest row in `data/irish500.csv` is Monday 21 Sep 2026
 (15, 24, 29, 30, 31, 38, bonus 11). Wednesday 23 Sep (02, 12, 17, 26, 30, 37, bonus 10) has
@@ -225,5 +225,4 @@ Details of each step are where they were: [`n8n.md`](n8n.md) sections 6-8,
 and [`vps.md`](vps.md) for the deployment. Nothing below the monitoring week can start before
 real draws have come through it.
 
-**Also open, not blocking publication:** F-67 (a one-line test change waiting on a decision),
-F-69 (the freshness verdict nobody reads yet), F-71 (warm the e2e server before the tests).
+**Also open, not blocking publication:** F-71 (warm the e2e server before the tests).

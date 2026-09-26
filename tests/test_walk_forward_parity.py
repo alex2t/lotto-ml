@@ -120,22 +120,20 @@ def test_serving_row_changes_when_a_draw_is_added(draws):
     """
     The property the whole pipeline depends on: adding a draw must move the features
     the models see. If it does not, every model re-picks the same numbers forever.
+
+    total_count is counted over all 7 balls from the first draw, so the new draw raises
+    it by exactly one for each ball it drew, bonus included, and for no other number.
+    recent_4 and days_since_last need not move (F-67): recent_4 is over the main six in
+    a sliding window, and a ball drawn again two days after the last draw keeps its gap.
     """
     before = PointInTimeFeatureEngine(draws[:-1], {}).extract_features_for_next_draw()
     after = PointInTimeFeatureEngine(draws, {}).extract_features_for_next_draw()
 
-    changed = {
-        num for num in NUMBERS
-        if any(before[num][k] != after[num][k]
-               for k in ('days_since_last', 'recent_4', 'recent_9', 'total_count'))
-    }
-    # The 7 drawn numbers must move; recency shifts touch far more than that.
-    assert len(changed) >= 7, f"only {len(changed)} numbers changed after a new draw"
-
-    for num in draws[-1]['numbers']:
-        assert before[num]['recent_4'] != after[num]['recent_4'] or \
-               before[num]['days_since_last'] != after[num]['days_since_last'], \
-               f"drawn number {num} did not move"
+    drawn = set(draws[-1]['numbers'])
+    assert len(drawn) == 7
+    for num in NUMBERS:
+        rise = after[num]['total_count'] - before[num]['total_count']
+        assert rise == (1 if num in drawn else 0), f"number {num}: total_count rose by {rise}"
 
 
 def test_engine_rejects_indices_past_the_next_draw(engine):
