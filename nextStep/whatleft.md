@@ -24,9 +24,7 @@ Since 2026-09-24, on `main`:
 
 **Open defects** (details in `issue.md`):
 
-| ID | Severity | In short |
-|:--|:--|:--|
-| F-71 | Low | the first e2e tests of a full run can time out on a cold server |
+None as of 2026-09-26.
 
 F-72 (the receiver matched a draw by date alone) and F-73 (no `REBUILD_SECRET` in the example
 secrets file) were fixed on 2026-09-25, F-67 (a parity test that could not hold for a bonus ball)
@@ -225,4 +223,5 @@ Details of each step are where they were: [`n8n.md`](n8n.md) sections 6-8,
 and [`vps.md`](vps.md) for the deployment. Nothing below the monitoring week can start before
 real draws have come through it.
 
-**Also open, not blocking publication:** F-71 (warm the e2e server before the tests).
+**Also open, not blocking publication:** nothing. F-71 (occasional e2e timeouts on the PC) was
+closed on 2026-09-26 as a test-only effect of browser load.
