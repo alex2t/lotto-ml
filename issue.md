@@ -28,7 +28,6 @@ with file:line evidence.
 
 | ID | Severity | Issue | Where |
 |:--|:--|:--|:--|
-| F-67 | Low | A parity test assumes every drawn ball moves `recent_4` or `days_since_last`; a bonus ball two days after its last appearance moves neither, so the suite fails on the current data | `tests/test_walk_forward_parity.py:135-138` |
 | F-71 | Low | The first e2e tests of a full run time out against a freshly started server - the navigation test, and the two chat tests on desktop | `frontend/test/e2e/site.spec.ts:78`, `frontend/test/e2e/chat.spec.ts:17,33` |
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
@@ -37,32 +36,6 @@ order, so ties resolve the same way on every run. It is not reused.
 ---
 
 ## 3. Low severity defects
-
-### F-67 - a parity test's assertion cannot hold for a bonus ball
-
-Found 2026-09-24, in passing, while running the full suite for the chat panel (F-68). It fails
-identically on `main` at `5f46fac`, so it predates that work.
-
-`test_serving_row_changes_when_a_draw_is_added` (`tests/test_walk_forward_parity.py:119`) builds
-the serving row before and after the latest draw, then asserts at lines 135-138 that **each of
-the seven** drawn numbers changed `recent_4` or `days_since_last`. It fails with
-`drawn number 11 did not move`.
-
-The engine is right; the assertion is wrong for a bonus ball:
-
-- 11 was a main number on 2026-09-19 and the **bonus** on 2026-09-21 (the newest draw).
-- `recent_4` is counted over the main six (`walk_forward.py:365`, `cum_main`; the convention in
-  `ml_lotto/features/CLAUDE.md`), so a bonus appearance does not raise it, and the window's
-  slide dropped no appearance of 11.
-- `days_since_last` counts to the next draw date (`walk_forward.py:349`, C-6b): before, 19 Sep
-  to 21 Sep = 2; after, 21 Sep to 23 Sep = 2. Equal, correctly.
-
-The test is right in spirit - a new draw must move the features of every ball it drew - but it
-checks two features that do not have to move. `total_count` is counted over all seven
-(`walk_forward.py:348`) and must rise by exactly one for every drawn ball, bonus included; the
-same check on the main six can keep `recent_4`. The fix is to assert that, rather than the
-either/or. Not changed here: it is outside the chat panel's scope, and a test is changed only
-after saying why (`tests/CLAUDE.md`).
 
 ### F-71 - the navigation e2e test times out under a full run
 
@@ -464,6 +437,7 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-67 | A parity test required every drawn ball to move `recent_4` or `days_since_last`; a bonus ball drawn two days after its last appearance moves neither, so the suite failed on the current data | `tests/test_walk_forward_parity.py` |
 | F-69 | The freshness bin, pattern and top-pattern tests measured against a uniform spread, so `lotto_freshness_patterns_validated.json` reported "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py`, `tests/test_freshness_fair_draw.py` |
 | F-75 | Streamlit was published on the VPS at `0.0.0.0:8501`, plain HTTP around the proxy | `docker-compose.prod.yml`, `tests/test_docker_stack.py`, `nextStep/vps.md` 3.4 |
 | F-74 | `vps.md` updated the server with a bare `git pull`, which git refuses once the receiver has written `data/` | `nextStep/vps.md` section 5 |
@@ -563,6 +537,28 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-67 - A parity test's assertion could not hold for every draw
+
+Found 2026-09-24 while running the full suite for the chat panel; fixed 2026-09-26.
+
+**Root cause.** `test_serving_row_changes_when_a_draw_is_added` required each of the seven balls
+of the newest draw to change `recent_4` or `days_since_last` in the serving row. It failed with
+`drawn number 11 did not move`: 11 was a main number on 2026-09-19 and the bonus on 2026-09-21.
+`recent_4` counts the main six only, so the bonus appearance does not raise it, and
+`days_since_last` counts to the next draw date - 2 days before (19 to 21 Sep), 2 days after (21 to
+23 Sep). The engine was right; neither feature has to move. The suggestion recorded here when it
+was found - keep `recent_4` for the main six - would have been wrong too: `recent_4` is a sliding
+window, and a main ball that was also a main ball in the draw leaving the window nets zero.
+
+**Fix.** The test asserts what must always hold: `total_count` is counted over all seven balls
+from the first draw, so the newest draw raises it by exactly one for each ball it drew, bonus
+included, and by zero for every other number. This is stricter than the old check, which
+allowed any number of other changes.
+
+**Measured.** `tests/test_walk_forward_parity.py` 19/20 -> 20/20. The new assertion still fires on
+the failure it guards: a serving row built with `extract_features_at_draw(N-1)`, stale by one
+draw, is caught.
 
 ### F-69 - The freshness tests measured against a uniform spread
 
