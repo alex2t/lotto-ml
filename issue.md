@@ -26,9 +26,7 @@ moves to section 6 (Improvements done). Nothing open lives only in a list or in 
 A new defect takes the next free `F-n`, a row in this table in severity order, and a section
 with file:line evidence.
 
-| ID | Severity | Issue | Where |
-|:--|:--|:--|:--|
-| F-71 | Low | The first e2e tests of a full run time out against a freshly started server - the navigation test, and the two chat tests on desktop | `frontend/test/e2e/site.spec.ts:78`, `frontend/test/e2e/chat.spec.ts:17,33` |
+None open as of 2026-09-26.
 
 F-37 was withdrawn on review, 2026-09-19: the `max()` calls it cited run over dicts filled in draw
 order, so ties resolve the same way on every run. It is not reused.
@@ -37,25 +35,7 @@ order, so ties resolve the same way on every run. It is not reused.
 
 ## 3. Low severity defects
 
-### F-71 - the navigation e2e test times out under a full run
-
-`frontend/test/e2e/site.spec.ts:78` visits `/`, `/pick`, `/explore`, `/numbers` and `/review` in
-one test with Playwright's default 30s budget. Run alone it passes on desktop and mobile in about
-16s. In two full runs of the 70 tests on 2026-09-25 it failed on desktop once each - a
-`page.goto('/')` that never reached `load`, and a click on Explore from `/pick` that never
-navigated - both at the start of the run, when every worker hits a freshly started standalone
-server at once. None of the five pages it visits was changed in that session. Not yet fixed:
-the cause (cold server, or the budget for a five-page test) is not proven, and raising the
-timeout without proving it would only hide the next slow page.
-
-**2026-09-25, later: the cold server is the cause.** In two full runs of the 100 tests, the
-first two tests of `chat.spec.ts` (`/numbers`, `/numbers/12`) failed on desktop - the launcher
-button not found, then a click timeout - and passed when rerun alone. They were not changed in
-that session. The same 100 tests, run against a server started by hand and warmed with one
-request to each destination (each under 0.2s), passed 100/100. So a fresh standalone server is
-slow to its first requests while two workers hit it at once. The fix is to warm the server
-before the tests start (a global setup that requests each destination once), not a longer
-timeout.
+None open.
 
 ---
 
@@ -437,6 +417,7 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-71 | The first e2e tests of a full run timed out now and then on the owner's PC; closed as a test-only effect of browser load, not a site defect | nothing changed - see the write-up |
 | F-67 | A parity test required every drawn ball to move `recent_4` or `days_since_last`; a bonus ball drawn two days after its last appearance moves neither, so the suite failed on the current data | `tests/test_walk_forward_parity.py` |
 | F-69 | The freshness bin, pattern and top-pattern tests measured against a uniform spread, so `lotto_freshness_patterns_validated.json` reported "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py`, `tests/test_freshness_fair_draw.py` |
 | F-75 | Streamlit was published on the VPS at `0.0.0.0:8501`, plain HTTP around the proxy | `docker-compose.prod.yml`, `tests/test_docker_stack.py`, `nextStep/vps.md` 3.4 |
@@ -537,6 +518,28 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-71 - Closed without a change: e2e timeouts on a loaded PC
+
+Found 2026-09-25; closed 2026-09-26 on the owner's decision.
+
+**What it was.** A few Playwright tests - the navigation test, then the chat tests - timed out
+now and then at the start of a full run and passed when rerun. The note recorded here blamed a
+cold server. **That was wrong.** Measured on a freshly started standalone server, the first
+request to each destination takes 0.1-0.45s and `/api/chat` 0.04s - nowhere near a 10s timeout.
+A global setup that warmed every destination before the tests (tried 2026-09-26) did not stop
+it: the next full run still failed two chat tests.
+
+**What it is.** Browser load on the PC. The same suite with 4 workers instead of 2 failed 50 of
+204 tests and took 17 minutes; with 2 it fails 0-2 per run. A starved browser clicks the chat
+button before the page has hydrated, the click does nothing and the panel never opens.
+
+**Why closed.** It affects only the e2e suite on the owner's PC, where several Chromes share
+one machine. The hosted site is not involved: the server is fast from its first request, and
+each visitor uses their own device. The one real-world echo is a tap in the first moment of
+a page load on a slow phone, which is normal for a server-rendered React site. If the suite
+ever needs to be quiet, the fix is for a test to wait for hydration before clicking - not a
+warm-up and not a longer timeout.
 
 ### F-67 - A parity test's assertion could not hold for every draw
 
