@@ -83,10 +83,12 @@ The Code node that signs it, before the HTTP Request node:
 
 ```javascript
 const crypto = require('crypto');
+// The field names are the ones result() in n8n.md section 3.4 writes (F-76).
+const draw = $('Parse and validate').first().json;
 const body = JSON.stringify({
-  date: $json.isoDate,
-  main: $json.mainNumbers,
-  bonus: $json.bonusNumber,
+  date: draw.targetKey,   // "2026-09-23", yyyy-MM-dd
+  main: draw.numbers,     // the six main numbers, sorted
+  bonus: draw.bonus,
 });
 const signature = crypto
   .createHmac('sha256', $env.REBUILD_SECRET)

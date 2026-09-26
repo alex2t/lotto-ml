@@ -700,10 +700,11 @@ Guards, all of which must hold before the commit node runs:
 ```javascript
 const crypto = require('crypto');
 const draw = $('Parse and validate').first().json;
+// The field names are the ones result() in section 3.4 writes (F-76).
 const body = JSON.stringify({
-  date: draw.isoDate,
-  main: draw.mainNumbers,
-  bonus: draw.bonusNumber,
+  date: draw.targetKey,   // "2026-09-23", yyyy-MM-dd
+  main: draw.numbers,     // the six main numbers, sorted
+  bonus: draw.bonus,
 });
 const signature = crypto
   .createHmac('sha256', $env.REBUILD_SECRET)
