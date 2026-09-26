@@ -47,6 +47,7 @@ TEST_FILES = [
     'tests/test_artifact_rounding.py',
     'tests/test_number_pairs.py',
     'tests/test_rebuild_webhook.py',
+    'tests/test_freshness_fair_draw.py',
 ]
 
 # Validation window: 60 draws, 47 numbers, 7 winners per draw

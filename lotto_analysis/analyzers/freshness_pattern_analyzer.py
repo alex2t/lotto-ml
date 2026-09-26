@@ -5,10 +5,11 @@ Freshness Pattern Analyzer - Statistical Validation Edition
 
 Uses scipy to validate freshness pattern distributions with statistical rigor.
 
-Statistical Methods:
-- Chi-square goodness-of-fit test for pattern significance
-- Chi-square test for bin distribution validation
-- Z-scores for individual pattern deviation
+Every test measures against what a fair draw gives (F-69), computed exactly by
+`fair_pattern_probabilities()` - never a uniform spread over bins or patterns:
+- Chi-square goodness-of-fit test of the pattern counts
+- Chi-square test of the bin counts
+- One-sided binomial test of the most common pattern
 
 Author: Statistical Analysis Module
 Version: 1.0 (Scipy Edition)
@@ -16,146 +17,144 @@ Version: 1.0 (Scipy Edition)
 
 import json
 import sys
+from itertools import product
+from math import comb
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 from collections import defaultdict
 from scipy import stats
 import numpy as np
+from lotto_analysis.config.config import MAX_NUMBER
 from lotto_analysis.utils.serialization import round_floats
+
+
+BALLS_PER_DRAW = 7
+MAIN_PER_DRAW = 6
+MIN_EXPECTED = 5
+
+
+def bin_keys(c_max: int) -> List[str]:
+    """The bin names in order: C0 .. C{c_max-1}, then C_GE_{c_max}."""
+    return [f'C{i}' for i in range(c_max)] + [f'C_GE_{c_max}']
+
+
+def fair_pattern_probabilities(
+    window: int,
+    c_max: int,
+    balls: int = BALLS_PER_DRAW,
+    pool: int = MAX_NUMBER
+) -> Dict[Tuple[int, ...], float]:
+    """
+    Chance of each freshness pattern among a draw's balls when every draw is fair.
+
+    A ball's bin is how many of the `window` preceding draws had it among their main six,
+    capped at `c_max`. Each preceding draw hits a given set of k of the balls with chance
+    C(pool - balls, 6 - k) / C(pool, 6), and a hit moves a ball up one bin. The pattern is
+    the count of balls in each bin, so this is exact rather than simulated.
+    """
+    all_draws = comb(pool, MAIN_PER_DRAW)
+    states = {(balls,) + (0,) * c_max: 1.0}
+    for _ in range(window):
+        following = defaultdict(float)
+        for state, p in states.items():
+            for hits in product(*(range(n + 1) for n in state)):
+                k = sum(hits)
+                if k > MAIN_PER_DRAW:
+                    continue
+                ways = np.prod([comb(n, h) for n, h in zip(state, hits)])
+                chance = ways * comb(pool - balls, MAIN_PER_DRAW - k) / all_draws
+                moved = [n - h for n, h in zip(state, hits)]
+                for i, h in enumerate(hits):
+                    moved[min(i + 1, c_max)] += h
+                following[tuple(moved)] += p * chance
+        states = following
+    return dict(states)
+
+
+def _pattern_counts(pattern_distributions: List[Dict[str, Any]], c_max: int) -> Dict[Tuple[int, ...], int]:
+    """Draws matched per pattern, keyed by the pattern's bin counts."""
+    return {
+        tuple(p[key] for key in bin_keys(c_max)): p['draws_matched']
+        for p in pattern_distributions
+    }
 
 
 def calculate_pattern_significance(
     pattern_distributions: List[Dict[str, Any]],
-    total_draws: int,
+    fair_probs: Dict[Tuple[int, ...], float],
     c_max: int
 ) -> Dict[str, Any]:
     """
-    Validate freshness pattern distributions using chi-square goodness-of-fit test.
+    Chi-square test of the pattern counts against a fair draw.
 
-    Tests whether observed pattern distributions deviate significantly from
-    a uniform distribution (null hypothesis: all patterns equally likely).
-
-    Args:
-        pattern_distributions: List of pattern distribution dictionaries
-        total_draws: Total number of draws analyzed
-        c_max: Maximum recency threshold
-
-    Returns:
-        Dictionary with statistical validation results
+    Patterns a fair draw expects fewer than 5 times are pooled into one cell, so the
+    chi-square approximation holds.
     """
-    if not pattern_distributions:
-        return {
-            'significant': False,
-            'chi2_stat': 0.0,
-            'p_value': 1.0,
-            'num_patterns': 0
+    observed_by_pattern = _pattern_counts(pattern_distributions, c_max)
+    total = sum(observed_by_pattern.values())
+
+    residuals = {}
+    observed, expected = [], []
+    pooled_observed, pooled_expected = 0, 0.0
+    for pattern, prob in sorted(fair_probs.items(), key=lambda item: -item[1]):
+        obs = observed_by_pattern.get(pattern, 0)
+        exp = prob * total
+        if exp < MIN_EXPECTED:
+            pooled_observed += obs
+            pooled_expected += exp
+            continue
+        observed.append(obs)
+        expected.append(exp)
+        name = ', '.join(f'{key}={n}' for key, n in zip(bin_keys(c_max), pattern))
+        residual = (obs - exp) / np.sqrt(exp)
+        residuals[name] = {
+            'observed': int(obs),
+            'expected': float(exp),
+            'residual': float(residual),
+            'significant': bool(abs(residual) > 1.96)
         }
-
-    # Extract observed counts
-    observed_counts = []
-    pattern_names = []
-
-    for pattern in pattern_distributions:
-        # Use 'draws_matched' (actual field) instead of 'count'
-        count = pattern.get('draws_matched', pattern.get('count', 0))
-        if count > 0:  # Only include patterns that actually occurred
-            observed_counts.append(count)
-            pattern_names.append(pattern.get('pattern', 'unknown'))
-
-    if len(observed_counts) < 2:
-        return {
-            'significant': False,
-            'chi2_stat': 0.0,
-            'p_value': 1.0,
-            'num_patterns': len(observed_counts)
-        }
-
-    # Chi-square goodness-of-fit test (null: uniform distribution)
-    observed = np.array(observed_counts)
-    total_observed = sum(observed_counts)
-    expected_freq = total_observed / len(observed_counts)
-    expected = np.full(len(observed_counts), expected_freq)
+    observed.append(pooled_observed)
+    expected.append(pooled_expected)
 
     chi2_stat, p_value = stats.chisquare(observed, expected)
-
-    # Calculate effect size (Cramér's V)
-    cramers_v = np.sqrt(chi2_stat / (total_observed * (len(observed_counts) - 1)))
-
-    # Calculate standardized residuals for each pattern
-    residuals = {}
-    for i, pattern_name in enumerate(pattern_names):
-        residual = (observed[i] - expected[i]) / np.sqrt(expected[i])
-        residuals[pattern_name] = {
-            'observed': int(observed[i]),
-            'expected': float(expected[i]),
-            'residual': float(residual),
-            'significant': bool(abs(residual) > 1.96)  # 95% confidence
-        }
+    cramers_v = np.sqrt(chi2_stat / (total * (len(observed) - 1)))
 
     return {
         'significant': bool(p_value < 0.05),
         'chi2_stat': float(chi2_stat),
         'p_value': float(p_value),
         'cramers_v': float(cramers_v),
-        'num_patterns': len(observed_counts),
-        'degrees_of_freedom': len(observed_counts) - 1,
+        'num_patterns': len(observed_by_pattern),
+        'degrees_of_freedom': len(observed) - 1,
+        'pooled_rare_patterns': {'observed': int(pooled_observed), 'expected': float(pooled_expected)},
         'pattern_residuals': residuals,
-        'interpretation': _interpret_pattern_test(p_value, cramers_v)
+        'interpretation': _interpret_pattern_test(p_value)
     }
 
 
 def calculate_bin_distribution_test(
     pattern_distributions: List[Dict[str, Any]],
+    fair_probs: Dict[Tuple[int, ...], float],
     c_max: int
 ) -> Dict[str, Any]:
     """
-    Test whether recency bins (C0, C1, ..., C_max) follow expected distribution.
+    Chi-square test of how many drawn balls fall in each freshness bin, against a fair draw.
 
-    Uses chi-square test to validate that the distribution of numbers across
-    recency bins is not random.
-
-    Args:
-        pattern_distributions: List of pattern distribution dictionaries
-        c_max: Maximum recency threshold
-
-    Returns:
-        Dictionary with bin distribution test results
+    In a fair draw most balls are in C0 - five draws hold at most 30 of the 47 numbers - so
+    the expected share per bin comes from `fair_probs`, never a third each.
     """
-    # Aggregate counts per bin across all patterns
-    bin_counts = defaultdict(int)
-
-    for pattern in pattern_distributions:
-        # Use 'draws_matched' (actual field) instead of 'count'
-        count = pattern.get('draws_matched', pattern.get('count', 0))
-        for i in range(c_max + 1):
-            if i < c_max:
-                bin_key = f'C{i}'
-            else:
-                bin_key = f'C_GE_{c_max}'
-
-            bin_value = pattern.get(bin_key, 0)
-            bin_counts[bin_key] += bin_value * count  # Weight by pattern frequency
-
-    if len(bin_counts) < 2:
-        return {
-            'significant': False,
-            'chi2_stat': 0.0,
-            'p_value': 1.0
-        }
-
-    # Test against uniform distribution
-    observed = np.array(list(bin_counts.values()))
-    total_observed = sum(observed)
-    expected_freq = total_observed / len(bin_counts)
-    expected = np.full(len(bin_counts), expected_freq)
+    keys = bin_keys(c_max)
+    observed = np.zeros(len(keys))
+    for pattern, count in _pattern_counts(pattern_distributions, c_max).items():
+        observed += np.array(pattern) * count
+    fair_share = sum(np.array(pattern) * p for pattern, p in fair_probs.items()) / BALLS_PER_DRAW
+    total_observed = observed.sum()
+    expected = fair_share * total_observed
 
     chi2_stat, p_value = stats.chisquare(observed, expected)
 
-    # Calculate which bins are over/under-represented
     bin_analysis = {}
-    bin_keys = list(bin_counts.keys())
-
-    for i, bin_key in enumerate(bin_keys):
+    for i, bin_key in enumerate(keys):
         z_score = (observed[i] - expected[i]) / np.sqrt(expected[i])
         bin_analysis[bin_key] = {
             'observed': int(observed[i]),
@@ -170,7 +169,7 @@ def calculate_bin_distribution_test(
         'significant': bool(p_value < 0.05),
         'chi2_stat': float(chi2_stat),
         'p_value': float(p_value),
-        'degrees_of_freedom': len(bin_counts) - 1,
+        'degrees_of_freedom': len(keys) - 1,
         'bin_analysis': bin_analysis,
         'interpretation': _interpret_bin_test(p_value)
     }
@@ -179,97 +178,56 @@ def calculate_bin_distribution_test(
 def calculate_top_pattern_validation(
     top_pattern: Dict[str, Any],
     all_patterns: List[Dict[str, Any]],
+    fair_probs: Dict[Tuple[int, ...], float],
     c_max: int
 ) -> Dict[str, Any]:
     """
-    Validate that the top pattern is significantly more common than others.
+    Is the most common pattern more common than a fair draw makes it?
 
-    Uses proportion test to determine if the top pattern frequency is
-    statistically different from the average.
-
-    Args:
-        top_pattern: The most frequent pattern
-        all_patterns: All patterns
-        c_max: Maximum recency threshold
-
-    Returns:
-        Dictionary with top pattern validation results
+    The top pattern is picked after looking, from several a fair draw makes almost equally
+    likely, so testing it alone against its own chance flags a quarter of fair histories. The
+    p-value is the chance that any pattern reaches the top count: at most the sum, over every
+    pattern, of its binomial tail (Bonferroni).
     """
-    # Use 'draws_matched' (actual field) instead of 'count'
-    top_count = top_pattern.get('draws_matched', top_pattern.get('count', 0))
-    top_percentage = top_pattern.get('percentage', 0)
+    top_count = top_pattern['draws_matched']
+    total_draws = sum(p['draws_matched'] for p in all_patterns)
+    p0 = fair_probs[tuple(top_pattern[key] for key in bin_keys(c_max))]
+    p_hat = top_count / total_draws
 
-    # Calculate average pattern frequency
-    total_patterns = len(all_patterns)
-    if total_patterns == 0:
-        return {'significant': False, 'z_score': 0.0, 'p_value': 1.0}
-
-    # Under null hypothesis, each pattern should have equal probability
-    expected_percentage = 100.0 / total_patterns
-
-    # Binomial test for top pattern
-    # H0: top pattern frequency = expected frequency
-    total_draws = sum(p.get('draws_matched', p.get('count', 0)) for p in all_patterns)
-
-    if total_draws == 0:
-        return {'significant': False, 'z_score': 0.0, 'p_value': 1.0}
-
-    p0 = expected_percentage / 100.0  # Expected proportion
-    p_hat = top_count / total_draws   # Observed proportion
-
-    # Use binomial test
-    if p0 > 0 and top_count > 0:
-        result = stats.binomtest(top_count, total_draws, p0, alternative='greater')
-        p_value = result.pvalue
-
-        # Calculate z-score for effect size
-        se = np.sqrt(p0 * (1 - p0) / total_draws)
-        z_score = (p_hat - p0) / se if se > 0 else 0.0
-    else:
-        p_value = 1.0
-        z_score = 0.0
+    tails = stats.binom.sf(top_count - 1, total_draws, list(fair_probs.values()))
+    p_value = min(1.0, float(tails.sum()))
+    z_score = (p_hat - p0) / np.sqrt(p0 * (1 - p0) / total_draws)
 
     return {
-        'significant': bool(p_value < 0.05 and z_score > 0),
+        'significant': bool(p_value < 0.05),
         'z_score': float(z_score),
         'p_value': float(p_value),
-        'observed_percentage': float(top_percentage),
-        'expected_percentage': float(expected_percentage),
-        'fold_enrichment': float(top_percentage / expected_percentage) if expected_percentage > 0 else 1.0,
-        'interpretation': _interpret_top_pattern(p_value, z_score)
+        'observed_percentage': float(p_hat * 100),
+        'expected_percentage': float(p0 * 100),
+        'fold_enrichment': float(p_hat / p0),
+        'interpretation': _interpret_top_pattern(p_value)
     }
 
 
-def _interpret_pattern_test(p_value: float, cramers_v: float) -> str:
+def _interpret_pattern_test(p_value: float) -> str:
     """Interpret the pattern distribution test results."""
     if p_value >= 0.05:
-        return "Patterns show no significant deviation from uniform distribution (random)"
-    elif cramers_v < 0.1:
-        return "Statistically significant but small effect size (weak pattern)"
-    elif cramers_v < 0.3:
-        return "Statistically significant with medium effect size (moderate pattern)"
-    else:
-        return "Statistically significant with large effect size (strong pattern)"
+        return "Pattern counts are in line with a fair draw"
+    return "Pattern counts differ from a fair draw"
 
 
 def _interpret_bin_test(p_value: float) -> str:
     """Interpret the bin distribution test results."""
     if p_value >= 0.05:
-        return "Bin distribution is uniform (no freshness bias)"
-    else:
-        return "Bin distribution is non-uniform (freshness bias detected)"
+        return "Bin counts are in line with a fair draw (no freshness bias)"
+    return "Bin counts differ from a fair draw (freshness bias detected)"
 
 
-def _interpret_top_pattern(p_value: float, z_score: float) -> str:
+def _interpret_top_pattern(p_value: float) -> str:
     """Interpret the top pattern validation results."""
     if p_value >= 0.05:
-        return "Top pattern is not significantly more common than expected"
-    elif z_score > 5:
-        return "Top pattern is highly significantly over-represented (very strong signal)"
-    elif z_score > 3:
-        return "Top pattern is significantly over-represented (strong signal)"
-    else:
-        return "Top pattern is moderately over-represented (moderate signal)"
+        return "Top pattern is no more common than a fair draw makes it"
+    return "Top pattern is more common than a fair draw makes it"
 
 
 def analyze_freshness_patterns(freshness_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -297,17 +255,17 @@ def analyze_freshness_patterns(freshness_data: Dict[str, Any]) -> Dict[str, Any]
             'error': 'No pattern distributions found'
         }
 
-    top_pattern = pattern_distributions[0] if pattern_distributions else {}
+    top_pattern = pattern_distributions[0]
+    fair_probs = fair_pattern_probabilities(freshness_data['window_size_W'], c_max)
 
-    # Run statistical tests
-    print("  Running chi-square goodness-of-fit test on pattern distributions...")
-    pattern_test = calculate_pattern_significance(pattern_distributions, total_draws, c_max)
+    print("  Running chi-square test of pattern counts against a fair draw...")
+    pattern_test = calculate_pattern_significance(pattern_distributions, fair_probs, c_max)
 
-    print("  Running chi-square test on bin distributions...")
-    bin_test = calculate_bin_distribution_test(pattern_distributions, c_max)
+    print("  Running chi-square test of bin counts against a fair draw...")
+    bin_test = calculate_bin_distribution_test(pattern_distributions, fair_probs, c_max)
 
-    print("  Validating top pattern significance...")
-    top_pattern_test = calculate_top_pattern_validation(top_pattern, pattern_distributions, c_max)
+    print("  Testing the top pattern against a fair draw...")
+    top_pattern_test = calculate_top_pattern_validation(top_pattern, pattern_distributions, fair_probs, c_max)
 
     # Extract validated weights from top pattern
     validated_weights = {}
@@ -356,8 +314,8 @@ def analyze_freshness_patterns(freshness_data: Dict[str, Any]) -> Dict[str, Any]
             'analysis_type': 'freshness_pattern_validation',
             'statistical_methods': [
                 'chi_square_goodness_of_fit',
-                'chi_square_uniformity_test',
-                'z_test_proportion'
+                'chi_square_fair_draw_bins',
+                'binomial_test_top_pattern'
             ],
             'total_draws': total_draws,
             'total_patterns': len(pattern_distributions),

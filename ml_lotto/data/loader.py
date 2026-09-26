@@ -603,7 +603,7 @@ def load_freshness_patterns_validated(filename: str) -> Dict[str, Any]:
         Dictionary containing:
         - metadata: Analysis metadata and statistical methods
         - pattern_distribution_test: Chi-square test results
-        - bin_distribution_test: Bin uniformity test results
+        - bin_distribution_test: Bin counts tested against a fair draw (F-69)
         - top_pattern_validation: Top pattern significance
         - validated_weights: Statistically validated freshness weights
     """
