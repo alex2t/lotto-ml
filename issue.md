@@ -28,7 +28,6 @@ with file:line evidence.
 
 | ID | Severity | Issue | Where |
 |:--|:--|:--|:--|
-| F-69 | Low | The freshness bin test compares drawn balls with a uniform 1/3 per bin, though most numbers sit in C0 at any moment, so it reports "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py:149-150` |
 | F-67 | Low | A parity test assumes every drawn ball moves `recent_4` or `days_since_last`; a bonus ball two days after its last appearance moves neither, so the suite fails on the current data | `tests/test_walk_forward_parity.py:135-138` |
 | F-71 | Low | The first e2e tests of a full run time out against a freshly started server - the navigation test, and the two chat tests on desktop | `frontend/test/e2e/site.spec.ts:78`, `frontend/test/e2e/chat.spec.ts:17,33` |
 
@@ -38,25 +37,6 @@ order, so ties resolve the same way on every run. It is not reused.
 ---
 
 ## 3. Low severity defects
-
-### F-69 - the freshness bin test measures against the wrong chance
-
-Found 2026-09-25, in passing, while choosing figures for the chat panel's freshness answer.
-
-`test_bin_distribution` (`lotto_analysis/analyzers/freshness_pattern_analyzer.py:149-150`) sets
-`expected = total_observed / len(bin_counts)` - a third of the drawn balls in each of C0, C1 and
-C2+ - and writes `lotto_freshness_patterns_validated.json` `bin_distribution_test` with
-`"Bin distribution is non-uniform (freshness bias detected)"`, chi2 735.5, p 1.9e-160. Observed:
-C0 50.8%, C1 35.6%, C2+ 13.6% of 3,500 balls.
-
-A fair draw is not uniform over the bins. A bin describes how many times a number came up in the
-last 5 draws, and at any moment most numbers are in C0 simply because 5 draws hold at most 35 of
-the 47. The test fails the same "random baseline counted the same way" rule that F-30 and F-38
-broke (`lotto_analysis/analyzers/CLAUDE.md`). Its `top_pattern_validation` compares the top
-pattern with 1/26 of draws, the same mistake. Nothing on the site or in the ML layer reads either
-block today: the chat panel quotes the pattern counts and the pool's bins, never these verdicts.
-The fix is a fair-draw expectation (simulated, as `tests/test_odd_even_affinity.py` does) and a
-test that on simulated fair draws flags about 5%.
 
 ### F-67 - a parity test's assertion cannot hold for a bonus ball
 
@@ -484,6 +464,7 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-69 | The freshness bin, pattern and top-pattern tests measured against a uniform spread, so `lotto_freshness_patterns_validated.json` reported "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py`, `tests/test_freshness_fair_draw.py` |
 | F-75 | Streamlit was published on the VPS at `0.0.0.0:8501`, plain HTTP around the proxy | `docker-compose.prod.yml`, `tests/test_docker_stack.py`, `nextStep/vps.md` 3.4 |
 | F-74 | `vps.md` updated the server with a bare `git pull`, which git refuses once the receiver has written `data/` | `nextStep/vps.md` section 5 |
 | F-73 | `secrets.env.example` had no `REBUILD_SECRET` line, so a `secrets.env` made from it gave a receiver that exited at start | `secrets.env.example`, `tests/test_docker_stack.py` |
@@ -582,6 +563,46 @@ Every item below was fixed and verified against the live pipeline.
 
 The write-ups below run roughly newest first. Each explains a root cause of the kind that comes back; the
 original reports are in git history.
+
+### F-69 - The freshness tests measured against a uniform spread
+
+Found 2026-09-25 while choosing figures for the chat panel's freshness answer; fixed 2026-09-26.
+
+**Root cause.** A drawn ball's freshness bin is how many of the 5 preceding draws had it among the
+main six. `freshness_pattern_analyzer.py` tested the bins against a third of the 3,500 balls each,
+the 26 observed patterns against 1/26 each, and the most common pattern against 1/26. A fair
+draw is none of those: 5 draws hold at most 30 of the 47 numbers, so half the drawn balls are
+in C0 by chance alone. All three tests flagged, and `bin_distribution_test` said "freshness bias
+detected" at p 1.9e-160. The same "random baseline counted the same way" mistake as F-30 and
+F-38. The pattern test also dropped patterns that never occurred, so its expectation did not
+cover every outcome.
+
+**Fix.** `fair_pattern_probabilities()` computes each pattern's chance in a fair draw exactly:
+each preceding draw hits a given k of the 7 balls with chance C(40, 6-k)/C(47, 6), and a hit
+moves a ball up one bin. Its per-bin share is Binomial(5, 6/47): C0 50.4%, C1 37.0%, C2+ 12.5%.
+The bin test and the pattern test compare with it (patterns a fair draw expects fewer than 5
+times pooled into one cell). The top-pattern test first compared the winner with its own
+chance, and on fair histories flagged 25%: three patterns are almost equally likely (12.7%,
+12.2%, 11.4%) and the one that comes out on top is chosen after looking. It is now tested as a
+maximum - the chance that any pattern reaches that count, bounded by the sum of their binomial
+tails.
+
+**Measured.** On 40 simulated fair histories of 500 draws, through the real
+`freshness_analyzer_7_numbers` path: before, the bin, pattern and top-pattern tests flagged
+100%, 100%, 100%; after, over 200 histories, 4.0%, 4.5%, 5.5%. On the real draws: bin test p
+1.9e-160 -> 0.076, pattern test 5.0e-95 -> 0.34, top pattern 4.1e-19 -> 0.56. None flags.
+
+**Effect on the ML layer: none beyond rounding.** `validated_weights` was set from the top pattern
+only when the pattern and top-pattern tests both flagged; it is now uniform and marked
+unvalidated, so `calculate_freshness_category_features` falls back to `top_pattern_dist` from
+`lotto_7_number_freshness_results.json` - the same top pattern, 4/7, 2/7, 1/7. The
+`freshness_c*_weight` values differ by at most 4.3e-13, the 12-digit rounding the old weights took
+through the JSON (F-46). The site never read this file.
+
+**Tests.** `tests/test_freshness_fair_draw.py`: each of the three tests flags at most 15% of 40
+fair histories and the weights are almost never marked validated; the bin chance is the binomial;
+every pattern's chance matches 20,000 simulated draws within a point; a history where every draw
+repeats two balls of the one before is flagged by the bin and pattern tests.
 
 ### F-47 - A failed data load exited 0
 

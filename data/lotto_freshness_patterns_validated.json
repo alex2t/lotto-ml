@@ -3,8 +3,8 @@
         "analysis_type": "freshness_pattern_validation",
         "statistical_methods": [
             "chi_square_goodness_of_fit",
-            "chi_square_uniformity_test",
-            "z_test_proportion"
+            "chi_square_fair_draw_bins",
+            "binomial_test_top_pattern"
         ],
         "total_draws": 500,
         "total_patterns": 26,
@@ -12,226 +12,182 @@
         "significance_level": 0.05
     },
     "pattern_distribution_test": {
-        "significant": true,
-        "chi2_stat": 525.024,
-        "p_value": 4.96426135165e-95,
-        "cramers_v": 0.204943699586,
+        "significant": false,
+        "chi2_stat": 19.7925645023,
+        "p_value": 0.344618455732,
+        "cramers_v": 0.0468953498078,
         "num_patterns": 26,
-        "degrees_of_freedom": 25,
+        "degrees_of_freedom": 18,
+        "pooled_rare_patterns": {
+            "observed": 19,
+            "expected": 16.4436689687
+        },
         "pattern_residuals": {
             "C0=4, C1=2, C_GE_2=1": {
                 "observed": 68,
-                "expected": 19.2307692308,
-                "residual": 11.1210956848,
-                "significant": true
+                "expected": 63.4500762084,
+                "residual": 0.571199802403,
+                "significant": false
             },
             "C0=3, C1=3, C_GE_2=1": {
                 "observed": 61,
-                "expected": 19.2307692308,
-                "residual": 9.52485008967,
-                "significant": true
+                "expected": 61.209998277,
+                "residual": -0.0268413619138,
+                "significant": false
             },
             "C0=4, C1=3, C_GE_2=0": {
                 "observed": 48,
-                "expected": 19.2307692308,
-                "residual": 6.56039398442,
-                "significant": true
+                "expected": 57.2094611327,
+                "residual": -1.21758780814,
+                "significant": false
             },
             "C0=3, C1=4, C_GE_2=0": {
                 "observed": 42,
-                "expected": 19.2307692308,
-                "residual": 5.1921834743,
-                "significant": true
-            },
-            "C0=5, C1=1, C_GE_2=1": {
-                "observed": 42,
-                "expected": 19.2307692308,
-                "residual": 5.1921834743,
-                "significant": true
+                "expected": 43.5027047371,
+                "residual": -0.227832421293,
+                "significant": false
             },
             "C0=5, C1=2, C_GE_2=0": {
                 "observed": 41,
-                "expected": 19.2307692308,
-                "residual": 4.96414838928,
-                "significant": true
+                "expected": 43.3208234697,
+                "residual": -0.352609294683,
+                "significant": false
+            },
+            "C0=5, C1=1, C_GE_2=1": {
+                "observed": 42,
+                "expected": 33.6214158508,
+                "residual": 1.44498266371,
+                "significant": false
             },
             "C0=2, C1=4, C_GE_2=1": {
                 "observed": 32,
-                "expected": 19.2307692308,
-                "residual": 2.9118326241,
-                "significant": true
+                "expected": 31.788539284,
+                "residual": 0.0375054527383,
+                "significant": false
             },
             "C0=3, C1=2, C_GE_2=2": {
                 "observed": 31,
-                "expected": 19.2307692308,
-                "residual": 2.68379753908,
-                "significant": true
+                "expected": 30.4716706359,
+                "residual": 0.0957098457593,
+                "significant": false
             },
             "C0=4, C1=1, C_GE_2=2": {
                 "observed": 25,
-                "expected": 19.2307692308,
-                "residual": 1.31558702896,
-                "significant": false
-            },
-            "C0=6, C1=1, C_GE_2=0": {
-                "observed": 20,
-                "expected": 19.2307692308,
-                "residual": 0.175411603861,
+                "expected": 22.1592996968,
+                "residual": 0.603458490423,
                 "significant": false
             },
             "C0=2, C1=3, C_GE_2=2": {
                 "observed": 17,
-                "expected": 19.2307692308,
-                "residual": -0.508693651198,
-                "significant": false
-            },
-            "C0=2, C1=2, C_GE_2=3": {
-                "observed": 11,
-                "expected": 19.2307692308,
-                "residual": -1.87690416132,
+                "expected": 20.0211937318,
+                "residual": -0.675201799324,
                 "significant": false
             },
             "C0=2, C1=5, C_GE_2=0": {
                 "observed": 11,
-                "expected": 19.2307692308,
-                "residual": -1.87690416132,
+                "expected": 19.0216946538,
+                "residual": -1.83925321383,
                 "significant": false
             },
-            "C0=3, C1=1, C_GE_2=3": {
-                "observed": 11,
-                "expected": 19.2307692308,
-                "residual": -1.87690416132,
+            "C0=6, C1=1, C_GE_2=0": {
+                "observed": 20,
+                "expected": 17.5117861956,
+                "residual": 0.594596669222,
+                "significant": false
+            },
+            "C0=1, C1=5, C_GE_2=1": {
+                "observed": 5,
+                "expected": 8.41319754485,
+                "residual": -1.17674098904,
                 "significant": false
             },
             "C0=6, C1=0, C_GE_2=1": {
                 "observed": 7,
-                "expected": 19.2307692308,
-                "residual": -2.7890445014,
-                "significant": true
+                "expected": 7.12455256892,
+                "residual": -0.0466631327203,
+                "significant": false
             },
-            "C0=1, C1=6, C_GE_2=0": {
-                "observed": 6,
-                "expected": 19.2307692308,
-                "residual": -3.01707958642,
-                "significant": true
+            "C0=3, C1=1, C_GE_2=3": {
+                "observed": 11,
+                "expected": 6.35335203844,
+                "residual": 1.84347949233,
+                "significant": false
             },
             "C0=1, C1=4, C_GE_2=2": {
                 "observed": 6,
-                "expected": 19.2307692308,
-                "residual": -3.01707958642,
-                "significant": true
-            },
-            "C0=1, C1=5, C_GE_2=1": {
-                "observed": 5,
-                "expected": 19.2307692308,
-                "residual": -3.24511467144,
-                "significant": true
-            },
-            "C0=1, C1=3, C_GE_2=3": {
-                "observed": 5,
-                "expected": 19.2307692308,
-                "residual": -3.24511467144,
-                "significant": true
+                "expected": 6.27459476529,
+                "residual": -0.109622426865,
+                "significant": false
             },
             "C0=5, C1=0, C_GE_2=2": {
                 "observed": 3,
-                "expected": 19.2307692308,
-                "residual": -3.70118484148,
-                "significant": true
+                "expected": 6.16952886539,
+                "residual": -1.27605299463,
+                "significant": false
             },
-            "C0=7, C1=0, C_GE_2=0": {
-                "observed": 2,
-                "expected": 19.2307692308,
-                "residual": -3.9292199265,
-                "significant": true
-            },
-            "C0=3, C1=0, C_GE_2=4": {
-                "observed": 2,
-                "expected": 19.2307692308,
-                "residual": -3.9292199265,
-                "significant": true
-            },
-            "C0=0, C1=5, C_GE_2=2": {
-                "observed": 1,
-                "expected": 19.2307692308,
-                "residual": -4.15725501152,
-                "significant": true
-            },
-            "C0=0, C1=7, C_GE_2=0": {
-                "observed": 1,
-                "expected": 19.2307692308,
-                "residual": -4.15725501152,
-                "significant": true
-            },
-            "C0=0, C1=4, C_GE_2=3": {
-                "observed": 1,
-                "expected": 19.2307692308,
-                "residual": -4.15725501152,
-                "significant": true
-            },
-            "C0=4, C1=0, C_GE_2=3": {
-                "observed": 1,
-                "expected": 19.2307692308,
-                "residual": -4.15725501152,
+            "C0=2, C1=2, C_GE_2=3": {
+                "observed": 11,
+                "expected": 5.93244137493,
+                "residual": 2.08056866812,
                 "significant": true
             }
         },
-        "interpretation": "Statistically significant with medium effect size (moderate pattern)"
+        "interpretation": "Pattern counts are in line with a fair draw"
     },
     "bin_distribution_test": {
-        "significant": true,
-        "chi2_stat": 735.521714286,
-        "p_value": 1.92083067593e-160,
+        "significant": false,
+        "chi2_stat": 5.15657396267,
+        "p_value": 0.0759039175463,
         "degrees_of_freedom": 2,
         "bin_analysis": {
             "C0": {
                 "observed": 1779,
-                "expected": 1166.66666667,
+                "expected": 1768.06423128,
                 "percentage": 50.8285714286,
-                "z_score": 17.9272843401,
-                "over_represented": true,
+                "z_score": 0.260076012277,
+                "over_represented": false,
                 "under_represented": false
             },
             "C1": {
                 "observed": 1245,
-                "expected": 1166.66666667,
+                "expected": 1293.70553508,
                 "percentage": 35.5714285714,
-                "z_score": 2.29336517143,
-                "over_represented": true,
+                "z_score": -1.35413075155,
+                "over_represented": false,
                 "under_represented": false
             },
             "C_GE_2": {
                 "observed": 476,
-                "expected": 1166.66666667,
+                "expected": 438.230233632,
                 "percentage": 13.6,
-                "z_score": -20.2206495115,
+                "z_score": 1.80423511168,
                 "over_represented": false,
-                "under_represented": true
+                "under_represented": false
             }
         },
-        "interpretation": "Bin distribution is non-uniform (freshness bias detected)"
+        "interpretation": "Bin counts are in line with a fair draw (no freshness bias)"
     },
     "top_pattern_validation": {
-        "significant": true,
-        "z_score": 11.3413367819,
-        "p_value": 4.06526573766e-19,
+        "significant": false,
+        "z_score": 0.611302388002,
+        "p_value": 0.560221628603,
         "observed_percentage": 13.6,
-        "expected_percentage": 3.84615384615,
-        "fold_enrichment": 3.536,
-        "interpretation": "Top pattern is highly significantly over-represented (very strong signal)"
+        "expected_percentage": 12.6900152417,
+        "fold_enrichment": 1.07170872067,
+        "interpretation": "Top pattern is no more common than a fair draw makes it"
     },
     "validated_weights": {
         "C0": {
-            "normalized_weight": 0.571428571429,
-            "statistically_validated": true
+            "normalized_weight": 0.333333333333,
+            "statistically_validated": false
         },
         "C1": {
-            "normalized_weight": 0.285714285714,
-            "statistically_validated": true
+            "normalized_weight": 0.333333333333,
+            "statistically_validated": false
         },
         "C_GE_2": {
-            "normalized_weight": 0.142857142857,
-            "statistically_validated": true
+            "normalized_weight": 0.333333333333,
+            "statistically_validated": false
         }
     },
     "top_pattern_details": {
