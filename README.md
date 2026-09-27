@@ -238,3 +238,12 @@ containers raw, because Compose would expand the `$` signs in a bcrypt hash.
 | `docs/` | reference: metrics, features, models, JSON artifacts |
 | `issue.md` | the defect register |
 | `reverse_proxy/`, `docker-compose*.yml`, `Dockerfile.*` | the deployment |
+
+## Licence
+
+[PolyForm Strict 1.0.0](LICENSE). You are free to read the code and run it for personal,
+non-commercial use. Publishing it, sharing a changed version, or any commercial use needs my
+written permission - ask through my GitHub profile, [alex2t](https://github.com/alex2t).
+
+The licence covers this project's own code. Its dependencies keep their own licences, and the
+draw results themselves are public facts.
