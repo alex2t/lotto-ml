@@ -3,7 +3,7 @@
 # frontend/
 
 **The Next.js site that replaces the Streamlit dashboard.** Phases 3 and 4 are built. The build
-document is [`../nextStep/web.md`](../nextStep/web.md); its section 6 is the completeness matrix and
+document is `../nextStep/web.md`; its section 6 is the completeness matrix and
 its section 8 is the cutover order that ends with deleting `view/`. **`view/` is still the live site
 until that cutover - do not delete it.**
 

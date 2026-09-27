@@ -149,7 +149,7 @@ All defects, active issues, and planned improvements are tracked **exclusively i
 
 ## 6. System Automation & Deployment Roadmap (`plan.md`)
 
-The roadmap is maintained **exclusively in [`plan.md`](plan.md)** to prevent documentation divergence. The architecture overview is in [`README.md`](README.md). `plan.md` covers:
+The roadmap is maintained **exclusively in `plan.md`**, one of the owner's private files (with `nextStep/` and `lottery_picks.txt`: gitignored and removed from the published history on 2026-09-27, never to be committed back), to prevent documentation divergence. The architecture overview is in [`README.md`](README.md). `plan.md` covers:
 - Phase 1: Docker for the Python data engine; `drawpick.py` writes the JSON artifacts into a shared volume.
 - Phase 2: n8n scraping on Mon/Wed/Sat at 21:05, built in the existing n8n instance - Phase 2A sends test emails, Phase 2B commits new draws to `data/irish500.csv` (inserted after the header; the file is newest-first) and posts the draw to the VPS rebuild receiver, which appends it to the VPS's own CSV and rebuilds only when the data changed, so a retried webhook costs nothing. The node-by-node design is `nextStep/n8n.md`; the receiver is `nextStep/lottodraw.md`.
 - Phase 3 (done 2026-09-21): the Next.js foundation in `frontend/` - Next.js 16, TypeScript, Tailwind 4; `lib/data/` reading the mounted artifacts with an mtime cache; a signed-cookie admin login; and `/api/download/data` streaming the bundle. The `nextjs-web` image is built and runs beside Streamlit, non-root, with the artifacts mounted read-only.

@@ -7,7 +7,7 @@ pickers), so keep pages thin: everything they show comes from `data/*.json`, pro
 `drawpick.py`, and that JSON is what the React site will read too.
 
 **The replacement is built**, in [`../../frontend/`](../../frontend/CLAUDE.md), and the completeness
-matrix in [`../../nextStep/web.md`](../../nextStep/web.md) section 6 has been walked and signed off.
+matrix in `../../nextStep/web.md` section 6 has been walked and signed off.
 **This folder is still not deleted**: that happens at section 8's cutover, after both sites have run
 side by side through a week and three ingested draws. Until then it is the live site and the
 reference for what the new one reproduces.

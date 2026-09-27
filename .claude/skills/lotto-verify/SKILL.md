@@ -120,4 +120,4 @@ until it is current:
 - The Priority summary lists **open items only**. A resolved ID appearing there is itself a defect
   in the register.
 
-Architecture is in [`README.md`](../../../README.md); the roadmap is in [`plan.md`](../../../plan.md).
+Architecture is in [`README.md`](../../../README.md); the roadmap is in `plan.md`.

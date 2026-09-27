@@ -13,7 +13,7 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
   `frontend/`**, where Phases 3 and 4 are both built: five destinations, wheels and a 1-47 grid to
   pick with, and a shape card that describes a line against past draws. Both run side by side -
   Streamlit on 8501, Next.js on 3000 - until the cutover deletes `view/`. The build
-  document is [`nextStep/web.md`](nextStep/web.md) - the five destinations, the picker, the
+  document is `nextStep/web.md` - the five destinations, the picker, the
   completeness matrix that says every current statistic must survive the move, and the cutover
   order for deleting `view/`.
 - **The ML layer, for the owner only.** `ml_lotto/` and `quickpick.py` are a personal learning
@@ -39,14 +39,17 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
   not need to beat chance; it needs to be correct.
 
 **Read [`issue.md`](issue.md) before starting work.** It is the register of known open defects with
-file:line evidence, and it will save you rediscovering them. [`plan.md`](plan.md) is the roadmap:
+file:line evidence, and it will save you rediscovering them. `plan.md` is the roadmap:
 the Next.js front end, the Docker stack on the VPS, n8n scraping of each draw (Phase A test emails,
 then Phase B commits to `data/irish500.csv` and a rebuild webhook), and the single-admin data
-download. `nextStep/` holds the build documents: [`n8n.md`](nextStep/n8n.md) for Phase 2
-ingestion, [`web.md`](nextStep/web.md) for the Phase 3-4 website, [`chat.md`](nextStep/chat.md)
-for the chat panel beside the numbers (built 2026-09-24, F-68). [`whatleft.md`](nextStep/whatleft.md) is the running
+download. `nextStep/` holds the build documents: `n8n.md` for Phase 2
+ingestion, `web.md` for the Phase 3-4 website, `chat.md`
+for the chat panel beside the numbers (built 2026-09-24, F-68). `whatleft.md` is the running
 list of what is still outstanding across those documents, with the owner's test of the n8n POST
-(`scripts/post_draw.py`); `recap.md` is its 2026-09-24 predecessor.
+(`scripts/post_draw.py`); `recap.md` is its 2026-09-24 predecessor. **`plan.md`, `nextStep/`
+and `lottery_picks.txt` are the owner's private files**: gitignored and removed from the
+published history on 2026-09-27, so they exist on the owner's PC only. The repository is public;
+never commit them back. `nextStep/vps.md` is the launch runbook.
 [`README.md`](README.md) holds the architecture overview.
 
 ## Folder guides

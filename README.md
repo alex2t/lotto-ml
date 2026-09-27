@@ -95,7 +95,7 @@ data/irish500.csv -> drawpick.py -> data/*.json -> quickpick.py -> lottery_picks
 
 ## Next
 
-See [`plan.md`](plan.md):
+The roadmap is kept in the owner's private notes (`plan.md`, not published):
 
 - Next.js (React) front end with game-like line pickers.
 - n8n scrapes each draw, the VPS rebuilds the data in Docker and refreshes the site.
