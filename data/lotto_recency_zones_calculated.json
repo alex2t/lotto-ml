@@ -3,8 +3,8 @@
     "analysis_type": "recency_zone_optimization",
     "description": "Data-driven recency zone scoring to replace hard-coded thresholds",
     "version": "1.0",
-    "generated_date": "2026-09-22 05:29:58",
-    "total_draws": 500,
+    "generated_date": "2026-09-27 09:17:50",
+    "total_draws": 502,
     "calculation_method": "empirical_win_rate",
     "bins": [
       "0-14",
@@ -18,7 +18,7 @@
   "recency_zones_by_category": {
     "hot": {
       "0-14": {
-        "wins": 1430,
+        "wins": 1436,
         "win_rate": 0.9993,
         "win_percentage": 99.93,
         "score": 1.0
@@ -56,7 +56,7 @@
         "score": 0.0
       },
       "15-30": {
-        "wins": 740,
+        "wins": 743,
         "win_rate": 1.0,
         "win_percentage": 100.0,
         "score": 1.0
@@ -94,49 +94,49 @@
         "score": 0.0
       },
       "31-60": {
-        "wins": 632,
-        "win_rate": 0.7624,
-        "win_percentage": 76.24,
+        "wins": 634,
+        "win_rate": 0.762,
+        "win_percentage": 76.2,
         "score": 1.0
       },
       "61-120": {
-        "wins": 187,
-        "win_rate": 0.2256,
-        "win_percentage": 22.56,
-        "score": 0.2959
+        "wins": 188,
+        "win_rate": 0.226,
+        "win_percentage": 22.6,
+        "score": 0.2965
       },
       "121+": {
         "wins": 10,
-        "win_rate": 0.0121,
-        "win_percentage": 1.21,
+        "win_rate": 0.012,
+        "win_percentage": 1.2,
         "score": 0.0158
       }
     }
   },
   "recency_zones_combined": {
     "0-14": {
-      "wins": 1430,
-      "win_rate": 0.4767,
-      "win_percentage": 47.67,
+      "wins": 1436,
+      "win_rate": 0.4768,
+      "win_percentage": 47.68,
       "score": 1.0
     },
     "15-30": {
-      "wins": 741,
+      "wins": 744,
       "win_rate": 0.247,
       "win_percentage": 24.7,
-      "score": 0.5182
+      "score": 0.5181
     },
     "31-60": {
-      "wins": 632,
-      "win_rate": 0.2107,
-      "win_percentage": 21.07,
-      "score": 0.442
+      "wins": 634,
+      "win_rate": 0.2105,
+      "win_percentage": 21.05,
+      "score": 0.4415
     },
     "61-120": {
-      "wins": 187,
-      "win_rate": 0.0623,
-      "win_percentage": 6.23,
-      "score": 0.1308
+      "wins": 188,
+      "win_rate": 0.0624,
+      "win_percentage": 6.24,
+      "score": 0.1309
     },
     "121+": {
       "wins": 10,
@@ -146,14 +146,14 @@
     }
   },
   "totals": {
-    "hot": 1431,
-    "medium": 740,
-    "cold": 829,
-    "combined": 3000
+    "hot": 1437,
+    "medium": 743,
+    "cold": 832,
+    "combined": 3012
   },
   "statistical_validation": {
     "test": "Kruskal-Wallis H-test",
-    "h_statistic": 2577.19746903,
+    "h_statistic": 2587.28605732,
     "p_value": 0.0,
     "significant": true,
     "interpretation": "Category recency distributions are significantly different (p=0.0000)",
@@ -162,24 +162,24 @@
         "mean": 7.99,
         "median": 7,
         "std": 3.79,
-        "n": 1431
+        "n": 1437
       },
       "medium": {
-        "mean": 22.01,
+        "mean": 22.0,
         "median": 21,
         "std": 3.84,
-        "n": 740
+        "n": 743
       },
       "cold": {
-        "mean": 50.73,
+        "mean": 50.74,
         "median": 42,
-        "std": 21.0,
-        "n": 829
+        "std": 20.98,
+        "n": 832
       }
     },
     "pairwise_comparisons": {
       "hot_vs_medium": {
-        "u_statistic": 59.5,
+        "u_statistic": 60.0,
         "p_value": 0.0,
         "significant": true
       },
@@ -190,7 +190,7 @@
       },
       "medium_vs_cold": {
         "u_statistic": 0.0,
-        "p_value": 4.41676933208e-258,
+        "p_value": 4.54830253582e-259,
         "significant": true
       }
     }
@@ -204,24 +204,24 @@
       "alignment": "good"
     },
     "15-30": {
-      "calculated_score": 0.5182,
+      "calculated_score": 0.5181,
       "hardcoded_score": 0.78,
-      "difference": -0.2618,
-      "percent_difference": -33.56,
+      "difference": -0.2619,
+      "percent_difference": -33.58,
       "alignment": "needs_adjustment"
     },
     "31-60": {
-      "calculated_score": 0.442,
+      "calculated_score": 0.4415,
       "hardcoded_score": 0.54,
-      "difference": -0.098,
-      "percent_difference": -18.15,
+      "difference": -0.0985,
+      "percent_difference": -18.24,
       "alignment": "good"
     },
     "61-120": {
-      "calculated_score": 0.1308,
+      "calculated_score": 0.1309,
       "hardcoded_score": 0.18,
-      "difference": -0.0492,
-      "percent_difference": -27.33,
+      "difference": -0.0491,
+      "percent_difference": -27.28,
       "alignment": "good"
     },
     "121+": {

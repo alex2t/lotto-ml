@@ -12,35 +12,35 @@
     },
     "anova_test": {
         "significant": true,
-        "f_statistic": 65.8734504796,
-        "p_value": 5.86718820193e-14,
-        "eta_squared": 0.749639966566,
+        "f_statistic": 65.6092115611,
+        "p_value": 6.26908265509e-14,
+        "eta_squared": 0.748884853453,
         "degrees_of_freedom_between": 2,
         "degrees_of_freedom_within": 44,
         "category_statistics": {
             "hot": {
                 "count": 29,
-                "mean_days_since": 4.72413793103,
-                "std_dev": 4.02577899936,
+                "mean_days_since": 4.51724137931,
+                "std_dev": 3.59186272462,
                 "median": 5.0,
                 "min": 0.0,
                 "max": 12.0
             },
             "medium": {
-                "count": 8,
-                "mean_days_since": 18.0,
-                "std_dev": 3.6253078687,
-                "median": 17.5,
+                "count": 10,
+                "mean_days_since": 17.7,
+                "std_dev": 3.65300485141,
+                "median": 18.0,
                 "min": 14.0,
-                "max": 23.0
+                "max": 24.0
             },
             "cold": {
-                "count": 10,
-                "mean_days_since": 61.0,
-                "std_dev": 28.522895287,
-                "median": 59.5,
-                "min": 30.0,
-                "max": 128.0
+                "count": 8,
+                "mean_days_since": 66.375,
+                "std_dev": 32.8717746924,
+                "median": 64.5,
+                "min": 28.0,
+                "max": 133.0
             }
         },
         "interpretation": "Significant with large effect (categories strongly distinct)"
@@ -49,22 +49,22 @@
         "bonferroni_corrected_alpha": 0.0166666666667,
         "comparisons": {
             "hot_vs_medium": {
-                "t_statistic": -8.41832837532,
-                "p_value": 6.25354565501e-10,
+                "t_statistic": -9.96660527621,
+                "p_value": 5.0257501798e-12,
                 "significant": true,
-                "mean_difference": -13.275862069
+                "mean_difference": -13.1827586207
             },
             "hot_vs_cold": {
-                "t_statistic": -10.5856459835,
-                "p_value": 9.50666639348e-13,
+                "t_statistic": -10.2936289149,
+                "p_value": 3.95421743873e-12,
                 "significant": true,
-                "mean_difference": -56.275862069
+                "mean_difference": -61.8577586207
             },
             "medium_vs_cold": {
-                "t_statistic": -4.21124876867,
-                "p_value": 0.000662724976668,
+                "t_statistic": -4.6825424248,
+                "p_value": 0.000249624529688,
                 "significant": true,
-                "mean_difference": -43.0
+                "mean_difference": -48.675
             }
         },
         "all_significant": true
@@ -75,13 +75,13 @@
         "p_value": 0.000188866888421,
         "category_counts": {
             "hot": 29,
-            "medium": 8,
-            "cold": 10
+            "medium": 10,
+            "cold": 8
         },
         "category_percentages": {
             "hot": 61.7021276596,
-            "medium": 17.0212765957,
-            "cold": 21.2765957447
+            "medium": 21.2765957447,
+            "cold": 17.0212765957
         },
         "interpretation": "Category sizes are imbalanced (some over/under-represented)"
     },
@@ -91,7 +91,7 @@
         "categories_distinct": true,
         "suggested_thresholds": {
             "hot_medium_cutoff": 5.0,
-            "medium_cold_cutoff": 15.3364
+            "medium_cold_cutoff": 14.0
         },
         "current_ranges": {
             "hot": {
@@ -100,11 +100,11 @@
             },
             "medium": {
                 "min": 14.0,
-                "max": 23.0
+                "max": 24.0
             },
             "cold": {
-                "min": 30.0,
-                "max": 128.0
+                "min": 28.0,
+                "max": 133.0
             }
         }
     },
