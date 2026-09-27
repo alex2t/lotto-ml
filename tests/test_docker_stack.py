@@ -7,7 +7,7 @@ thing in this repo that writes files - is not proxied to it.
 
 `echo >> Step 1/2: ...` in the `.bat` scripts is a file redirect, not an arrow: cmd wrote four junk
 files into the repo root and printed nothing. `docker-compose.yml` expressed the engine-before-web
-ordering only inside the start scripts, so a bare `docker compose up` let Streamlit read a
+ordering only inside the start scripts, so a bare `docker compose up` let a site read a
 half-written artifact.
 """
 
@@ -54,27 +54,27 @@ def test_batch_scripts_echo_instead_of_redirecting():
 def test_web_services_wait_for_a_successful_engine_run():
     """A bare `docker compose up` must not serve an artifact the engine has not finished writing."""
     compose = load_compose("docker-compose.yml")
-    for service in ("streamlit-web", "nextjs-web"):
+    for service in ("nextjs-web",):
         depends = compose["services"][service]["depends_on"]
         assert depends["data-engine"]["condition"] == "service_completed_successfully"
 
 
 def test_web_services_mount_the_artifacts_read_only():
-    """Only the engine writes data/. Both sites read it."""
+    """Only the engine writes data/. The site reads it."""
     compose = load_compose("docker-compose.yml")
-    for service in ("streamlit-web", "nextjs-web"):
+    for service in ("nextjs-web",):
         mounts = compose["services"][service]["volumes"]
         assert "./data:/app/data:ro" in mounts
 
 
 def test_container_uid_is_a_build_arg():
     """The bind mount replaces the image's data/ with the host's, so the uid must be settable."""
-    for name in ("Dockerfile.data_engine", "Dockerfile.streamlit", "Dockerfile.web"):
+    for name in ("Dockerfile.data_engine", "Dockerfile.web"):
         dockerfile = (REPO_ROOT / name).read_text()
         assert "ARG UID=1000" in dockerfile
         assert "${UID}" in dockerfile
     compose = load_compose("docker-compose.yml")
-    for service in ("data-engine", "streamlit-web", "nextjs-web"):
+    for service in ("data-engine", "nextjs-web"):
         assert compose["services"][service]["build"]["args"]["UID"] == "${UID:-1000}"
 
 
@@ -168,7 +168,7 @@ def test_data_is_not_sent_to_the_build_context():
     """Neither image copies data/; it is bind-mounted at runtime."""
     ignored = (REPO_ROOT / ".dockerignore").read_text().splitlines()
     assert "data/" in [line.strip() for line in ignored]
-    for name in ("Dockerfile.data_engine", "Dockerfile.streamlit", "Dockerfile.web"):
+    for name in ("Dockerfile.data_engine", "Dockerfile.web"):
         dockerfile = (REPO_ROOT / name).read_text()
         assert "COPY data" not in dockerfile
 
@@ -207,14 +207,13 @@ def test_only_the_proxy_reaches_the_internet():
     assert "80:80" in published and "443:443" in published
 
 
-def test_streamlit_is_not_public_on_the_vps():
+def test_no_service_but_the_proxy_publishes_a_port_on_the_vps():
     """
-    The base file publishes Streamlit on 0.0.0.0:8501 for the PC. On the VPS that is plain
-    HTTP around the proxy, with none of its headers (F-75); the overlay keeps it on the
-    server's loopback, reachable for the side-by-side week through an SSH tunnel only.
+    Anything else published on the VPS is plain HTTP around the proxy, with none of its
+    headers (F-75, when Streamlit was published on 8501).
     """
-    streamlit = load_compose("docker-compose.prod.yml")["services"]["streamlit-web"]
-    assert streamlit["ports"] == ["127.0.0.1:8501:8501"]
+    published = {name: s["ports"] for name, s in prod_compose().items() if s.get("ports")}
+    assert list(published) == ["reverse-proxy"]
 
 
 def test_the_rebuild_receiver_is_not_published_or_proxied():

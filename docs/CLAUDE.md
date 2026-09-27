@@ -39,7 +39,6 @@ teaching material and describe ML in general, **not** this system.
 | What features exist? How do interactions work? | `features.md` |
 | What are the six models? What is switched on? | `models.md` |
 | What JSON files exist and what is in them? | `json-artifacts.md` |
-| How does a person use the dashboard? | `dashboard-manual.md` |
 | What is logistic regression / XGBoost? | `ml-concepts.md` (general background) |
 
 Not here: open defects (`issue.md`), architecture (`README.md`), roadmap (`plan.md`), per-folder

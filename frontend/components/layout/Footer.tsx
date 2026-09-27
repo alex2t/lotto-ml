@@ -4,8 +4,8 @@ import { FooterMotto } from './FooterMotto';
 /**
  * The honest framing, on every page.
  *
- * The equal-chance sentence is the one tests/test_site_wording.py checks for, and it moves
- * across verbatim. It is a constant, not a figure read from an artifact, so the footer
+ * The equal-chance sentence is the one test/wording.test.ts checks for, carried over verbatim
+ * from the Streamlit site. It is a constant, not a figure read from an artifact, so the footer
  * renders on every route - including the ones Next prerenders before data/ is mounted.
  */
 export function Footer() {

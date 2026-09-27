@@ -11,7 +11,6 @@ replacing 15 files (~11,900 lines) written in late 2025 that had drifted out of 
 | [`features.md`](features.md) | agent + human | current - the feature set, group markers, interaction pipeline |
 | [`models.md`](models.md) | agent + human | current - the six models, training setup, what is not enabled |
 | [`json-artifacts.md`](json-artifacts.md) | agent + human | current - the ~26 JSON files, verified inventory |
-| [`dashboard-manual.md`](dashboard-manual.md) | human | current - operating the Streamlit dashboard, page by page |
 | [`ml-concepts.md`](ml-concepts.md) | human | background - general ML explanation, **not** project spec |
 | [`feature_review.md`](feature_review.md) | agent + human | why the Dynamic Walk-Forward proposal was declined - read before re-proposing it |
 
@@ -55,7 +54,7 @@ Recoverable from git history if needed. Superseded content is listed against eac
 | `BONUS_TO_MAIN_ANALYSIS_SUMMARY.md` | `models.md` |
 | `HMC_RECOMMENDATION_IMPLEMENTATION.md` | `models.md` |
 | `ANALYSIS_SCRIPTS_REFERENCE.md` | `analysis/CLAUDE.md`, `scripts/CLAUDE.md` |
-| `USER_MANUAL.md` | renamed to `dashboard-manual.md`, content kept |
+| `USER_MANUAL.md` | renamed to `dashboard-manual.md`, then removed with the Streamlit dashboard on 2026-09-27 |
 | `ML_CONCEPTS_GUIDE.md` | renamed to `ml-concepts.md`, content kept, AUC scale annotated |
 
 The common failure was implementation notes written at the time of a change ("add this code at line

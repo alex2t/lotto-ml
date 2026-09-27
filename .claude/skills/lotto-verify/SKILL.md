@@ -96,7 +96,6 @@ invariants and roadmap for Gemini, so a fact changed in a `CLAUDE.md` must chang
 | `ml_lotto/prediction/` — a filter, or the selection/filters boundary | `ml_lotto/prediction/CLAUDE.md` |
 | `ml_lotto/data/` — an artifact added or a validation rule | `ml_lotto/data/CLAUDE.md` |
 | `tests/` — a test added, or a demo turned into one | `tests/CLAUDE.md` **and** `verify.py`'s list |
-| `view/` — a dashboard page | `view/pages/CLAUDE.md` **and** `app.py` |
 | `scripts/` or `analysis/` | that folder's `CLAUDE.md` |
 | a metric, feature, model or artifact a doc describes | the matching file in `docs/` |
 

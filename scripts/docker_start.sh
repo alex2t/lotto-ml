@@ -3,9 +3,9 @@
 # Irish Lotto System - Docker Start Script (Linux & macOS)
 # ==============================================================================
 # Usage:
-#   ./scripts/docker_start.sh               # Run data engine, then start both front ends
+#   ./scripts/docker_start.sh               # Run data engine, then start the website
 #   ./scripts/docker_start.sh --build       # Rebuild images before running
-#   ./scripts/docker_start.sh --engine-only # Run only data engine without the front ends
+#   ./scripts/docker_start.sh --engine-only # Run only data engine without the website
 # ==============================================================================
 
 set -e
@@ -51,7 +51,7 @@ for arg in "$@"; do
         --help|-h)
             echo "Usage: $0 [--build] [--engine-only]"
             echo "  --build        Rebuild the Docker images before running"
-            echo "  --engine-only  Run only data-engine analysis without web dashboard"
+            echo "  --engine-only  Run only data-engine analysis without the website"
             exit 0
             ;;
         *)
@@ -74,11 +74,11 @@ if [ "$ENGINE_ONLY" = true ]; then
     exit 0
 fi
 
-echo ">> Step 2: Starting the web front ends..."
-docker compose up -d --no-deps streamlit-web nextjs-web
+echo ">> Step 2: Starting the website..."
+docker compose up -d --no-deps nextjs-web
 
 echo "===================================================================="
-echo " SUCCESS: Data analysis complete & Streamlit dashboard is running!"
-echo " Open your browser at: http://localhost:8501"
+echo " SUCCESS: Data analysis complete & the website is running!"
+echo " Open your browser at: http://localhost:3000"
 echo " To stop: ./scripts/docker_stop.sh"
 echo "===================================================================="

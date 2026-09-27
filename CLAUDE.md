@@ -6,16 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
 
-- **The website, for players.** `view/` (Streamlit, being replaced by `frontend/`) is for people who want to have fun picking their own line
-  from a few facts about past draws - hot/medium/cold numbers, odd vs even, whether a ball was
-  recently a bonus, how many numbers are 32 or above. It is a toy, not a tipster: every line is
-  equally likely to win, and the site says so. It is Streamlit in `view/` and **Next.js in
-  `frontend/`**, where Phases 3 and 4 are both built: five destinations, wheels and a 1-47 grid to
-  pick with, and a shape card that describes a line against past draws. Both run side by side -
-  Streamlit on 8501, Next.js on 3000 - until the cutover deletes `view/`. The build
-  document is `nextStep/web.md` - the five destinations, the picker, the
-  completeness matrix that says every current statistic must survive the move, and the cutover
-  order for deleting `view/`.
+- **The website, for players.** `frontend/` (Next.js) is for people who want to have fun picking
+  their own line from a few facts about past draws - hot/medium/cold numbers, odd vs even, whether
+  a ball was recently a bonus, how many numbers are 32 or above. It is a toy, not a tipster: every
+  line is equally likely to win, and the site says so. Five destinations, wheels and a 1-47 grid to
+  pick with, and a shape card that describes a line against past draws; it runs on port 3000. The
+  build document is `nextStep/web.md`. **The Streamlit dashboard it replaced (`view/`, `app.py`)
+  was removed from `main` on 2026-09-27** and is kept on the `streamlit-app` branch.
 - **The ML layer, for the owner only.** `ml_lotto/` and `quickpick.py` are a personal learning
   project - vibe coding put on a proper footing, applying the techniques from Ed Donner's Udemy
   course *AI Coder: Complete Claude Code & Coding Agents Course*. All six models sit at chance,
@@ -28,7 +25,7 @@ An Irish Lotto (6/47 + 1 bonus) project with two audiences and one data layer:
 
 - **`data/*.json` is the website's API.** A statistic the site shows is computed in
   `lotto_analysis/` and written by `drawpick.py`, never in a page. A page only reads and displays.
-  That is what lets a Next.js front end replace Streamlit without redoing any analysis.
+  That is what let the Next.js site replace the Streamlit dashboard without redoing any analysis.
 - **The VPS runs `drawpick.py`; the owner's PC runs `quickpick.py`.** Per `plan.md`, the VPS
   (Docker, no bare-metal Python or Node) hosts the public site and rebuilds `data/*.json` when n8n
   ingests a new draw. Model training never runs there. Keep `drawpick.py` and `lotto_analysis/`
@@ -55,7 +52,7 @@ never commit them back. `nextStep/vps.md` is the launch runbook.
 ## Folder guides
 
 Every substantial folder has its own `CLAUDE.md` holding the invariants that apply inside it. All
-twelve are imported below, so they are in context from the start of every session:
+eleven are imported below, so they are in context from the start of every session:
 
 @frontend/CLAUDE.md
 @ml_lotto/features/CLAUDE.md
@@ -64,7 +61,6 @@ twelve are imported below, so they are in context from the start of every sessio
 @ml_lotto/models/CLAUDE.md
 @ml_lotto/prediction/CLAUDE.md
 @ml_lotto/data/CLAUDE.md
-@view/pages/CLAUDE.md
 @scripts/CLAUDE.md
 @analysis/CLAUDE.md
 @demos/CLAUDE.md
@@ -81,7 +77,6 @@ What each one covers:
 | `ml_lotto/models/CLAUDE.md` | the six model configs, the noise floor, the overfit gap |
 | `ml_lotto/prediction/CLAUDE.md` | selection vs filters, the playable-ticket boundary |
 | `ml_lotto/data/CLAUDE.md` | artifact loading and strict validation |
-| `view/pages/CLAUDE.md` | the 8 dashboard pages; read-only layer |
 | `scripts/CLAUDE.md` | scraper and standalone utilities |
 | `analysis/CLAUDE.md` | exploratory scripts, and the one that is in the pipeline |
 | `demos/CLAUDE.md` | the feature-discovery scripts moved out of `tests/` - not tests, a source of ideas for the site |
@@ -98,8 +93,8 @@ Folders with no `CLAUDE.md`: `lotto_analysis/{core,config,utils}` and `ml_lotto/
 covered by their parent. `data/`, `model_metrics/`, `catboost_info/` hold generated artifacts, not
 code.
 
-Reference material lives in [`docs/`](docs/README.md) - metrics, features, models, JSON artifacts,
-the dashboard manual. It is reference, **not** specification: where it conflicts with the code or an
+Reference material lives in [`docs/`](docs/README.md) - metrics, features, models, JSON artifacts.
+It is reference, **not** specification: where it conflicts with the code or an
 artifact, the code wins.
 
 ## Commands
@@ -107,8 +102,7 @@ artifact, the code wins.
 ```bash
 python drawpick.py      # Stage 1: analysis -> writes ~25 JSON files into data/
 python quickpick.py     # Stage 2: trains models, writes lottery_picks.txt + model_metrics/
-streamlit run app.py    # The website (8 pages, view/pages/); Prediction Validator = build your own line
-npm --prefix frontend run dev   # The Next.js site that replaces it (Phases 3-4 built)
+npm --prefix frontend run dev   # The website, on http://localhost:3000
 ```
 
 `drawpick.py` must run before `quickpick.py` - the ML layer reads only the JSON artifacts, never the
@@ -117,14 +111,14 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: twenty-six files, 307 tests, ~60s. The Next.js site has its own
+`tests/` holds only real tests: twenty-four files, 280 tests, ~2 min. The Next.js site has its own
 suites in `frontend/` - `npm --prefix frontend test` (374 vitest) and `npm --prefix frontend run
 test:e2e` (102 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
-python -m pytest -q                                                              # all 307
+python -m pytest -q                                                              # all 280
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
 python -m demos.demo_interactions                                                # a demo, from the root
 ```
@@ -229,9 +223,7 @@ advertised but unimplemented, resolution matrices for fixes not made). Check `lo
 
 **Do not use emoji in new code**, matching the user's global instruction. The engine and the ML
 layer are now clear of them - `drawpick.py`, `quickpick.py`, `lotto_analysis/`, `ml_lotto/`,
-`analysis/`, `scripts/` and `demos/` were stripped on 2026-09-21. `app.py` and `view/` still use
-them in page titles and `st.markdown`, and are left alone because the cutover in
-`nextStep/web.md` section 8 deletes that folder.
+`analysis/`, `scripts/` and `demos/` were stripped on 2026-09-21.
 
 **`issue.md` is part of the work, not a report about it.** Every defect found and every defect fixed
 updates it in the same change:
@@ -259,21 +251,20 @@ file at all - it gets trusted over the source. Specifically:
 | a model config, or the constrained params and grids | `ml_lotto/models/CLAUDE.md` |
 | a filter or the selection/filters boundary | `ml_lotto/prediction/CLAUDE.md` |
 | added a test file, or turned a demo into one | `tests/CLAUDE.md` **and** `.claude/skills/lotto-verify/verify.py` |
-| a dashboard page | `view/pages/CLAUDE.md` and `app.py` |
 | anything under `frontend/` | `frontend/CLAUDE.md` |
 | a documented fact - metrics, features, models, artifacts | the matching file in `docs/`, verified against the code |
 | added a folder worth documenting | its own `CLAUDE.md`, an `@` import line **and** a row in the table above |
 
 `nextStep/lottodraw.md` is how a scraped draw reaches the site: n8n posts it to the rebuild
 receiver, which appends it to the CSV and regenerates the artifacts **only when the data
-changed**, so a retried webhook costs nothing. Designed, not yet built.
+changed**, so a retried webhook costs nothing. Built, and tested with n8n on the PC (2026-09-27).
 
 `nextStep/vps.md` is the deployment runbook: the production overlay, the Caddy config, the two
 env files and the rebuild receiver. **The owner's VPS is at Hostinger and already runs n8n
 behind Traefik on 80/443**, so it deploys with a third overlay, `docker-compose.hostinger.yml`,
-that puts Caddy behind that Traefik (vps.md 2.1). The code reaches the VPS by `git clone`/`pull`
+that puts Caddy behind that Traefik (vps.md section 3). The code reaches the VPS by `git clone`/`pull`
 from GitHub and is built there - there is no image registry. On the VPS, `data/` is discarded
-before a pull (F-74) and Streamlit stays on loopback (F-75). `rebuild_webhook.py` at the root is the only network-facing
+before a pull (F-74) and nothing but the proxy publishes a port (F-75). `rebuild_webhook.py` at the root is the only network-facing
 code here that writes anything - it runs `drawpick.py` for a signed request, never gets the Docker
 socket, and is not proxied to the internet.
 

@@ -2,10 +2,9 @@
 
 # frontend/
 
-**The Next.js site that replaces the Streamlit dashboard.** Phases 3 and 4 are built. The build
-document is `../nextStep/web.md`; its section 6 is the completeness matrix and
-its section 8 is the cutover order that ends with deleting `view/`. **`view/` is still the live site
-until that cutover - do not delete it.**
+**The website.** Phases 3 and 4 are built. The build document is `../nextStep/web.md`. It
+replaced the Streamlit dashboard, which was removed from `main` on 2026-09-27 and is kept on the
+`streamlit-app` branch.
 
 Next.js 16 (App Router) + TypeScript + Tailwind 4, `output: 'standalone'`. Icons `lucide-react`.
 
@@ -70,7 +69,7 @@ npm run test:integration   # the real chain: append a row, run drawpick.py, serv
   **typical / uncommon / unusual** and the equal-chance sentence is rendered with it by
   `ShapeCard`, so the wording lives in one component. `test/wording.test.ts` scans every source
   file for the banned list and `test/e2e/site.spec.ts` scans every rendered page. The list is
-  `lib/advice.json` - `../tests/test_site_wording.py` `ADVICE`, verbatim - and it is JSON so
+  `lib/advice.json` - carried over verbatim from the Streamlit site's wording test - and it is JSON so
   that it is not itself a scanned source; anything that needs the words reads that file. It bans ordinary words too - "strongest
   trend" failed both guards and became "biggest change".
 - **A band boundary belongs to the analyzer, not here.** `lib/scoring/bands.ts` mirrors

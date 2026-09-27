@@ -10,10 +10,10 @@ The **Irish Lotto ML System** is an end-to-end lottery analysis, machine learnin
 
 The project is structured around **two distinct audiences fed by a single data pipeline**:
 
-1. **The Web Dashboard (`view/`, `app.py`) — For Players & Fun**:
-   - An 8-page Streamlit application, and its **built** Next.js replacement in `frontend/`: five destinations (Home, Pick, Explore, Numbers, Review), a picker with wheels and a 1-47 grid, and a shape card that describes a line against past draws. Both run side by side - Streamlit on 8501, Next.js on 3000 - until the cutover in `nextStep/web.md` section 8 deletes `view/`.
+1. **The Website (`frontend/`) — For Players & Fun**:
+   - A Next.js site: five destinations (Home, Pick, Explore, Numbers, Review), a picker with wheels and a 1-47 grid, and a shape card that describes a line against past draws, on port 3000. The Streamlit dashboard it replaced (`view/`, `app.py`) was removed from `main` on 2026-09-27 and is kept on the `streamlit-app` branch.
    - Allows users to explore factual historical statistics (hot/medium/cold recency bands, odd/even splits, sum distributions, freshness patterns, bonus-to-main transitions, and high number frequencies >= 32).
-   - Features an interactive **Prediction Validator** where users can build and validate their own ticket lines against historical distributions.
+   - Its **Pick** destination is where users build their own line and see how it compares with past draws.
    - **Crucial Invariant**: It is an informed toy, **never a tipster**. In a fair lottery, every combination has an identical probability of being drawn. The site explicitly states this and never claims a line is "more likely to win."
 
 2. **The ML Engineering Layer (`ml_lotto/`, `quickpick.py`) — For the System Author**:
@@ -25,7 +25,7 @@ The project is structured around **two distinct audiences fed by a single data p
 3. **The Data Core (`drawpick.py`)**:
    - Ingests historical draws from `data/irish500.csv` and executes 16 sequential statistical analysis phases.
    - Generates ~24 validated JSON artifacts in `data/` and `data/analysis/`.
-   - **`data/*.json` is the sole API boundary**: Pages in `view/`, the Next.js site in `frontend/` and models in `ml_lotto/` read only these JSON artifacts, never `data/irish500.csv` directly. The one exception is the admin download route, where the owner retrieves their own input file.
+   - **`data/*.json` is the sole API boundary**: The Next.js site in `frontend/` and models in `ml_lotto/` read only these JSON artifacts, never `data/irish500.csv` directly. The one exception is the admin download route, where the owner retrieves their own input file.
 
 ---
 
@@ -58,8 +58,8 @@ The project is structured around **two distinct audiences fed by a single data p
        │  └─────────────────────────┘
        ▼
 ┌─────────────────────────┐
-│        app.py           │ (8-Page Streamlit UI in view/pages/)
-│   (view/pages/*.py)     │ (Read-only consumer of JSON and metrics)
+│       frontend/         │ (Next.js website)
+│   (lib/data/*.ts)       │ (Read-only consumer of JSON)
 └─────────────────────────┘
 ```
 
@@ -116,8 +116,8 @@ This is the single highest-risk invariant in the entire repository. Training fea
 * **Diversity Rule**: Flat penalty of 6 (`LINE_SIZE`) charged per number already selected in an earlier model's line.
 * **Model 4 Wheeling**: Model 4 outputs a 20-number candidate pool (`10H / 5M / 5C`). `ml_lotto/prediction/wheel.py` wheels the top 8 numbers into 4 covering lines ($C(8, 6, 3) = 4$), guaranteeing at least one Match-3 if 3+ winning numbers appear in the top 8.
 
-### 3.5. Web Dashboard Read-Only Contract (`view/pages/`)
-* Streamlit pages consume `data/*.json`, `lottery_picks.txt`, and `model_metrics/`.
+### 3.5. Website Read-Only Contract (`frontend/`)
+* The site reads `data/*.json` and, on the owner's PC only, `lottery_picks.txt`.
 * Pages **never** compute features, train models, or write artifacts.
 * Avoid emojis in new code.
 
@@ -155,9 +155,9 @@ The roadmap is maintained **exclusively in `plan.md`**, one of the owner's priva
 - Phase 3 (done 2026-09-21): the Next.js foundation in `frontend/` - Next.js 16, TypeScript, Tailwind 4; `lib/data/` reading the mounted artifacts with an mtime cache; a signed-cookie admin login; and `/api/download/data` streaming the bundle. The `nextjs-web` image is built and runs beside Streamlit, non-root, with the artifacts mounted read-only.
 - Phase 4 (done 2026-09-21): the UI - the five destinations, `lib/scoring/` describing a line in the fixed vocabulary typical / uncommon / unusual with the equal-chance sentence rendered beside it, and the wording guard that replaces `tests/test_site_wording.py` (a source lint plus a Playwright pass). The section 6 completeness matrix is walked and signed off.
 - Phase 4 addition (done 2026-09-24, F-68): the chat panel in `nextStep/chat.md` - `frontend/lib/chat/` answers a question from prepared answers, then from the artifacts through `lib/data/`, then from a cache keyed on the artifacts' mtime, and only then from `openai/gpt-oss-120b` on Cerebras through OpenRouter, behind a daily token budget, a per-client rate limit and a runtime scan against the one `ADVICE` list in `frontend/lib/advice.json`. It does not stream, so the scan sees the whole answer. The key is `OPENROUTER_API_KEY` in `secrets.env`; without it only the model layer is off.
-- Phase 4: migrating the 8 Streamlit pages to Next.js, including the interactive Prediction Validator.
+- Cutover (done 2026-09-27): the Streamlit dashboard removed from `main`, kept on the `streamlit-app` branch.
 - Phases 3-4 are designed node by node in `nextStep/web.md`: five destinations (Home, Pick, Explore, Numbers, Review), the completeness matrix that keeps every current statistic, the wording test that must replace `tests/test_site_wording.py`, and the cutover order for deleting `view/`.
-- Phase 5: VPS deployment with Docker Compose. The owner's VPS is at Hostinger and already runs n8n behind Traefik, so `docker-compose.hostinger.yml` puts Caddy behind that Traefik; the code is cloned from GitHub and built on the VPS, with no registry (`nextStep/vps.md` 2.1).
+- Phase 5: VPS deployment with Docker Compose. The owner's VPS is at Hostinger and already runs n8n behind Traefik, so `docker-compose.hostinger.yml` puts Caddy behind that Traefik; the code is cloned from GitHub and built on the VPS, with no registry (`nextStep/vps.md` section 3).
 
 Separation of concerns: the VPS runs only `drawpick.py` and the public site; `quickpick.py` (model training) runs on the owner's PC. Keep `lotto_analysis/` light and free of any dependency on `ml_lotto/`.
 
@@ -178,17 +178,14 @@ Always execute commands inside the project's virtual environment:
 # Run 20-fold label permutation verification
 .\venv\Scripts\python.exe quickpick.py --permutation-check 20
 
-# Launch the Streamlit dashboard
-.\venv\Scripts\streamlit.exe run app.py
-
-# Launch the Next.js site (reads the same data/*.json)
+# Launch the website (reads data/*.json)
 npm --prefix frontend run dev
 
 # The Next.js site's own tests: vitest over the data layer and the scoring, then Playwright
 npm --prefix frontend test
 npm --prefix frontend run test:e2e
 
-# Execute all 26 test files (307 tests, ~60s) - pytest.ini limits pytest to tests/
+# Execute all 24 test files (280 tests, ~2 min) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite
@@ -200,7 +197,6 @@ npm --prefix frontend run test:e2e
 source venv/bin/activate
 python drawpick.py
 python quickpick.py
-streamlit run app.py
 python .claude/skills/lotto-verify/verify.py
 ```
 
@@ -215,11 +211,10 @@ python .claude/skills/lotto-verify/verify.py
 | **`ml_lotto/features/`** | `walk_forward.py`, `extractor.py` | Point-in-time training engine & serving feature extractors. Governs the train/serve parity contract. |
 | **`ml_lotto/models/`** | `trainer.py`, `pipelines.py`, `hyperparameter_tuning.py` | Model architectures, training loops, calibration, and constrained parameter spaces. |
 | **`ml_lotto/prediction/`** | `ilp_selection.py`, `filters.py`, `wheel.py`, `predictor.py` | MILP ticket selection, constraint verification, candidate pooling, and wheeling designs. |
-| **`view/pages/`** | `app.py`, `view/pages/*.py` | 8-page Streamlit web dashboard. Strictly read-only; displays facts for user enjoyment. |
 | **`frontend/`** | `lib/data/`, `lib/scoring/`, `lib/chat/`, `app/`, `proxy.ts` | The Next.js site, Phases 3-4 built, with the chat panel. Reads `data/*.json` server-side, computes nothing, never sends the 4.4 MB draw history to the browser, and describes a line rather than advising on it. |
 | **`scripts/`** | `scrape_lotto.py`, `train_with_all_features.py` | Independent utilities; web scraper for new draw ingestion. |
 | **`analysis/`** | `bonus_analysis.py`, exploratory scripts | Phase 11 statistical analysis; exploratory data science scripts. |
-| **`tests/`** | 26 test files, nothing else (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
+| **`tests/`** | 24 test files, nothing else (see Section 7) | Guards parity, model capacity, invariants, filter rules, scraper integrity, and wheel coverage. |
 | **`demos/`** | `demo_*.py` | Feature-discovery scripts moved out of `tests/` (C-17b). Not tests; run with `python -m demos.<name>`. Never write to `model_metrics/` or `data/`. |
 | **`docs/`** | `metrics.md`, `features.md`, `models.md`, `json-artifacts.md` | Reference documentation. Code and artifacts always supersede docs in conflicts. |
 | **`data/`** | `irish500.csv`, `*.json` | Ground-truth historical draws and generated analytical artifacts. |

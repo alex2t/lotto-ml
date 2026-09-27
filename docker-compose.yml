@@ -17,29 +17,6 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
 
-  streamlit-web:
-    build:
-      context: .
-      dockerfile: Dockerfile.streamlit
-      args:
-        UID: ${UID:-1000}
-        GID: ${GID:-1000}
-    image: lotto-streamlit:latest
-    container_name: lotto-streamlit
-    restart: unless-stopped
-    # A bare `docker compose up` must not serve a half-written artifact: the dashboard starts only
-    # after the engine has exited 0. The start scripts run the engine themselves and then pass
-    # --no-deps, so it runs once.
-    depends_on:
-      data-engine:
-        condition: service_completed_successfully
-    ports:
-      - "8501:8501"
-    volumes:
-      - ./data:/app/data:ro
-    environment:
-      - PYTHONUNBUFFERED=1
-
   nextjs-web:
     build:
       context: .
@@ -50,8 +27,8 @@ services:
     image: lotto-nextjs:latest
     container_name: lotto-nextjs
     restart: unless-stopped
-    # Same guard as the dashboard: a bare `docker compose up` must not serve a half-written
-    # artifact. The start scripts run the engine themselves and then pass --no-deps.
+    # A bare `docker compose up` must not serve a half-written artifact. The start scripts
+    # run the engine themselves and then pass --no-deps.
     depends_on:
       data-engine:
         condition: service_completed_successfully

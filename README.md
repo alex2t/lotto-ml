@@ -5,13 +5,13 @@ history, and a machine-learning sandbox built to learn how to code well with AI.
 
 ## Two projects, one data layer
 
-**The website - pick your line for fun.** A dashboard for players who would rather build their own
+**The website - pick your line for fun.** A site for players who would rather build their own
 line than take a random quick pick. It shows the facts behind past draws - which numbers are hot,
 medium or cold, how odd and even numbers split, which balls were recently a bonus, how many numbers
 of 32 or above a typical draw holds - and leaves the choice to you. It never promises a better
 chance of winning: in a fair draw every line is equally likely. The aim is simply to make picking a
-line more fun. Built in Streamlit in `view/`, and in Next.js in `frontend/`, which now has the whole
-site; both run side by side until the cutover.
+line more fun. Built in Next.js in `frontend/`. The Streamlit dashboard it replaced is kept on the
+`streamlit-app` branch.
 
 **The ML layer - a learning project.** Six models (logistic regression, random forest, XGBoost,
 CatBoost and two auxiliary models) trained on the same history to generate picks. They are for my
@@ -49,7 +49,7 @@ error. It has since been rebuilt around the practices from Ed Donner's Udemy cou
 ```bash
 python drawpick.py     # build the data from data/irish500.csv
 python quickpick.py    # train the models, write lottery_picks.txt
-streamlit run app.py   # open the website
+npm --prefix frontend run dev   # open the website on http://localhost:3000
 ```
 
 `python scripts/scrape_lotto.py` adds new draws. Re-run `drawpick.py` after it.
@@ -61,7 +61,7 @@ data/irish500.csv -> drawpick.py -> data/*.json -> quickpick.py -> lottery_picks
    (draw history)    (16 phases)   (~24 files)    (features,
                                         |          training,
                                         v          selection)
-                                  app.py (8-page site)
+                                  frontend/ (the website)
 ```
 
 1. **Draw history** - `data/irish500.csv`, newest first: `Date,Num1..Num6,Bonus`.
@@ -76,22 +76,19 @@ data/irish500.csv -> drawpick.py -> data/*.json -> quickpick.py -> lottery_picks
    - Two auxiliary logistic regressions: bonus ball, and bonus-to-main transitions.
    - Selection - an integer linear program picks each line under the hot/medium/cold quota,
      freshness target and ticket rules (sum 84-206, span 20+, 2-4 odd).
-4. **Website** - `app.py` and `view/pages/`: trigger periods, draw history, statistics, freshness,
-   prediction validator, number insights, pattern comparison, post-draw analysis.
-5. **The Next.js site** - `frontend/`: the replacement, built. Five destinations - Home, Pick,
-   Explore, Numbers, Review - reading the same artifacts server-side, plus the admin login and the
-   data-bundle download. It runs beside Streamlit until the cutover.
+4. **Website** - `frontend/`, Next.js. Five destinations - Home, Pick, Explore, Numbers, Review -
+   reading the artifacts server-side, plus a chat panel, the admin login and the data-bundle
+   download.
 
 ## Layout
 
 | Path | What |
 |:--|:--|
 | `lotto_analysis/`, `drawpick.py` | statistics over the draw history -> `data/*.json` |
-| `view/`, `app.py` | the website (8 pages, Streamlit) |
-| `frontend/` | the Next.js site replacing it - see `frontend/CLAUDE.md` |
+| `frontend/` | the website, Next.js - see `frontend/CLAUDE.md` |
 | `ml_lotto/`, `quickpick.py` | features, models, line selection |
 | `tests/` | the real tests - see `tests/CLAUDE.md` for which files they are |
-| `docs/` | reference: metrics, features, models, JSON files, dashboard manual |
+| `docs/` | reference: metrics, features, models, JSON files |
 
 ## Next
 

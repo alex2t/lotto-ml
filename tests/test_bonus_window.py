@@ -20,7 +20,6 @@ from lotto_analysis.analyzers.bonus_analyzer import (
     pre_draw_bonus_window,
 )
 from ml_lotto.utils.bonus_window import bonus_window_positions
-from view.pages.draw_history import create_draw_table_html
 
 
 def fair_history(n_draws, seed):
@@ -77,14 +76,6 @@ def test_recency_penalty_is_neutral_on_fair_draws(fair):
     assert 0.85 <= penalty <= 1.15
 
 
-def test_draw_history_shows_the_window_before_each_draw():
-    with open('data/lotto_draw_history.json', encoding='utf-8') as f:
-        history = json.load(f)
-    dates = sorted(history)
-    html = create_draw_table_html(history, dates[-1])
-    previous = ', '.join(str(n) for n in history[dates[-2]]['recent_bonus_numbers'])
-    assert 'Last 10 Bonus Balls Before This Draw' in html
-    assert f'value="{previous}"' in html
 
 
 def test_a_repeated_bonus_ball_counts_from_its_most_recent_appearance():

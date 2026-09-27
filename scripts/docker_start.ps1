@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    Starts the Irish Lotto Docker services (Data Engine + both web front ends).
+    Starts the Irish Lotto Docker services (Data Engine + the website).
 .DESCRIPTION
     1. Executes the data-engine container to update ~24 JSON artifacts from data/irish500.csv.
-    2. Starts the Streamlit dashboard on http://localhost:8501 and the Next.js site on http://localhost:3000.
+    2. Starts the Next.js site on http://localhost:3000.
 .PARAMETER Build
     Forces a rebuild of the Docker images before running.
 .PARAMETER EngineOnly
-    Runs only the data-engine analysis and exits without starting the web dashboard.
+    Runs only the data-engine analysis and exits without starting the website.
 .EXAMPLE
     .\scripts\docker_start.ps1
     .\scripts\docker_start.ps1 -Build
@@ -65,16 +65,15 @@ if ($EngineOnly) {
     exit 0
 }
 
-Write-Host ">> Step 2: Starting the web front ends..." -ForegroundColor Green
-docker compose up -d --no-deps streamlit-web nextjs-web
+Write-Host ">> Step 2: Starting the website..." -ForegroundColor Green
+docker compose up -d --no-deps nextjs-web
 if ($LASTEXITCODE -ne 0) {
-    Write-Error "Failed to start the web front ends."
+    Write-Error "Failed to start the website."
     exit $LASTEXITCODE
 }
 
 Write-Host "====================================================================" -ForegroundColor Cyan
-Write-Host " SUCCESS: Data analysis complete & both front ends are running!" -ForegroundColor Green
-Write-Host " Streamlit dashboard: http://localhost:8501" -ForegroundColor Yellow
-Write-Host " Next.js site:        http://localhost:3000" -ForegroundColor Yellow
+Write-Host " SUCCESS: Data analysis complete & the website is running!" -ForegroundColor Green
+Write-Host " Website: http://localhost:3000" -ForegroundColor Yellow
 Write-Host " To stop: .\scripts\docker_stop.ps1" -ForegroundColor DarkGray
 Write-Host "====================================================================" -ForegroundColor Cyan

@@ -7,13 +7,11 @@ does that with probability 1 - (41/47)^10 = 74.5%, so on fair draws the boost mu
 """
 
 import datetime
-import json
 import random
 
 import pytest
 
 from lotto_analysis.analyzers.bonus_to_main_analyzer import generate_bonus_to_main_analysis
-from view.pages.prediction_validator import validate_bonus_transition
 
 CHANCE_10_DRAWS = 1 - (41 / 47) ** 10
 
@@ -75,20 +73,6 @@ def test_random_baseline_is_the_chance_of_any_number_within_10_draws(fair_analys
     assert factors['expected_random_rate'] == pytest.approx(CHANCE_10_DRAWS, abs=1e-4)
 
 
-def test_validator_counts_any_recent_bonus_ball_whatever_its_past_rate():
-    """The check used to demand transition_rate > 0.65 - a past rate that predicts nothing."""
-    with open('data/lotto_bonus_to_main_patterns.json', encoding='utf-8') as f:
-        bonus_data = json.load(f)
-    profiles = bonus_data['per_number_transition_profile']
-    low_rate = [int(n) for n, p in profiles.items()
-                if p['days_since_last_bonus'] < 150 and p['transition_rate'] <= 0.65]
-    stale = [int(n) for n, p in profiles.items() if p['days_since_last_bonus'] >= 150]
-    assert low_rate and len(stale) >= 6
-
-    _, _, score = validate_bonus_transition([low_rate[0]] + stale[:5], bonus_data)
-    assert score == 100.0
-    _, _, score = validate_bonus_transition(stale[:6], bonus_data)
-    assert score == 70.0
 
 
 def test_fair_draws_show_no_boost(fair_analysis):

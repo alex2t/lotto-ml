@@ -1,6 +1,6 @@
 # JSON artifacts
 
-The handoff between the two stages. `drawpick.py` writes them; `quickpick.py` and the dashboard read
+The handoff between the two stages. `drawpick.py` writes them; `quickpick.py` and the website read
 them. **The ML layer never reads `data/irish500.csv`** - adding a draw to the CSV changes nothing
 until `drawpick.py` re-runs.
 

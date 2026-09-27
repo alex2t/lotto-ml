@@ -10,7 +10,6 @@ flagged all 24 odd numbers as "statistically validated" on real draws. The overa
 import random
 
 import numpy as np
-from streamlit.testing.v1 import AppTest
 
 from lotto_analysis.analyzers.odd_even_analyzer import analyze_odd_even_patterns
 
@@ -68,14 +67,3 @@ def test_overall_test_expects_24_odd_in_47():
     overall = analyze_odd_even_patterns(history, 47)['overall_distribution_test']
     assert overall['chi2_stat'] == 0
     assert not overall['significant']
-
-
-def test_statistics_page_shows_each_number_against_its_chance():
-    """The page shows the fair-draw chance beside each share, and no 'strong preference' (F-38)."""
-    at = AppTest.from_string("from view.pages import statistics; statistics.show()", default_timeout=60)
-    at.run()
-    assert not at.exception
-    table = next(df.value for df in at.dataframe if 'Affinity Score' in df.value.columns)
-    assert 'Chance' in table.columns
-    text = ' '.join(str(m.value) for m in at.markdown).lower()
-    assert 'strong preference' not in text and '50/50' not in text

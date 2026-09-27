@@ -1,7 +1,7 @@
 @echo off
 rem ==============================================================================
 rem Irish Lotto System - Docker Launcher (Windows Batch)
-rem Runs drawpick.py data engine, then launches both web front ends
+rem Runs drawpick.py data engine, then launches the website
 rem ==============================================================================
 setlocal
 cd /d "%~dp0\.."
@@ -28,18 +28,17 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
-echo [Step 2/2] Starting the web front ends...
-docker compose up -d --no-deps streamlit-web nextjs-web
+echo [Step 2/2] Starting the website...
+docker compose up -d --no-deps nextjs-web
 if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to start the web front ends!
+    echo ERROR: Failed to start the website!
     pause
     exit /b %ERRORLEVEL%
 )
 
 echo ====================================================================
-echo  SUCCESS: Data analysis complete and both front ends are running!
-echo  Streamlit dashboard: http://localhost:8501
-echo  Next.js site: http://localhost:3000
+echo  SUCCESS: Data analysis complete and the website is running!
+echo  Website: http://localhost:3000
 echo  To stop: run scripts\docker_stop.bat
 echo ====================================================================
 endlocal

@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-26
+**Last updated:** 2026-09-27
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -42,6 +42,20 @@ None open.
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-27 - F-77, the Streamlit dashboard removed from `main`.** The Next.js site in
+  `frontend/` replaced it, so `view/`, `app.py`, `Dockerfile.streamlit`, `requirements-web.txt`,
+  the `streamlit-web` service and `docs/dashboard-manual.md` were deleted, and the launchers start
+  only the Next.js site. The dashboard is kept whole on the `streamlit-app` branch. Tests that
+  exercised only Streamlit code went with it: `test_site_wording.py` and `test_anomaly_detector.py`,
+  plus the page checks in `test_draw_history_numbers.py`, `test_bonus_transition_baseline.py`,
+  `test_bonus_window.py` and `test_odd_even_affinity.py` - the site's own wording guard is
+  `frontend/test/wording.test.ts` and `test/e2e/site.spec.ts`. Two things were kept by rewriting
+  rather than dropping: F-27 is now checked on the artifact itself (every drawn number has
+  exactly one pre-draw category, and each ball's `category` is that one), and F-75's
+  `test_streamlit_is_not_public_on_the_vps` became
+  `test_no_service_but_the_proxy_publishes_a_port_on_the_vps`, which covers every service.
+  `pytest`: 280 passed (307 before, the difference being the removed Streamlit tests).
 
 - **2026-09-26 - F-75, Streamlit was public on the VPS, around the proxy.** The base
   `docker-compose.yml` publishes `streamlit-web` on `8501:8501` for the PC, and
