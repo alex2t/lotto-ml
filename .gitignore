@@ -17,3 +17,8 @@ catboost_info/
 .env
 .env.local
 secrets.env
+
+# Owner's private notes and generated picks - kept local, never published
+nextStep/
+plan.md
+lottery_picks.txt
