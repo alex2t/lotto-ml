@@ -157,7 +157,7 @@ The roadmap is maintained **exclusively in `plan.md`**, one of the owner's priva
 - Phase 4 addition (done 2026-09-24, F-68): the chat panel in `nextStep/chat.md` - `frontend/lib/chat/` answers a question from prepared answers, then from the artifacts through `lib/data/`, then from a cache keyed on the artifacts' mtime, and only then from `openai/gpt-oss-120b` on Cerebras through OpenRouter, behind a daily token budget, a per-client rate limit and a runtime scan against the one `ADVICE` list in `frontend/lib/advice.json`. It does not stream, so the scan sees the whole answer. The key is `OPENROUTER_API_KEY` in `secrets.env`; without it only the model layer is off.
 - Cutover (done 2026-09-27): the Streamlit dashboard removed from `main`, kept on the `streamlit-app` branch.
 - Phases 3-4 are designed node by node in `nextStep/web.md`: five destinations (Home, Pick, Explore, Numbers, Review), the completeness matrix that keeps every current statistic, the wording test that must replace `tests/test_site_wording.py`, and the cutover order for deleting `view/`.
-- Phase 5: VPS deployment with Docker Compose. The owner's VPS is at Hostinger and already runs n8n behind Traefik, so `docker-compose.hostinger.yml` puts Caddy behind that Traefik; the code is cloned from GitHub and built on the VPS, with no registry (`nextStep/vps.md` section 3).
+- Phase 5: VPS deployment with Docker Compose. The owner's VPS is at Hostinger with nginx on the host holding 80/443 (certbot, `catcheroo.com`) and n8n in its own container - no Traefik (F-78) - so `docker-compose.nginx.yml` puts Caddy on `127.0.0.1:8088` behind that nginx for `quickpick.ie`, trusting its `X-Forwarded-For`; the code is cloned from GitHub and built on the VPS, with no registry (`nextStep/vps.md` section 3).
 
 Separation of concerns: the VPS runs only `drawpick.py` and the public site; `quickpick.py` (model training) runs on the owner's PC. Keep `lotto_analysis/` light and free of any dependency on `ml_lotto/`.
 
@@ -185,7 +185,7 @@ npm --prefix frontend run dev
 npm --prefix frontend test
 npm --prefix frontend run test:e2e
 
-# Execute all 24 test files (280 tests, ~2 min) - pytest.ini limits pytest to tests/
+# Execute all 24 test files (281 tests, ~2 min) - pytest.ini limits pytest to tests/
 .\venv\Scripts\python.exe -m pytest -q
 
 # Run the comprehensive lotto verification suite

@@ -45,7 +45,7 @@ and words such as "safe", "due" or "overdue" are banned by tests, not by good in
           |                                   |
           v                                   v
    nextjs-web (read-only mount)        quickpick.py on the owner's PC
-   behind Caddy, behind Traefik        (6 models, never on the server)
+   behind Caddy, behind nginx          (6 models, never on the server)
 ```
 
 | Layer | Where | Stack |
@@ -56,7 +56,7 @@ and words such as "safe", "due" or "overdue" are banned by tests, not by good in
 | Website | `frontend/` | Next.js 16 (App Router), React 19, TypeScript, Tailwind 4 |
 | Chat panel | `frontend/lib/chat/` | `openai/gpt-oss-120b` on Cerebras, via OpenRouter |
 | ML layer | `quickpick.py`, `ml_lotto/` | scikit-learn, XGBoost, CatBoost, SciPy MILP |
-| Hosting | Docker Compose | Caddy 2 behind the VPS's existing Traefik |
+| Hosting | Docker Compose | Caddy 2 behind the VPS's existing nginx |
 
 ### Decisions, and why
 
@@ -203,7 +203,7 @@ simulated fair history - until this was checked.
 
 | Suite | Tests | Covers |
 |:--|:--|:--|
-| pytest | 280 | the engine, parity, the models, the scraper, the receiver, the Docker wiring |
+| pytest | 281 | the engine, parity, the models, the scraper, the receiver, the Docker wiring |
 | vitest | 374 | the data layer, the scoring, the chat layers and limits, the source wording scan |
 | Playwright | 102 | every page on desktop and mobile, including the rendered wording scan |
 | integration | 1 | a new draw appended, the real engine run, the new draw served without a restart |
@@ -222,7 +222,7 @@ npm --prefix frontend run test:e2e  # Playwright
 
 With Docker, `scripts/docker_start.ps1` (or `.sh`, `.bat`) runs the engine, checks it exited
 cleanly, then starts the site. The production stack is `docker-compose.yml` plus
-`docker-compose.prod.yml`, and `docker-compose.hostinger.yml` on a server where Traefik already
+`docker-compose.prod.yml`, and `docker-compose.nginx.yml` on a server where nginx already
 holds ports 80 and 443. Secrets go in `secrets.env` (see `secrets.env.example`), passed to the
 containers raw, because Compose would expand the `$` signs in a bcrypt hash.
 

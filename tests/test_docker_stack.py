@@ -282,40 +282,49 @@ def test_the_proxy_sets_the_security_headers_and_keeps_its_certificates():
     assert any("caddy_data:/data" in str(v) for v in proxy["volumes"])
 
 
-# --- On a VPS whose ports 80/443 already belong to Traefik (Hostinger's n8n template) --------
+# --- On the VPS, behind the host's nginx, which holds 80/443 for the owner's other sites ------
 
 
-def test_behind_traefik_caddy_publishes_nothing_and_serves_plain_http():
+def test_behind_nginx_caddy_listens_on_loopback_only_and_serves_plain_http():
     """
-    Traefik holds 80 and 443 and issues the certificate, so Caddy must not try to bind them
-    or ask Let's Encrypt itself. It still sets the security headers and health-checks the site.
+    nginx and certbot hold 80 and 443 and the certificate, so Caddy must not bind them or ask
+    Let's Encrypt itself. Docker's published ports go around ufw, so anything but 127.0.0.1
+    would put the site on the internet without TLS.
     """
-    proxy = load_compose("docker-compose.hostinger.yml")["services"]["reverse-proxy"]
-    assert "ports" in proxy and not proxy["ports"]
+    proxy = load_compose("docker-compose.nginx.yml")["services"]["reverse-proxy"]
+    assert proxy["ports"] == ["127.0.0.1:8088:80"]
     assert "DOMAIN=:80" in proxy["environment"]
 
-    labels = proxy["labels"]
-    assert "traefik.enable=true" in labels
-    assert any("rule=Host(`${DOMAIN}`)" in label for label in labels)
-    assert any(label.endswith("loadbalancer.server.port=80") for label in labels)
-    assert any("tls.certresolver=" in label for label in labels)
+
+def test_behind_nginx_caddy_keeps_each_visitors_address():
+    """
+    The login limiter and the chat budget key on the first X-Forwarded-For address. Caddy
+    replaces the header unless the sender is trusted, so behind nginx every visitor arrived as
+    the Docker gateway and shared one bucket. Only the nginx overlay may trust it: facing the
+    internet, trusting the header would let a visitor pick their own address.
+    """
+    caddyfile = (REPO_ROOT / "reverse_proxy" / "Caddyfile").read_text()
+    assert "trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}" in caddyfile
+
+    proxy = load_compose("docker-compose.nginx.yml")["services"]["reverse-proxy"]
+    assert "TRUSTED_PROXIES=private_ranges" in proxy["environment"]
+    for entry in load_compose("docker-compose.prod.yml")["services"]["reverse-proxy"]["environment"]:
+        assert "TRUSTED_PROXIES" not in entry, entry
 
 
-def test_behind_traefik_only_caddy_is_routed_and_the_receiver_is_not():
-    """
-    The receiver joins Traefik's network so n8n can reach it by name, and nothing else of
-    ours does. A Traefik that exposes containers by default would publish it, so it opts out.
-    """
-    overlay = load_compose("docker-compose.hostinger.yml")
+def test_behind_nginx_the_receiver_joins_n8n_and_is_not_published():
+    """n8n reaches it by name on its own network; nothing else of ours joins that network."""
+    overlay = load_compose("docker-compose.nginx.yml")
     services = overlay["services"]
 
     receiver = services["rebuild-receiver"]
-    assert "traefik.enable=false" in receiver["labels"]
     assert "ports" not in receiver
-    assert "edge" in receiver["networks"]
+    assert "n8n" in receiver["networks"]
 
-    assert "edge" not in services.get("nextjs-web", {}).get("networks", [])
-    assert overlay["networks"]["edge"]["external"] is True
+    for name in ("nextjs-web", "reverse-proxy"):
+        assert "n8n" not in services.get(name, {}).get("networks", []), name
+    assert overlay["networks"]["n8n"]["external"] is True
+    assert "N8N_NETWORK" in overlay["networks"]["n8n"]["name"]
 
 
 def test_the_proxy_needs_no_plugin_build():

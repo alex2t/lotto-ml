@@ -1,0 +1,35 @@
+# Third overlay, for the VPS: nginx runs on the host and holds ports 80 and 443 for the
+# owner's other sites, and n8n runs in its own compose project. Apply it after the production
+# overlay:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.nginx.yml up -d
+#
+# What it changes:
+#   - Caddy stops publishing 80/443 and stops asking Let's Encrypt; the host's nginx and
+#     certbot do both, and nginx proxies the site's hostname to 127.0.0.1:8088. Caddy serves
+#     plain HTTP there (DOMAIN=:80, as it is tested locally), keeps the security headers and
+#     the health check, and trusts X-Forwarded-For from nginx so each visitor keeps their own
+#     rate-limit bucket. The port is bound to loopback: Docker's published ports go around
+#     ufw, so 0.0.0.0 would put the site on the internet without TLS.
+#   - The rebuild receiver joins n8n's network so n8n reaches it at
+#     http://lotto-rebuild:8080/rebuild. It publishes nothing and nginx never proxies it.
+#
+# Put N8N_NETWORK in .env beside DOMAIN - the network n8n's container is on, from
+#   docker inspect n8n --format '{{range $name, $_ := .NetworkSettings.Networks}}{{$name}} {{end}}'
+services:
+  reverse-proxy:
+    ports: !override
+      - "127.0.0.1:8088:80"
+    environment:
+      - DOMAIN=:80
+      - TRUSTED_PROXIES=private_ranges
+
+  rebuild-receiver:
+    networks:
+      - default
+      - n8n
+
+networks:
+  n8n:
+    external: true
+    name: ${N8N_NETWORK:?set N8N_NETWORK in .env to n8n's Docker network}

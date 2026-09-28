@@ -111,14 +111,14 @@ will read stale data and train/serve parity will silently break.
 
 ### Tests
 
-`tests/` holds only real tests: twenty-four files, 280 tests, ~2 min. The Next.js site has its own
+`tests/` holds only real tests: twenty-four files, 281 tests, ~2 min. The Next.js site has its own
 suites in `frontend/` - `npm --prefix frontend test` (374 vitest) and `npm --prefix frontend run
 test:e2e` (102 Playwright, desktop and mobile); `pytest` does not run them. `pytest.ini` points pytest there, so
 a bare `pytest` runs exactly those. What each file guards is in `tests/CLAUDE.md`. `/lotto-verify`
 runs the same list. The old feature-discovery scripts are in `demos/` and are not tests.
 
 ```bash
-python -m pytest -q                                                              # all 280
+python -m pytest -q                                                              # all 281
 python -m pytest tests/test_no_constant_features.py -q -k "per_number_constant"   # by pattern
 python -m demos.demo_interactions                                                # a demo, from the root
 ```
@@ -260,9 +260,11 @@ receiver, which appends it to the CSV and regenerates the artifacts **only when 
 changed**, so a retried webhook costs nothing. Built, and tested with n8n on the PC (2026-09-27).
 
 `nextStep/vps.md` is the deployment runbook: the production overlay, the Caddy config, the two
-env files and the rebuild receiver. **The owner's VPS is at Hostinger and already runs n8n
-behind Traefik on 80/443**, so it deploys with a third overlay, `docker-compose.hostinger.yml`,
-that puts Caddy behind that Traefik (vps.md section 3). The code reaches the VPS by `git clone`/`pull`
+env files and the rebuild receiver. **The owner's VPS is at Hostinger; nginx on the host (not in
+Docker) holds 80/443 with certbot for `catcheroo.com` and `n8n.catcheroo.com`, and n8n is a plain
+container on `n8n_default`.** There is no Traefik (F-78). The site is `quickpick.ie` and deploys
+with a third overlay, `docker-compose.nginx.yml`: Caddy on `127.0.0.1:8088` behind that nginx,
+trusting its `X-Forwarded-For` so each visitor keeps their own rate-limit bucket (vps.md section 3). The code reaches the VPS by `git clone`/`pull`
 from GitHub and is built there - there is no image registry. On the VPS, `data/` is discarded
 before a pull (F-74) and nothing but the proxy publishes a port (F-75). `rebuild_webhook.py` at the root is the only network-facing
 code here that writes anything - it runs `drawpick.py` for a signed request, never gets the Docker

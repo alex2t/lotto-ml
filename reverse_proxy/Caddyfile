@@ -16,6 +16,17 @@
 # Caddy writes its certificates into /data, a named volume in the compose file. Losing it
 # means re-issuing on the next start, and Let's Encrypt rate-limits that.
 
+# The login limiter and the chat budget key on the first X-Forwarded-For address. Caddy
+# replaces that header unless the request comes from a trusted proxy, so behind the VPS's
+# nginx every visitor would arrive as the Docker gateway and share one bucket.
+# docker-compose.nginx.yml sets TRUSTED_PROXIES=private_ranges; facing the internet directly,
+# the default trusts nothing outside the container, so a visitor cannot forge the header.
+{
+	servers {
+		trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}
+	}
+}
+
 {$DOMAIN} {
 	encode zstd gzip
 

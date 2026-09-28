@@ -1,7 +1,7 @@
 # Open Issues — Irish Lotto ML System
 
 **Maintained by:** Claude Opus 5
-**Last updated:** 2026-09-27
+**Last updated:** 2026-09-28
 **Scope:** the single record of outstanding defects.
 
 Sections 1-5 are **open**: defects by severity, then improvements not yet started. Section 6 lists
@@ -42,6 +42,29 @@ None open.
 ## 6. Improvements done
 
 Kept for the record; each is complete and covered by tests.
+
+- **2026-09-28 - F-78, the VPS deploy was written for a proxy the server does not run.**
+  `docker-compose.hostinger.yml` and `vps.md` section 3 put Caddy behind Traefik, on the belief
+  that Hostinger's n8n template runs one. The owner's server has no Traefik: `ss -tlnp` shows
+  **nginx on the host** holding 80 and 443, certbot holds the certificates for `catcheroo.com`
+  and `n8n.catcheroo.com`, and n8n is a plain container on `n8n_default` with no Traefik labels.
+  Checking the replacement found a second defect that any proxy in front of Caddy would have hit:
+  Caddy replaces an incoming `X-Forwarded-For` unless the sender is a trusted proxy. Reproduced
+  with this repo's Caddyfile in front of `traefik/whoami`: a request carrying
+  `X-Forwarded-For: 203.0.113.7` reached the upstream as `172.20.0.1`, the Docker gateway. The
+  login limiter (`frontend/app/api/login/route.ts:10`) and the chat budget
+  (`frontend/app/api/chat/route.ts:52`) key on that first address, so every visitor would have
+  shared one bucket - one person could lock out the admin login or spend the chat allowance for
+  everyone. **Fixed**: `docker-compose.nginx.yml` replaces the Traefik overlay - Caddy publishes
+  only `127.0.0.1:8088` (Docker's published ports go around ufw), serves `:80`, and the receiver
+  joins n8n's network; the Caddyfile's global `trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}`
+  trusts nothing outside the container by default, and the overlay sets `private_ranges`. Measured
+  after: unset, the forged header is still dropped (`172.20.0.1`); with `private_ranges` the
+  upstream sees `203.0.113.7, 172.20.0.1`; the security headers are present both ways. nginx sets
+  `X-Forwarded-For $remote_addr` (overwrite, not append), so a visitor cannot choose the first
+  address. The two Traefik tests in `tests/test_docker_stack.py` were removed with the overlay they
+  checked and replaced by three: Caddy binds loopback only, only the nginx overlay trusts the
+  header, and only the receiver joins n8n's network. Each fails when its line is changed.
 
 - **2026-09-27 - F-77, the Streamlit dashboard removed from `main`.** The Next.js site in
   `frontend/` replaced it, so `view/`, `app.py`, `Dockerfile.streamlit`, `requirements-web.txt`,
@@ -431,6 +454,7 @@ Every item below was fixed and verified against the live pipeline.
 
 | ID | Issue | Fixed in |
 |:--|:--|:--|
+| F-78 | The VPS deploy assumed Traefik, which the server does not run, and behind any proxy Caddy replaced `X-Forwarded-For` with the Docker gateway, so every visitor would share one login and chat rate-limit bucket | `docker-compose.nginx.yml` (replaces `docker-compose.hostinger.yml`), `reverse_proxy/Caddyfile`, `tests/test_docker_stack.py`, `nextStep/vps.md` |
 | F-71 | The first e2e tests of a full run timed out now and then on the owner's PC; closed as a test-only effect of browser load, not a site defect | nothing changed - see the write-up |
 | F-67 | A parity test required every drawn ball to move `recent_4` or `days_since_last`; a bonus ball drawn two days after its last appearance moves neither, so the suite failed on the current data | `tests/test_walk_forward_parity.py` |
 | F-69 | The freshness bin, pattern and top-pattern tests measured against a uniform spread, so `lotto_freshness_patterns_validated.json` reported "freshness bias detected" (p 1.9e-160) for what a fair draw produces | `lotto_analysis/analyzers/freshness_pattern_analyzer.py`, `tests/test_freshness_fair_draw.py` |
