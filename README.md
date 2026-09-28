@@ -5,6 +5,11 @@ into statistics, and shows them on a website where a player builds their own lin
 it compares with past draws. Behind it sits a set of machine-learning models trained on the same
 data.
 
+**The website is live at [quickpick.ie](https://quickpick.ie)** - without the ML, which runs on
+the owner's PC only. A later stage may bring it to the site as a sandbox where a visitor sets the
+features and penalties and sees what the models make of them - for fun, and perhaps as a way for
+students to learn how a model behaves on a fair draw.
+
 ## Built as an AI coder
 
 Started over a year ago, this project began as an experiment to learn machine learning and to
